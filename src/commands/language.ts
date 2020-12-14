@@ -6,6 +6,10 @@ import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 
 export function setupLanguage(bot: Telegraf<Context>) {
   bot.command('language', ctx => {
+    ctx.reply('🤖 Пока что знаю только русский язык');
+
+    return;
+
     ctx.reply(ctx.i18n.t('language'), {
       reply_markup: languageKeyboard(),
     })
