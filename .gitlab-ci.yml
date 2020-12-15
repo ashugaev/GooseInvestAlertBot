@@ -1,0 +1,120 @@
+# TODO: Сбилдить и запушить можно все пачкой через docker-compose
+
+# Кеширует папки между этапами
+cache:
+  key: "$CI_BUILD_REF_NAME node:10-alpine"
+  paths:
+    - node_modules/
+
+# использование драйвера хранилища Docker overlay2 вместо драйвера vfs
+variables:
+  DOCKER_DRIVER: overlay2
+
+stages:
+  # Делаем сборку
+  - build
+  # Генерим докер-образ и пушим в регистр
+  - release
+  # Заходим на сервер, обновляем и запускаем образ
+  - deploy
+
+build:
+  stage: build
+  image: node:10-alpine
+  only:
+    - master
+  script:
+    - npm run install:all
+    - cd front && npm run build
+  artifacts:
+    paths:
+     - front/dist/
+
+release_front:
+  stage: release
+  image: docker:latest
+  only:
+    - "master"
+  services:
+    - docker:dind
+  before_script:
+    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+  script:
+    - "docker build -f front/Dockerfile --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/front:v1 ."
+    - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/front:v1"
+  after_script:
+    - "docker logout ${CI_REGISTRY}"
+
+release_server:
+  stage: release
+  image: docker:latest
+  only:
+    - "master"
+  services:
+    - docker:dind
+  before_script:
+    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+  script:
+    # Пишет энвы на сервер
+    - chmod +x setup_env.sh
+    - ./setup_env.sh
+
+    - "docker build -f server/Dockerfile --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/server:v1 ."
+    - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/server:v1"
+  after_script:
+    - "docker logout ${CI_REGISTRY}"
+
+release_parser:
+  stage: release
+  image: docker:latest
+  only:
+    - "master"
+  services:
+    - docker:dind
+  before_script:
+    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+  script:
+    - "docker build -f parser/Dockerfile --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/parser:v1 ."
+    - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/parser:v1"
+  after_script:
+    - "docker logout ${CI_REGISTRY}"
+
+deploy:
+  stage: deploy
+  image: ubuntu:18.04
+  only:
+    - "master"
+  environment: production
+  services:
+    - docker:dind
+  before_script:
+    # install ssh ageng if it's not
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+
+    # Run ssh-agent (inside the build environment)
+    - eval $(ssh-agent -s)
+
+    # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+
+    # Create the SSH directory and give it the right permissions
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+
+    # configure ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+    - apt-get install -y -qq sshpass
+  script:
+    # Удяляет контейнеры содержащие в имени sounds, возрастом больше 4 дней
+    # - sshpass ssh $USER@$HOST 'docker image prune --filter "name=sounds" --filter "until=96h" -f'
+
+    - sshpass ssh $USER@$HOST "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+
+    # Идет в папку проекта/создаем ее, пишет и запускает конфиг docker-compose
+    # '|| true' - благодаря этому стейдж не крашится если операция не прошла
+    - sshpass ssh $USER@$HOST 'mkdir -p /root/projects && mkdir -p /root/projects/sounds && rm /root/projects/sounds/docker-compose.yml || true'
+
+    # Скопировать конфиг на виртуалку
+    - sshpass scp -r docker-compose-remote.yml $USER@$HOST:/root/projects/sounds/docker-compose.yml
+    - sshpass ssh $USER@$HOST 'cd /root/projects/sounds && ls && docker-compose pull && docker-compose up -d --build --force-recreate'

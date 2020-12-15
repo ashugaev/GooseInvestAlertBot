@@ -1,0 +1,13 @@
+# файл для локального запуска проекта в докере
+
+version: "3"
+
+services:
+  stocks_bot:
+    image: registry.gitlab.com/ashugaev/sounds/stocks_bot:v1
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+#    volumes:
+#      - "./logs/bot:/app/logs"
