@@ -2,16 +2,9 @@ FROM node:15
 
 WORKDIR /app
 
-COPY dist/ ./dist
-COPY locales/ ./locales
-COPY package.json .
-# only for local start
-COPY *.env .
+COPY . .
 
 RUN npm i --legacy-peer-deps
-
-# Add volume
-VOLUME ["/app/logs"]
 
 #RUN mkdir logs -p && mkdir logs/bot -p
 
