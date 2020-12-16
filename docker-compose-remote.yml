@@ -4,5 +4,5 @@ version: "3"
 
 services:
   stocks_bot:
-    image: registry.gitlab.com/ashugaev/sounds/stocks_bot:v1
+    image: registry.gitlab.com/ashugaev/tradebot/stocks_bot:v1
     restart: always
