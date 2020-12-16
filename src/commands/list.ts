@@ -4,10 +4,11 @@ import {log} from '../helpers/log'
 
 export function setupList(bot: Telegraf<Context>) {
     bot.command('list', async ctx => {
+        const forSymbol = ctx.message.text.match(/list\s?(\w+)?$/)[1]
         let alertsList;
 
         try {
-            alertsList = await getAlerts({user: ctx.from.id})
+            alertsList = await getAlerts({user: ctx.from.id, symbol: forSymbol})
         } catch (e) {
             log.error(e);
             return;

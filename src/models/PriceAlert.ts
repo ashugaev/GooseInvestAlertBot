@@ -117,7 +117,7 @@ export async function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Pr
         try {
             const params: RemoveOrGetAlertParams = {};
 
-            symbol && (params.symbol = symbol)
+            symbol && (params.symbol = symbol.toUpperCase())
             user && (params.user = user)
             _id && (params._id = _id)
 
@@ -135,7 +135,7 @@ export async function removePriceAlert({symbol, _id}: RemoveOrGetAlertParams): P
         try {
             const params: RemoveOrGetAlertParams = {};
 
-            symbol && (params.symbol = symbol)
+            symbol && (params.symbol = symbol.toUpperCase())
             _id && (params._id = _id)
 
             if (!Object.keys(params).length) {
