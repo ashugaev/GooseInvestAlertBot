@@ -9,7 +9,7 @@ export interface AddPriceAlertParams {
     greaterThen?: number,
 }
 
-export interface RemoveAlertParams {
+export interface RemoveOrGetAlertParams {
     user?: number,
     symbol?: string,
     lowerThen?: number,
@@ -112,10 +112,16 @@ export function checkAlerts({symbol, price}): Promise<PriceAlertItem[]> {
     })
 }
 
-export async function getAlerts({symbol}): Promise<PriceAlertItem[]> {
+export async function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
-            const alerts = await PriceAlertModel.find({symbol})
+            const params: RemoveOrGetAlertParams = {};
+
+            symbol && (params.symbol = symbol)
+            user && (params.user = user)
+            _id && (params._id = _id)
+
+            const alerts = await PriceAlertModel.find(params)
 
             rs(alerts);
         } catch (e) {
@@ -124,10 +130,10 @@ export async function getAlerts({symbol}): Promise<PriceAlertItem[]> {
     })
 }
 
-export async function removePriceAlert({symbol, _id}: RemoveAlertParams): Promise<null> {
+export async function removePriceAlert({symbol, _id}: RemoveOrGetAlertParams): Promise<null> {
     return new Promise(async (rs, rj) => {
         try {
-            const params: RemoveAlertParams = {};
+            const params: RemoveOrGetAlertParams = {};
 
             symbol && (params.symbol = symbol)
             _id && (params._id = _id)

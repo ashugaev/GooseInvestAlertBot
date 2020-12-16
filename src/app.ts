@@ -11,6 +11,7 @@ import {setupI18N} from './helpers/i18n'
 import {setupLanguage} from './commands/language'
 import {attachUser} from './middlewares/attachUser'
 import {setupPriceChecker} from "./priceChecker";
+import {setupList} from "./commands/list";
 
 // Start checking stocks prices and alerting
 setupPriceChecker(bot);
@@ -25,6 +26,7 @@ setupI18N(bot)
 setupHelp(bot)
 setupStart(bot)
 setupAlert(bot)
+setupList(bot)
 setupLanguage(bot)
 
 // Start bot
