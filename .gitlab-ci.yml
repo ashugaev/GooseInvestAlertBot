@@ -43,7 +43,7 @@ release_bot:
     - ./setup_env.sh
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
   script:
-    - "docker build -f front/Dockerfile --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1 ."
+    - "docker build --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1 ."
     - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1"
   after_script:
     - "docker logout ${CI_REGISTRY}"
