@@ -4,7 +4,15 @@ import {log} from '../helpers/log'
 
 export function setupList(bot: Telegraf<Context>) {
     bot.command('list', async ctx => {
-        const forSymbol = ctx.message.text.match(/list\s?(\w+)?$/)[1]
+        const data = ctx.message.text.match(/list\s?(\w+)?$/)
+
+        // Invalid Format
+        if (data === null) {
+            await ctx.replyWithHTML(ctx.i18n.t('alertListErrorInvalidFormat'))
+            return;
+        }
+
+        const forSymbol = data[1]
         let alertsList;
 
         try {

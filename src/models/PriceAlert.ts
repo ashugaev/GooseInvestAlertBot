@@ -143,7 +143,7 @@ export async function removePriceAlert({symbol, _id}: RemoveOrGetAlertParams): P
                 return;
             }
 
-            await PriceAlertModel.deleteOne(params)
+            await PriceAlertModel.deleteMany(params)
 
             rs();
         } catch (e) {

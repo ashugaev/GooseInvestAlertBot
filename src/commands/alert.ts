@@ -1,16 +1,34 @@
 import {Telegraf, Context, Extra} from "telegraf";
-import {addPriceAlert, AddPriceAlertParams} from '../models';
+import {addPriceAlert, AddPriceAlertParams, removePriceAlert} from '../models';
 import {getLastPrice} from "../helpers/stocksApi";
+import {log} from "../helpers/log";
 
 export function setupAlert(bot: Telegraf<Context>) {
     bot.command(['alert'], async ctx => {
         const {text} = ctx.message;
 
-        const data = text.match(/^\/alert\s(\w+)\s([\d\.]+)$/);
+        let data = text.match(/^\/alert remove (\w+)$/)
+
+        // Is command to remove
+        if (data) {
+            const symbol = data[1].toUpperCase();
+
+            try {
+                await removePriceAlert({symbol})
+                await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', {symbol}))
+            } catch (e) {
+                await ctx.replyWithHTML(ctx.i18n.t('alertRemoveError'))
+                log.error(e);
+            }
+
+            return;
+        }
+
+        data = text.match(/^\/alert\s(\w+)\s([\d\.]+)$/);
 
         // Invalid Format
         if (data === null) {
-            ctx.replyWithHTML(ctx.i18n.t('alertErrorInvalidFormat'))
+            await ctx.replyWithHTML(ctx.i18n.t('alertErrorInvalidFormat'))
             return;
         }
 
