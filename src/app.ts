@@ -7,6 +7,7 @@ import {checkTime} from './middlewares/checkTime'
 import {setupHelp} from './commands/help'
 import {setupStart} from './commands/start'
 import {setupAlert} from './commands/alert'
+import {setupAlias} from './commands/alias'
 import {setupI18N} from './helpers/i18n'
 import {setupLanguage} from './commands/language'
 import {attachUser} from './middlewares/attachUser'
@@ -27,6 +28,7 @@ setupHelp(bot)
 setupStart(bot)
 setupAlert(bot)
 setupList(bot)
+setupAlias(bot)
 setupLanguage(bot)
 
 // Start bot

@@ -47,7 +47,7 @@ const PriceAlertModel = getModelForClass(PriceAlert, {
 })
 
 // Get or create user
-export async function addPriceAlert({user, lowerThen, symbol, greaterThen}: AddPriceAlertParams): Promise<null> {
+export function addPriceAlert({user, lowerThen, symbol, greaterThen}: AddPriceAlertParams): Promise<null> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
 
@@ -61,7 +61,7 @@ export async function addPriceAlert({user, lowerThen, symbol, greaterThen}: AddP
     })
 }
 
-export async function getUniqSymbols(number: number): Promise<string[]> {
+export function getUniqSymbols(number: number): Promise<string[]> {
     return new Promise(async (rs, rj) => {
         try {
             // Последнее время проверки должно быть не меньше этого
@@ -112,7 +112,7 @@ export function checkAlerts({symbol, price}): Promise<PriceAlertItem[]> {
     })
 }
 
-export async function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
+export function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
             const params: RemoveOrGetAlertParams = {};
@@ -130,7 +130,7 @@ export async function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Pr
     })
 }
 
-export async function removePriceAlert({symbol, _id}: RemoveOrGetAlertParams): Promise<null> {
+export function removePriceAlert({symbol, _id}: RemoveOrGetAlertParams): Promise<null> {
     return new Promise(async (rs, rj) => {
         try {
             const params: RemoveOrGetAlertParams = {};

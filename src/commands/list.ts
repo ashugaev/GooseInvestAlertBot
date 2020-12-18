@@ -40,14 +40,14 @@ export function setupList(bot: Telegraf<Context>) {
                     .markdown()
                     .markup((m) => m.inlineKeyboard([
                         m.callbackButton(ctx.i18n.t('alertListDeleteButton'),
-                            `delete_${alert._id}`
+                            `delete_alert_${alert._id}`
                         )
                     ]))
             )
         }
     })
 
-    bot.action(/^delete_(.*)$/, async (ctx) => {
+    bot.action(/^delete_alert_(.*)$/, async (ctx) => {
         const _id = ctx.match[1];
 
         try {
