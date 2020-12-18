@@ -1,5 +1,6 @@
 // Config dotenv
 import * as dotenv from 'dotenv'
+import {log} from './helpers/log'
 dotenv.config({path: `${__dirname}/../.env`})
 // Dependencies
 import {bot} from './helpers/bot'
@@ -34,4 +35,4 @@ setupLanguage(bot)
 // Start bot
 bot.startPolling()
 
-console.info('Bot is up and running')
+log.info('Bot is up and running');

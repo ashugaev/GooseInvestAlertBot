@@ -46,7 +46,7 @@ export function setupAlert(bot: Telegraf<Context>) {
                 {disable_web_page_preview: true}
             )
 
-            console.error(e);
+            log.error(e);
 
             return;
         }
@@ -61,7 +61,7 @@ export function setupAlert(bot: Telegraf<Context>) {
             await addPriceAlert(params);
         } catch (e) {
             await ctx.replyWithHTML(ctx.i18n.t('alertErrorPushToDatabase'));
-            console.error(e)
+            log.error(e)
 
             return;
         }

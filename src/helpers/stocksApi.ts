@@ -1,4 +1,5 @@
 import * as OpenAPI from '@tinkoff/invest-openapi-js-sdk';
+import {log} from "./log";
 
 const apiURL = 'https://api-invest.tinkoff.ru/openapi';
 const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws';
@@ -24,7 +25,7 @@ export const getLastPrice = (symbol: string): Promise<string> => new Promise(asy
 
         figi = result.figi;
     } catch (e) {
-        console.error(e);
+        log.error(e);
         rj(e);
     }
 
@@ -47,7 +48,7 @@ export const getLastPrice = (symbol: string): Promise<string> => new Promise(asy
 
         rs(lastCandle.c);
     } catch (e) {
-        console.error(e);
+        log.error(e);
         rj(e)
     }
 })

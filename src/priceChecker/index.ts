@@ -32,7 +32,7 @@ export const setupPriceChecker = async (bot) => {
                     }
                 }
 
-                log.error('Ошибка получания цены для инструмента')
+                log.error('Ошибка получания цены для инструмента', e)
             }
 
             if (removeAlertsForSybmol) {
