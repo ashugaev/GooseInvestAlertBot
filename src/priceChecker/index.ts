@@ -15,6 +15,8 @@ export const setupPriceChecker = async (bot) => {
         if (!symbols.length) {
             await wait(30000)
             continue;
+        } else {
+            log.debug('Проверяю символы', symbols)
         }
 
         for (let i = 0; symbols.length > i; i++) {
@@ -36,6 +38,8 @@ export const setupPriceChecker = async (bot) => {
             }
 
             if (removeAlertsForSybmol) {
+                log.debug('Удаляю все по символу', symbol);
+
                 const alertsToRemove = await getAlerts({symbol});
 
                 for (let j = 0; alertsToRemove.length > j; j++) {
@@ -58,6 +62,10 @@ export const setupPriceChecker = async (bot) => {
 
 
             const triggeredAlerts = await checkAlerts({symbol, price});
+
+            if (triggeredAlerts.length) {
+                console.debug('Сработали алерты', triggeredAlerts,' Цена: ', price, ' Символ:', symbol);
+            }
 
             for (let j = 0; triggeredAlerts.length > j; j++) {
                 const alert = triggeredAlerts[j];

@@ -1,21 +1,24 @@
 import {Telegraf, Context, Extra} from "telegraf";
-import {addPriceAlert, AddPriceAlertParams, removePriceAlert} from '../models';
+import {addPriceAlert, AddPriceAlertParams, getAlias, removePriceAlert} from '../models';
 import {getLastPrice} from "../helpers/stocksApi";
 import {log} from "../helpers/log";
 
 export function setupAlert(bot: Telegraf<Context>) {
-    bot.command(['alert'], async ctx => {
+    bot.command(['alert', 'add'], async ctx => {
         const {text} = ctx.message;
+        const {id: user} = ctx.from;
 
-        let data = text.match(/^\/alert remove (\w+)$/)
+        let data = text.match(/^\/(alert|add) remove (\w+)$/)
 
         // Is command to remove
         if (data) {
-            const symbol = data[1].toUpperCase();
+            const symbol = data[2].toUpperCase();
 
             try {
-                await removePriceAlert({symbol})
+                await removePriceAlert({symbol, user})
                 await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', {symbol}))
+
+                console.info('Удален элемент')
             } catch (e) {
                 await ctx.replyWithHTML(ctx.i18n.t('alertRemoveError'))
                 log.error(e);
@@ -24,7 +27,7 @@ export function setupAlert(bot: Telegraf<Context>) {
             return;
         }
 
-        data = text.match(/^\/alert\s(\w+)\s([\d\.]+)$/);
+        data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d\.]+)$/);
 
         // Invalid Format
         if (data === null) {
@@ -32,27 +35,37 @@ export function setupAlert(bot: Telegraf<Context>) {
             return;
         }
 
-        const symbol = data[1].toUpperCase();
-        const price = parseFloat(data[2]);
-        const {id} = ctx.from;
+        let symbol = data[2].toUpperCase();
+        let aliasName = null;
+        const price = parseFloat(data[3]);
 
         let currentPrice;
 
         try {
             currentPrice = await getLastPrice(symbol);
         } catch (e) {
-            await ctx.replyWithHTML(
-                ctx.i18n.t('alertErrorUnexistedSymbol', {symbol}),
-                {disable_web_page_preview: true}
-            )
+            try {
+                symbol = data[2];
+                const [alias] = await getAlias({title: symbol, user});
 
-            log.error(e);
+                currentPrice = await getLastPrice(alias.symbol);
 
-            return;
+                aliasName = symbol;
+                symbol = alias.symbol;
+            } catch (e) {
+                await ctx.replyWithHTML(
+                    ctx.i18n.t('alertErrorUnexistedSymbol', {symbol}),
+                    {disable_web_page_preview: true}
+                )
+
+                log.error(e);
+
+                return;
+            }
         }
 
         try {
-            const params: AddPriceAlertParams = {user: id, symbol};
+            const params: AddPriceAlertParams = {user, symbol};
 
             currentPrice < price
                 ? (params.greaterThen = price)
@@ -66,6 +79,16 @@ export function setupAlert(bot: Telegraf<Context>) {
             return;
         }
 
-        await ctx.replyWithHTML(ctx.i18n.t('alertCreated', {price, symbol}))
+        await ctx.replyWithHTML(
+            aliasName
+                ? ctx.i18n.t('alertCreatedWithAlias', {
+                    price,
+                    symbol,
+                    aliasName
+                })
+                : ctx.i18n.t('alertCreated', {
+                    price,
+                    symbol,
+                }))
     })
 }

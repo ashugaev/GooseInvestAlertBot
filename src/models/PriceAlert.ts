@@ -130,12 +130,13 @@ export function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<
     })
 }
 
-export function removePriceAlert({symbol, _id}: RemoveOrGetAlertParams): Promise<null> {
+export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): Promise<null> {
     return new Promise(async (rs, rj) => {
         try {
             const params: RemoveOrGetAlertParams = {};
 
             symbol && (params.symbol = symbol.toUpperCase())
+            user && (params.user = user)
             _id && (params._id = _id)
 
             if (!Object.keys(params).length) {
