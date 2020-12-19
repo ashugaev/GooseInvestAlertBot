@@ -130,7 +130,7 @@ export function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<
     })
 }
 
-export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): Promise<null> {
+export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): Promise<number> {
     return new Promise(async (rs, rj) => {
         try {
             const params: RemoveOrGetAlertParams = {};
@@ -144,9 +144,9 @@ export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): P
                 return;
             }
 
-            await PriceAlertModel.deleteMany(params)
+            const {deletedCount} = await PriceAlertModel.deleteMany(params)
 
-            rs();
+            rs(deletedCount);
         } catch (e) {
             rj(e);
         }

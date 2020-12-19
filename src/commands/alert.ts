@@ -8,17 +8,30 @@ export function setupAlert(bot: Telegraf<Context>) {
         const {text} = ctx.message;
         const {id: user} = ctx.from;
 
-        let data = text.match(/^\/(alert|add) remove (\w+)$/)
+        let data = text.match(/^\/(alert|add) remove ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
 
         // Is command to remove
         if (data) {
-            const symbol = data[2].toUpperCase();
+            let symbol = data[2].toUpperCase();
 
             try {
-                await removePriceAlert({symbol, user})
-                await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', {symbol}))
+                const deletedCount = await removePriceAlert({symbol, user})
 
-                console.info('Удален элемент')
+                if (deletedCount) {
+                    await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', {symbol}))
+                } else {
+                    symbol = data[2];
+
+                    const [alias] = await getAlias({title: symbol, user});
+
+                    const aliasName = alias.title;
+                    symbol = alias.symbol;
+
+                    await removePriceAlert({symbol, user})
+                    await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbolWithAlias', {symbol, aliasName}))
+                }
+
+                console.info('Удалены алерты для', symbol, user)
             } catch (e) {
                 await ctx.replyWithHTML(ctx.i18n.t('alertRemoveError'))
                 log.error(e);

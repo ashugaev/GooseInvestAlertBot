@@ -51,6 +51,9 @@ alertErrorInvalidFormat: |
 alertRemovedBySymbol: |
   🤖 Удалил все оповещения для <b>${symbol}</b>
 
+alertRemovedBySymbolWithAlias: |
+  🤖 Удалил все оповещения для <b>${aliasName}</b> (${symbol})
+
 alertRemoveError: |
   ❌ Ошибка удаления оповещения!
 
