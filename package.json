@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
+    "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "distribute": "npm run build-ts && node dist/app.js",
     "build": "npm run build-ts",
     "start": "node dist/app.js",
@@ -18,8 +19,19 @@
     "docker:up": "npm run build && docker-compose up -d --build --force-recreate",
     "docker:down": "docker-compose down"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
   "devDependencies": {
     "concurrently": "^5.2.0",
+    "eslint-plugin-react": "^7.21.5",
     "nodemon": "^2.0.4"
   },
   "dependencies": {
@@ -28,7 +40,13 @@
     "@types/dotenv": "^8.2.0",
     "@types/mongoose": "^5.7.32",
     "@types/node": "^14.0.23",
+    "@typescript-eslint/eslint-plugin": "^4.10.0",
+    "@typescript-eslint/parser": "^4.10.0",
     "dotenv": "^8.2.0",
+    "eslint": "^7.16.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "husky": "^4.3.6",
+    "lint-staged": "^10.5.3",
     "log4js": "^6.3.0",
     "mongoose": "^5.9.25",
     "telegraf": "^3.38.0",
