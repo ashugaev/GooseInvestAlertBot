@@ -1,6 +1,6 @@
 // Dependencies
 import { Context, Telegraf } from 'telegraf'
-const TelegrafBot = require('telegraf')
+import TelegrafBot from 'telegraf'
 
 export const bot = new TelegrafBot(process.env.TELEGRAM_TOKEN) as Telegraf<Context>
 

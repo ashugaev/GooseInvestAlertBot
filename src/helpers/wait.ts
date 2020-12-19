@@ -5,7 +5,7 @@ export const wait = (minTime: number, maxTime?: number) => new Promise((rs) => {
     minTime = Math.floor(Math.random() * (maxTime - minTime) + minTime);
   }
 
-  log.info('wait', minTime, 'milliseconds');
+  log.debug('wait', minTime, 'milliseconds');
 
   setTimeout(rs, minTime);
 });

@@ -1,14 +1,13 @@
-import * as OpenAPI from '@tinkoff/invest-openapi-js-sdk';
+const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
 import {log} from "./log";
 
 const apiURL = 'https://api-invest.tinkoff.ru/openapi';
 const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws';
 const secretToken = process.env.STOCKS_API_TOKEN;
 
-// @ts-ignore
 export const stocksApi = new OpenAPI({apiURL, secretToken, socketURL});
 
-export const getLastPrice = (symbol: string): Promise<string> => new Promise(async (rs, rj) => {
+export const getLastPrice = (symbol: string): Promise<number> => new Promise(async (rs, rj) => {
     let figi;
 
     try {
