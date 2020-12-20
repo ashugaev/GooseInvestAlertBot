@@ -14,6 +14,14 @@ import {setupLanguage} from './commands/language'
 import {attachUser} from './middlewares/attachUser'
 import {setupPriceChecker} from "./priceChecker";
 import {setupList} from "./commands/list";
+import {alertScene} from "./scenes/alertScene";
+const Stage = require('telegraf/stage')
+const session = require('telegraf/session')
+
+const stage = new Stage([alertScene])
+
+bot.use(session())
+bot.use(stage.middleware())
 
 // Start checking stocks prices and alerting
 setupPriceChecker(bot);

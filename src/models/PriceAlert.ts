@@ -1,6 +1,5 @@
 // Dependencies
 import {prop, getModelForClass} from '@typegoose/typegoose'
-import {log} from "../helpers/log";
 
 export interface AddPriceAlertParams {
     user: number,
@@ -32,6 +31,9 @@ export class PriceAlert {
 
     @prop()
     lastCheckedAt: Date
+
+    @prop()
+    message: string
 }
 
 export interface PriceAlertItem extends PriceAlert {
@@ -47,14 +49,20 @@ const PriceAlertModel = getModelForClass(PriceAlert, {
 })
 
 // Get or create user
-export function addPriceAlert({user, lowerThen, symbol, greaterThen}: AddPriceAlertParams): Promise<null> {
+export function addPriceAlert({user, lowerThen, symbol, greaterThen}: AddPriceAlertParams): Promise<PriceAlertItem> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
 
         try {
-            await PriceAlertModel.create({user, lowerThen, symbol, greaterThen, lastCheckedAt} as PriceAlert);
+            const createdItem = await PriceAlertModel.create({
+                user,
+                lowerThen,
+                symbol,
+                greaterThen,
+                lastCheckedAt,
+            } as PriceAlert);
 
-            rs();
+            rs(createdItem);
         } catch (e) {
             rj(e)
         }
@@ -147,6 +155,19 @@ export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): P
             const {deletedCount} = await PriceAlertModel.deleteMany(params)
 
             rs(deletedCount);
+        } catch (e) {
+            rj(e);
+        }
+    })
+}
+
+// Вернет массив сработавших алертов
+export function updateAlert({_id, data}: {_id: string, data: {}}): Promise<any> {
+    return new Promise(async (rs, rj) => {
+        try {
+            const result = await PriceAlertModel.update({_id}, {$set: data})
+
+            rs(result);
         } catch (e) {
             rj(e);
         }

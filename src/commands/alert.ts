@@ -1,7 +1,8 @@
-import {Telegraf, Context, Extra} from "telegraf";
+import {Telegraf, Context} from "telegraf";
 import {addPriceAlert, AddPriceAlertParams, getAlias, removePriceAlert} from '../models';
 import {getLastPrice} from "../helpers/stocksApi";
 import {log} from "../helpers/log";
+import {Scenes} from "../constants";
 
 export function setupAlert(bot: Telegraf<Context>) {
     bot.command(['alert', 'add'], async ctx => {
@@ -77,6 +78,8 @@ export function setupAlert(bot: Telegraf<Context>) {
             }
         }
 
+        let _id = null;
+
         try {
             const params: AddPriceAlertParams = {user, symbol};
 
@@ -84,7 +87,9 @@ export function setupAlert(bot: Telegraf<Context>) {
                 ? (params.greaterThen = price)
                 : (params.lowerThen = price)
 
-            await addPriceAlert(params);
+            const createdItem = await addPriceAlert(params);
+
+            _id = createdItem._id;
         } catch (e) {
             await ctx.replyWithHTML(ctx.i18n.t('alertErrorPushToDatabase'));
             log.error(e)
@@ -103,5 +108,8 @@ export function setupAlert(bot: Telegraf<Context>) {
                     price,
                     symbol,
                 }))
+
+        // @ts-ignore
+        ctx.scene.enter(Scenes.alert, {_id})
     })
 }
