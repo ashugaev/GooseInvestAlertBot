@@ -29,15 +29,23 @@ export function setupList(bot: Telegraf<Context>) {
 
         for (let i = 0; alertsList.length > i; i++) {
             const alert = alertsList[i];
-            const price = alert.lowerThen || alert.greaterThen;
+            const {symbol, message, lowerThen, greaterThen} = alert;
+            const price = lowerThen || greaterThen;
 
             await ctx.replyWithHTML(
-                ctx.i18n.t('alertListItem', {
-                    symbol: alert.symbol,
-                    price
-                }),
+                message
+                    ? ctx.i18n.t('alertListItemWithMessage', {
+                        symbol,
+                        price,
+                        message
+                    })
+                    : ctx.i18n.t('alertListItem', {
+                        symbol,
+                        price,
+                        message
+                    }),
                 Extra
-                    .markdown()
+                    .HTML(true)
                     .markup((m) => m.inlineKeyboard([
                         m.callbackButton(ctx.i18n.t('alertListDeleteButton'),
                             `delete_alert_${alert._id}`

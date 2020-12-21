@@ -64,18 +64,28 @@ export const setupPriceChecker = async (bot) => {
             const triggeredAlerts = await checkAlerts({symbol, price});
 
             if (triggeredAlerts.length) {
-                console.debug('Сработали алерты', triggeredAlerts,' Цена: ', price, ' Символ:', symbol);
+                console.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' Символ:', symbol);
             }
 
             for (let j = 0; triggeredAlerts.length > j; j++) {
                 const alert = triggeredAlerts[j];
+                const {message, symbol, lowerThen, greaterThen} = alert;
+                const price = lowerThen || greaterThen;
 
-                await bot.telegram.sendMessage(alert.user, i18n.t('ru', 'priceCheckerTriggeredAlert', {
-                    symbol: alert.symbol,
-                    price: alert.lowerThen || alert.greaterThen
-                }), {
-                    parse_mode: 'HTML'
-                })
+                await bot.telegram.sendMessage(alert.user,
+                    message
+                        ? i18n.t('ru', 'priceCheckerTriggeredAlertWithMessage', {
+                            symbol,
+                            price,
+                            message,
+                        })
+                        : i18n.t('ru', 'priceCheckerTriggeredAlert', {
+                            symbol,
+                            price,
+                        })
+                    , {
+                        parse_mode: 'HTML'
+                    })
 
                 await removePriceAlert({_id: alert._id})
             }
