@@ -1,3 +1,5 @@
+import {MarketInstrument} from "@tinkoff/invest-openapi-js-sdk/build/domain";
+
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
 import {log} from "./log";
 
@@ -7,13 +9,15 @@ const secretToken = process.env.STOCKS_API_TOKEN;
 
 export const stocksApi = new OpenAPI({apiURL, secretToken, socketURL});
 
-export const getLastPrice = (symbol: string): Promise<number> => new Promise(async (rs, rj) => {
-    let figi;
+export interface GetLastPriceData extends MarketInstrument {
+    lastPrice: number
+}
 
+export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>(async (rs, rj) => {
     try {
-        const result = await stocksApi.searchOne({ticker: symbol});
+        const data = await stocksApi.searchOne({ticker: symbol});
 
-        if (result === null) {
+        if (data === null) {
             rj({
                 cantFind: true,
                 message: `Заданный инструмент ${symbol} не найден у брокера`
@@ -22,13 +26,17 @@ export const getLastPrice = (symbol: string): Promise<number> => new Promise(asy
             return;
         }
 
-        figi = result.figi;
+        rs(data);
     } catch (e) {
         log.error(e);
         rj(e);
     }
+})
 
+export const getLastPrice = (symbol: string) => new Promise<GetLastPriceData>(async (rs, rj) => {
     try {
+        const data = await getInfoBySymbol(symbol);
+
         const dateTo = new Date();
         const dateToISO = dateTo.toISOString();
 
@@ -39,13 +47,13 @@ export const getLastPrice = (symbol: string): Promise<number> => new Promise(asy
         const {candles} = await stocksApi.candlesGet({
             from: dateFromISO,
             to: dateToISO,
-            figi,
             interval: 'month',
+            figi: data.figi,
         })
 
         const lastCandle = candles[candles.length - 1];
 
-        rs(lastCandle.c);
+        rs({lastPrice: lastCandle.c, ...data});
     } catch (e) {
         log.error(e);
         rj(e)

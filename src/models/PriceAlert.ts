@@ -6,6 +6,8 @@ export interface AddPriceAlertParams {
     symbol: string,
     lowerThen?: number,
     greaterThen?: number,
+    name: string,
+    currency: string,
 }
 
 export interface RemoveOrGetAlertParams {
@@ -34,6 +36,12 @@ export class PriceAlert {
 
     @prop()
     message: string
+
+    @prop({required: true})
+    name: string
+
+    @prop({required: true})
+    currency: string
 }
 
 export interface PriceAlertItem extends PriceAlert {
@@ -49,7 +57,7 @@ const PriceAlertModel = getModelForClass(PriceAlert, {
 })
 
 // Get or create user
-export function addPriceAlert({user, lowerThen, symbol, greaterThen}: AddPriceAlertParams): Promise<PriceAlertItem> {
+export function addPriceAlert({user, lowerThen, symbol, greaterThen, name, currency}: AddPriceAlertParams): Promise<PriceAlertItem> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
 
@@ -60,6 +68,8 @@ export function addPriceAlert({user, lowerThen, symbol, greaterThen}: AddPriceAl
                 symbol,
                 greaterThen,
                 lastCheckedAt,
+                name,
+                currency
             } as PriceAlert);
 
             rs(createdItem);

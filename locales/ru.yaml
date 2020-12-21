@@ -67,10 +67,10 @@ alertErrorUnexistedSymbol: |
   https://www.tinkoff.ru/invest/stocks/
 
 alertCreated: |
-  🤖 Когда цена <b>${symbol}</b> достигнет уровня <b>${price}</b>, я сообщу тебе!
+  🤖 Когда цена <b>${name}</b> (${symbol}) достигнет уровня <b>${price}${currency}</b>, я сообщу тебе!
 
 alertCreatedWithAlias: |
-  🤖 Когда цена <b>${aliasName}</b> (${symbol}) достигнет уровня <b>${price}</b>, я сообщу тебе!
+  🤖 Когда цена <b>${name}</b> (${symbol}) достигнет уровня <b>${price}${currency}</b>, я сообщу тебе!
 
 alertCreatedAddMessage: |
   💬 Если хочешь добавить комментарий к оповещению отправь его следующим сообщением
@@ -97,10 +97,10 @@ priceCheckerTriggeredAlertWithMessage: |
   <i>${message}</i>
 
 alertListItem: |
-  ${symbol} - ${price}
+  <b>${name}</b> (${symbol}) - <b>${price}${currency}</b>
 
 alertListItemWithMessage: |
-  ${symbol} - ${price}
+  <b>${name}</b> (${symbol}) - <b>${price}${currency}</b>
 
   💬 <b>Твой комментарий:</b>
   <i>${message}</i>
@@ -156,7 +156,7 @@ aliasCreated: |
   🤖 Создал алиас <b>${title}</b> для <b>${symbol}</b>
 
 aliasRemoved: |
-  🤖 Удалил алиас "<b>{title}</b>"
+  🤖 Удалил алиас <b>${title}</b>
 
 aliasesEmpty: |
   🤖 Твой список алиасов пока что пуст

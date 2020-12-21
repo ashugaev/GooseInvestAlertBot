@@ -26,7 +26,8 @@ export const setupPriceChecker = async (bot) => {
             let price;
 
             try {
-                price = await getLastPrice(symbol);
+                const data = await getLastPrice(symbol);
+                price = data.lastPrice
             } catch (e) {
                 if (typeof e === "object" && e !== null) {
                     if (e.cantFind) {

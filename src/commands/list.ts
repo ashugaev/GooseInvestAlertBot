@@ -1,6 +1,7 @@
 import {Telegraf, Context, Extra} from "telegraf";
 import {getAlerts, removePriceAlert} from "../models";
 import {log} from '../helpers/log'
+import {symbolOrCurrency} from "../helpers/symbolOrCurrency";
 
 export function setupList(bot: Telegraf<Context>) {
     bot.command('list', async ctx => {
@@ -29,21 +30,21 @@ export function setupList(bot: Telegraf<Context>) {
 
         for (let i = 0; alertsList.length > i; i++) {
             const alert = alertsList[i];
-            const {symbol, message, lowerThen, greaterThen} = alert;
+            const {symbol, message, lowerThen, greaterThen, currency, name} = alert;
             const price = lowerThen || greaterThen;
 
+            const i18nParams = {
+                symbol,
+                price,
+                name,
+                message,
+                currency: symbolOrCurrency(currency),
+            };
+
             await ctx.replyWithHTML(
-                message
-                    ? ctx.i18n.t('alertListItemWithMessage', {
-                        symbol,
-                        price,
-                        message
-                    })
-                    : ctx.i18n.t('alertListItem', {
-                        symbol,
-                        price,
-                        message
-                    }),
+                message && message.length
+                    ? ctx.i18n.t('alertListItemWithMessage', i18nParams)
+                    : ctx.i18n.t('alertListItem', i18nParams),
                 Extra
                     .HTML(true)
                     .markup((m) => m.inlineKeyboard([

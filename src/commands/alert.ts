@@ -1,8 +1,9 @@
 import {Telegraf, Context} from "telegraf";
 import {addPriceAlert, AddPriceAlertParams, getAlias, removePriceAlert} from '../models';
-import {getLastPrice} from "../helpers/stocksApi";
+import {getLastPrice, GetLastPriceData} from "../helpers/stocksApi";
 import {log} from "../helpers/log";
 import {Scenes} from "../constants";
+import {symbolOrCurrency} from "../helpers/symbolOrCurrency";
 
 export function setupAlert(bot: Telegraf<Context>) {
     bot.command(['alert', 'add'], async ctx => {
@@ -53,16 +54,16 @@ export function setupAlert(bot: Telegraf<Context>) {
         let aliasName = null;
         const price = parseFloat(data[3]);
 
-        let currentPrice;
+        let instrumentData: GetLastPriceData = null;
 
         try {
-            currentPrice = await getLastPrice(symbol);
+            instrumentData = await getLastPrice(symbol);
         } catch (e) {
             try {
                 symbol = data[2];
                 const [alias] = await getAlias({title: symbol, user});
 
-                currentPrice = await getLastPrice(alias.symbol);
+                instrumentData = await getLastPrice(alias.symbol);
 
                 aliasName = symbol;
                 symbol = alias.symbol;
@@ -81,9 +82,14 @@ export function setupAlert(bot: Telegraf<Context>) {
         let _id = null;
 
         try {
-            const params: AddPriceAlertParams = {user, symbol};
+            const params: AddPriceAlertParams = {
+                user,
+                symbol,
+                name: instrumentData.name,
+                currency: instrumentData.currency,
+            };
 
-            currentPrice < price
+            instrumentData.lastPrice < price
                 ? (params.greaterThen = price)
                 : (params.lowerThen = price)
 
@@ -97,17 +103,21 @@ export function setupAlert(bot: Telegraf<Context>) {
             return;
         }
 
+        const {name, currency} = instrumentData;
+
+        const i18nParams = {
+            price,
+            symbol,
+            aliasName,
+            currency: symbolOrCurrency(currency),
+            name,
+        };
+
         await ctx.replyWithHTML(
             aliasName
-                ? ctx.i18n.t('alertCreatedWithAlias', {
-                    price,
-                    symbol,
-                    aliasName
-                })
-                : ctx.i18n.t('alertCreated', {
-                    price,
-                    symbol,
-                }))
+                ? ctx.i18n.t('alertCreatedWithAlias', i18nParams)
+                : ctx.i18n.t('alertCreated', i18nParams)
+        )
 
         // @ts-ignore
         ctx.scene.enter(Scenes.alert, {_id})

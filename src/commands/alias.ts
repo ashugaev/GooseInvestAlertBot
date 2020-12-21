@@ -23,8 +23,6 @@ export function setupAlias(bot: Telegraf<Context>) {
             for (let i = 0; aliases.length > i; i++) {
                 const {title, symbol, _id} = aliases[i];
 
-                log.info('messs', _id)
-
                 await ctx.replyWithHTML(
                     ctx.i18n.t('aliasListItem', {
                         title,
@@ -43,6 +41,21 @@ export function setupAlias(bot: Telegraf<Context>) {
             return;
         }
 
+        data = text.match(/^\/alias remove ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
+
+        // если хотим удалить
+        if (data) {
+            const alias = data[1];
+
+            await aliasRemove({title: alias, user});
+
+            await ctx.replyWithHTML(ctx.i18n.t('aliasRemoved', {
+                title: alias,
+            }))
+
+            return
+        }
+        
         data = text.match(/^\/alias (\w+) ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
 
         // если хотим добавить
@@ -94,21 +107,6 @@ export function setupAlias(bot: Telegraf<Context>) {
 
 
             return;
-        }
-
-        data = text.match(/^\/alias remove ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
-
-        // если хотим удалить
-        if (data) {
-            const alias = data[1];
-
-            await aliasRemove({title: alias, user});
-
-            await ctx.replyWithHTML(ctx.i18n.t('aliasRemoved', {
-                title: alias,
-            }))
-
-            return
         }
 
         // Invalid Format
