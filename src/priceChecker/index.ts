@@ -33,9 +33,13 @@ export const setupPriceChecker = async (bot) => {
                     if (e.cantFind) {
                         removeAlertsForSybmol = true
                     }
-                }
 
-                log.error('Ошибка получания цены для инструмента', e)
+                    log.error('Инструметн не найдет в апи', e)
+                } else {
+                    log.error('Ошибка получания цены для инструмента', e)
+
+                    continue;
+                }
             }
 
             if (removeAlertsForSybmol) {
