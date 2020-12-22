@@ -15,6 +15,7 @@ import {attachUser} from './middlewares/attachUser'
 import {setupPriceChecker} from "./priceChecker";
 import {setupList} from "./commands/list";
 import {alertScene} from "./scenes/alertScene";
+import {setupPrice} from "./commands/price";
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
 
@@ -39,6 +40,7 @@ setupAlert(bot)
 setupList(bot)
 setupAlias(bot)
 setupLanguage(bot)
+setupPrice(bot)
 
 // Start bot
 bot.startPolling()
