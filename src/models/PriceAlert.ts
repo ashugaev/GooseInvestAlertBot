@@ -65,7 +65,7 @@ export function addPriceAlert({user, lowerThen, symbol, greaterThen, name, curre
             const createdItem = await PriceAlertModel.create({
                 user,
                 lowerThen,
-                symbol,
+                symbol: symbol.toUpperCase(),
                 greaterThen,
                 lastCheckedAt,
                 name,
@@ -113,7 +113,7 @@ export function checkAlerts({symbol, price}): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
             const triggeredAlerts = await PriceAlertModel.find({
-                symbol,
+                symbol: symbol.toUpperCase(),
                 $or: [
                     {lowerThen: {$gte: price}},
                     {greaterThen: {$lte: price}}

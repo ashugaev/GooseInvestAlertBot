@@ -1,5 +1,6 @@
 import {Telegraf, Context} from "telegraf";
 import {getLastPrice} from "../helpers/stocksApi";
+import {log} from "../helpers/log";
 import {symbolOrCurrency} from "../helpers/symbolOrCurrency";
 import {getAlias} from "../models";
 
@@ -23,7 +24,7 @@ export function setupPrice(bot: Telegraf<Context>) {
                     symbolData = await getLastPrice(alias.symbol);
                 } catch (e) {
                     await ctx.replyWithHTML(ctx.i18n.t('priceCheckError', {symbol}))
-
+                    log.error(e);
                     return;
                 }
             }
