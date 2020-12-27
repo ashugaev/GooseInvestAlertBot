@@ -9,5 +9,5 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-#    volumes:
-#      - "./logs/bot:/app/logs"
+    volumes:
+      - "./logs:/app/logs"

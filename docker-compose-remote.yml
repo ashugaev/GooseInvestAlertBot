@@ -6,3 +6,5 @@ services:
   stocks_bot:
     image: registry.gitlab.com/ashugaev/tradebot/stocks_bot:v1
     restart: always
+    volumes:
+      - "./logs:/app/logs"
