@@ -28,6 +28,8 @@ export const setupPriceChecker = async (bot) => {
             try {
                 const data = await getLastPrice(symbol);
                 price = data.lastPrice
+
+                if (!price) continue;
             } catch (e) {
                 if (typeof e === "object" && e !== null) {
                     if (e.cantFind) {
@@ -37,9 +39,9 @@ export const setupPriceChecker = async (bot) => {
                     log.error('Инструметн не найдет в апи', e)
                 } else {
                     log.error('Ошибка получания цены для инструмента', e)
-
-                    continue;
                 }
+
+                continue;
             }
 
             if (removeAlertsForSybmol) {
