@@ -40,7 +40,7 @@ export const getLastPrice = (symbol: string) => new Promise<GetLastPriceData>(as
         const dateTo = new Date();
         const dateToISO = dateTo.toISOString();
 
-        dateTo.setMonth(dateTo.getMonth() - 1)
+        dateTo.setMonth(dateTo.getMonth() - 2)
 
         const dateFromISO = dateTo.toISOString();
 

@@ -36,7 +36,7 @@ export const setupPriceChecker = async (bot) => {
                         removeAlertsForSybmol = true
                     }
 
-                    log.error('Инструметн не найдет в апи', e)
+                    log.error('Инструмент не найдет в апи', e)
                 } else {
                     log.error('Ошибка получания цены для инструмента', e)
                 }
@@ -44,6 +44,7 @@ export const setupPriceChecker = async (bot) => {
                 continue;
             }
 
+            // Если инструмента больше нет в апи
             if (removeAlertsForSybmol) {
                 log.debug('Удаляю все по символу', symbol);
 
