@@ -10,14 +10,19 @@ import {log} from "../helpers/log";
  * Сцена сработает только на первое сообщение, которое явлется текстом и не командой
  */
 
-const addMessageStep = new Composer()
+const startAddMessageScene = (ctx) => {
+    ctx.replyWithHTML(i18n.t('ru', 'alertCreatedAddMessage'))
+    return ctx.wizard.next()
+}
+
+export const addMessageStep = new Composer()
 
 // Не нечинается с /
 addMessageStep.hears(/^(?!\/).+$/, async (ctx) => {
     const {text} = ctx.message;
     const {_id} = ctx.wizard.state;
 
-    try{
+    try {
         const result = await updateAlert({
             _id,
             data: {
@@ -44,10 +49,7 @@ addMessageStep.on('message', (ctx, next) => {
     return ctx.scene.leave();
 });
 
-export const alertScene = new WizardScene(Scenes.alert,
-    (ctx) => {
-        ctx.replyWithHTML(ctx.i18n.t('alertCreatedAddMessage'))
-        return ctx.wizard.next()
-    },
+export const alertAddMessageScene = new WizardScene(Scenes.alertMessage,
+    startAddMessageScene,
     addMessageStep
 )

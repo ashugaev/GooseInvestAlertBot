@@ -1,3 +1,4 @@
 export enum Scenes {
-    alert = 'alertScene'
+    alertMessage = 'alertAddMessageScene',
+    alertAdd = 'alertAddScene'
 }

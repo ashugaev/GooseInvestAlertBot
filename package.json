@@ -9,7 +9,6 @@
   "private": false,
   "scripts": {
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "distribute": "npm run build-ts && node dist/app.js",
     "build": "npm run build-ts",
     "start": "node dist/app.js > logs/logfile",
     "dev": "concurrently -k -i -p \"[{name}]\" -n \"Node,TypeScript\" -c \"yellow.bold,cyan.bold\" \"npm run watch-js\" \"npm run watch-ts\"",
