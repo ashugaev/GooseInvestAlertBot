@@ -228,3 +228,10 @@ priceCheckError: |
 
 unrecognizedError: |
   ❌ Неизвестная ошибка!
+
+# Bottom keyboard
+help_button: |
+  Команды
+
+alert_button: |
+  Добавить оповещение

@@ -24,18 +24,20 @@ export function setupAlias(bot: Telegraf<Context>) {
                 for (let i = 0; aliases.length > i; i++) {
                     const {title, symbol, _id} = aliases[i];
 
+                    const options =  Extra
+                        .HTML(true)
+                        .markup((m) => m.inlineKeyboard([
+                            m.callbackButton(ctx.i18n.t('alertListDeleteButton'),
+                                `delete_alias_${_id}`
+                            )
+                        ]))
+
                     await ctx.replyWithHTML(
                         ctx.i18n.t('aliasListItem', {
                             title,
                             symbol
                         }),
-                        Extra
-                            .HTML(true)
-                            .markup((m) => m.inlineKeyboard([
-                                m.callbackButton(ctx.i18n.t('alertListDeleteButton'),
-                                    `delete_alias_${_id}`
-                                )
-                            ]))
+                        options
                     )
                 }
 

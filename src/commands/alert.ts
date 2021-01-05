@@ -3,9 +3,10 @@ import {getAlias, removePriceAlert} from '../models';
 import {log} from "../helpers/log";
 import {Scenes} from "../constants";
 import {addAlert} from "../helpers/addAlert";
+import {i18n} from "../helpers/i18n";
 
 export function setupAlert(bot: Telegraf<Context>) {
-    bot.command(['alert', 'add'], async ctx => {
+    const callback = async ctx => {
         try {
             const {text} = ctx.message;
             const {id: user} = ctx.from;
@@ -56,7 +57,10 @@ export function setupAlert(bot: Telegraf<Context>) {
             ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
             log.error(e);
         }
-    })
+    }
+
+    bot.command(['alert', 'add'], callback);
+    bot.hears(i18n.t('ru', 'alert_button'), callback)
 
     function removePriceAlertAndSendMessage({user, symbol, ctx}) {
         return new Promise(async (rs, rj) => {

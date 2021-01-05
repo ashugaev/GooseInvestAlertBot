@@ -48,12 +48,12 @@ bot.use(attachUser)
 setupI18N(bot)
 // Setup commands
 setupHelp(bot)
-setupStart(bot)
 setupAlert(bot)
 setupList(bot)
 setupAlias(bot)
 setupLanguage(bot)
 setupPrice(bot)
+setupStart(bot)
 
 // Start bot
 bot.startPolling()
