@@ -4,60 +4,56 @@ import {log} from "../helpers/log";
 import {Scenes} from "../constants";
 import {addAlert} from "../helpers/addAlert";
 import {i18n} from "../helpers/i18n";
+import {commandWrapper} from "../helpers/commandWrapper";
 
 export function setupAlert(bot: Telegraf<Context>) {
-    const callback = async ctx => {
-        try {
-            const {text} = ctx.message;
-            const {id: user} = ctx.from;
+    const callback = commandWrapper(async ctx => {
+        const {text} = ctx.message;
+        const {id: user} = ctx.from;
 
-            let data: string[] = text.match(/^\/(alert|add)$/)
+        let data: string[] = text.match(/^\/(alert|add)$/)
 
-            if (data) {
-                // @ts-ignore
-                ctx.scene.enter(Scenes.alertAdd);
+        if (data) {
+            // @ts-ignore
+            ctx.scene.enter(Scenes.alertAdd);
 
-                return;
-            }
-
-            data = text.match(/^\/alert remove ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
-
-            // Is command to remove
-            if (data) {
-                let symbol = data[1];
-
-                try {
-                    await removePriceAlertAndSendMessage({symbol, user, ctx})
-                } catch (e) {
-                    log.error(e);
-                }
-
-                return;
-            }
-
-            data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d\.\s\-\+]+)$/);
-
-            // Command to add alert
-            if (data) {
-                try {
-                    await addAlert({
-                        data: {symbol: data[2], price: data[3]},
-                        ctx
-                    });
-                } catch (e) {
-                    log.error(e);
-                }
-
-                return;
-            }
-
-            // Invalid Format
-            ctx.replyWithHTML(ctx.i18n.t('alertErrorInvalidFormat'))
-        } catch (e) {
-            ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-            log.error(e);
+            return;
         }
-    }
+
+        data = text.match(/^\/alert remove ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
+
+        // Is command to remove
+        if (data) {
+            let symbol = data[1];
+
+            try {
+                await removePriceAlertAndSendMessage({symbol, user, ctx})
+            } catch (e) {
+                log.error(e);
+            }
+
+            return;
+        }
+
+        data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d\.\s\-\+]+)$/);
+
+        // Command to add alert
+        if (data) {
+            try {
+                await addAlert({
+                    data: {symbol: data[2], price: data[3]},
+                    ctx
+                });
+            } catch (e) {
+                log.error(e);
+            }
+
+            return;
+        }
+
+        // Invalid Format
+        ctx.replyWithHTML(ctx.i18n.t('alertErrorInvalidFormat'))
+    })
 
     bot.command(['alert', 'add'], callback);
     bot.hears(i18n.t('ru', 'alert_button'), callback)

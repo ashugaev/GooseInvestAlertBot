@@ -3,23 +3,18 @@ import {Telegraf, Context, Markup as m, Extra} from 'telegraf'
 import {readdirSync, readFileSync} from 'fs'
 import {safeLoad} from 'js-yaml'
 import {ExtraEditMessage} from 'telegraf/typings/telegram-types'
-import {log} from "../helpers/log";
+import {commandWrapper} from "../helpers/commandWrapper";
 
 export function setupLanguage(bot: Telegraf<Context>) {
-    bot.command('language', ctx => {
-        try {
-            ctx.replyWithHTML('🤖 Пока что знаю только русский язык');
+    bot.command('language', commandWrapper(ctx => {
+        ctx.replyWithHTML('🤖 Пока что знаю только русский язык');
 
-            return;
+        return;
 
-            ctx.replyWithHTML(ctx.i18n.t('language'), {
-                reply_markup: languageKeyboard(),
-            })
-        } catch (e) {
-            ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-            log.error(e);
-        }
-    })
+        ctx.replyWithHTML(ctx.i18n.t('language'), {
+            reply_markup: languageKeyboard(),
+        })
+    }))
 
     bot.action(localesFiles().map(file => file.split('.')[0]), async ctx => {
         let user = ctx.dbuser
