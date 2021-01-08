@@ -8,11 +8,11 @@ import {log} from "../helpers/log";
 export function setupLanguage(bot: Telegraf<Context>) {
     bot.command('language', ctx => {
         try {
-            ctx.reply('🤖 Пока что знаю только русский язык');
+            ctx.replyWithHTML('🤖 Пока что знаю только русский язык');
 
             return;
 
-            ctx.reply(ctx.i18n.t('language'), {
+            ctx.replyWithHTML(ctx.i18n.t('language'), {
                 reply_markup: languageKeyboard(),
             })
         } catch (e) {

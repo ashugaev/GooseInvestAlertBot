@@ -5,20 +5,21 @@ import * as Composer from 'telegraf/composer';
 import {updateAlert} from "../models";
 import {i18n} from "../helpers/i18n";
 import {log} from "../helpers/log";
+import {sceneWrapper} from "../helpers/sceneWrapper";
 
 /**
  * Сцена сработает только на первое сообщение, которое явлется текстом и не командой
  */
 
-const startAddMessageScene = (ctx) => {
+const startAddMessageScene = sceneWrapper('add-set-comment-start-scene', (ctx) => {
     ctx.replyWithHTML(i18n.t('ru', 'alertCreatedAddMessage'))
     return ctx.wizard.next()
-}
+})
 
 export const addMessageStep = new Composer()
 
 // Не нечинается с /
-addMessageStep.hears(/^(?!\/).+$/, async (ctx) => {
+addMessageStep.hears(/^(?!\/).+$/, sceneWrapper('add-set-comment', async (ctx) => {
     const {text} = ctx.message;
     const {_id} = ctx.wizard.state;
 
@@ -42,7 +43,7 @@ addMessageStep.hears(/^(?!\/).+$/, async (ctx) => {
     }
 
     return ctx.scene.leave();
-});
+}));
 
 addMessageStep.on('message', (ctx, next) => {
     next()

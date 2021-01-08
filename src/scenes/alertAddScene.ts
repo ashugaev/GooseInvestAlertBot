@@ -8,21 +8,22 @@ import {getInstrumentDataBySymbolOrAlias} from "../helpers/getInstrumentData";
 import {symbolOrCurrency} from "../helpers/symbolOrCurrency";
 import {addAlert} from "../helpers/addAlert";
 import {addMessageStep} from "./alertAddMessageScene";
+import {sceneWrapper} from "../helpers/sceneWrapper";
 
 /**
  * Сцена сработает только на первое сообщение, которое явлется текстом и не командой
  */
 
-const startAlertAddScene = (ctx) => {
-    ctx.replyWithHTML(ctx.i18n.t('alert_add_chooseInstrument'))
+const startAlertAddScene = sceneWrapper('add-start-scene', (ctx) => {
+    ctx.replyWithHTML(i18n.t('ru', 'alert_add_chooseInstrument'))
 
     return ctx.wizard.next()
-}
+})
 
 const addInstrumentNameStep = new Composer()
 
 // Не нечинается с /
-addInstrumentNameStep.hears(/^(?!\/).+$/, async (ctx) => {
+addInstrumentNameStep.hears(/^(?!\/).+$/, sceneWrapper('add-choose-instrument', async (ctx) => {
     const {text: symbol} = ctx.message;
     const {id: user} = ctx.from;
 
@@ -43,7 +44,7 @@ addInstrumentNameStep.hears(/^(?!\/).+$/, async (ctx) => {
         // Повторить текущий степ
         return ctx.wizard.selectStep(ctx.wizard.cursor);
     }
-})
+}))
 
 // Если сообщение не то, что ожидаем - покидаем сцену
 addInstrumentNameStep.on('message', (ctx, next) => {
@@ -54,7 +55,7 @@ addInstrumentNameStep.on('message', (ctx, next) => {
 const addInstrumentPriceStep = new Composer()
 
 // Не нечинается с '/'
-addInstrumentPriceStep.hears(/^(?!\/).+$/, async (ctx) => {
+addInstrumentPriceStep.hears(/^(?!\/).+$/, sceneWrapper('add-choose-price', async (ctx) => {
     const {text: price} = ctx.message;
     const {ticker: symbol} = ctx.wizard.state.instrumentData;
     let addedCount = null;
@@ -68,7 +69,7 @@ addInstrumentPriceStep.hears(/^(?!\/).+$/, async (ctx) => {
 
         addedCount = result.addedCount;
 
-        if(addedCount === 0) {
+        if (addedCount === 0) {
             throw new Error('Не добавлено ни одной цен');
         }
 
@@ -86,7 +87,7 @@ addInstrumentPriceStep.hears(/^(?!\/).+$/, async (ctx) => {
     } else {
         return ctx.scene.leave();
     }
-});
+}));
 
 // Если сообщение не то, что ожидаем - покидаем сцену
 addInstrumentPriceStep.on('message', (ctx, next) => {

@@ -23,6 +23,7 @@ import {setupPrice} from "./commands/price";
 
 import {alertAddMessageScene} from "./scenes/alertAddMessageScene";
 import {alertAddScene} from "./scenes/alertAddScene";
+import {configureAnalytics} from "./middlewares/configureAnalytics";
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
@@ -44,6 +45,9 @@ setupPriceChecker(bot);
 bot.use(checkTime)
 // Attach user
 bot.use(attachUser)
+// send analytics for commands
+bot.use(configureAnalytics)
+
 // Setup localization
 setupI18N(bot)
 // Setup commands
