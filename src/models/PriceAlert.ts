@@ -57,7 +57,14 @@ const PriceAlertModel = getModelForClass(PriceAlert, {
 })
 
 // Get or create user
-export function addPriceAlert({user, lowerThen, symbol, greaterThen, name, currency}: AddPriceAlertParams): Promise<PriceAlertItem> {
+export function addPriceAlert({
+                                  user,
+                                  lowerThen,
+                                  symbol,
+                                  greaterThen,
+                                  name,
+                                  currency
+                              }: AddPriceAlertParams): Promise<PriceAlertItem> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
 
@@ -172,7 +179,7 @@ export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): P
 }
 
 // Вернет массив сработавших алертов
-export function updateAlert({_id, data}: {_id: string, data: {}}): Promise<any> {
+export function updateAlert({_id, data}: { _id: string, data: {} }): Promise<any> {
     return new Promise(async (rs, rj) => {
         try {
             const result = await PriceAlertModel.update({_id}, {$set: data})
@@ -183,3 +190,18 @@ export function updateAlert({_id, data}: {_id: string, data: {}}): Promise<any> 
         }
     })
 }
+
+interface GetAlertsCountForUserParams {
+    user: number
+}
+
+export const getAlertsCountForUser = (user: number) => new Promise(async (rs, rj) => {
+    try {
+        const params: GetAlertsCountForUserParams = {user};
+        const alertsCount = await PriceAlertModel.find(params).count()
+
+        rs(alertsCount);
+    } catch (e) {
+        rj(e)
+    }
+})

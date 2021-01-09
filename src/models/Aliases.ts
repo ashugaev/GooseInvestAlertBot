@@ -83,3 +83,18 @@ export function aliasRemove({title, user, _id}: RemoveAliasParams): Promise<numb
         }
     })
 }
+
+interface GetAliasesCountForUserParams {
+    user: number
+}
+
+export const getAliasesCountForUser = (user: number) => new Promise(async (rs, rj) => {
+    try {
+        const params: GetAliasesCountForUserParams = {user};
+        const aliasesCount = await AliasModel.find(params).count()
+
+        rs(aliasesCount);
+    } catch (e) {
+        rj(e)
+    }
+})

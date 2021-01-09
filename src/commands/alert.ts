@@ -1,7 +1,7 @@
 import {Telegraf, Context} from "telegraf";
-import {getAlias, removePriceAlert} from '../models';
+import {getAlertsCountForUser, getAlias, removePriceAlert} from '../models';
 import {log} from "../helpers/log";
-import {Scenes} from "../constants";
+import {Limits, Scenes} from "../constants";
 import {addAlert} from "../helpers/addAlert";
 import {i18n} from "../helpers/i18n";
 import {commandWrapper} from "../helpers/commandWrapper";
@@ -14,7 +14,15 @@ export function setupAlert(bot: Telegraf<Context>) {
         let data: string[] = text.match(/^\/(alert|add)$/)
 
         if (data) {
-            // @ts-ignore
+            try {
+                if (await getAlertsCountForUser(user) >= Limits.alerts) {
+                    ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', {limit: Limits.alerts}))
+                    return;
+                }
+            } catch (e) {
+                log.error(e);
+            }
+
             ctx.scene.enter(Scenes.alertAdd);
 
             return;
@@ -40,6 +48,11 @@ export function setupAlert(bot: Telegraf<Context>) {
         // Command to add alert
         if (data) {
             try {
+                if (await getAlertsCountForUser(user) >= Limits.alerts) {
+                    ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', {limit: Limits.alerts}))
+                    return;
+                }
+
                 await addAlert({
                     data: {symbol: data[2], price: data[3]},
                     ctx

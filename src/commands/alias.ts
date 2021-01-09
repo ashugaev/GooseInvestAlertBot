@@ -1,9 +1,15 @@
 // Dependencies
 import {Telegraf, Context, Extra} from "telegraf";
-import {aliasRemove, createAlias, getAlias, removePriceAlert} from "../models";
+import {
+    aliasRemove,
+    createAlias,
+    getAlias,
+    getAliasesCountForUser,
+} from "../models";
 import {log} from "../helpers/log";
 import {getLastPrice} from "../helpers/stocksApi";
 import {commandWrapper} from "../helpers/commandWrapper";
+import {Limits} from "../constants";
 
 export function setupAlias(bot: Telegraf<Context>) {
     bot.command('alias', commandWrapper(async ctx => {
@@ -65,6 +71,16 @@ export function setupAlias(bot: Telegraf<Context>) {
         if (data) {
             const symbol = data[1].toUpperCase()
             const alias = data[2]
+
+            // Проверка на превышение квоты
+            try {
+                if (await getAliasesCountForUser(user) >= Limits.aliases) {
+                    ctx.replyWithHTML(ctx.i18n.t('aliases_overlimit', {limit: Limits.aliases}))
+                    return;
+                }
+            } catch (e) {
+                log.error(e);
+            }
 
             // Проверки того, что бумага для которой делаем алиас существует
             try {
