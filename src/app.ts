@@ -10,19 +10,22 @@ import {bot} from './helpers/bot'
 import {log} from './helpers/log'
 import {setupI18N} from './helpers/i18n'
 
+import {setupPriceChecker} from "./priceChecker";
 import {checkTime} from './middlewares/checkTime'
+import {attachUser} from './middlewares/attachUser'
 import {setupHelp} from './commands/help'
 import {setupStart} from './commands/start'
 import {setupAlert} from './commands/alert'
 import {setupAlias} from './commands/alias'
+import {setupShift} from './commands/shift'
 import {setupLanguage} from './commands/language'
-import {attachUser} from './middlewares/attachUser'
-import {setupPriceChecker} from "./priceChecker";
 import {setupList} from "./commands/list";
 import {setupPrice} from "./commands/price";
 
 import {alertAddMessageScene} from "./scenes/alertAddMessageScene";
 import {alertAddScene} from "./scenes/alertAddScene";
+import {shiftAddScene} from "./scenes/shiftAddScene";
+
 import {configureAnalytics} from "./middlewares/configureAnalytics";
 
 const Stage = require('telegraf/stage')
@@ -33,7 +36,7 @@ Sentry.init({
     tracesSampleRate: 1.0,
 });
 
-const stage = new Stage([alertAddMessageScene, alertAddScene])
+const stage = new Stage([alertAddMessageScene, alertAddScene, shiftAddScene])
 
 bot.use(session())
 bot.use(stage.middleware())
@@ -58,6 +61,7 @@ setupAlias(bot)
 setupLanguage(bot)
 setupPrice(bot)
 setupStart(bot)
+setupShift(bot)
 
 // Start bot
 bot.startPolling()

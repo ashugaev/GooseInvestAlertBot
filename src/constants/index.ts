@@ -1,6 +1,7 @@
 export enum Scenes {
     alertMessage = 'alertAddMessageScene',
-    alertAdd = 'alertAddScene'
+    alertAdd = 'alertAddScene',
+    shiftAdd = 'shiftAddScene',
 }
 
 export enum Limits {
