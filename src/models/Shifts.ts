@@ -8,6 +8,9 @@ export class Shift {
     percent: number
 
     @prop({required: true})
+    days: number
+
+    @prop({required: true})
     user: number
 }
 
@@ -23,12 +26,13 @@ interface CreateShiftParams {
     user: number,
     time: number,
     percent: number,
+    days: number,
 }
 
-export function createShift({percent, time, user}: CreateShiftParams): Promise<null> {
+export function createShift({percent, time, user, days}: CreateShiftParams): Promise<null> {
     return new Promise(async (rs, rj) => {
         try {
-            await ShiftModel.create({user, time, percent});
+            await ShiftModel.create({user, time, percent, days});
 
             rs();
         } catch (e) {

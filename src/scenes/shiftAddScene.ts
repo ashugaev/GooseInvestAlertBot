@@ -46,21 +46,50 @@ shiftAddChoosePercentScent.on('message', (ctx, next) => {
     return ctx.scene.leave();
 });
 
+const shiftAddSetDays = new Composer()
+
+// Не нечинается с /
+shiftAddSetDays.hears(/^(?!\/).+$/, sceneWrapper('shift_add_set-time', async (ctx) => {
+    const {text: hour} = ctx.message;
+
+    const intHour = parseInt(hour);
+
+    // Сейчас отбрасывает 0 часов, но это ок. Час зарезервирован на обработку котировок.
+    if (intHour && intHour <= 24) {
+        await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays'))
+
+        ctx.wizard.state.hour = intHour;
+
+        return ctx.wizard.next();
+    } else {
+        ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTimeError'))
+        // Повторить текущий степ
+        return ctx.wizard.selectStep(ctx.wizard.cursor);
+    }
+}))
+
+// Если сообщение не то, что ожидаем - покидаем сцену
+shiftAddSetDays.on('message', (ctx, next) => {
+    next()
+    return ctx.scene.leave();
+});
+
 const shiftAddSetHourScene = new Composer()
 
 // Не нечинается с '/'
 shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async (ctx) => {
-    const {text: hour} = ctx.message;
+    const {text: days} = ctx.message;
     const {id: user} = ctx.from;
-    const {percent} = ctx.wizard.state;
+    const {percent, hour} = ctx.wizard.state;
 
-    const intHour = parseInt(hour);
+    const daysInt = parseInt(days)
 
-    if (intHour) {
+    if (daysInt && daysInt <= 30) {
         try {
             await createShift({
                 percent,
-                time: intHour,
+                time: hour,
+                days: daysInt,
                 user,
             });
         } catch (e) {
@@ -70,14 +99,14 @@ shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async
         }
 
         await ctx.replyWithHTML(i18n.t('ru', 'shift_add_created', {
-            time: intHour,
-            hours: plural(intHour, 'час', 'часа', 'часов'),
-            percent
+            time: `${hour} ${plural(hour, 'час', 'часа', 'часов')}`,
+            days: `${daysInt} ${plural(daysInt, 'день', 'дня', 'дней')}`,
+            percent,
         }))
 
         return ctx.scene.leave();
     } else {
-        ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTimeError'));
+        ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays_error'));
         return ctx.wizard.selectStep(ctx.wizard.cursor);
     }
 }));
@@ -91,5 +120,6 @@ shiftAddSetHourScene.on('message', (ctx, next) => {
 export const shiftAddScene = new WizardScene(Scenes.shiftAdd,
     startShiftAddScene,
     shiftAddChoosePercentScent,
+    shiftAddSetDays,
     shiftAddSetHourScene,
 )
