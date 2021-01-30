@@ -7,4 +7,5 @@ export enum Scenes {
 export enum Limits {
     alerts = 50,
     aliases = 30,
+    shifts = 10,
 }

@@ -54,8 +54,7 @@ shiftAddSetDays.hears(/^(?!\/).+$/, sceneWrapper('shift_add_set-time', async (ct
 
     const intHour = parseInt(hour);
 
-    // Сейчас отбрасывает 0 часов, но это ок. Час зарезервирован на обработку котировок.
-    if (intHour && intHour <= 24) {
+    if (intHour >= 0 && intHour <= 24) {
         await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays'))
 
         ctx.wizard.state.hour = intHour;
@@ -84,7 +83,7 @@ shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async
 
     const daysInt = parseInt(days)
 
-    if (daysInt && daysInt <= 30) {
+    if (daysInt >= 1 && daysInt <= 30) {
         try {
             await createShift({
                 percent,

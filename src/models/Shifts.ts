@@ -22,14 +22,14 @@ const ShiftModel = getModelForClass(Shift, {
     }
 })
 
-interface CreateShiftParams {
+interface ShiftItem {
     user: number,
     time: number,
     percent: number,
     days: number,
 }
 
-export function createShift({percent, time, user, days}: CreateShiftParams): Promise<null> {
+export function createShift({percent, time, user, days}: ShiftItem): Promise<null> {
     return new Promise(async (rs, rj) => {
         try {
             await ShiftModel.create({user, time, percent, days});
@@ -40,3 +40,26 @@ export function createShift({percent, time, user, days}: CreateShiftParams): Pro
         }
     })
 }
+
+export function getShifts(): Promise<ShiftItem[]> {
+    return new Promise(async (rs, rj) => {
+        try {
+            const shifts = await ShiftModel.find();
+
+            rs(shifts);
+        } catch (e) {
+            rj(e)
+        }
+    })
+}
+
+export const getShiftsCountForUser = (user: number) => new Promise(async (rs, rj) => {
+    try {
+        const params: Partial<ShiftItem> = {user};
+        const shiftsCount = await ShiftModel.find(params).count()
+
+        rs(shiftsCount);
+    } catch (e) {
+        rj(e)
+    }
+})
