@@ -1,8 +1,8 @@
-import {wait} from '../helpers/wait'
-import {getUniqSymbols, checkAlerts, getAlerts, removePriceAlert} from "../models";
-import {getLastPrice} from "../helpers/stocksApi";
-import {i18n} from '../helpers/i18n'
-import {log} from '../helpers/log';
+import {wait} from '../../helpers/wait'
+import {getUniqSymbols, checkAlerts, getAlerts, removePriceAlert} from "../../models";
+import {getLastPrice} from "../../helpers/stocksApi";
+import {i18n} from '../../helpers/i18n'
+import {log} from '../../helpers/log';
 
 export const setupPriceChecker = async (bot) => {
     // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -31,10 +31,8 @@ export const setupPriceChecker = async (bot) => {
 
                 if (!price) continue;
             } catch (e) {
-                if (typeof e === "object" && e !== null) {
-                    if (e.cantFind) {
-                        removeAlertsForSybmol = true
-                    }
+                if (typeof e === "object" && e !== null && e.cantFind) {
+                    removeAlertsForSybmol = true
 
                     log.error('Инструмент не найдет в апи', e)
                 } else {

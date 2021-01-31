@@ -10,7 +10,6 @@ import {bot} from './helpers/bot'
 import {log} from './helpers/log'
 import {setupI18N} from './helpers/i18n'
 
-import {setupPriceChecker} from "./priceChecker";
 import {checkTime} from './middlewares/checkTime'
 import {attachUser} from './middlewares/attachUser'
 import {setupHelp} from './commands/help'
@@ -27,6 +26,7 @@ import {alertAddScene} from "./scenes/alertAddScene";
 import {shiftAddScene} from "./scenes/shiftAddScene";
 
 import {configureAnalytics} from "./middlewares/configureAnalytics";
+import {setupCheckers} from "./checkers";
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
@@ -42,7 +42,7 @@ bot.use(session())
 bot.use(stage.middleware())
 
 // Start checking stocks prices and alerting
-setupPriceChecker(bot);
+setupCheckers(bot);
 
 // Check time
 bot.use(checkTime)

@@ -41,7 +41,7 @@ export function createShift({percent, time, user, days}: ShiftItem): Promise<nul
     })
 }
 
-export function getShifts(): Promise<ShiftItem[]> {
+export function getAllShifts(): Promise<ShiftItem[]> {
     return new Promise(async (rs, rj) => {
         try {
             const shifts = await ShiftModel.find();

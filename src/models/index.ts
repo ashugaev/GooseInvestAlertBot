@@ -10,3 +10,4 @@ mongoose.set('useCreateIndex', true)
 export * from './User'
 export * from './PriceAlert'
 export * from './Aliases'
+export * from './Shifts'
