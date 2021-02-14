@@ -321,7 +321,7 @@ shift_alert_message_bond: |
   ${list}
 
 shift_alert_message_item: |
-  - ${name} (${ticker}) - ${action} на ${percent}
+  - ${name} (${ticker}) - ${action} на ${percent} <a href="${link}">[график]</a>
 
 # Отдельные слова
 
