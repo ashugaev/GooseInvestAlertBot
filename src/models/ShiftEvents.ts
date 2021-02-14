@@ -42,7 +42,7 @@ export const ShiftEventsModel = getModelForClass(ShiftEvents, {
 })
 
 export interface ShiftEventItem {
-    _id: string
+    _id?: string
     user: number
     time: number
     days: number
