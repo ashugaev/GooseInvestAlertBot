@@ -5,19 +5,25 @@ import {createShiftEvents, ShiftEventItem, ShiftEventsModel} from "../../models/
 import {getShiftsByPercent, getAllInstruments} from './utils';
 
 export const createShitEvents = async (bot) => {
+    // Зафетчили акции/облигации/фонды массивом
     let allInstruments = await getAllInstruments();
 
     const shifts = {}
 
+    // Считаем изменение цены за каждый день для каждого инструмента и кладем все в shifts
     for (let i = 0; i < allInstruments.length; i++) {
         const {instruments} = allInstruments[i];
 
         await calculateShifts({instruments, shifts})
     }
 
+    // Получаем все подписки на шифты из базы
     const shiftAlerts = await getAllShifts();
 
+    log.info('User alerts', shiftAlerts.length);
+
     const todayShiftEvents = shiftAlerts.reduce((acc, alert) => {
+        // Получаем шифты отсеянные по проценту и отсортированные по объему + обрезка
         const filteredShifts = getShiftsByPercent({percent: alert.percent, shifts: shifts[alert.days]});
 
         if (filteredShifts) {
@@ -26,7 +32,7 @@ export const createShitEvents = async (bot) => {
                 time: alert.time,
                 days: alert.days,
                 targetPercent: alert.percent,
-                data: getShiftsByPercent({percent: alert.percent, shifts: shifts[alert.days]})
+                data: filteredShifts
             };
 
             acc.push(shiftEvent)

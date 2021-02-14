@@ -6,6 +6,7 @@ interface IShiftValue {
     minPrice: number;
     growPercent: number;
     fallPercent: number;
+    sumVolume: number;
 }
 
 export const generateShiftsData = ({shifts, instrument, candles}) => {
@@ -13,6 +14,9 @@ export const generateShiftsData = ({shifts, instrument, candles}) => {
     const currentPrice = candles[candles.length - 1].c
 
     candles.reduceRight((acc, candle, i) => {
+        const dayNumber = candles.length - i;
+        const sumVolume = candles.slice(dayNumber * -1).reduce((acc, candle) => candle.v + acc, 0);
+
         // if empty
         acc.min === null && (acc.min = candle.l);
         acc.max === null && (acc.max = candle.h);
@@ -28,8 +32,7 @@ export const generateShiftsData = ({shifts, instrument, candles}) => {
         shiftValue.minPrice = acc.min;
         shiftValue.growPercent = getPercent({initialValue: acc.min, diff: currentPrice - acc.min});
         shiftValue.fallPercent = getPercent({initialValue: acc.max, diff: acc.max - currentPrice});
-
-        const dayNumber = candles.length - i;
+        shiftValue.sumVolume = sumVolume;
 
         shifts[dayNumber] = shifts[dayNumber] ?? {}
         shifts[dayNumber][instrumentType] = shifts[dayNumber][instrumentType] ?? []

@@ -20,5 +20,6 @@ export const setupCheckers = (bot) => {
         period: '0 * * * *',
     })
 
+    // Непрерывные проверки цен
     setupPriceChecker(bot);
 }
