@@ -6,8 +6,7 @@ import {i18n} from "../helpers/i18n";
 import {log} from "../helpers/log";
 import {sceneWrapper} from "../helpers/sceneWrapper";
 import {createShift} from "../models/Shifts";
-
-const plural = require('plural-ru');
+import {plur} from "../helpers/plural";
 
 // TODO Спрашивать время когда присылать объявление вконце
 
@@ -100,8 +99,8 @@ shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async
         }
 
         await ctx.replyWithHTML(i18n.t('ru', 'shift_add_created', {
-            time: `${hour} ${plural(hour, 'час', 'часа', 'часов')}`,
-            days: `${daysInt} ${plural(daysInt, 'день', 'дня', 'дней')}`,
+            time: plur.hours(hour),
+            days: plur.days(daysInt),
             percent,
         }))
 

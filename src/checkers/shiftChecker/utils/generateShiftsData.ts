@@ -1,4 +1,5 @@
 import {getPercent} from "../../../helpers/getPercent";
+import {MarketInstrument} from "@tinkoff/invest-openapi-js-sdk/build/domain";
 
 interface IShiftValue {
     currentPrice: number;
@@ -7,6 +8,7 @@ interface IShiftValue {
     growPercent: number;
     fallPercent: number;
     sumVolume: number;
+    instrument: MarketInstrument;
 }
 
 export const generateShiftsData = ({shifts, instrument, candles}) => {
@@ -33,6 +35,7 @@ export const generateShiftsData = ({shifts, instrument, candles}) => {
         shiftValue.growPercent = getPercent({initialValue: acc.min, diff: currentPrice - acc.min});
         shiftValue.fallPercent = getPercent({initialValue: acc.max, diff: acc.max - currentPrice});
         shiftValue.sumVolume = sumVolume;
+        shiftValue.instrument = instrument;
 
         shifts[dayNumber] = shifts[dayNumber] ?? {}
         shifts[dayNumber][instrumentType] = shifts[dayNumber][instrumentType] ?? []
