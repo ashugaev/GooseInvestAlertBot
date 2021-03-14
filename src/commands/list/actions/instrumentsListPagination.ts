@@ -6,7 +6,7 @@ import {instrumentsListKeyboard} from "../keyboards/instrumentsListKeyboard";
  * @param ctx
  */
 export const instrumentsListPagination = async (ctx) => {
-    const page = Number(ctx.match[2]);
+    const page = Number(ctx.match[1]);
 
     const alertsList = ctx.session?.listCommand?.alertsList;
 

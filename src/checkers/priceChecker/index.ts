@@ -85,12 +85,12 @@ export const setupPriceChecker = async (bot) => {
                             symbol,
                             price,
                             message,
-                            link: getInstrumentLink(type, symbol),
+                            link: type && getInstrumentLink(type, symbol),
                         })
                         : i18n.t('ru', 'priceCheckerTriggeredAlert', {
                             symbol,
                             price,
-                            link: getInstrumentLink(type, symbol),
+                            link: type && getInstrumentLink(type, symbol),
                         })
                     , {
                         parse_mode: 'HTML'

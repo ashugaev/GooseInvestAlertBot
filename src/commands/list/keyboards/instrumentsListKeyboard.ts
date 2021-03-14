@@ -22,7 +22,7 @@ export const instrumentsListKeyboard = ({alertsList, page}) => {
     const getTickerButtons = pageTickers.map(({name, symbol}) => ([
         Markup.callbackButton(
             `${name} (${symbol})`,
-            `show_alerts_${symbol.toLowerCase()}_0`,
+            `${symbol.toUpperCase()}_page_0`,
         )
     ]));
 
