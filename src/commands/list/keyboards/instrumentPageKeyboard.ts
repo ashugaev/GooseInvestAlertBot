@@ -20,7 +20,7 @@ export const instrumentPageKeyboard = (ctx, {page, itemsLength, symbol, withoutB
     })
 
     keys.push(paginatorButtons);
-    withoutBackButton && (keys.push([backButton({action: 'instrumentsList_page_0'})]));
+    !withoutBackButton && (keys.push([backButton({action: 'instrumentsList_page_0'})]));
 
     return Markup.inlineKeyboard(keys)
 }
