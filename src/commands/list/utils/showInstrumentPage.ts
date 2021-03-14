@@ -12,7 +12,7 @@ export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, ed
     const itemsList = itemsToShow.map(({symbol, message, lowerThen, greaterThen, currency, name}, i) => {
         const price = lowerThen || greaterThen;
 
-        const action = greaterThen ? 'Рост' : 'Падение';
+        const action = greaterThen ? 'РОСТ' : 'ПАДЕНИЕ';
 
         return ctx.i18n.t('alertList_item', {
             number: i + 1,
