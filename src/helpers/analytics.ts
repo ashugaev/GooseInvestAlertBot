@@ -29,6 +29,9 @@ export const chb_m = ({
         const {id: user} = ctx.from;
 
         if (!message) {
+            // TODO: Убрать это. Срабатывает и не отправляет статистику на экшенах.
+            if(!ctx.message) return;
+
             message = ctx.message.text;
         }
 
