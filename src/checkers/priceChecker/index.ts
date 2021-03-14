@@ -93,7 +93,8 @@ export const setupPriceChecker = async (bot) => {
                             link: type && getInstrumentLink(type, symbol),
                         })
                     , {
-                        parse_mode: 'HTML'
+                        parse_mode: 'HTML',
+                        disable_web_page_preview: true
                     })
 
                 await removePriceAlert({_id: alert._id})
