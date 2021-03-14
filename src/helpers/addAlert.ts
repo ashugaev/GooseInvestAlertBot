@@ -58,6 +58,7 @@ export const addAlert = ({data, ctx, startedFromScene}: AddAlertParams) => new P
                     symbol,
                     name: instrumentData.name,
                     currency: instrumentData.currency,
+                    type: instrumentData.type,
                 };
 
                 instrumentData.lastPrice < price

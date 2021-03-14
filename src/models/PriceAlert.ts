@@ -1,5 +1,6 @@
 // Dependencies
 import {prop, getModelForClass} from '@typegoose/typegoose'
+import {InstrumentType} from "@tinkoff/invest-openapi-js-sdk/build/domain";
 
 export interface AddPriceAlertParams {
     user: number,
@@ -8,6 +9,7 @@ export interface AddPriceAlertParams {
     greaterThen?: number,
     name: string,
     currency: string,
+    type: InstrumentType,
 }
 
 export interface RemoveOrGetAlertParams {
@@ -42,6 +44,9 @@ export class PriceAlert {
 
     @prop({required: true})
     currency: string
+
+    @prop({required: true})
+    type: InstrumentType
 }
 
 export interface PriceAlertItem extends PriceAlert {
@@ -63,7 +68,8 @@ export function addPriceAlert({
                                   symbol,
                                   greaterThen,
                                   name,
-                                  currency
+                                  currency,
+                                  type
                               }: AddPriceAlertParams): Promise<PriceAlertItem> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
@@ -76,7 +82,8 @@ export function addPriceAlert({
                 greaterThen,
                 lastCheckedAt,
                 name,
-                currency
+                currency,
+                type,
             } as PriceAlert);
 
             rs(createdItem);

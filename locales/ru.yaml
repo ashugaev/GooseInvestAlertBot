@@ -111,22 +111,27 @@ priceCheckerErrorCantFind: |
   ❌ Ошибка оповещения для <b>${symbol}</b> на цену <b>${price}</b>. Инструмент не найден. Удаляю его.
 
 priceCheckerTriggeredAlert: |
-  🔔 Цена <b>${symbol}</b> достигла целевого значения <b>${price}</b>
+  🔔 Цена <b>${symbol}</b> достигла целевого значения <b>${price}</b> <a href="${link}">[график]</a>
 
 priceCheckerTriggeredAlertWithMessage: |
-  🔔 Цена <b>${symbol}</b> достигла целевого значения <b>${price}</b>
+  🔔 Цена <b>${symbol}</b> достигла целевого значения <b>${price}</b> <a href="${link}">[график]</a>
 
   💬 <b>Твой комментарий:</b>
   <i>${message}</i>
 
-alertListItem: |
-  <b>${name}</b> (${symbol}) — <b>${price}${currency}</b>
+# List
 
-alertListItemWithMessage: |
-  <b>${name}</b> (${symbol}) — <b>${price}${currency}</b>
+alertList_titles: |
+  Выбери по какому инструменту показать оповещения
 
-  💬 <b>Твой комментарий:</b>
-  <i>${message}</i>
+alertList_page: |
+  Список твоих оповещений сгруппированный по тикеру:
+  ${list}
+
+alertList_item: |
+
+  ${number}. <b>${name}</b> (${symbol}) — <b>${price}${currency}</b>
+  ${message ? '\n💬 <b>Твой комментарий:</b>\n<i>' + message + '</i>' : ''}
 
 alertListDeleteButton: Удалить
 

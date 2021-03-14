@@ -3,6 +3,7 @@ import {getUniqSymbols, checkAlerts, getAlerts, removePriceAlert} from "../../mo
 import {getLastPrice} from "../../helpers/stocksApi";
 import {i18n} from '../../helpers/i18n'
 import {log} from '../../helpers/log';
+import {getInstrumentLink} from "../../helpers/getInstrumentLInk";
 
 export const setupPriceChecker = async (bot) => {
     // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -75,7 +76,7 @@ export const setupPriceChecker = async (bot) => {
 
             for (let j = 0; triggeredAlerts.length > j; j++) {
                 const alert = triggeredAlerts[j];
-                const {message, symbol, lowerThen, greaterThen} = alert;
+                const {message, symbol, lowerThen, greaterThen, type} = alert;
                 const price = lowerThen || greaterThen;
 
                 await bot.telegram.sendMessage(alert.user,
@@ -84,10 +85,12 @@ export const setupPriceChecker = async (bot) => {
                             symbol,
                             price,
                             message,
+                            link: getInstrumentLink(type, symbol),
                         })
                         : i18n.t('ru', 'priceCheckerTriggeredAlert', {
                             symbol,
                             price,
+                            link: getInstrumentLink(type, symbol),
                         })
                     , {
                         parse_mode: 'HTML'
