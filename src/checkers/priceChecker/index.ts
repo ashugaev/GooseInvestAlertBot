@@ -23,17 +23,19 @@ export const setupPriceChecker = async (bot) => {
         for (let i = 0; symbols.length > i; i++) {
             const symbol = symbols[i];
 
-            let removeAlertsForSybmol = false;
+            let removeAlertsForSymbol = false;
             let price;
 
             try {
                 const data = await getLastPrice(symbol);
                 price = data.lastPrice
 
-                if (!price) continue;
+                const isPriceValidValue = typeof price === "number" && price > 0;
+
+                if (!isPriceValidValue) continue;
             } catch (e) {
                 if (typeof e === "object" && e !== null && e.cantFind) {
-                    removeAlertsForSybmol = true
+                    removeAlertsForSymbol = true
 
                     log.error('Инструмент не найдет в апи', e)
                 } else {
@@ -44,7 +46,7 @@ export const setupPriceChecker = async (bot) => {
             }
 
             // Если инструмента больше нет в апи
-            if (removeAlertsForSybmol) {
+            if (removeAlertsForSymbol) {
                 log.debug('Удаляю все по символу', symbol);
 
                 const alertsToRemove = await getAlerts({symbol});
@@ -71,7 +73,7 @@ export const setupPriceChecker = async (bot) => {
             const triggeredAlerts = await checkAlerts({symbol, price});
 
             if (triggeredAlerts.length) {
-                console.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' Символ:', symbol);
+                log.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' Символ:', symbol);
             }
 
             for (let j = 0; triggeredAlerts.length > j; j++) {

@@ -90,7 +90,7 @@ export function setupAlert(bot: Telegraf<Context>) {
                     await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbolWithAlias', {symbol, aliasName}))
                 }
 
-                console.info('Удалены алерты для', symbol, user)
+                log.info('Удалены алерты для', symbol, user)
 
                 rs();
             } catch (e) {
