@@ -48,7 +48,9 @@ export function setupAlert(bot: Telegraf<Context>) {
         // Command to add alert
         if (data) {
             try {
-                if (await getAlertsCountForUser(user) >= Limits.alerts) {
+                const customAlertsLimit = ctx.dbuser.limits?.alerts;
+
+                if (await getAlertsCountForUser(user) >= (customAlertsLimit ?? Limits.alerts)) {
                     ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', {limit: Limits.alerts}))
                     return;
                 }

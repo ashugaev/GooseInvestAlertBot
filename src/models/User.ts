@@ -16,12 +16,12 @@ const UserModel = getModelForClass(User, {
 
 // Get or create user
 export async function findUser(id: number) {
-  let user = await UserModel.findOne({ id })
+  let user = await UserModel.findOne({ id }).lean()
   if (!user) {
     try {
       user = await new UserModel({ id }).save()
     } catch (err) {
-      user = await UserModel.findOne({ id })
+      user = await UserModel.findOne({ id }).lean()
     }
   }
   return user
