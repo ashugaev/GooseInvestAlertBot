@@ -76,7 +76,7 @@ deploy:
     - apt-get install -y -qq sshpass
   script:
     # Удяляет контейнеры содержащие в имени stocks, возрастом больше 14 дней
-     - sshpass ssh $USER@$HOST 'docker image prune --filter "name=stocks" --filter "until=336h" -f'
+    - sshpass ssh $USER@$HOST 'docker image prune --filter "name=stocks" --filter "until=336h" -f'
 
     - sshpass ssh $USER@$HOST "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
 
