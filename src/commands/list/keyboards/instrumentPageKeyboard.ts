@@ -57,7 +57,13 @@ export const instrumentPageKeyboard = (ctx, {page, itemsLength, symbol, withoutB
         )]);
     }
 
-    !withoutBackButton && (keys.push([backButton({action: 'instrumentsList_page_0'})]));
+    const backButtonAction = keyboardMode === EKeyboardModes.edit ? createActionString(Actions.list_tickerPage, {
+            p: page,
+            s: symbol.toUpperCase()
+        }
+    ) : 'instrumentsList_page_0';
+
+    !withoutBackButton && (keys.push([backButton({action: backButtonAction})]));
 
     return Markup.inlineKeyboard(keys);
 }

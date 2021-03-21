@@ -14,7 +14,7 @@ export const alertEditKeyboard = ({idI, symbol}) => {
 
     keys.push([deleteButton]);
 
-    keys.push([backButton({action: 'instrumentsList_page_0'})])
+    keys.push([backButton({action: createActionString(Actions.list_tickerPage, {s: symbol, p: 0})})])
 
     return keys;
 }
