@@ -129,6 +129,8 @@ alertList_page: |
 
   ${list}
 
+  ${showEditMessage ? 'Выбери номер для редактирования' : ''}
+
 alertList_item: |
   ${number}. ${growth ? '↗️ РОСТ' : '↘️ ПАДЕНИЕ' } до <b>${price}${currency}</b>
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
@@ -159,6 +161,14 @@ alertListErrorInvalidFormat: |
   /list DJI — Покажу список всех оповещений для DJI
 
   Чтобы увидеть весь список команд и получить больше информации, отправь команду /help
+
+alertsList_editOne: |
+  <b>${name}</b> (${symbol}) - ${growth ? '↗️ РОСТ' : '↘️ ПАДЕНИЕ' } до <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
+
+  ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
+
+alertList_deleted: |
+  Удалил оповещение!
 
 # Alert add
 
@@ -243,6 +253,12 @@ help_button: |
 
 alert_button: |
   Добавить оповещение
+
+button_edit: |
+  Редактировать
+
+button_delete: |
+  Удалить
 
 # Limits
 

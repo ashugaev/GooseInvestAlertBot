@@ -5,12 +5,10 @@ import {showInstrumentPage} from "../utils/showInstrumentPage";
  * @param ctx
  */
 export const alertsForInstrument = async (ctx) => {
-    const symbol = ctx.match[1];
-    const page = Number(ctx.match[2]);
+    const {s: symbol, p: page, kMode: keyboardMode} = JSON.parse(ctx.match[1]);
 
     const instrumentItems = ctx.session.listCommand.alertsList
         .filter(item => item.symbol === symbol);
 
-
-    showInstrumentPage({page, symbol, ctx, instrumentItems, edit: true});
+    showInstrumentPage({page, symbol, ctx, instrumentItems, edit: true, keyboardMode});
 }

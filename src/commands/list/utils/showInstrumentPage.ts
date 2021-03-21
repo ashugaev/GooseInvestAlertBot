@@ -3,9 +3,19 @@ import {symbolOrCurrency} from "../../../helpers/symbolOrCurrency";
 import {getLastPrice} from "../../../helpers/stocksApi";
 import {log} from "../../../helpers/log";
 import {getInstrumentLink} from "../../../helpers/getInstrumentLInk";
-import {instrumentPageKeyboard} from "../keyboards/instrumentPageKeyboard";
+import {EKeyboardModes, instrumentPageKeyboard} from "../keyboards/instrumentPageKeyboard";
+import {PriceAlertItem} from "../../../models";
 
-export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, edit}) => {
+interface IShowInstrumentPageParams {
+    keyboardMode?: EKeyboardModes,
+    page: number,
+    ctx: any,
+    instrumentItems: PriceAlertItem[],
+    symbol: string,
+    edit?: boolean,
+}
+
+export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, edit, keyboardMode}: IShowInstrumentPageParams) => {
     const itemsToShow = instrumentItems
         .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
         .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
@@ -43,6 +53,7 @@ export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, ed
         name: instrumentName,
         currency: symbolOrCurrency(instrumentCurrency),
         price: instrumentPrice,
+        showEditMessage: keyboardMode === EKeyboardModes.edit
     })
 
     ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
@@ -53,7 +64,8 @@ export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, ed
                 page,
                 itemsLength: instrumentItems.length,
                 symbol,
-                withoutBackButton: false
+                withoutBackButton: false,
+                keyboardMode
             })
         }
     })

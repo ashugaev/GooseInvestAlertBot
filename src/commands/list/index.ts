@@ -1,16 +1,20 @@
 import {Telegraf, Context, Extra} from "telegraf";
-import {getAlerts} from "../../models";
 import {log} from '../../helpers/log'
 import {commandWrapper} from "../../helpers/commandWrapper";
 import {instrumentsListKeyboard} from "./keyboards/instrumentsListKeyboard";
 import {alertsForInstrument} from "./actions/alertsForInstrument";
 import {instrumentsListPagination} from "./actions/instrumentsListPagination";
 import {showInstrumentPage} from "./utils/showInstrumentPage";
+import {triggerActionRegexp} from "../../helpers/triggerActionRegexp";
+import {Actions} from "../../constants";
+import {alertEdit} from "./actions/alertEdit";
+import {alertDelete} from "./actions/alertDelete";
+import {fetchAlerts} from "./utils/fetchAlerts";
 
 export interface ITickerButtonItem {
     name: string,
     symbol: string,
-    currency: string
+    currency: string,
 }
 
 export function setupList(bot: Telegraf<Context>) {
@@ -27,30 +31,15 @@ export function setupList(bot: Telegraf<Context>) {
         let alertsList;
         let uniqTickersData;
 
-        // Получение данных и запись их в контекст
         try {
-            alertsList = await getAlerts({user: ctx.from.id, symbol: forSymbol});
+            const data = await fetchAlerts({ctx, forSymbol});
+
+            alertsList = data.alertsList;
+            uniqTickersData = data.uniqTickersData;
 
             if (!alertsList.length) {
-                await ctx.replyWithHTML(ctx.i18n.t('alertListEmpty'))
                 return;
             }
-
-            // Получаем уникальные тикеры из всех алертов
-            uniqTickersData = Object.values(alertsList.reduce((acc, {name, symbol, currency}) => {
-                if (acc[symbol]) return acc;
-
-                acc[symbol] = {name, symbol, currency}
-
-                return acc;
-            }, {}))
-                .sort((a: ITickerButtonItem, b: ITickerButtonItem) => (a.name > b.name ? 1 : -1));
-
-            // Подкидываем состояния в констекст, что бы не делать перезапрос по нажатию на кнопки
-            ctx.session.listCommand = {
-                alertsList,
-                uniqTickersData
-            };
         } catch (e) {
             log.error(e);
             return;
@@ -67,6 +56,8 @@ export function setupList(bot: Telegraf<Context>) {
         }
     }))
 
-    bot.action(/^([A-Z0-9]+)_page_([0-9]+)$/, alertsForInstrument)
+    bot.action(triggerActionRegexp(Actions.list_tickerPage), alertsForInstrument)
+    bot.action(triggerActionRegexp(Actions.list_editAlert), alertEdit)
+    bot.action(triggerActionRegexp(Actions.list_deleteAlert), alertDelete)
     bot.action(/^instrumentsList_page_(\d+)$/, instrumentsListPagination)
 }
