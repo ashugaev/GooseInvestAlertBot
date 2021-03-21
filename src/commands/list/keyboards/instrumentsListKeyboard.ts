@@ -5,16 +5,7 @@ import {paginationButtons} from "../../../keyboards/paginationButtons";
 /**
  * Вернет список кнопок для каждого инструмента по массиву данных
  */
-export const instrumentsListKeyboard = ({alertsList, page}) => {
-    // Получаем уникальные тикеры из всех алертов
-    const uniqTickersData = Object.values(alertsList.reduce((acc, {name, symbol, currency}) => {
-        if (acc[symbol]) return acc;
-
-        acc[symbol] = {name, symbol, currency}
-
-        return acc;
-    }, {}));
-
+export const instrumentsListKeyboard = ({uniqTickersData, page}) => {
     // Тикеры которые выведем на это странице
     const pageTickers = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 

@@ -7,6 +7,12 @@ import {alertsForInstrument} from "./actions/alertsForInstrument";
 import {instrumentsListPagination} from "./actions/instrumentsListPagination";
 import {showInstrumentPage} from "./utils/showInstrumentPage";
 
+export interface ITickerButtonItem {
+    name: string,
+    symbol: string,
+    currency: string
+}
+
 export function setupList(bot: Telegraf<Context>) {
     bot.command('list', commandWrapper(async ctx => {
         const data = ctx.message.text.match(/list\s?(\w+)?$/)
@@ -19,6 +25,7 @@ export function setupList(bot: Telegraf<Context>) {
 
         const forSymbol = data[1]
         let alertsList;
+        let uniqTickersData;
 
         // Получение данных и запись их в контекст
         try {
@@ -29,22 +36,33 @@ export function setupList(bot: Telegraf<Context>) {
                 return;
             }
 
+            // Получаем уникальные тикеры из всех алертов
+            uniqTickersData = Object.values(alertsList.reduce((acc, {name, symbol, currency}) => {
+                if (acc[symbol]) return acc;
+
+                acc[symbol] = {name, symbol, currency}
+
+                return acc;
+            }, {}))
+                .sort((a: ITickerButtonItem, b: ITickerButtonItem) => (a.name > b.name ? 1 : -1));
+
             // Подкидываем состояния в констекст, что бы не делать перезапрос по нажатию на кнопки
             ctx.session.listCommand = {
-                alertsList
+                alertsList,
+                uniqTickersData
             };
         } catch (e) {
             log.error(e);
             return;
         }
 
-        if(forSymbol) {
+        if (forSymbol) {
             showInstrumentPage({page: 0, symbol: forSymbol, ctx, instrumentItems: alertsList, edit: false});
         } else {
             ctx.replyWithHTML(ctx.i18n.t('alertList_titles'),
                 Extra
                     .HTML(true)
-                    .markup(instrumentsListKeyboard({page: 0, alertsList}))
+                    .markup(instrumentsListKeyboard({page: 0, uniqTickersData}))
             )
         }
     }))

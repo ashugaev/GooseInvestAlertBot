@@ -7,21 +7,22 @@ import {instrumentPageKeyboard} from "../keyboards/instrumentPageKeyboard";
 
 export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, edit}) => {
     const itemsToShow = instrumentItems
+        .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
         .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
-    const itemsList = itemsToShow.map(({symbol, message, lowerThen, greaterThen, currency, name}, i) => {
-        const price = lowerThen || greaterThen;
+    const itemsList = itemsToShow
+        // Сортировка по цене
+        .map(({symbol, message, lowerThen, greaterThen, currency, name}, i) => {
+            const price = lowerThen || greaterThen;
 
-        const action = greaterThen ? 'РОСТ' : 'ПАДЕНИЕ';
-
-        return ctx.i18n.t('alertList_item', {
-            number: i + 1,
-            price,
-            message,
-            currency: symbolOrCurrency(currency),
-            action,
-        })
-    }).join('\n');
+            return ctx.i18n.t('alertList_item', {
+                number: i + 1,
+                price,
+                message,
+                currency: symbolOrCurrency(currency),
+                growth: Boolean(greaterThen),
+            })
+        }).join('\n');
 
     const {type: instrumentType, name: instrumentName, currency: instrumentCurrency} = instrumentItems[0];
 
@@ -36,7 +37,7 @@ export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, ed
     }
 
     let message = ctx.i18n.t('alertList_page', {
-        link:  instrumentType && getInstrumentLink(instrumentType, symbol),
+        link: instrumentType && getInstrumentLink(instrumentType, symbol),
         symbol,
         list: itemsList,
         name: instrumentName,
@@ -48,7 +49,12 @@ export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, ed
         parse_mode: 'HTML',
         disable_web_page_preview: true,
         reply_markup: {
-            ...instrumentPageKeyboard(ctx, {page, itemsLength: instrumentItems.length, symbol, withoutBackButton: false})
+            ...instrumentPageKeyboard(ctx, {
+                page,
+                itemsLength: instrumentItems.length,
+                symbol,
+                withoutBackButton: false
+            })
         }
     })
 }

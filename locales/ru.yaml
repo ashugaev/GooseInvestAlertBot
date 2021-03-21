@@ -130,7 +130,7 @@ alertList_page: |
   ${list}
 
 alertList_item: |
-  ${number}. ${action} ДО <b>${price}${currency}</b>
+  ${number}. ${growth ? '↗️ РОСТ' : '↘️ ПАДЕНИЕ' } до <b>${price}${currency}</b>
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
 
 alertListDeleteButton: Удалить
