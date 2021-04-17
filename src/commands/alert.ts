@@ -11,12 +11,16 @@ export function setupAlert(bot: Telegraf<Context>) {
         const {text} = ctx.message;
         const {id: user} = ctx.from;
 
+        const customUserAlertsLimit = ctx.dbuser.limits?.alerts;
+        const alertsLimit = customUserAlertsLimit ?? Limits.alerts
+
         let data: string[] = text.match(/^\/(alert|add)$/)
 
         if (data) {
             try {
-                if (await getAlertsCountForUser(user) >= Limits.alerts) {
-                    ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', {limit: Limits.alerts}))
+                if (await getAlertsCountForUser(user) >= alertsLimit) {
+                    // TODO: Плюрализация для количества алертов
+                    ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', {limit: alertsLimit}))
                     return;
                 }
             } catch (e) {
@@ -48,10 +52,8 @@ export function setupAlert(bot: Telegraf<Context>) {
         // Command to add alert
         if (data) {
             try {
-                const customAlertsLimit = ctx.dbuser.limits?.alerts;
-
-                if (await getAlertsCountForUser(user) >= (customAlertsLimit ?? Limits.alerts)) {
-                    ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', {limit: Limits.alerts}))
+                if (await getAlertsCountForUser(user) >= alertsLimit) {
+                    ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', {limit: alertsLimit}))
                     return;
                 }
 
