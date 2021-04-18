@@ -8,7 +8,7 @@ import {sceneWrapper} from "../helpers/sceneWrapper";
 import {createShift} from "../models/Shifts";
 import {plur} from "../helpers/plural";
 
-// TODO Спрашивать время когда присылать объявление вконце
+// TODO: Спрашивать время когда присылать объявление вконце
 
 /**
  * Сцена сработает только на первое сообщение, которое явлется текстом и не командой
