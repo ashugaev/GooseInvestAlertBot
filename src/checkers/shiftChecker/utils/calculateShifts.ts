@@ -54,7 +54,7 @@ export const calculateShifts = ({instruments, shifts}) => (
             generateShiftsData({shifts, instrument, candles})
 
             // что бы не выпилить всю квоту
-            await wait(500)
+            await wait(2000)
         }
 
         rs();

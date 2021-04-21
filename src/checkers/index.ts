@@ -8,8 +8,8 @@ export const setupCheckers = (bot) => {
         name: 'Check shifts',
         callback: createShitEvents,
         callbackArgs: [bot],
-        // раз в день в 22 часа 0 минут
-        period: '0 22 * * *',
+        // раз в день в 2 часа 0 минут
+        period: '0 2 * * *',
     })
 
     startCronJob({

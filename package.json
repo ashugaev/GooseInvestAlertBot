@@ -52,6 +52,7 @@
     "lint-staged": "^10.5.3",
     "log4js": "^6.3.0",
     "mongoose": "^5.9.25",
+    "node-cache": "^5.1.2",
     "plural-ru": "^2.0.2",
     "telegraf": "^3.38.0",
     "telegraf-i18n": "^6.6.0",
