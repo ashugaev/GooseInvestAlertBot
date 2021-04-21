@@ -16,13 +16,9 @@ export const alertDelete = async (ctx) => {
 
     ctx.replyWithHTML(i18n.t('ru', 'alertList_deleted'))
 
-    debugger;
-
     const data = await fetchAlerts({ctx});
 
     const instrumentItems = data.alertsList.filter(item => item.symbol === symbol);
-
-    debugger;
 
     // Если у инструмента еще остались алерты, то покажем их, если нет, то идем на список инструментов
     if(instrumentItems.length) {
