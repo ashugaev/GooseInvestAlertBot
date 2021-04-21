@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/node";
 import { MarketInstrument } from "@tinkoff/invest-openapi-js-sdk/build/domain";
 
 const NodeCache = require("node-cache");
@@ -13,6 +14,10 @@ export const stocksApi = new OpenAPI({ apiURL, secretToken, socketURL });
 
 export interface GetLastPriceData extends MarketInstrument {
     lastPrice: number
+}
+
+const tinkoffSentryTags = {
+    section: "tinkoffApiQuotaExceeded",
 }
 
 const symbolInfoCache = new NodeCache({
@@ -42,6 +47,10 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
 
         rs(data);
     } catch (e) {
+        Sentry.captureException('Ошибка ответа тиньковской апишски', {
+            tags: tinkoffSentryTags
+        });
+
         log.error(e);
         rj(e);
     }
@@ -81,6 +90,10 @@ export const getLastPrice = (symbol: string) => new Promise<GetLastPriceData>(as
 
         rs({ lastPrice: lastCandle.c, ...data });
     } catch (e) {
+        Sentry.captureException('Ошибка ответа тиньковской апишски', {
+            tags: tinkoffSentryTags
+        });
+
         log.error(e);
         rj(e)
     }
