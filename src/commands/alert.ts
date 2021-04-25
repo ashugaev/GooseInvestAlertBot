@@ -36,7 +36,7 @@ export function setupAlert(bot: Telegraf<Context>) {
 
         // Is command to remove
         if (data) {
-            let symbol = data[1];
+            const symbol = data[1];
 
             try {
                 await removePriceAlertAndSendMessage({symbol, user, ctx})
@@ -47,7 +47,7 @@ export function setupAlert(bot: Telegraf<Context>) {
             return;
         }
 
-        data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d\.\s\-\+]+)$/);
+        data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d\.\s\-\+%]+)$/);
 
         // Command to add alert
         if (data) {

@@ -1,45 +1,77 @@
-import {Context} from "telegraf";
-import {log} from "./log";
-import {i18n} from "./i18n";
-
 interface GetPriceFromStringParams {
     string: string,
     lastPrice: number,
-    ctx: Context,
-    currency: string,
 }
 
-export function getPricesFromString({string, lastPrice, ctx, currency}: GetPriceFromStringParams): number[] {
-    const relativeValueMinusRegExp = new RegExp(/^.*\-([\d\.]+).*$/);
-    const relativeValuePlusRegExp = new RegExp(/^.*\+([\d\.]+).*$/);
+interface IGetPriceFromString {
+    prices: number[],
+    invalidValues: string[]
+}
 
-    const prices = string.split(' ').reduce((acc, el) => {
-        let val;
+export function getPricesFromString({string, lastPrice}: GetPriceFromStringParams): IGetPriceFromString {
+    // -10 +10
+    const relativeValueMinusRegExp = new RegExp(/^\-([\d\.]+)$/);
+    const relativeValuePlusRegExp = new RegExp(/^\+([\d\.]+)$/);
 
-        const plusMatch = el.match(relativeValuePlusRegExp);
-        const minusMatch = el.match(relativeValueMinusRegExp);
+    // 10% +10% -10%
+    const percentMinusRegExp = new RegExp(/^\-([\d\.]+)%$/);
+    const percentPlusRegExp = new RegExp(/^(\+)?([\d\.]+)%$/);
 
-        // normalize elem if it with + -
-        if (plusMatch) {
-            val = lastPrice + parseFloat(plusMatch[1])
-        } else if (minusMatch) {
-            val = lastPrice - parseFloat(minusMatch[1]);
+    // 10 30 59
+    const pureNumberRegExp = new RegExp(/^[\d\.]+$/)
 
-            if (val < 0) {
-                log.info('Слишком маленькое значение цены');
+    const invalidValues = [];
 
-                ctx.replyWithHTML(i18n.t('ru', 'alertAddErrorLowerThenZero'));
+    const prices: number[] = string.split(' ').reduce((acc: number[], el) => {
+        const stringVal = el.trim();
 
-                val = null
-            }
-        } else {
-            val = parseFloat(el);
+        if(!stringVal.length) {
+            return acc;
         }
 
-        val && acc.push(+val.toFixed(4))
+        const plusMatch = stringVal.match(relativeValuePlusRegExp);
+        const minusMatch = stringVal.match(relativeValueMinusRegExp);
+        const percentMinusMatch = stringVal.match(percentMinusRegExp);
+        const percentPlusMath = stringVal.match(percentPlusRegExp);
+        const pureNumberMatch = stringVal.match(pureNumberRegExp)
+
+        let resultNumberVal;
+
+        // Ищем паттерн, которому соответствует запись цены
+        if (plusMatch) {
+            resultNumberVal = lastPrice + parseFloat(plusMatch[1])
+        } else if (minusMatch) {
+            resultNumberVal = lastPrice - parseFloat(minusMatch[1]);
+
+            if (resultNumberVal < 0) {
+                invalidValues.push(stringVal);
+
+                resultNumberVal = null
+            }
+        } else if (percentMinusMatch) {
+            const percent = parseFloat(percentMinusMatch[1]);
+
+            if(percent >= 100) {
+                invalidValues.push(stringVal);
+
+                resultNumberVal = null
+            } else {
+                resultNumberVal = lastPrice - ((lastPrice / 100) * percent);
+            }
+        } else if(percentPlusMath) {
+            const percent = parseFloat(percentPlusMath[2]);
+
+            resultNumberVal = lastPrice + ((lastPrice / 100) * percent);
+        } else if(pureNumberMatch) {
+            resultNumberVal = parseFloat(stringVal);
+        } else {
+            invalidValues.push(stringVal);
+        }
+
+        resultNumberVal && acc.push(+resultNumberVal.toFixed(2))
 
         return acc
     }, []);
 
-    return prices;
+    return {prices, invalidValues};
 }

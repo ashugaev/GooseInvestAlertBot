@@ -17,7 +17,11 @@ interface AddAlertParams {
     startedFromScene?: boolean
 }
 
-export const addAlert = ({data, ctx, startedFromScene}: AddAlertParams) => new Promise<{ _id: string, addedCount: number }>(async (rs, rj) => {
+export const addAlert = ({
+                             data,
+                             ctx,
+                             startedFromScene
+}: AddAlertParams) => new Promise<{ _id: string, addedCount: number }>(async (rs, rj) => {
     try {
         let symbol = data.symbol;
         let instrumentData: GetLastPriceData = null;
@@ -39,11 +43,9 @@ export const addAlert = ({data, ctx, startedFromScene}: AddAlertParams) => new P
             return;
         }
 
-        const prices = getPricesFromString({
+        const {prices, invalidValues} = getPricesFromString({
             string: data.price,
             lastPrice: instrumentData.lastPrice,
-            ctx,
-            currency: instrumentData.currency
         });
 
         const priceAlerts = [];
@@ -91,7 +93,12 @@ export const addAlert = ({data, ctx, startedFromScene}: AddAlertParams) => new P
             price: priceAlerts.map(el => `${el}${symbolOrCurrency(currency)}`).join(', '),
             symbol,
             name,
+            invalid: null,
         };
+
+        if(invalidValues.length) {
+            i18nParams.invalid = invalidValues.join(', ')
+        }
 
         await ctx.replyWithHTML(
             priceAlerts.length === 1
@@ -101,7 +108,7 @@ export const addAlert = ({data, ctx, startedFromScene}: AddAlertParams) => new P
 
         // Если только одна цена
         if (prices.length === 1 && !startedFromScene) {
-            // @ts-ignore
+            // @ts-expect-errors TODO: Разобраться
             await ctx.scene.enter(Scenes.alertMessage, {_id})
         }
 
