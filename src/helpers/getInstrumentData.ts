@@ -16,6 +16,7 @@ export function getInstrumentDataBySymbolOrAlias({symbol, user, ctx}) {
         try {
             instrumentData = await getLastPrice(symbol);
         } catch (e) {
+            // TODO: Класть алиаса сразу же в контекст. При создании нового, делать перезапрос и обновлять
             try {
                 const [alias] = await getAlias({title: symbol, user});
 
