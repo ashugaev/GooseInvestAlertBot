@@ -7,7 +7,8 @@ logger.level = 'debug';
 const error = logger.error;
 
 logger.error = (...args) => {
-    Sentry.captureException(args[0]);
+    Sentry.captureException(args);
+
     error.apply(logger, args);
 }
 

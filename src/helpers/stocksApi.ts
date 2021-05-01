@@ -1,9 +1,11 @@
 import * as Sentry from "@sentry/node";
 import { MarketInstrument } from "@tinkoff/invest-openapi-js-sdk/build/domain";
 
+// @ts-ignore
 const NodeCache = require("node-cache");
-
+// @ts-ignore
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
+
 import { log } from "./log";
 
 const apiURL = 'https://api-invest.tinkoff.ru/openapi';
@@ -90,6 +92,7 @@ export const getLastPrice = (symbol: string) => new Promise<GetLastPriceData>(as
 
         rs({ lastPrice: lastCandle.c, ...data });
     } catch (e) {
+        // TODO: Некорректный тег. Он присваивается не только по окончании квоты, но и при невалидном запросе.
         Sentry.captureException('Ошибка ответа тиньковской апишски', {
             tags: tinkoffSentryTags
         });

@@ -1,9 +1,9 @@
-import {wait} from '../../helpers/wait'
-import {getUniqSymbols, checkAlerts, getAlerts, removePriceAlert} from "../../models";
-import {getLastPrice} from "../../helpers/stocksApi";
-import {i18n} from '../../helpers/i18n'
-import {log} from '../../helpers/log';
-import {getInstrumentLink} from "../../helpers/getInstrumentLInk";
+import { wait } from '../../helpers/wait'
+import { getUniqSymbols, checkAlerts, getAlerts, removePriceAlert } from "../../models";
+import { getLastPrice } from "../../helpers/stocksApi";
+import { i18n } from '../../helpers/i18n'
+import { log } from '../../helpers/log';
+import { getInstrumentLink } from "../../helpers/getInstrumentLInk";
 
 export const setupPriceChecker = async (bot) => {
     // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -49,28 +49,33 @@ export const setupPriceChecker = async (bot) => {
             if (removeAlertsForSymbol) {
                 log.debug('Удаляю все по символу', symbol);
 
-                const alertsToRemove = await getAlerts({symbol});
+                const alertsToRemove = await getAlerts({ symbol });
 
                 for (let j = 0; alertsToRemove.length > j; j++) {
                     const alert = alertsToRemove[j];
 
-                    await removePriceAlert({_id: alert._id})
+                    try {
+                        // TODO: Удалаять алерт после нескольки падений отправки
+                        await removePriceAlert({ _id: alert._id })
 
-                    await bot.telegram.sendMessage(alert.user, i18n.t(
-                        'ru', 'priceCheckerErrorCantFind',
-                        {price: alert.lowerThen || alert.greaterThen, symbol: alert.symbol}
-                        ),
-                        {
-                            parse_mode: 'HTML'
-                        }
-                    )
+                        await bot.telegram.sendMessage(alert.user, i18n.t(
+                            'ru', 'priceCheckerErrorCantFind',
+                            { price: alert.lowerThen || alert.greaterThen, symbol: alert.symbol }
+                            ),
+                            {
+                                parse_mode: 'HTML'
+                            }
+                        )
+                    } catch (e) {
+                        log.error('Ошибка отправки сообщения юзеру', e)
+                    }
                 }
 
                 continue;
             }
 
 
-            const triggeredAlerts = await checkAlerts({symbol, price});
+            const triggeredAlerts = await checkAlerts({ symbol, price });
 
             if (triggeredAlerts.length) {
                 log.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' Символ:', symbol);
@@ -78,28 +83,33 @@ export const setupPriceChecker = async (bot) => {
 
             for (let j = 0; triggeredAlerts.length > j; j++) {
                 const alert = triggeredAlerts[j];
-                const {message, symbol, lowerThen, greaterThen, type} = alert;
+                const { message, symbol, lowerThen, greaterThen, type } = alert;
                 const price = lowerThen || greaterThen;
 
-                await bot.telegram.sendMessage(alert.user,
-                    message
-                        ? i18n.t('ru', 'priceCheckerTriggeredAlertWithMessage', {
-                            symbol,
-                            price,
-                            message,
-                            link: type && getInstrumentLink(type, symbol),
-                        })
-                        : i18n.t('ru', 'priceCheckerTriggeredAlert', {
-                            symbol,
-                            price,
-                            link: type && getInstrumentLink(type, symbol),
-                        })
-                    , {
-                        parse_mode: 'HTML',
-                        disable_web_page_preview: true
-                    })
+                try {
+                    // TODO: Удалаять алерт после нескольки падений отправки
+                    await removePriceAlert({ _id: alert._id })
 
-                await removePriceAlert({_id: alert._id})
+                    await bot.telegram.sendMessage(alert.user,
+                        message
+                            ? i18n.t('ru', 'priceCheckerTriggeredAlertWithMessage', {
+                                symbol,
+                                price,
+                                message,
+                                link: type && getInstrumentLink(type, symbol),
+                            })
+                            : i18n.t('ru', 'priceCheckerTriggeredAlert', {
+                                symbol,
+                                price,
+                                link: type && getInstrumentLink(type, symbol),
+                            })
+                        , {
+                            parse_mode: 'HTML',
+                            disable_web_page_preview: true
+                        })
+                } catch (e) {
+                    log.error('Ошибка отправки сообщения юзеру', e)
+                }
             }
         }
     }
