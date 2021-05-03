@@ -21,7 +21,9 @@ export const getAllInstruments = async (): Promise<IBaseInstrumentData[]> => {
         coingeckoGetAllInstruments(),
     ]
 
-    const allInstruments = await Promise.all(allInstrumentsPromises);
+    const allInstrumentsArr = await Promise.all(allInstrumentsPromises);
+
+    const allInstruments = allInstrumentsArr.reduce((acc, el) => acc.concat(el), []);
 
     return excludeInstrumentDuplicates(allInstruments);
 }

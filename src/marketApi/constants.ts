@@ -13,3 +13,7 @@ export const MARKET_DATA_SOURCES_CONFIG: IMarketDataSourcesConfig[] = [
         requestsPerMinuteLimit: 100,
     }
 ]
+
+export const TINKOFF_SENTRY_TAGS = {
+    section: "tinkoffApiQuotaExceeded",
+}
