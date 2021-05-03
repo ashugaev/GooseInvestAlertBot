@@ -42,3 +42,23 @@ export async function putItemsToInstrumentsList(items: IBaseInstrumentData[]) {
         throw new Error(e);
     }
 }
+
+export async function getInstrumentInfoByTicker({ticker}: {ticker: string | string[]}): Promise<IBaseInstrumentData[]> {
+        try {
+            if(!ticker?.length) {
+                throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
+            }
+
+            const params = {
+                ticker: {
+                    $in: [].concat(ticker)
+                }
+            };
+
+            const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
+
+            return result;
+        } catch (e) {
+            throw new Error(e);
+        }
+}
