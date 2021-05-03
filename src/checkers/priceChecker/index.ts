@@ -1,3 +1,4 @@
+import { getInstrumentDataWithPrice } from "../../helpers/getInstrumentData";
 import { wait } from '../../helpers/wait'
 import { getUniqSymbols, checkAlerts, getAlerts, removePriceAlert } from "../../models";
 import { getLastPrice } from "../../helpers/stocksApi";
@@ -29,8 +30,9 @@ export const setupPriceChecker = async (bot) => {
             let price;
 
             try {
-                const data = await getLastPrice({ticker: symbol});
-                price = data.lastPrice
+                const result = await getInstrumentDataWithPrice({symbol});
+
+                price = result.price;
 
                 const isPriceValidValue = typeof price === "number" && price > 0;
 

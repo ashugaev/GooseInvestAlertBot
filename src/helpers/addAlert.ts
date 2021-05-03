@@ -1,3 +1,4 @@
+import { EMarketInstrumentTypes } from "../marketApi/types";
 import { getInstrumentDataWithPrice } from "./getInstrumentData";
 import {log} from "./log";
 import {addPriceAlert, AddPriceAlertParams} from "../models";
@@ -73,6 +74,11 @@ export const addAlert = ({
                 lastPrice < price
                     ? (params.greaterThen = price)
                     : (params.lowerThen = price)
+
+                // Если крипта - добавим валюту в пару
+                if(instrumentData.type == EMarketInstrumentTypes.Crypto) {
+                    params.symbol = params.symbol + instrumentData.sourceSpecificData.currency.toUpperCase();
+                }
 
                 const createdItem = await addPriceAlert(params);
 

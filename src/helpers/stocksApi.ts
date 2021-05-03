@@ -4,7 +4,7 @@ import { coningeckoGetLasePrice } from "../marketApi/coingecko/api/getLastPrice"
 import { TINKOFF_SENTRY_TAGS } from "../marketApi/constants";
 import { tinkoffGetLastPrice } from "../marketApi/tinkoff/api/getLastPrice";
 import { EMarketDataSources, IBaseInstrumentData } from "../marketApi/types";
-import { getInstrumentInfoByTicker } from "../models";
+import { getInstrumentDataWithPrice } from "./getInstrumentData";
 import { log } from "./log";
 
 const NodeCache = require("node-cache");
@@ -77,18 +77,18 @@ export const getLastPrice = async ({
         }
 
         if (!instrumentData) {
-            const instrumentDataArr = await getInstrumentInfoByTicker({ ticker });
+            const data = await getInstrumentDataWithPrice({ symbol: ticker });
 
-            if (!instrumentDataArr?.length) {
+            instrumentData = data.instrumentData;
+
+            if (!instrumentData) {
                 throw new Error('Ошибка получения информации по инструменту');
             }
-
-            instrumentData = instrumentDataArr[0];
         }
 
         let lastPrice;
 
-        if (instrumentData.source == EMarketDataSources.tinkoff) {
+        if (!instrumentData.source || instrumentData.source == EMarketDataSources.tinkoff) {
             lastPrice = await tinkoffGetLastPrice({ instrumentData });
         } else if (instrumentData.source == EMarketDataSources.coingecko) {
             lastPrice = await coningeckoGetLasePrice({ instrumentData });

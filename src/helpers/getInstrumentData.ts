@@ -8,10 +8,15 @@ interface GetInstrumentDataBySymbolOrAliasData {
     instrumentData: IBaseInstrumentData,
 }
 
+interface IGetInstrumentDataWithPrice {
+    symbol: string,
+    ctx?: any,
+}
+
 export async function getInstrumentDataWithPrice({
-                                                           symbol,
-                                                           ctx
-                                                       }): Promise<GetInstrumentDataBySymbolOrAliasData> {
+                                                     symbol,
+                                                     ctx
+}: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataBySymbolOrAliasData> {
     symbol = symbol.toUpperCase();
 
     try {
@@ -22,7 +27,7 @@ export async function getInstrumentDataWithPrice({
         const tickerWithCurrency = symbol.match(/^(.+)(usd|eur|rub)$/i);
 
         // Если тикер содержит в себе валютную пару, то попробуем искать без нее (для крипты)
-        if(tickerWithCurrency) {
+        if (tickerWithCurrency) {
             customCurrency = tickerWithCurrency[2].toUpperCase();
             // Добавить в список для поиска крипту без валютной пары
             ticker.push(tickerWithCurrency[1]);
@@ -31,23 +36,25 @@ export async function getInstrumentDataWithPrice({
         const instrumentDataArr = await getInstrumentInfoByTicker({ ticker });
 
         if (!instrumentDataArr.length) {
-            await ctx.replyWithHTML(
-                i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
-                { disable_web_page_preview: true }
-            )
+            if (ctx){
+                await ctx.replyWithHTML(
+                    i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
+                    { disable_web_page_preview: true }
+                )
+            }
 
             return;
         }
 
         const instrumentDataItem = instrumentDataArr[0];
 
-        if(instrumentDataItem.source === EMarketDataSources.coingecko) {
+        if (instrumentDataItem.source === EMarketDataSources.coingecko) {
             // Подсовываем валюту, если не была указана пара
             // @ts-ignore
             instrumentDataItem.sourceSpecificData.currency = customCurrency ?? 'USD'
         }
 
-        const lastPrice = await getLastPrice({instrumentData: instrumentDataItem});
+        const lastPrice = await getLastPrice({ instrumentData: instrumentDataItem });
 
         return { instrumentData: instrumentDataItem, price: lastPrice };
     } catch (e) {

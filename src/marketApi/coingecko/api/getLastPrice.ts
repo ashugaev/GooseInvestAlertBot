@@ -17,7 +17,7 @@ export async function coningeckoGetLasePrice({ instrumentData }) {
             });
 
             price = result.data[instrumentData.sourceSpecificData.id]
-                ?.[instrumentData.sourceSpecificData?.currency?.toLowerCase()];
+                ?.[instrumentData.sourceSpecificData?.currency?.toLowerCase() ?? 'usd'];
 
             if (!price) {
                 throw new Error('Невалидные данные от CoinGecko')
