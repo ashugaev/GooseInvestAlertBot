@@ -1,10 +1,10 @@
-import {listConfig} from "../../../config";
-import {symbolOrCurrency} from "../../../helpers/symbolOrCurrency";
-import {getLastPrice} from "../../../helpers/stocksApi";
-import {log} from "../../../helpers/log";
-import {getInstrumentLink} from "../../../helpers/getInstrumentLInk";
-import {EKeyboardModes, instrumentPageKeyboard} from "../keyboards/instrumentPageKeyboard";
-import {PriceAlertItem} from "../../../models";
+import { listConfig } from "../../../config";
+import { symbolOrCurrency } from "../../../helpers/symbolOrCurrency";
+import { getLastPrice } from "../../../helpers/stocksApi";
+import { log } from "../../../helpers/log";
+import { getInstrumentLink } from "../../../helpers/getInstrumentLInk";
+import { EKeyboardModes, instrumentPageKeyboard } from "../keyboards/instrumentPageKeyboard";
+import { PriceAlertItem } from "../../../models";
 
 interface IShowInstrumentPageParams {
     keyboardMode?: EKeyboardModes,
@@ -15,14 +15,16 @@ interface IShowInstrumentPageParams {
     edit?: boolean,
 }
 
-export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, edit, keyboardMode}: IShowInstrumentPageParams) => {
+export const showInstrumentPage = async ({
+                                             page, ctx, instrumentItems, symbol, edit, keyboardMode
+                                         }: IShowInstrumentPageParams) => {
     const itemsToShow = instrumentItems
         .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
         .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
     const itemsList = itemsToShow
         // Сортировка по цене
-        .map(({symbol, message, lowerThen, greaterThen, currency, name}, i) => {
+        .map(({ symbol, message, lowerThen, greaterThen, currency, name }, i) => {
             const price = lowerThen || greaterThen;
 
             return ctx.i18n.t('alertList_item', {
@@ -34,19 +36,19 @@ export const showInstrumentPage = async ({page, ctx, instrumentItems, symbol, ed
             })
         }).join('\n');
 
-    const {type: instrumentType, name: instrumentName, currency: instrumentCurrency} = instrumentItems[0];
+    const { type: instrumentType, name: instrumentName, currency: instrumentCurrency } = instrumentItems[0];
 
     let instrumentPrice;
 
     try {
         // TODO: Брать данные о цене из кэша. Сейчас перезапрос идет на каждой странице с алертами.
-        const data = await getLastPrice(symbol);
+        const data = await getLastPrice({ ticker: symbol });
         instrumentPrice = data.lastPrice
     } catch (e) {
         log.error('ошибка получения цены', e);
     }
 
-    let message = ctx.i18n.t('alertList_page', {
+    const message = ctx.i18n.t('alertList_page', {
         link: instrumentType && getInstrumentLink(instrumentType, symbol),
         symbol,
         list: itemsList,

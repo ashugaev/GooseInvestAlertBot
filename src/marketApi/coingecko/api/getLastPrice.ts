@@ -17,15 +17,17 @@ export async function coningeckoGetLasePrice({ instrumentData }) {
             });
 
             price = result.data[instrumentData.sourceSpecificData.id]
-                ?.[instrumentData.sourceSpecificData?.currency.toLowerCase()];
+                ?.[instrumentData.sourceSpecificData?.currency?.toLowerCase()];
 
             if (!price) {
                 throw new Error('Невалидные данные от CoinGecko')
             }
+
+            coinGeckoPriceCache.set(instrumentData.ticker, price);
         }
 
         return price;
     } catch (e) {
-        throw new Error('Ошибка получения данных от CoinGecko', e)
+        throw new Error('Ошибка получения данных от CoinGecko')
     }
 }

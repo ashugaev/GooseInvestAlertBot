@@ -15,7 +15,6 @@ import {attachUser} from './middlewares/attachUser'
 import {setupHelp} from './commands/help'
 import {setupStart} from './commands/start'
 import {setupAlert} from './commands/alert'
-import {setupAlias} from './commands/alias'
 import {setupShift} from './commands/shift'
 import {setupLanguage} from './commands/language'
 import {setupList} from "./commands/list";
@@ -57,7 +56,6 @@ setupI18N(bot)
 setupHelp(bot)
 setupAlert(bot)
 setupList(bot)
-setupAlias(bot)
 setupLanguage(bot)
 setupPrice(bot)
 setupStart(bot)

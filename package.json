@@ -14,7 +14,7 @@
     "dev": "concurrently -k -i -p \"[{name}]\" -n \"Node,TypeScript\" -c \"yellow.bold,cyan.bold\" \"npm run watch:js\" \"npm run watch:ts\"",
     "build:ts": "tsc --skipLibCheck",
     "watch:ts": "tsc -w --skipLibCheck",
-    "watch:js": "nodemon dist/app.js",
+    "watch:js": "nodemon dist/app.js > logs/logfile",
     "docker:up": "npm run build && docker-compose up -d --build --force-recreate",
     "docker:down": "docker-compose down"
   },

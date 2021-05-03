@@ -11,7 +11,7 @@ export enum Actions {
 }
 
 export enum Limits {
-    alerts = 50,
-    aliases = 30,
+    alerts = 100,
+    aliases = 50,
     shifts = 10,
 }

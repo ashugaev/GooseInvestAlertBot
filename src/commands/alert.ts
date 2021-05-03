@@ -14,6 +14,7 @@ export function setupAlert(bot: Telegraf<Context>) {
         const customUserAlertsLimit = ctx.dbuser.limits?.alerts;
         const alertsLimit = customUserAlertsLimit ?? Limits.alerts
 
+        // Сценарий добавления
         let data: string[] = text.match(/^\/(alert|add)$/)
 
         if (data) {
@@ -32,9 +33,9 @@ export function setupAlert(bot: Telegraf<Context>) {
             return;
         }
 
+        // Удаление алертов по инструменту
         data = text.match(/^\/alert remove ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
 
-        // Is command to remove
         if (data) {
             const symbol = data[1];
 

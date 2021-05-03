@@ -4,7 +4,7 @@ import * as WizardScene from 'telegraf/scenes/wizard';
 import * as Composer from 'telegraf/composer';
 import {i18n} from "../helpers/i18n";
 import {log} from "../helpers/log";
-import {getInstrumentDataBySymbolOrAlias} from "../helpers/getInstrumentData";
+import { getInstrumentDataWithPrice } from "../helpers/getInstrumentData";
 import {symbolOrCurrency} from "../helpers/symbolOrCurrency";
 import {addAlert} from "../helpers/addAlert";
 import {addMessageStep} from "./alertAddMessageScene";
@@ -22,19 +22,19 @@ const startAlertAddScene = sceneWrapper('add-start-scene', (ctx) => {
 
 const addInstrumentNameStep = new Composer()
 
-// Не нечинается с /
+// Не начинается с /
 addInstrumentNameStep.hears(/^(?!\/).+$/, sceneWrapper('add-choose-instrument', async (ctx) => {
     const {text: symbol} = ctx.message;
-    const {id: user} = ctx.from;
 
     try {
-        const {instrumentData} = await getInstrumentDataBySymbolOrAlias({symbol, user, ctx});
+        const {instrumentData, price} = await getInstrumentDataWithPrice({symbol, ctx});
 
         ctx.wizard.state.instrumentData = instrumentData;
 
         await ctx.replyWithHTML(i18n.t('ru', 'alert_add_choosePrice', {
-            price: instrumentData.lastPrice,
-            currency: symbolOrCurrency(instrumentData.currency)
+            price,
+            // @ts-ignore
+            currency: symbolOrCurrency(instrumentData.sourceSpecificData.currency)
         }))
 
         return ctx.wizard.next();

@@ -1,52 +1,9 @@
 import { wait } from '../../helpers/wait'
-import { getCurrentPrice, getHistoricalPrices } from "../../helpers/yahooApi";
-import { getAllInstruments } from "../../marketApi";
 import { getUniqSymbols, checkAlerts, getAlerts, removePriceAlert } from "../../models";
 import { getLastPrice } from "../../helpers/stocksApi";
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log';
 import { getInstrumentLink } from "../../helpers/getInstrumentLInk";
-const CoinGecko = require('coingecko-api');
-
-const CoinGeckoClient = new CoinGecko();
-
-/**
- * Before
- *
- * - Проверить зпросы на получение всех инсрументов
- * - Проверить запрос на получение цены по инструменту
- *
- */
-
-// 0. Иду в базу и получаю алерты для всех источником
-// 2. Запускаю асинхронные итераторы которые будут ходить в разные источники
-// 3. дожидаюсь
-
-(async () => {
-    // const instr = await tinkoffGetAllInstruments();
-
-    // console.log('getAllInstruments', instr);
-
-    // let dataCoin = await CoinGeckoClient.simple.price({
-    //     ids: ['bitcoin', 'ethereum'],
-    //     vs_currencies: ['eur', 'usd', 'rub'],
-    // });
-
-    // let dataCoin = await CoinGeckoClient.exchangeRates.all({
-    //     ids: ['bitcoin', 'ethereum'],
-    //     vs_currencies: ['eur', 'usd', 'rub'],
-    // });
-
-    // const data2 = await getAllInstruments();
-    //
-    // console.log('datacoin', data2);
-    //
-    // // @ts-ignore
-    // const data = await getCurrentPrice('AAPL');
-    // // @ts-ignore
-    // const data1 = await getHistoricalPrices(0, 6, 2020, 0, 8, 2020, 'AAPL', '1d');
-    // console.log('kekkek', data, data1); // { currency: 'USD', price: 132.05 }
-})()
 
 export const setupPriceChecker = async (bot) => {
     // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -72,7 +29,7 @@ export const setupPriceChecker = async (bot) => {
             let price;
 
             try {
-                const data = await getLastPrice(symbol);
+                const data = await getLastPrice({ticker: symbol});
                 price = data.lastPrice
 
                 const isPriceValidValue = typeof price === "number" && price > 0;

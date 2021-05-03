@@ -68,7 +68,10 @@ export function getPricesFromString({string, lastPrice}: GetPriceFromStringParam
             invalidValues.push(stringVal);
         }
 
-        resultNumberVal && acc.push(+resultNumberVal.toFixed(2))
+        // TODO: toFixedValue можно посчитать из шага, который лежит в данных инструмента
+        const toFixedValue = lastPrice < 1 ? 5 : 2;
+
+        resultNumberVal && acc.push(+resultNumberVal.toFixed(toFixedValue))
 
         return acc
     }, []);

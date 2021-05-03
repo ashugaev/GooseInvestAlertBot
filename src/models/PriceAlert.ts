@@ -1,6 +1,7 @@
 // Dependencies
 import {prop, getModelForClass} from '@typegoose/typegoose'
 import {InstrumentType} from "@tinkoff/invest-openapi-js-sdk/build/domain";
+import { EMarketDataSources } from "../marketApi/types";
 
 export interface AddPriceAlertParams {
     user: number,
@@ -10,6 +11,7 @@ export interface AddPriceAlertParams {
     name: string,
     currency: string,
     type: InstrumentType,
+    source: EMarketDataSources
 }
 
 export interface RemoveOrGetAlertParams {
@@ -51,6 +53,11 @@ export class PriceAlert {
 
 export interface PriceAlertItem extends PriceAlert {
     _id: string
+}
+
+interface ICheckAlertsParams {
+    symbol: string,
+    price: number,
 }
 
 // Get PriceAlertModel model
@@ -123,7 +130,7 @@ export function getUniqSymbols(number: number): Promise<string[]> {
 }
 
 // Вернет массив сработавших алертов
-export function checkAlerts({symbol, price}): Promise<PriceAlertItem[]> {
+export function checkAlerts({symbol, price}: ICheckAlertsParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
             const triggeredAlerts = await PriceAlertModel.find({
@@ -186,7 +193,7 @@ export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): P
 }
 
 // Вернет массив сработавших алертов
-export function updateAlert({_id, data}: { _id: string, data: {} }): Promise<any> {
+export function updateAlert({_id, data}: { _id: string, data: {message: string} }): Promise<any> {
     return new Promise(async (rs, rj) => {
         try {
             const result = await PriceAlertModel.update({_id}, {$set: data})

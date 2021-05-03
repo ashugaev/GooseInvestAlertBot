@@ -14,7 +14,7 @@ export function setupPrice(bot: Telegraf<Context>) {
             let symbolData = null;
 
             try {
-                symbolData = await getLastPrice(symbol);
+                symbolData = await getLastPrice({ticker: symbol});
             } catch (e) {
                 try {
                     const {id: user} = ctx.from;
@@ -22,7 +22,7 @@ export function setupPrice(bot: Telegraf<Context>) {
 
                     symbol = alias.symbol;
 
-                    symbolData = await getLastPrice(alias.symbol);
+                    symbolData = await getLastPrice({ticker: alias.symbol});
                 } catch (e) {
                     await ctx.replyWithHTML(ctx.i18n.t('priceCheckError', {symbol}))
                     log.error(e);

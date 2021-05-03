@@ -1,6 +1,7 @@
-const symbols = {
+export const symbols = {
     RUB: '₽',
-    USD: '$'
+    USD: '$',
+    EUR: '€'
 }
 
 export const symbolOrCurrency = (currency) => symbols[currency] || currency;
