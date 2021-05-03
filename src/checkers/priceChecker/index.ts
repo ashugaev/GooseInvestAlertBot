@@ -10,13 +10,17 @@ export const setupPriceChecker = async (bot) => {
     // Ожидание преред запуском что бы не спамить на хотрелоаде
     await wait(10000);
 
-    // Иду в базу и получаю алерты для всех источником
-
     while (true) {
-        const symbols = await getUniqSymbols(50);
+        let symbols = [];
+
+        try {
+           symbols = await getUniqSymbols(50);
+        } catch (e) {
+            log.error('[setupPriceChecker] ошибка подключения к базе', e)
+        }
 
         // Если пока нечего проверять
-        if (!symbols.length) {
+        if (!symbols?.length) {
             await wait(30000)
             continue;
         } else {
@@ -36,8 +40,11 @@ export const setupPriceChecker = async (bot) => {
 
                 const isPriceValidValue = typeof price === "number" && price > 0;
 
-                if (!isPriceValidValue) continue;
+                if (!isPriceValidValue) {
+                    throw new Error('Невалидная цена инструмента')
+                }
             } catch (e) {
+                // Сейчас этот if не будет срабатывать из-за того хожу теперь в базу а не в апи за данными инструмента
                 if (typeof e === "object" && e !== null && e.cantFind) {
                     removeAlertsForSymbol = true
 
@@ -79,40 +86,48 @@ export const setupPriceChecker = async (bot) => {
             }
 
 
-            const triggeredAlerts = await checkAlerts({ symbol, price });
+            let triggeredAlerts = [];
 
-            if (triggeredAlerts.length) {
-                log.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' Символ:', symbol);
+            try {
+                triggeredAlerts = await checkAlerts({ symbol, price });
+            } catch (e) {
+                console.error('ошибка получения алертов', 'price', price, 'symbol', symbol, 'error', e);
+
+                continue;
             }
 
-            for (let j = 0; triggeredAlerts.length > j; j++) {
-                const alert = triggeredAlerts[j];
-                const { message, symbol, lowerThen, greaterThen, type } = alert;
-                const price = lowerThen || greaterThen;
+            if (triggeredAlerts?.length) {
+                log.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' Символ:', symbol);
 
-                try {
-                    // TODO: Удалаять алерт после нескольки падений отправки
-                    await removePriceAlert({ _id: alert._id })
+                for (let j = 0; triggeredAlerts.length > j; j++) {
+                    const alert = triggeredAlerts[j];
+                    const { message, symbol, lowerThen, greaterThen, type } = alert;
+                    const price = lowerThen || greaterThen;
 
-                    await bot.telegram.sendMessage(alert.user,
-                        message
-                            ? i18n.t('ru', 'priceCheckerTriggeredAlertWithMessage', {
-                                symbol,
-                                price,
-                                message,
-                                link: type && getInstrumentLink(type, symbol),
+                    try {
+                        await bot.telegram.sendMessage(alert.user,
+                            message
+                                ? i18n.t('ru', 'priceCheckerTriggeredAlertWithMessage', {
+                                    symbol,
+                                    price,
+                                    message,
+                                    link: type && getInstrumentLink(type, symbol),
+                                })
+                                : i18n.t('ru', 'priceCheckerTriggeredAlert', {
+                                    symbol,
+                                    price,
+                                    link: type && getInstrumentLink(type, symbol),
+                                })
+                            , {
+                                parse_mode: 'HTML',
+                                disable_web_page_preview: true
                             })
-                            : i18n.t('ru', 'priceCheckerTriggeredAlert', {
-                                symbol,
-                                price,
-                                link: type && getInstrumentLink(type, symbol),
-                            })
-                        , {
-                            parse_mode: 'HTML',
-                            disable_web_page_preview: true
-                        })
-                } catch (e) {
-                    log.error('Ошибка отправки сообщения юзеру', e)
+
+                        // TODO: Удалаять алерт после нескольки падений отправки
+                        await removePriceAlert({ _id: alert._id })
+                    } catch (e) {
+                        log.error('Ошибка отправки сообщения юзеру', e)
+                    }
                 }
             }
         }

@@ -27,7 +27,7 @@ addInstrumentNameStep.hears(/^(?!\/).+$/, sceneWrapper('add-choose-instrument', 
     const {text: symbol} = ctx.message;
 
     try {
-        const {instrumentData, price} = await getInstrumentDataWithPrice({symbol, ctx});
+        const {instrumentData, price} = await getInstrumentDataWithPrice({symbol, ctx}) ?? {};
 
         ctx.wizard.state.instrumentData = instrumentData;
 

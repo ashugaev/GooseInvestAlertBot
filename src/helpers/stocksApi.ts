@@ -41,6 +41,7 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
             symbolInfoCache.set(symbol, data);
         }
 
+        // Полагаюсь что data=null признак того, что это успешный ответ от апи и мы просто ничего не нашли по тикеру
         if (data === null) {
             rj({
                 cantFind: true,

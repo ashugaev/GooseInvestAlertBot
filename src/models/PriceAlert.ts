@@ -133,6 +133,10 @@ export function getUniqSymbols(number: number): Promise<string[]> {
 export function checkAlerts({symbol, price}: ICheckAlertsParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
+            if(!symbol || !price) {
+                throw new Error(`[checkAlerts] Не хватает входных данных ${symbol} ${price}`);
+            }
+
             const triggeredAlerts = await PriceAlertModel.find({
                 symbol: symbol.toUpperCase(),
                 $or: [
