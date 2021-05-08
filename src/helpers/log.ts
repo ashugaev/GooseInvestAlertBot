@@ -7,6 +7,7 @@ logger.level = 'debug';
 const error = logger.error;
 
 logger.error = (...args) => {
+    // TODO: Придумать как проставить тут id юзера
     Sentry.captureException(args);
 
     error.apply(logger, args);

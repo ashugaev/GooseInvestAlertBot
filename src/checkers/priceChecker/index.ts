@@ -1,7 +1,6 @@
 import { getInstrumentDataWithPrice } from "../../helpers/getInstrumentData";
 import { wait } from '../../helpers/wait'
 import { getUniqSymbols, checkAlerts, getAlerts, removePriceAlert } from "../../models";
-import { getLastPrice } from "../../helpers/stocksApi";
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log';
 import { getInstrumentLink } from "../../helpers/getInstrumentLInk";

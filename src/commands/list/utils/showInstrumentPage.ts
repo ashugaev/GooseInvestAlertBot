@@ -38,12 +38,10 @@ export const showInstrumentPage = async ({
 
     const { type: instrumentType, name: instrumentName, currency: instrumentCurrency } = instrumentItems[0];
 
-    let instrumentPrice;
+    let lastPrice;
 
     try {
-        // TODO: Брать данные о цене из кэша. Сейчас перезапрос идет на каждой странице с алертами.
-        const data = await getLastPrice({ ticker: symbol });
-        instrumentPrice = data.lastPrice
+        lastPrice = await getLastPrice({ ticker: symbol });
     } catch (e) {
         log.error('ошибка получения цены', e);
     }
@@ -54,7 +52,7 @@ export const showInstrumentPage = async ({
         list: itemsList,
         name: instrumentName,
         currency: symbolOrCurrency(instrumentCurrency),
-        price: instrumentPrice,
+        price: lastPrice,
         showEditMessage: keyboardMode === EKeyboardModes.edit
     })
 
