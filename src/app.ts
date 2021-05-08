@@ -25,7 +25,7 @@ import {alertAddScene} from "./scenes/alertAddScene";
 import {shiftAddScene} from "./scenes/shiftAddScene";
 
 import {configureAnalytics} from "./middlewares/configureAnalytics";
-import {setupCheckers} from "./checkers";
+import {setupCheckers} from "./cron";
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
