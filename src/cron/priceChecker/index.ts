@@ -100,7 +100,7 @@ export const setupPriceChecker = async (bot) => {
 
                 for (let j = 0; triggeredAlerts.length > j; j++) {
                     const alert = triggeredAlerts[j];
-                    const { message, symbol, lowerThen, greaterThen, type } = alert;
+                    const { message, symbol, lowerThen, greaterThen, type, source } = alert;
                     const price = lowerThen || greaterThen;
 
                     try {
@@ -110,12 +110,12 @@ export const setupPriceChecker = async (bot) => {
                                     symbol,
                                     price,
                                     message,
-                                    link: type && getInstrumentLink(type, symbol),
+                                    link: type && getInstrumentLink({type, ticker: symbol, source}),
                                 })
                                 : i18n.t('ru', 'priceCheckerTriggeredAlert', {
                                     symbol,
                                     price,
-                                    link: type && getInstrumentLink(type, symbol),
+                                    link: type && getInstrumentLink({type, ticker: symbol, source}),
                                 })
                             , {
                                 parse_mode: 'HTML',

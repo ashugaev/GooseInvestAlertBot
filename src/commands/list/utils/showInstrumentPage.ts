@@ -36,7 +36,7 @@ export const showInstrumentPage = async ({
             })
         }).join('\n');
 
-    const { type: instrumentType, name: instrumentName, currency: instrumentCurrency } = instrumentItems[0];
+    const { type: instrumentType, name: instrumentName, currency: instrumentCurrency, source } = instrumentItems[0];
 
     let lastPrice;
 
@@ -47,7 +47,7 @@ export const showInstrumentPage = async ({
     }
 
     const message = ctx.i18n.t('alertList_page', {
-        link: instrumentType && getInstrumentLink(instrumentType, symbol),
+        link: instrumentType && getInstrumentLink({type: instrumentType, ticker: symbol, source }),
         symbol,
         list: itemsList,
         name: instrumentName,

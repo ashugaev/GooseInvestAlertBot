@@ -49,6 +49,9 @@ export class PriceAlert {
 
     @prop({required: true})
     type: InstrumentType
+
+    @prop({required: true})
+    source: EMarketDataSources
 }
 
 export interface PriceAlertItem extends PriceAlert {
@@ -76,7 +79,8 @@ export function addPriceAlert({
                                   greaterThen,
                                   name,
                                   currency,
-                                  type
+                                  type,
+                                    source,
                               }: AddPriceAlertParams): Promise<PriceAlertItem> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
@@ -91,6 +95,7 @@ export function addPriceAlert({
                 name,
                 currency,
                 type,
+                source,
             } as PriceAlert);
 
             rs(createdItem);
