@@ -3,7 +3,7 @@ import { getInstrumentInfoByTicker } from "../models";
 import { i18n } from "./i18n";
 import { getLastPrice } from "./stocksApi";
 
-interface GetInstrumentDataBySymbolOrAliasData {
+interface GetInstrumentDataWithPrice {
     price: number,
     instrumentData: IBaseInstrumentData,
 }
@@ -16,7 +16,7 @@ interface IGetInstrumentDataWithPrice {
 export async function getInstrumentDataWithPrice({
                                                      symbol,
                                                      ctx
-}: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataBySymbolOrAliasData> {
+}: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice> {
     symbol = symbol.toUpperCase();
 
     try {

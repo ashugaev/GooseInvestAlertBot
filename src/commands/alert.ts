@@ -1,5 +1,5 @@
 import {Telegraf, Context} from "telegraf";
-import {getAlertsCountForUser, getAlias, removePriceAlert} from '../models';
+import {getAlertsCountForUser, removePriceAlert} from '../models';
 import {log} from "../helpers/log";
 import {Limits, Scenes} from "../constants";
 import {addAlert} from "../helpers/addAlert";
@@ -82,17 +82,9 @@ export function setupAlert(bot: Telegraf<Context>) {
                 const deletedCount = await removePriceAlert({symbol, user})
 
                 if (deletedCount) {
-                    await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', {symbol: symbol.toUpperCase()}))
+                    ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', {symbol: symbol.toUpperCase()}))
                 } else {
-                    // Если ничего не удалили по символу идем в алиасы
-
-                    const [alias] = await getAlias({title: symbol, user});
-
-                    const aliasName = alias.title;
-                    symbol = alias.symbol;
-
-                    await removePriceAlert({symbol, user})
-                    await ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbolWithAlias', {symbol, aliasName}))
+                    ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbolNothingDeleted', {symbol: symbol.toUpperCase()}))
                 }
 
                 log.info('Удалены алерты для', symbol, user)

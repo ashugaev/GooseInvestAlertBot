@@ -9,6 +9,5 @@ mongoose.set('useCreateIndex', true)
 // Export models
 export * from './User'
 export * from './PriceAlert'
-export * from './Aliases'
 export * from './Shifts'
 export * from './InstrumentsList'

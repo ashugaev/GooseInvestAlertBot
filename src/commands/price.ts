@@ -1,9 +1,7 @@
 import { Telegraf, Context } from "telegraf";
 import { getInstrumentDataWithPrice } from "../helpers/getInstrumentData";
-import { getLastPrice } from "../helpers/stocksApi";
 import { log } from "../helpers/log";
 import { symbolOrCurrency } from "../helpers/symbolOrCurrency";
-import { getAlias } from "../models";
 import { commandWrapper } from "../helpers/commandWrapper";
 
 export function setupPrice(bot: Telegraf<Context>) {
