@@ -5,7 +5,11 @@ interface StartCronJobParams {
     name: string,
     period: string,
     callback: (argsArr?: any[]) => void | Promise<void >,
-    callbackArgs: any[]
+    callbackArgs: any[],
+    /**
+     * Перед тем как делать задачу для крона выполнит callback
+     */
+    executeBeforeInit?: boolean,
 }
 
 export const startCronJob = ({
@@ -13,24 +17,29 @@ export const startCronJob = ({
   period,
   callback,
   callbackArgs,
+  executeBeforeInit
 }: StartCronJobParams) => {
+  const onTickFunction = async () => {
+    log.info('Start cron job:', name);
+
+    try {
+        callbackArgs
+            ? await callback.apply(null, callbackArgs)
+            : await callback();
+    } catch (e) {
+        log.error('Cron job error', e);
+    }
+  };
+
+  executeBeforeInit && (onTickFunction())
+
   const job = new CronJob(
     period,
-    async () => {
-      log.info('Start cron job:', name);
-
-      try {
-        callbackArgs
-          ? await callback.apply(null, callbackArgs)
-          : await callback();
-      } catch (e) {
-        log.error('Cron job error', e);
-      }
-    },
+      onTickFunction,
     () => {
       log.info('Start cron job:', name);
     },
-    false,
+     false,
     'Europe/Moscow',
   );
 

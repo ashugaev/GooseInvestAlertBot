@@ -27,6 +27,7 @@ export const setupCheckers = (bot) => {
         callbackArgs: [bot],
         // раз день в 3 часа
         period: '0 3 * * *',
+        executeBeforeInit: true,
     })
 
     // Непрерывные проверки цен
