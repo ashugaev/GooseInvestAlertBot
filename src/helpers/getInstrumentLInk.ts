@@ -19,8 +19,6 @@ const getTinkoffInstrumentLink = ({type, ticker}) => {
 export const getInstrumentLink = ({type, ticker, source}) => {
     let link;
 
-    debugger;
-
     // TODO: Выпилить эту проверку через пару месяцев. Он нужен только для того, что бы показывать ссылку для алертов без source
     if(source) {
         if(source === EMarketDataSources.tinkoff) {

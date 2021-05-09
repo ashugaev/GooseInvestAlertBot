@@ -78,6 +78,8 @@ export const getLastPrice = async ({
         }
 
         if (!instrumentData) {
+            // FIXME: Тут получаетсякакая-то хрень, потом что getInstrumentDataWithPrice вызывает внутри getLastPrice
+            // Нужно разбить getInstrumentDataWithPrice на получение цены и нормализация данных
             const data = await getInstrumentDataWithPrice({ symbol: ticker });
 
             instrumentData = data.instrumentData;

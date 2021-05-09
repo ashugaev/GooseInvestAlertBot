@@ -8,8 +8,6 @@ export const createShitEvents = async (bot) => {
     // Зафетчили акции/облигации/фонды массивом
     const instruments = await tinkoffGetAllInstruments();
 
-    console.log('instinstruments', instruments);
-
     const shifts = {}
 
     // Считаем изменение цены за каждый день для каждого инструмента и кладем все в shifts

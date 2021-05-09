@@ -7,8 +7,6 @@ import { clearInstrumentsList, putItemsToInstrumentsList } from "../../models";
  */
 export const instrumentsListUpdater = async () => {
     try {
-        debugger;
-
         const instruments = await getAllInstruments();
 
         if(!instruments.length) {
