@@ -8,22 +8,26 @@ const coinGeckoPriceCache = new NodeCache({
 
 export async function coningeckoGetLasePrice({ instrumentData }) {
     try {
-        let price = coinGeckoPriceCache.get(instrumentData.ticker);
+        let currencyPrices = coinGeckoPriceCache.get(instrumentData.ticker);
 
-        if (!price) {
-            const result = await CoinGeckoClient.simple.price({
+        if (!currencyPrices) {
+            currencyPrices = await CoinGeckoClient.simple.price({
                 ids: [instrumentData.sourceSpecificData.id],
                 vs_currencies: ['eur', 'usd', 'rub'],
             });
 
-            price = result.data[instrumentData.sourceSpecificData.id]
-                ?.[instrumentData.sourceSpecificData?.currency?.toLowerCase() ?? 'usd'];
-
-            if (!price) {
+            if (!currencyPrices) {
                 throw new Error('Невалидные данные от CoinGecko')
             }
 
-            coinGeckoPriceCache.set(instrumentData.ticker, price);
+            coinGeckoPriceCache.set(instrumentData.ticker, currencyPrices);
+        }
+
+        const price = currencyPrices.data[instrumentData.sourceSpecificData.id]
+            ?.[instrumentData.sourceSpecificData?.currency?.toLowerCase() ?? 'usd'];
+
+        if(!price) {
+            throw new Error('Невалидные данные от CoinGecko')
         }
 
         return price;
