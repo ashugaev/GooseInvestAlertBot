@@ -10,11 +10,11 @@
   "scripts": {
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
     "build": "npm run build:ts",
-    "start": "node dist/app.js",
+    "start": "node dist/app.js > logs/logfile",
     "dev": "concurrently -k -i -p \"[{name}]\" -n \"Node,TypeScript\" -c \"yellow.bold,cyan.bold\" \"npm run watch:js\" \"npm run watch:ts\"",
     "build:ts": "tsc --skipLibCheck",
     "watch:ts": "tsc -w --skipLibCheck",
-    "watch:js": "nodemon dist/app.js > logs/logfile",
+    "watch:js": "nodemon dist/app.js",
     "docker:up": "npm run build && docker-compose up -d --build --force-recreate",
     "docker:down": "docker-compose down"
   },
