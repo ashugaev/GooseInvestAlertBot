@@ -1,5 +1,5 @@
-import {GetLastPriceData} from "./stocksApi";
-import {getInstrumentDataBySymbolOrAlias} from "./getInstrumentData";
+import { EMarketInstrumentTypes } from "../marketApi/types";
+import { getInstrumentDataWithPrice } from "./getInstrumentData";
 import {log} from "./log";
 import {addPriceAlert, AddPriceAlertParams} from "../models";
 import {symbolOrCurrency} from "./symbolOrCurrency";
@@ -23,19 +23,26 @@ export const addAlert = ({
                              startedFromScene
 }: AddAlertParams) => new Promise<{ _id: string, addedCount: number }>(async (rs, rj) => {
     try {
-        let symbol = data.symbol;
-        let instrumentData: GetLastPriceData = null;
+        const { price: targetPrice} = data;
+        let { symbol } = data;
+
         const {id: user} = ctx.from;
+
+        let instrumentData;
+        let lastPrice;
 
         try {
             if (!symbol) {
                 throw new Error('Не пришел символ при установке алерта')
             }
 
-            const result = await getInstrumentDataBySymbolOrAlias({symbol, user, ctx});
+            const result = await getInstrumentDataWithPrice({symbol, ctx});
 
             instrumentData = result.instrumentData;
-            symbol = result.symbol;
+            lastPrice = result.price;
+
+            // Перепишем на случай если юзер писал пару с валютой
+            symbol = instrumentData.ticker;
         } catch (e) {
             ctx.replyWithHTML(i18n.t('ru', 'alertAddError'));
 
@@ -44,8 +51,8 @@ export const addAlert = ({
         }
 
         const {prices, invalidValues} = getPricesFromString({
-            string: data.price,
-            lastPrice: instrumentData.lastPrice,
+            string: targetPrice,
+            lastPrice
         });
 
         const priceAlerts = [];
@@ -59,13 +66,19 @@ export const addAlert = ({
                     user,
                     symbol,
                     name: instrumentData.name,
-                    currency: instrumentData.currency,
+                    currency: instrumentData.sourceSpecificData.currency,
                     type: instrumentData.type,
+                    source: instrumentData.source,
                 };
 
-                instrumentData.lastPrice < price
+                lastPrice < price
                     ? (params.greaterThen = price)
                     : (params.lowerThen = price)
+
+                // Если крипта - добавим валюту в пару
+                if(instrumentData.type == EMarketInstrumentTypes.Crypto) {
+                    params.symbol = params.symbol + instrumentData.sourceSpecificData.currency.toUpperCase();
+                }
 
                 const createdItem = await addPriceAlert(params);
 
@@ -87,7 +100,8 @@ export const addAlert = ({
             return;
         }
 
-        const {name, currency} = instrumentData;
+        const {name} = instrumentData;
+        const {currency} = instrumentData.sourceSpecificData;
 
         const i18nParams = {
             price: priceAlerts.map(el => `${el}${symbolOrCurrency(currency)}`).join(', '),

@@ -27,7 +27,7 @@ export const alertEdit = async (ctx) => {
         growth: Boolean(alert.greaterThen),
         price: alert.lowerThen || alert.greaterThen,
         currency: symbolOrCurrency(alert.currency),
-        link: alert.type && getInstrumentLink(alert.type, alert.symbol),
+        link: alert.type && getInstrumentLink({type: alert.type, ticker: alert.symbol, source: alert.source}),
         message: alert.message,
     });
 

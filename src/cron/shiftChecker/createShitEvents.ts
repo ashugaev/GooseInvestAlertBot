@@ -2,20 +2,16 @@ import {getAllShifts} from "../../models/Shifts";
 import {log} from '../../helpers/log';
 import {calculateShifts} from './utils/calculateShifts';
 import {createShiftEvents, ShiftEventItem, ShiftEventsModel} from "../../models/ShiftEvents";
-import {getShiftsByPercent, getAllInstruments} from './utils';
+import { getShiftsByPercent, tinkoffGetAllInstruments } from './utils';
 
 export const createShitEvents = async (bot) => {
     // Зафетчили акции/облигации/фонды массивом
-    let allInstruments = await getAllInstruments();
+    const instruments = await tinkoffGetAllInstruments();
 
     const shifts = {}
 
     // Считаем изменение цены за каждый день для каждого инструмента и кладем все в shifts
-    for (let i = 0; i < allInstruments.length; i++) {
-        const {instruments} = allInstruments[i];
-
-        await calculateShifts({instruments, shifts})
-    }
+    await calculateShifts({instruments, shifts})
 
     // Получаем все подписки на шифты из базы
     const shiftAlerts = await getAllShifts();

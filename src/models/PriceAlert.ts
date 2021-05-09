@@ -1,6 +1,7 @@
 // Dependencies
 import {prop, getModelForClass} from '@typegoose/typegoose'
 import {InstrumentType} from "@tinkoff/invest-openapi-js-sdk/build/domain";
+import { EMarketDataSources } from "../marketApi/types";
 
 export interface AddPriceAlertParams {
     user: number,
@@ -10,6 +11,7 @@ export interface AddPriceAlertParams {
     name: string,
     currency: string,
     type: InstrumentType,
+    source: EMarketDataSources
 }
 
 export interface RemoveOrGetAlertParams {
@@ -47,10 +49,18 @@ export class PriceAlert {
 
     @prop({required: true})
     type: InstrumentType
+
+    @prop({required: true})
+    source: EMarketDataSources
 }
 
 export interface PriceAlertItem extends PriceAlert {
     _id: string
+}
+
+interface ICheckAlertsParams {
+    symbol: string,
+    price: number,
 }
 
 // Get PriceAlertModel model
@@ -69,7 +79,8 @@ export function addPriceAlert({
                                   greaterThen,
                                   name,
                                   currency,
-                                  type
+                                  type,
+                                    source,
                               }: AddPriceAlertParams): Promise<PriceAlertItem> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
@@ -84,6 +95,7 @@ export function addPriceAlert({
                 name,
                 currency,
                 type,
+                source,
             } as PriceAlert);
 
             rs(createdItem);
@@ -123,9 +135,13 @@ export function getUniqSymbols(number: number): Promise<string[]> {
 }
 
 // Вернет массив сработавших алертов
-export function checkAlerts({symbol, price}): Promise<PriceAlertItem[]> {
+export function checkAlerts({symbol, price}: ICheckAlertsParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
+            if(!symbol || !price) {
+                throw new Error(`[checkAlerts] Не хватает входных данных ${symbol} ${price}`);
+            }
+
             const triggeredAlerts = await PriceAlertModel.find({
                 symbol: symbol.toUpperCase(),
                 $or: [
@@ -186,7 +202,7 @@ export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): P
 }
 
 // Вернет массив сработавших алертов
-export function updateAlert({_id, data}: { _id: string, data: {} }): Promise<any> {
+export function updateAlert({_id, data}: { _id: string, data: {message: string} }): Promise<any> {
     return new Promise(async (rs, rj) => {
         try {
             const result = await PriceAlertModel.update({_id}, {$set: data})

@@ -1,41 +1,63 @@
-import {getLastPrice, GetLastPriceData} from "./stocksApi";
-import {getAlias} from "../models";
-import {i18n} from "./i18n";
+import { EMarketDataSources, IBaseInstrumentData } from "../marketApi/types";
+import { getInstrumentInfoByTicker } from "../models";
+import { i18n } from "./i18n";
+import { getLastPrice } from "./stocksApi";
 
-interface GetInstrumentDataBySymbolOrAliasData {
-    symbol: string,
-    aliasName: string,
-    instrumentData: GetLastPriceData,
+interface GetInstrumentDataWithPrice {
+    price: number,
+    instrumentData: IBaseInstrumentData,
 }
 
-export function getInstrumentDataBySymbolOrAlias({symbol, user, ctx}) {
-    return new Promise<GetInstrumentDataBySymbolOrAliasData>(async (rs, rj) => {
-        let instrumentData = null;
-        let aliasName = null;
+interface IGetInstrumentDataWithPrice {
+    symbol: string,
+    ctx?: any,
+}
 
-        try {
-            instrumentData = await getLastPrice(symbol);
-        } catch (e) {
-            // TODO: Класть алиаса сразу же в контекст. При создании нового, делать перезапрос и обновлять
-            try {
-                const [alias] = await getAlias({title: symbol, user});
+export async function getInstrumentDataWithPrice({
+                                                     symbol,
+                                                     ctx
+}: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice> {
+    symbol = symbol.toUpperCase();
 
-                instrumentData = await getLastPrice(alias.symbol);
+    try {
+        const ticker = [symbol];
+        let customCurrency;
 
-                aliasName = symbol;
-                symbol = alias.symbol;
-            } catch (e) {
-                await ctx.replyWithHTML(
-                    i18n.t('ru', 'alertErrorUnexistedSymbol', {symbol}),
-                    {disable_web_page_preview: true}
-                )
+        // TODO: Брать символы из symbols объекта
+        const tickerWithCurrency = symbol.match(/^(.+)(usd|eur|rub)$/i);
 
-                rj(e);
-
-                return;
-            }
+        // Если тикер содержит в себе валютную пару, то попробуем искать без нее (для крипты)
+        if (tickerWithCurrency) {
+            customCurrency = tickerWithCurrency[2].toUpperCase();
+            // Добавить в список для поиска крипту без валютной пары
+            ticker.push(tickerWithCurrency[1]);
         }
 
-        rs({instrumentData, symbol, aliasName});
-    })
+        const instrumentDataArr = await getInstrumentInfoByTicker({ ticker });
+
+        if (!instrumentDataArr.length) {
+            if (ctx){
+                await ctx.replyWithHTML(
+                    i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
+                    { disable_web_page_preview: true }
+                )
+            }
+
+            return;
+        }
+
+        const instrumentDataItem = instrumentDataArr[0];
+
+        if (instrumentDataItem.source === EMarketDataSources.coingecko) {
+            // Подсовываем валюту, если не была указана пара
+            // @ts-ignore
+            instrumentDataItem.sourceSpecificData.currency = customCurrency ?? 'USD'
+        }
+
+        const lastPrice = await getLastPrice({ instrumentData: instrumentDataItem });
+
+        return { instrumentData: instrumentDataItem, price: lastPrice };
+    } catch (e) {
+        throw new Error(e);
+    }
 }

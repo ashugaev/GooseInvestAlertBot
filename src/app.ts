@@ -15,7 +15,6 @@ import {attachUser} from './middlewares/attachUser'
 import {setupHelp} from './commands/help'
 import {setupStart} from './commands/start'
 import {setupAlert} from './commands/alert'
-import {setupAlias} from './commands/alias'
 import {setupShift} from './commands/shift'
 import {setupLanguage} from './commands/language'
 import {setupList} from "./commands/list";
@@ -26,7 +25,7 @@ import {alertAddScene} from "./scenes/alertAddScene";
 import {shiftAddScene} from "./scenes/shiftAddScene";
 
 import {configureAnalytics} from "./middlewares/configureAnalytics";
-import {setupCheckers} from "./checkers";
+import {setupCheckers} from "./cron";
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
@@ -57,7 +56,6 @@ setupI18N(bot)
 setupHelp(bot)
 setupAlert(bot)
 setupList(bot)
-setupAlias(bot)
 setupLanguage(bot)
 setupPrice(bot)
 setupStart(bot)

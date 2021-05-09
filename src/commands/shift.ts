@@ -9,7 +9,7 @@ export function setupShift(bot: Telegraf<Context>) {
         const {text} = ctx.message;
         const {id: user} = ctx.from;
 
-        let data: string[] = text.match(/^\/shift$/)
+        const data: string[] = text.match(/^\/shift$/)
 
         if (data) {
             try {

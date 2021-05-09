@@ -1,12 +1,14 @@
 import * as Sentry from "@sentry/node";
 import { MarketInstrument } from "@tinkoff/invest-openapi-js-sdk/build/domain";
-
-// @ts-ignore
-const NodeCache = require("node-cache");
-// @ts-ignore
-const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
-
+import { coningeckoGetLasePrice } from "../marketApi/coingecko/api/getLastPrice";
+import { TINKOFF_SENTRY_TAGS } from "../marketApi/constants";
+import { tinkoffGetLastPrice } from "../marketApi/tinkoff/api/getLastPrice";
+import { EMarketDataSources, IBaseInstrumentData } from "../marketApi/types";
+import { getInstrumentDataWithPrice } from "./getInstrumentData";
 import { log } from "./log";
+
+const NodeCache = require("node-cache");
+const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
 
 const apiURL = 'https://api-invest.tinkoff.ru/openapi';
 const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws';
@@ -18,8 +20,9 @@ export interface GetLastPriceData extends MarketInstrument {
     lastPrice: number
 }
 
-const tinkoffSentryTags = {
-    section: "tinkoffApiQuotaExceeded",
+export interface IGetInfoBySymbolParams {
+    instrumentData?: IBaseInstrumentData,
+    ticker?: string,
 }
 
 const symbolInfoCache = new NodeCache({
@@ -38,6 +41,7 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
             symbolInfoCache.set(symbol, data);
         }
 
+        // Полагаюсь что data=null признак того, что это успешный ответ от апи и мы просто ничего не нашли по тикеру
         if (data === null) {
             rj({
                 cantFind: true,
@@ -50,7 +54,7 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
         rs(data);
     } catch (e) {
         Sentry.captureException('Ошибка ответа тиньковской апишски', {
-            tags: tinkoffSentryTags
+            tags: TINKOFF_SENTRY_TAGS
         });
 
         log.error(e);
@@ -58,46 +62,49 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
     }
 })
 
-const candlesCache = new NodeCache({
-    stdTTL: 40
-});
-
-export const getLastPrice = (symbol: string) => new Promise<GetLastPriceData>(async (rs, rj) => {
+/**
+ * Вернет цену по instrumentData
+ * Если нет instrumentData, то сходит в базу и достанет его по тикеру
+ *
+ * TODO: Разбить на getLastPriceByTicker и getLastPriceByInstrumentData
+ */
+export const getLastPrice = async ({
+                                 instrumentData,
+                                    ticker
+                             }: IGetInfoBySymbolParams) => {
     try {
-        const data = await getInfoBySymbol(symbol);
-
-        const dateTo = new Date();
-        const dateToISO = dateTo.toISOString();
-
-        dateTo.setMonth(dateTo.getMonth() - 2)
-
-        const dateFromISO = dateTo.toISOString();
-
-        let candles = candlesCache.get(symbol);
-
-        if (!candles) {
-            const candlesData = await stocksApi.candlesGet({
-                from: dateFromISO,
-                to: dateToISO,
-                interval: 'month',
-                figi: data.figi,
-            })
-
-            candles = candlesData.candles;
-
-            candlesCache.set(symbol, candlesData.candles)
+        if(!instrumentData && !ticker) {
+            throw new Error('Необходимо предоставить istrumentData либо ticker для получения последней цены')
         }
 
-        const lastCandle = candles[candles.length - 1];
+        if (!instrumentData) {
+            // FIXME: Тут получаетсякакая-то хрень, потом что getInstrumentDataWithPrice вызывает внутри getLastPrice
+            // Нужно разбить getInstrumentDataWithPrice на получение цены и нормализация данных
+            const data = await getInstrumentDataWithPrice({ symbol: ticker });
 
-        rs({ lastPrice: lastCandle.c, ...data });
+            instrumentData = data.instrumentData;
+
+            if (!instrumentData) {
+                throw new Error('Ошибка получения информации по инструменту');
+            }
+        }
+
+        let lastPrice;
+
+        if (!instrumentData.source || instrumentData.source == EMarketDataSources.tinkoff) {
+            lastPrice = await tinkoffGetLastPrice({ instrumentData });
+        } else if (instrumentData.source == EMarketDataSources.coingecko) {
+            lastPrice = await coningeckoGetLasePrice({ instrumentData });
+        } else {
+            throw new Error('Инструмент без параметра source');
+        }
+
+        if (!lastPrice) {
+            throw new Error('Не была получена последняя цена инструмента');
+        }
+
+        return lastPrice;
     } catch (e) {
-        // TODO: Некорректный тег. Он присваивается не только по окончании квоты, но и при невалидном запросе.
-        Sentry.captureException('Ошибка ответа тиньковской апишски', {
-            tags: tinkoffSentryTags
-        });
-
-        log.error(e);
-        rj(e)
+        throw new Error(e);
     }
-})
+}
