@@ -17,8 +17,8 @@ const excludeInstrumentDuplicates = (items): IBaseInstrumentData[] => {
  */
 export const getAllInstruments = async (): Promise<IBaseInstrumentData[]> => {
     const allInstrumentsPromises = [
-        tinkoffGetAllInstruments(),
         coingeckoGetAllInstruments(),
+        tinkoffGetAllInstruments(),
     ]
 
     const allInstrumentsArr = await Promise.all(allInstrumentsPromises);
