@@ -160,6 +160,8 @@ export function checkAlerts({symbol, price}: ICheckAlertsParams): Promise<PriceA
     })
 }
 
+// TODO: Сделать отдельные методы для получения алертов по разным параметрам.
+//  Что бы делать проверку на входные данные и случайно не вернуть лишнего.
 export function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
@@ -176,6 +178,16 @@ export function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<
             rj(e);
         }
     })
+}
+
+export async function getAllAlerts(): Promise<PriceAlertItem[]> {
+        try {
+            const alerts = await PriceAlertModel.find({})
+
+            return alerts;
+        } catch (e) {
+            throw new Error(e);
+        }
 }
 
 export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): Promise<number> {

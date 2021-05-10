@@ -1,3 +1,4 @@
+import { copyAlerts } from "./copyAlerts";
 import { instrumentsListUpdater } from "./instrumentsListUpdater";
 import {setupPriceChecker} from "./priceChecker";
 import {createShitEvents} from "./shiftChecker";
@@ -27,6 +28,16 @@ export const setupCheckers = (bot) => {
         callbackArgs: [bot],
         // раз день в 3 часа
         period: '0 3 * * *',
+        executeBeforeInit: true,
+    })
+
+    // Дамп коллекции с алертами
+    startCronJob({
+        name: 'Copy alerts collection',
+        callback: copyAlerts,
+        callbackArgs: [bot],
+        // раз в час
+        period: '0 * * * *',
         executeBeforeInit: true,
     })
 
