@@ -1,4 +1,5 @@
 import { getInstrumentDataWithPrice } from "../../helpers/getInstrumentData";
+import { symbolOrCurrency } from "../../helpers/symbolOrCurrency";
 import { wait } from '../../helpers/wait'
 import { getUniqSymbols, checkAlerts, getAlerts, removePriceAlert } from "../../models";
 import { i18n } from '../../helpers/i18n'
@@ -7,7 +8,8 @@ import { getInstrumentLink } from "../../helpers/getInstrumentLInk";
 
 export const setupPriceChecker = async (bot) => {
     // Ожидание преред запуском что бы не спамить на хотрелоаде
-    await wait(10000);
+    // и успеть выполнить подготовительные ф-ции
+    await wait(30000);
 
     while (true) {
         let symbols = [];
@@ -31,10 +33,12 @@ export const setupPriceChecker = async (bot) => {
 
             let removeAlertsForSymbol = false;
             let price;
+            let instrumentData;
 
             try {
                 const result = await getInstrumentDataWithPrice({symbol});
 
+                instrumentData = result.instrumentData;
                 price = result.price;
 
                 const isPriceValidValue = typeof price === "number" && price > 0;
@@ -107,14 +111,18 @@ export const setupPriceChecker = async (bot) => {
                         await bot.telegram.sendMessage(alert.user,
                             message
                                 ? i18n.t('ru', 'priceCheckerTriggeredAlertWithMessage', {
-                                    symbol,
+                                    symbol: instrumentData.ticker,
+                                    name: instrumentData.name,
+                                    currency: symbolOrCurrency(alert.currency),
                                     price,
                                     message,
                                     link: type && getInstrumentLink({type, ticker: symbol, source}),
                                 })
                                 : i18n.t('ru', 'priceCheckerTriggeredAlert', {
-                                    symbol,
+                                    symbol: instrumentData.ticker,
+                                    currency: symbolOrCurrency(alert.currency),
                                     price,
+                                    name: instrumentData.name,
                                     link: type && getInstrumentLink({type, ticker: symbol, source}),
                                 })
                             , {
