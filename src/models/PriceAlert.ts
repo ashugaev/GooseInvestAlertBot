@@ -11,8 +11,7 @@ export interface AddPriceAlertParams {
     name: string,
     currency: string,
     type: InstrumentType,
-    // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
-    source?: EMarketDataSources
+    source: EMarketDataSources
 }
 
 export interface RemoveOrGetAlertParams {
@@ -48,10 +47,12 @@ export class PriceAlert {
     @prop({required: true})
     currency: string
 
-    @prop({required: true})
+    // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
+    @prop()
     type: InstrumentType
 
-    @prop({required: true})
+    // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
+    @prop()
     source: EMarketDataSources
 }
 
