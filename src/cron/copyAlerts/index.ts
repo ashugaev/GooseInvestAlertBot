@@ -20,7 +20,7 @@ export const copyAlerts = async () => {
 
         await putItemsToCopyPriceAlerts(alerts);
 
-        log.info('Алерты были сохранены в резервную коллекцию', alerts.length);
+        log.info('Алерты были сохранены в резервную коллекцию', alerts.length, 'шт');
     } catch (e) {
         log.error('Ошибка сохранения копии алертов', e)
     }

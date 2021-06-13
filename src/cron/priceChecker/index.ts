@@ -41,6 +41,8 @@ export const setupPriceChecker = async (bot) => {
                 instrumentData = result.instrumentData;
                 price = result.price;
 
+                log.info(`${symbol}:${price}`);
+
                 const isPriceValidValue = typeof price === "number" && price > 0;
 
                 if (!isPriceValidValue) {
