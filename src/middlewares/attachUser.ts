@@ -7,9 +7,9 @@ export async function attachUser(ctx: Context, next) {
 
   // FIXME: Это костыль, который пропустит неавторизованного юзера в систему (может это бот. Не понятно)
   if(!userId) {
-    log.error('no user id from obj', ctx.from);
+    log.error('Нет id юзера в ctx.from, грохаю сессию', ctx);
 
-    next()
+    return;
   }
 
   const dbuser = await findUser(userId)

@@ -36,7 +36,7 @@ export const setupPriceChecker = async (bot) => {
             let instrumentData;
 
             try {
-                const result = await getInstrumentDataWithPrice({symbol});
+                const result = await getInstrumentDataWithPrice({ symbol });
 
                 instrumentData = result.instrumentData;
                 price = result.price;
@@ -118,14 +118,14 @@ export const setupPriceChecker = async (bot) => {
                                     currency: symbolOrCurrency(alert.currency),
                                     price,
                                     message,
-                                    link: type && getInstrumentLink({type, ticker: symbol, source}),
+                                    link: type && getInstrumentLink({ type, ticker: symbol, source }),
                                 })
                                 : i18n.t('ru', 'priceCheckerTriggeredAlert', {
                                     symbol: instrumentData.ticker,
                                     currency: symbolOrCurrency(alert.currency),
                                     price,
                                     name: instrumentData.name,
-                                    link: type && getInstrumentLink({type, ticker: symbol, source}),
+                                    link: type && getInstrumentLink({ type, ticker: symbol, source }),
                                 })
                             , {
                                 parse_mode: 'HTML',
@@ -135,7 +135,17 @@ export const setupPriceChecker = async (bot) => {
                         // TODO: Удалаять алерт после нескольки падений отправки
                         await removePriceAlert({ _id: alert._id })
                     } catch (e) {
-                        log.error('Ошибка отправки сообщения юзеру', e)
+                        // Если юзер блокнул бота
+                        if (e.code === 403) {
+                            try {
+                                await removePriceAlert({ _id: alert._id });
+                                log.info('Алерт удален из-за блокировки юзером', alert);
+                            } catch (e) {
+                                log.error('Ошибка удаления алерта', e);
+                            }
+                        } else {
+                            log.error('Ошибка отправки сообщения юзеру', e)
+                        }
                     }
                 }
             }
