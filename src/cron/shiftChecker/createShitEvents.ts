@@ -1,12 +1,20 @@
-import {getAllShifts} from "../../models/Shifts";
-import {log} from '../../helpers/log';
-import {calculateShifts} from './utils/calculateShifts';
-import {createShiftEvents, ShiftEventItem, ShiftEventsModel} from "../../models/ShiftEvents";
-import { getShiftsByPercent, tinkoffGetAllInstruments } from './utils';
+import { log } from '../../helpers/log';
+import { EMarketDataSources } from "../../marketApi/types";
+import { getInstrumentsBySource } from "../../models";
+import { createShiftEvents, ShiftEventItem, ShiftEventsModel } from "../../models/ShiftEvents";
+import { getAllShifts } from "../../models/Shifts";
+import { getShiftsByPercent } from './utils';
+import { calculateShifts } from './utils/calculateShifts';
 
 export const createShitEvents = async (bot) => {
-    // Зафетчили акции/облигации/фонды массивом
-    const instruments = await tinkoffGetAllInstruments();
+    let instruments = null;
+
+    try {
+        // Зафетчили акции/облигации/фонды массивом
+        instruments = await getInstrumentsBySource({source: EMarketDataSources.tinkoff});
+    } catch (e) {
+        log.error('Ошибка получения инструментов из tinkoff', e)
+    }
 
     const shifts = {}
 

@@ -62,3 +62,15 @@ export async function getInstrumentInfoByTicker({ticker}: {ticker: string | stri
             throw new Error(e);
         }
 }
+
+export interface IGetInstrumentsByTypeParams {
+    source: EMarketDataSources
+}
+
+export async function getInstrumentsBySource({source}: IGetInstrumentsByTypeParams) {
+    const params = { source };
+
+    const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
+
+    return result;
+}

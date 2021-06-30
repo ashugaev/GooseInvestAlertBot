@@ -25,7 +25,7 @@ export const calculateShifts = ({instruments, shifts}) => (
                     from: dateFrom,
                     to: dateTo,
                     interval: 'day',
-                    figi: instrument.figi,
+                    figi: instrument.sourceSpecificData.figi,
                 })
 
                 candles = data.candles;
