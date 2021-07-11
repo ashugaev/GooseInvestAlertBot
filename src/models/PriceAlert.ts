@@ -1,6 +1,6 @@
 // Dependencies
-import {prop, getModelForClass} from '@typegoose/typegoose'
-import {InstrumentType} from "@tinkoff/invest-openapi-js-sdk/build/domain";
+import { prop, getModelForClass } from '@typegoose/typegoose'
+import { InstrumentType } from "@tinkoff/invest-openapi-js-sdk/build/domain";
 import { EMarketDataSources } from "../marketApi/types";
 
 export interface AddPriceAlertParams {
@@ -12,6 +12,7 @@ export interface AddPriceAlertParams {
     currency: string,
     type: InstrumentType,
     source: EMarketDataSources
+    initialPrice: number,
 }
 
 export interface RemoveOrGetAlertParams {
@@ -23,10 +24,10 @@ export interface RemoveOrGetAlertParams {
 }
 
 export class PriceAlert {
-    @prop({required: true})
+    @prop({ required: true })
     user: number
 
-    @prop({required: true})
+    @prop({ required: true })
     symbol: string
 
     @prop()
@@ -41,10 +42,10 @@ export class PriceAlert {
     @prop()
     message: string
 
-    @prop({required: true})
+    @prop({ required: true })
     name: string
 
-    @prop({required: true})
+    @prop({ required: true })
     currency: string
 
     // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
@@ -54,6 +55,12 @@ export class PriceAlert {
     // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
     @prop()
     source: EMarketDataSources
+
+    /**
+     * Цена на момент создания алерта
+     */
+    @prop()
+    initialPrice: number
 }
 
 export interface PriceAlertItem extends PriceAlert {
@@ -67,7 +74,7 @@ interface ICheckAlertsParams {
 
 // Get PriceAlertModel model
 const PriceAlertModel = getModelForClass(PriceAlert, {
-    schemaOptions: {timestamps: true},
+    schemaOptions: { timestamps: true },
     options: {
         customName: 'priceAlerts'
     }
@@ -82,7 +89,8 @@ export function addPriceAlert({
                                   name,
                                   currency,
                                   type,
-                                    source,
+                                  source,
+                                  initialPrice
                               }: AddPriceAlertParams): Promise<PriceAlertItem> {
     return new Promise(async (rs, rj) => {
         const lastCheckedAt = new Date();
@@ -98,6 +106,7 @@ export function addPriceAlert({
                 currency,
                 type,
                 source,
+                initialPrice,
             } as PriceAlert);
 
             rs(createdItem);
@@ -118,12 +127,12 @@ export function getUniqSymbols(number: number): Promise<string[]> {
                 .find(
                     {
                         $or: [
-                            {lastCheckedAt: null},
-                            {lastCheckedAt: {$lte: dateToCheck}}
+                            { lastCheckedAt: null },
+                            { lastCheckedAt: { $lte: dateToCheck } }
                         ]
                     },
-                    {symbol: 1})
-                .sort({lastCheckedAt: 1})
+                    { symbol: 1 })
+                .sort({ lastCheckedAt: 1 })
                 .limit(number)
                 .lean();
             const allSymbols = data.map(elem => elem.symbol);
@@ -137,23 +146,23 @@ export function getUniqSymbols(number: number): Promise<string[]> {
 }
 
 // Вернет массив сработавших алертов
-export function checkAlerts({symbol, price}: ICheckAlertsParams): Promise<PriceAlertItem[]> {
+export function checkAlerts({ symbol, price }: ICheckAlertsParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
-            if(!symbol || !price) {
+            if (!symbol || !price) {
                 throw new Error(`[checkAlerts] Не хватает входных данных ${symbol} ${price}`);
             }
 
             const triggeredAlerts = await PriceAlertModel.find({
                 symbol: symbol.toUpperCase(),
                 $or: [
-                    {lowerThen: {$gte: price}},
-                    {greaterThen: {$lte: price}}
+                    { lowerThen: { $gte: price } },
+                    { greaterThen: { $lte: price } }
                 ]
             })
 
             // Актуализируем timestamp о последней проверке
-            await PriceAlertModel.updateMany({symbol}, {$set: {lastCheckedAt: new Date()}})
+            await PriceAlertModel.updateMany({ symbol }, { $set: { lastCheckedAt: new Date() } })
 
             rs(triggeredAlerts);
         } catch (e) {
@@ -164,7 +173,7 @@ export function checkAlerts({symbol, price}: ICheckAlertsParams): Promise<PriceA
 
 // TODO: Сделать отдельные методы для получения алертов по разным параметрам.
 //  Что бы делать проверку на входные данные и случайно не вернуть лишнего.
-export function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
+export function getAlerts({ symbol, user, _id }: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
     return new Promise(async (rs, rj) => {
         try {
             const params: RemoveOrGetAlertParams = {};
@@ -183,16 +192,16 @@ export function getAlerts({symbol, user, _id}: RemoveOrGetAlertParams): Promise<
 }
 
 export async function getAllAlerts(): Promise<PriceAlertItem[]> {
-        try {
-            const alerts = await PriceAlertModel.find({})
+    try {
+        const alerts = await PriceAlertModel.find({})
 
-            return alerts;
-        } catch (e) {
-            throw new Error(e);
-        }
+        return alerts;
+    } catch (e) {
+        throw new Error(e);
+    }
 }
 
-export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): Promise<number> {
+export function removePriceAlert({ symbol, _id, user }: RemoveOrGetAlertParams): Promise<number> {
     return new Promise(async (rs, rj) => {
         try {
             const params: RemoveOrGetAlertParams = {};
@@ -206,7 +215,7 @@ export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): P
                 return;
             }
 
-            const {deletedCount} = await PriceAlertModel.deleteMany(params)
+            const { deletedCount } = await PriceAlertModel.deleteMany(params)
 
             rs(deletedCount);
         } catch (e) {
@@ -216,10 +225,10 @@ export function removePriceAlert({symbol, _id, user}: RemoveOrGetAlertParams): P
 }
 
 // Вернет массив сработавших алертов
-export function updateAlert({_id, data}: { _id: string, data: {message: string} }): Promise<any> {
+export function updateAlert({ _id, data }: { _id: string, data: { message: string } }): Promise<any> {
     return new Promise(async (rs, rj) => {
         try {
-            const result = await PriceAlertModel.update({_id}, {$set: data})
+            const result = await PriceAlertModel.update({ _id }, { $set: data })
 
             rs(result);
         } catch (e) {
@@ -234,7 +243,7 @@ interface GetAlertsCountForUserParams {
 
 export const getAlertsCountForUser = (user: number) => new Promise(async (rs, rj) => {
     try {
-        const params: GetAlertsCountForUserParams = {user};
+        const params: GetAlertsCountForUserParams = { user };
         const alertsCount = await PriceAlertModel.find(params).count()
 
         rs(alertsCount);

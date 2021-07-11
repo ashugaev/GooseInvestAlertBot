@@ -1,6 +1,7 @@
 import { EMarketDataSources, IBaseInstrumentData } from "../marketApi/types";
 import { getInstrumentInfoByTicker } from "../models";
 import { i18n } from "./i18n";
+import { log } from "./log";
 import { getLastPrice } from "./stocksApi";
 
 interface GetInstrumentDataWithPrice {
@@ -42,6 +43,8 @@ export async function getInstrumentDataWithPrice({
                     { disable_web_page_preview: true }
                 )
             }
+
+            log.info('не пришли данные из апишки', instrumentDataArr)
 
             return;
         }

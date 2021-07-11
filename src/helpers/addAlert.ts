@@ -44,6 +44,8 @@ export const addAlert = ({
             // Перепишем на случай если юзер писал пару с валютой
             symbol = instrumentData.ticker;
         } catch (e) {
+            log.error('ошибка создания алерта', e);
+
             ctx.replyWithHTML(i18n.t('ru', 'alertAddError'));
 
             rj(e);
@@ -69,6 +71,7 @@ export const addAlert = ({
                     currency: instrumentData.sourceSpecificData.currency,
                     type: instrumentData.type,
                     source: instrumentData.source,
+                    initialPrice: lastPrice,
                 };
 
                 lastPrice < price

@@ -122,14 +122,10 @@ language_selected: <b>Бот</b> теперь говорит по-русски.
 priceCheckerErrorCantFind: |
   ❌ Ошибка оповещения для <b>${symbol}</b> на цену <b>${price}</b>. Инструмент не найден. Удаляю его.
 
-priceCheckerTriggeredAlert: |
-  🔔 Цена <b>${name}</b> (${symbol}) достигла целевого значения <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
+priceChecker_triggeredAlert: |
+  🔔 Цена <b>${name}</b> (${symbol}) ${greaterThen ? '↗️ выросла' : '↘️ упала'} до целевого значения <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
 
-priceCheckerTriggeredAlertWithMessage: |
-  🔔 Цена <b>${name}</b> (${symbol}) достигла целевого значения <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
-
-  💬 <b>Твой комментарий:</b>
-  <i>${message}</i>
+  ${message ? '💬 <b>Твой комментарий:</b>\n<i>' + message + '</i>' : ''}
 
 # List
 

@@ -15,7 +15,7 @@ export const setupPriceChecker = async (bot) => {
         let symbols = [];
 
         try {
-           symbols = await getUniqSymbols(50);
+            symbols = await getUniqSymbols(50);
         } catch (e) {
             log.error('[setupPriceChecker] ошибка подключения к базе', e)
         }
@@ -111,23 +111,16 @@ export const setupPriceChecker = async (bot) => {
 
                     try {
                         await bot.telegram.sendMessage(alert.user,
-                            message
-                                ? i18n.t('ru', 'priceCheckerTriggeredAlertWithMessage', {
-                                    symbol: instrumentData.ticker,
-                                    name: instrumentData.name,
-                                    currency: symbolOrCurrency(alert.currency),
-                                    price,
-                                    message,
-                                    link: type && getInstrumentLink({ type, ticker: symbol, source }),
-                                })
-                                : i18n.t('ru', 'priceCheckerTriggeredAlert', {
-                                    symbol: instrumentData.ticker,
-                                    currency: symbolOrCurrency(alert.currency),
-                                    price,
-                                    name: instrumentData.name,
-                                    link: type && getInstrumentLink({ type, ticker: symbol, source }),
-                                })
-                            , {
+                            i18n.t('ru', 'priceChecker_triggeredAlert', {
+                                symbol: instrumentData.ticker,
+                                name: instrumentData.name,
+                                currency: symbolOrCurrency(alert.currency),
+                                greaterThen,
+                                price,
+                                message,
+                                link: type && getInstrumentLink({ type, ticker: symbol, source }),
+                            }),
+                            {
                                 parse_mode: 'HTML',
                                 disable_web_page_preview: true
                             })
