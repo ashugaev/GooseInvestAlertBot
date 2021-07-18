@@ -1,7 +1,8 @@
+import { Shift } from "../../../models";
 import {ShiftsData} from "../../../models/ShiftEvents";
 
 export const getShiftsByPercent = ({percent, shifts = {}}: {percent: number, shifts: ShiftsData}): ShiftsData | undefined => {
-    let newShifts: null | {} = null;
+    let newShifts = null;
 
     const keys = Object.keys(shifts);
 
@@ -9,7 +10,8 @@ export const getShiftsByPercent = ({percent, shifts = {}}: {percent: number, shi
         const data = shifts[key].filter(shift => {
             return shift.growPercent >= percent || shift.fallPercent >= percent
         }).sort((a, b) => b.sumVolume - a.sumVolume)
-            .slice(0, 5);
+            // Этот параметр должен конфигурироваться (пока изменил дефолтный с 5)
+            .slice(0, 20);
 
         if(data.length) {
             newShifts = newShifts ?? {}

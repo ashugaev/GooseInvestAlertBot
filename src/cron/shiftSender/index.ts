@@ -7,6 +7,7 @@ export const shiftSender = async (bot) => {
     const hour = new Date().getHours();
     const events = await getShiftEvents({time: hour})
 
+    // eslint-disable-next-line no-restricted-syntax
     for(const event of events) {
         let message = i18n.t('ru', 'shift_alert_message', {
             percent: plur.percent(event.targetPercent),

@@ -13,7 +13,9 @@ export const createShitEvents = async (bot) => {
         // Зафетчили акции/облигации/фонды массивом
         instruments = await getInstrumentsBySource({source: EMarketDataSources.tinkoff});
     } catch (e) {
-        log.error('Ошибка получения инструментов из tinkoff', e)
+        log.error('Ошибка получения инструментов из tinkoff', e);
+
+        // Тут поидее должен быть ретрай
     }
 
     const shifts = {}

@@ -2,6 +2,7 @@ import {Scenes} from "../constants";
 
 import * as WizardScene from 'telegraf/scenes/wizard';
 import * as Composer from 'telegraf/composer';
+import { hoursToUtc } from "../helpers/hoursToUtc";
 import {i18n} from "../helpers/i18n";
 import {log} from "../helpers/log";
 import {sceneWrapper} from "../helpers/sceneWrapper";
@@ -88,7 +89,9 @@ shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async
         try {
             await createShift({
                 percent,
-                time: hour,
+                // Пока хардкожу московское время, переводя его в utc
+                time: hoursToUtc(hour, -3),
+                timeOffset: -3,
                 days: daysInt,
                 user,
             });

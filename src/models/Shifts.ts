@@ -5,6 +5,9 @@ export class Shift {
     time: number
 
     @prop({required: true})
+    timeOffset: number
+
+    @prop({required: true})
     percent: number
 
     @prop({required: true})
@@ -27,12 +30,13 @@ interface ShiftItem {
     time: number,
     percent: number,
     days: number,
+    timeOffset: number,
 }
 
-export function createShift({percent, time, user, days}: ShiftItem): Promise<null> {
+export function createShift({percent, time, user, days, timeOffset}: ShiftItem): Promise<null> {
     return new Promise(async (rs, rj) => {
         try {
-            await ShiftModel.create({user, time, percent, days});
+            await ShiftModel.create({user, time, percent, days, timeOffset});
 
             rs();
         } catch (e) {

@@ -65,6 +65,7 @@ export function createShiftEvents(items: ShiftEventItem[]): Promise<null> {
 }
 
 type ShiftEventItemFindParams = Modify<ShiftEventItem, {
+    // eslint-disable-next-line @typescript-eslint/ban-types
     time: object | number,
 }>
 

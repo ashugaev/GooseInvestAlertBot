@@ -24,6 +24,7 @@ export const startCronJob = ({
 
     try {
         callbackArgs
+            // eslint-disable-next-line prefer-spread
             ? await callback.apply(null, callbackArgs)
             : await callback();
     } catch (e) {
