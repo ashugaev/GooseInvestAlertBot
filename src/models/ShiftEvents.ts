@@ -1,7 +1,7 @@
-import {prop, getModelForClass} from '@typegoose/typegoose'
-import {Modify} from "Modify";
-import {MarketInstrument} from "@tinkoff/invest-openapi-js-sdk/build/domain";
-import {RemoveOrGetAlertParams} from "./PriceAlert";
+import { prop, getModelForClass } from '@typegoose/typegoose'
+import { Modify } from 'Modify'
+import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
+import { RemoveOrGetAlertParams } from './PriceAlert'
 
 interface ShiftEventDataItem {
     currentPrice: number
@@ -18,27 +18,27 @@ export interface ShiftsData {
 }
 
 export class ShiftEvents {
-    @prop({required: true})
+    @prop({ required: true })
     user: number
 
-    @prop({required: true})
+    @prop({ required: true })
     time: number
 
-    @prop({required: true})
+    @prop({ required: true })
     days: number
 
-    @prop({required: true})
+    @prop({ required: true })
     targetPercent: number
 
-    @prop({required: true})
+    @prop({ required: true })
     data: ShiftsData
 }
 
 export const ShiftEventsModel = getModelForClass(ShiftEvents, {
-    schemaOptions: {timestamps: true},
-    options: {
-        customName: 'shiftevents'
-    }
+  schemaOptions: { timestamps: true },
+  options: {
+    customName: 'shiftevents'
+  }
 })
 
 export interface ShiftEventItem {
@@ -52,16 +52,16 @@ export interface ShiftEventItem {
     }
 }
 
-export function createShiftEvents(items: ShiftEventItem[]): Promise<null> {
-    return new Promise(async (rs, rj) => {
-        try {
-            await ShiftEventsModel.create(items);
+export function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
+  return new Promise(async (rs, rj) => {
+    try {
+      await ShiftEventsModel.create(items)
 
-            rs();
-        } catch (e) {
-            rj(e)
-        }
-    })
+      rs()
+    } catch (e) {
+      rj(e)
+    }
+  })
 }
 
 type ShiftEventItemFindParams = Modify<ShiftEventItem, {
@@ -72,41 +72,40 @@ type ShiftEventItemFindParams = Modify<ShiftEventItem, {
 /**
  * Присылает по времени события по указанному времени и меньше (что бы точно не пропустить что-нибудь)
  */
-export function getShiftEvents({time}: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
-    return new Promise(async (rs, rj) => {
-        try {
-            const params: Partial<ShiftEventItemFindParams> = {};
+export function getShiftEvents ({ time }: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
+  return new Promise(async (rs, rj) => {
+    try {
+      const params: Partial<ShiftEventItemFindParams> = {}
 
-            time && (params.time = {$lte: time})
+      time && (params.time = { $lte: time })
 
-            const shifts = await ShiftEventsModel.find(params);
+      const shifts = await ShiftEventsModel.find(params)
 
-            rs(shifts);
-        } catch (e) {
-            rj(e)
-        }
-    })
+      rs(shifts)
+    } catch (e) {
+      rj(e)
+    }
+  })
 }
 
+export function removeShiftEvent ({ _id, user }: Partial<ShiftEventItem>): Promise<number> {
+  return new Promise(async (rs, rj) => {
+    try {
+      const params: RemoveOrGetAlertParams = {}
 
-export function removeShiftEvent({_id, user}: Partial<ShiftEventItem>): Promise<number> {
-    return new Promise(async (rs, rj) => {
-        try {
-            const params: RemoveOrGetAlertParams = {};
+      user && (params.user = user)
+      _id && (params._id = _id)
 
-            user && (params.user = user)
-            _id && (params._id = _id)
+      if (!Object.keys(params).length) {
+        rj('Не указанны параметры')
+        return
+      }
 
-            if (!Object.keys(params).length) {
-                rj('Не указанны параметры');
-                return;
-            }
+      const { deletedCount } = await ShiftEventsModel.deleteMany(params)
 
-            const {deletedCount} = await ShiftEventsModel.deleteMany(params)
-
-            rs(deletedCount);
-        } catch (e) {
-            rj(e);
-        }
-    })
+      rs(deletedCount)
+    } catch (e) {
+      rj(e)
+    }
+  })
 }

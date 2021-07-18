@@ -1,4 +1,3 @@
 export const listConfig = {
-    itemsPerPage: 7,
+  itemsPerPage: 7
 }
-

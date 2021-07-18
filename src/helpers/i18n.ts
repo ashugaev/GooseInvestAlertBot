@@ -8,10 +8,10 @@ export const i18n = new dirtyI18N({
   defaultLanguage: 'ru',
   sessionName: 'session',
   useSession: false,
-  allowMissing: false,
+  allowMissing: false
 }) as I18N
 
-export function setupI18N(bot: Telegraf<Context>) {
+export function setupI18N (bot: Telegraf<Context>) {
   bot.use(i18n.middleware())
   bot.use((ctx, next) => {
     const anyI18N = ctx.i18n as any

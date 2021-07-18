@@ -11,11 +11,11 @@ export class User {
 
 // Get User model
 const UserModel = getModelForClass(User, {
-  schemaOptions: { timestamps: true },
+  schemaOptions: { timestamps: true }
 })
 
 // Get or create user
-export async function findUser(id: number) {
+export async function findUser (id: number) {
   let user = await UserModel.findOne({ id }).lean()
   if (!user) {
     try {

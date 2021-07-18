@@ -1,28 +1,28 @@
-import {prop, getModelForClass} from '@typegoose/typegoose'
+import { prop, getModelForClass } from '@typegoose/typegoose'
 
 export class Shift {
-    @prop({required: true})
+    @prop({ required: true })
     time: number
 
-    @prop({required: true})
+    @prop({ required: true })
     timeOffset: number
 
-    @prop({required: true})
+    @prop({ required: true })
     percent: number
 
-    @prop({required: true})
+    @prop({ required: true })
     days: number
 
-    @prop({required: true})
+    @prop({ required: true })
     user: number
 }
 
 // Get User model
 const ShiftModel = getModelForClass(Shift, {
-    schemaOptions: {timestamps: true},
-    options: {
-        customName: 'shifts'
-    }
+  schemaOptions: { timestamps: true },
+  options: {
+    customName: 'shifts'
+  }
 })
 
 interface ShiftItem {
@@ -33,37 +33,37 @@ interface ShiftItem {
     timeOffset: number,
 }
 
-export function createShift({percent, time, user, days, timeOffset}: ShiftItem): Promise<null> {
-    return new Promise(async (rs, rj) => {
-        try {
-            await ShiftModel.create({user, time, percent, days, timeOffset});
+export function createShift ({ percent, time, user, days, timeOffset }: ShiftItem): Promise<null> {
+  return new Promise(async (rs, rj) => {
+    try {
+      await ShiftModel.create({ user, time, percent, days, timeOffset })
 
-            rs();
-        } catch (e) {
-            rj(e)
-        }
-    })
+      rs()
+    } catch (e) {
+      rj(e)
+    }
+  })
 }
 
-export function getAllShifts(): Promise<ShiftItem[]> {
-    return new Promise(async (rs, rj) => {
-        try {
-            const shifts = await ShiftModel.find();
+export function getAllShifts (): Promise<ShiftItem[]> {
+  return new Promise(async (rs, rj) => {
+    try {
+      const shifts = await ShiftModel.find()
 
-            rs(shifts);
-        } catch (e) {
-            rj(e)
-        }
-    })
+      rs(shifts)
+    } catch (e) {
+      rj(e)
+    }
+  })
 }
 
 export const getShiftsCountForUser = (user: number) => new Promise(async (rs, rj) => {
-    try {
-        const params: Partial<ShiftItem> = {user};
-        const shiftsCount = await ShiftModel.find(params).count()
+  try {
+    const params: Partial<ShiftItem> = { user }
+    const shiftsCount = await ShiftModel.find(params).count()
 
-        rs(shiftsCount);
-    } catch (e) {
-        rj(e)
-    }
+    rs(shiftsCount)
+  } catch (e) {
+    rj(e)
+  }
 })

@@ -1,7 +1,7 @@
 import { prop, getModelForClass } from '@typegoose/typegoose'
-import { ICoingecoSpecificBaseData } from "../marketApi/coingecko/types";
-import { ITinkoffSpecificBaseData } from "../marketApi/tinkoff/types";
-import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from "../marketApi/types";
+import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
+import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
+import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../marketApi/types'
 
 export class InstrumentsList {
     @prop({ required: true, unique: true })
@@ -21,56 +21,56 @@ export class InstrumentsList {
 }
 
 const InstrumentsListModel = getModelForClass(InstrumentsList, {
-    schemaOptions: { timestamps: true },
-    options: {
-        customName: 'instrumentslist'
-    }
+  schemaOptions: { timestamps: true },
+  options: {
+    customName: 'instrumentslist'
+  }
 })
 
-export async function clearInstrumentsList() {
-    try {
-        await InstrumentsListModel.deleteMany({});
-    } catch (e) {
-        throw new Error(e);
-    }
+export async function clearInstrumentsList () {
+  try {
+    await InstrumentsListModel.deleteMany({})
+  } catch (e) {
+    throw new Error(e)
+  }
 }
 
-export async function putItemsToInstrumentsList(items: IBaseInstrumentData[]) {
-    try {
-        await InstrumentsListModel.insertMany(items)
-    } catch (e) {
-        throw new Error(e);
-    }
+export async function putItemsToInstrumentsList (items: IBaseInstrumentData[]) {
+  try {
+    await InstrumentsListModel.insertMany(items)
+  } catch (e) {
+    throw new Error(e)
+  }
 }
 
-export async function getInstrumentInfoByTicker({ticker}: {ticker: string | string[]}): Promise<IBaseInstrumentData[]> {
-        try {
-            if(!ticker?.length) {
-                throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
-            }
+export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<IBaseInstrumentData[]> {
+  try {
+    if (!ticker?.length) {
+      throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
+    }
 
-            const params = {
-                ticker: {
-                    $in: [].concat(ticker)
-                }
-            };
+    const params = {
+      ticker: {
+        $in: [].concat(ticker)
+      }
+    }
 
-            const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
+    const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
 
-            return result;
-        } catch (e) {
-            throw new Error(e);
-        }
+    return result
+  } catch (e) {
+    throw new Error(e)
+  }
 }
 
 export interface IGetInstrumentsByTypeParams {
     source: EMarketDataSources
 }
 
-export async function getInstrumentsBySource({source}: IGetInstrumentsByTypeParams) {
-    const params = { source };
+export async function getInstrumentsBySource ({ source }: IGetInstrumentsByTypeParams) {
+  const params = { source }
 
-    const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
+  const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
 
-    return result;
+  return result
 }

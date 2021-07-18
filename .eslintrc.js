@@ -12,11 +12,12 @@ module.exports = {
       version: "latest"
     }
   },
-  plugins: ["react", "react-hooks",],
-  extends: [
-    "plugin:react/recommended", // Uses the recommended rules from @eslint-plugin-react
-    "plugin:@typescript-eslint/recommended" // Uses the recommended rules from the @typescript-eslint/eslint-plugin
+  plugins: [
+    '@typescript-eslint',
+    'unused-imports',
+    'simple-import-sort',
   ],
+  extends: ["standard"],
   rules: {
     "react-hooks/exhaustive-deps": "warn",
     "no-return-assign": "off",

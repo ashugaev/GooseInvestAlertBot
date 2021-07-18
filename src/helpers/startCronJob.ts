@@ -1,5 +1,5 @@
-const { CronJob } = require('cron');
-const { log } = require('./log');
+const { CronJob } = require('cron')
+const { log } = require('./log')
 
 interface StartCronJobParams {
     name: string,
@@ -20,31 +20,31 @@ export const startCronJob = ({
   executeBeforeInit
 }: StartCronJobParams) => {
   const onTickFunction = async () => {
-    log.info('Start cron job:', name);
+    log.info('Start cron job:', name)
 
     try {
-        callbackArgs
-            // eslint-disable-next-line prefer-spread
-            ? await callback.apply(null, callbackArgs)
-            : await callback();
+      callbackArgs
+      // eslint-disable-next-line prefer-spread
+        ? await callback.apply(null, callbackArgs)
+        : await callback()
     } catch (e) {
-        log.error('Cron job error', e);
+      log.error('Cron job error', e)
     }
-  };
+  }
 
   executeBeforeInit && (onTickFunction())
 
   const job = new CronJob(
     period,
-      onTickFunction,
+    onTickFunction,
     () => {
-      log.info('Start cron job:', name);
+      log.info('Start cron job:', name)
     },
-     false,
-    'Europe/Moscow',
-  );
+    false,
+    'Europe/Moscow'
+  )
 
-  job.start();
+  job.start()
 
-  return job;
-};
+  return job
+}

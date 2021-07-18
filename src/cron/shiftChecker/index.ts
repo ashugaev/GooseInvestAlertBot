@@ -1,1 +1,1 @@
-export * from './createShitEvents';
+export * from './createShitEvents'

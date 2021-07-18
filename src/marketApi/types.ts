@@ -1,14 +1,14 @@
-import { ICoingecoSpecificBaseData } from "./coingecko/types";
-import { ITinkoffSpecificBaseData } from "./tinkoff/types";
+import { ICoingecoSpecificBaseData } from './coingecko/types'
+import { ITinkoffSpecificBaseData } from './tinkoff/types'
 
 export enum EMarketDataSources {
-    tinkoff = "tinkoff",
-    coingecko = "coingecko"
+    tinkoff = 'tinkoff',
+    coingecko = 'coingecko'
 }
 
 export enum EMarketInstrumentTypes {
-    Stock = "Stock",
-    Crypto = "Crypto"
+    Stock = 'Stock',
+    Crypto = 'Crypto'
 }
 
 /**
@@ -26,4 +26,3 @@ export interface IMarketDataSourcesConfig {
     name: string,
     requestsPerMinuteLimit: number,
 }
-

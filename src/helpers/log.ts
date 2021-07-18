@@ -1,16 +1,16 @@
-import * as log4js from 'log4js';
-import * as Sentry from "@sentry/node";
+import * as log4js from 'log4js'
+import * as Sentry from '@sentry/node'
 
-const logger = log4js.getLogger();
-logger.level = 'debug';
+const logger = log4js.getLogger()
+logger.level = 'debug'
 
-const error = logger.error;
+const error = logger.error
 
 logger.error = (...args) => {
-    // TODO: Придумать как проставить тут id юзера
-    Sentry.captureException(args);
+  // TODO: Придумать как проставить тут id юзера
+  Sentry.captureException(args)
 
-    error.apply(logger, args);
+  error.apply(logger, args)
 }
 
-export const log = logger;
+export const log = logger

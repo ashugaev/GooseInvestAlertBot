@@ -1,4 +1,4 @@
-import {Markup} from "telegraf";
+import { Markup } from 'telegraf'
 
 interface IPaginationButtonsParams {
     /**
@@ -10,25 +10,25 @@ interface IPaginationButtonsParams {
     itemsLength: number,
 }
 
-export const paginationButtons = ({name, page, itemsPerPage, itemsLength}: IPaginationButtonsParams) => {
-    const isFirstPage = page === 0;
-    const isLastPage = itemsLength / (page + 1) <= itemsPerPage;
+export const paginationButtons = ({ name, page, itemsPerPage, itemsLength }: IPaginationButtonsParams) => {
+  const isFirstPage = page === 0
+  const isLastPage = itemsLength / (page + 1) <= itemsPerPage
 
-    const buttons = [];
+  const buttons = []
 
-    !isFirstPage && (buttons.push(
-        Markup.callbackButton(
-            `⬅️`,
-            `${name}_page_${page - 1}`,
-        )
-    ));
+  !isFirstPage && (buttons.push(
+    Markup.callbackButton(
+      '⬅️',
+            `${name}_page_${page - 1}`
+    )
+  ))
 
-    !isLastPage && (buttons.push(
-        Markup.callbackButton(
-            `➡️`,
-            `${name}_page_${page + 1}`,
-        )
-    ));
+  !isLastPage && (buttons.push(
+    Markup.callbackButton(
+      '➡️',
+            `${name}_page_${page + 1}`
+    )
+  ))
 
-    return buttons;
+  return buttons
 }
