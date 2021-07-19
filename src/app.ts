@@ -1,6 +1,10 @@
 // Config dotenv
 import * as dotenv from 'dotenv'
 
+// Строка должна быть выше импорта файлов с переменными окружения
+// eslint-disable-next-line import/no-extraneous-dependencies
+dotenv.config({ path: `${__dirname}/../.env` })
+
 import * as Sentry from '@sentry/node'
 
 import { bot } from './helpers/bot'
@@ -23,9 +27,6 @@ import { shiftAddScene } from './scenes/shiftAddScene'
 
 import { configureAnalytics } from './middlewares/configureAnalytics'
 import { setupCheckers } from './cron'
-
-// Строка должна быть выше импорта файлов с переменными окружения
-dotenv.config({ path: `${__dirname}/../.env` })
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
