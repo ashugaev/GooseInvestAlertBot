@@ -16,11 +16,12 @@ export const shiftSender = async (bot) => {
       itemsPerCategory: SHIFT_CONFIG.itemsPerCategory
     }) + '\n'
 
-    const { Stock, Etf, Bond } = event.data
+    const { Stock, Etf } = event.data
 
     Stock && (message += i18n.t('ru', 'shift_alert_message_stock', { list: Stock.map(getItemText).join('\n') }))
     Etf && (message += i18n.t('ru', 'shift_alert_message_etf', { list: Etf.map(getItemText).join('\n') }))
-    Bond && (message += i18n.t('ru', 'shift_alert_message_bond', { list: Bond.map(getItemText).join('\n') }))
+    // Пока убрал облигации
+    // Bond && (message += i18n.t('ru', 'shift_alert_message_bond', { list: Bond.map(getItemText).join('\n') }))
 
     await bot.telegram.sendMessage(event.user, message, {
       parse_mode: 'HTML',
