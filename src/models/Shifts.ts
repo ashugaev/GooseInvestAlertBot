@@ -1,20 +1,20 @@
 import { prop, getModelForClass } from '@typegoose/typegoose'
 
 export class Shift {
-    @prop({ required: true })
-    time: number
+  @prop({ required: true })
+  time: number
 
-    @prop({ required: true })
-    timeOffset: number
+  @prop({ required: true })
+  timeZone: number
 
-    @prop({ required: true })
-    percent: number
+  @prop({ required: true })
+  percent: number
 
-    @prop({ required: true })
-    days: number
+  @prop({ required: true })
+  days: number
 
-    @prop({ required: true })
-    user: number
+  @prop({ required: true })
+  user: number
 }
 
 // Get User model
@@ -26,47 +26,29 @@ const ShiftModel = getModelForClass(Shift, {
 })
 
 interface ShiftItem {
-    user: number,
-    time: number,
-    percent: number,
-    days: number,
-    timeOffset: number,
+  user: number
+  time: number
+  percent: number
+  days: number
+  timeZone: number
 }
 
-export function createShift ({ percent, time, user, days, timeOffset }: ShiftItem): Promise<null> {
-  return new Promise(async (rs, rj) => {
-    try {
-      await ShiftModel.create({ user, time, percent, days, timeOffset })
-
-      rs()
-    } catch (e) {
-      rj(e)
-    }
-  })
+export const createShift = async ({ percent, time, user, days, timeZone }: ShiftItem) => {
+  await ShiftModel.create({ user, time, percent, days, timeZone })
 }
 
-export function getAllShifts (): Promise<ShiftItem[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      const shifts = await ShiftModel.find()
+export const getAllShifts = async () => {
+  const shifts = await ShiftModel.find()
 
-      rs(shifts)
-    } catch (e) {
-      rj(e)
-    }
-  })
+  return shifts
 }
 
-export const getShiftsCountForUser = (user: number) => new Promise(async (rs, rj) => {
-  try {
-    const params: Partial<ShiftItem> = { user }
-    const shiftsCount = await ShiftModel.find(params).count()
+export const getShiftsCountForUser = async (user: number) => {
+  const params: Partial<ShiftItem> = { user }
+  const shiftsCount = await ShiftModel.find(params).count()
 
-    rs(shiftsCount)
-  } catch (e) {
-    rj(e)
-  }
-})
+  return shiftsCount
+}
 
 export const getShiftsForUser = async (user: number) => {
   const params: Partial<ShiftItem> = { user }

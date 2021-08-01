@@ -6,25 +6,25 @@ import { getShiftsForUser } from '../../models/Shifts'
 import { log } from '../../helpers/log'
 
 export function setupShift (bot: Telegraf<Context>) {
-  bot.command(['stats'], commandWrapper(async ctx => {
+  bot.command(['stats', 'stat'], commandWrapper(async ctx => {
     const { text } = ctx.message
     const { id: user } = ctx.from
 
-    const data: string[] = text.match(/^\/stats$/)
-
-    const shiftsForUser = await getShiftsForUser(user)
+    const data: string[] = text.match(/^\/(stats|stat)$/)
 
     if (data) {
       try {
+        const shiftsForUser = await getShiftsForUser(user)
+
         if (shiftsForUser.length >= Limits.shifts) {
           // Пока доступен один шифт
           // ctx.replyWithHTML(ctx.i18n.t('shift_overlimit', { limit: Limits.shifts }))
 
-          const { days, percent, time } = shiftsForUser[0]
+          const { days, percent, time, timeZone } = shiftsForUser[0]
 
           ctx.replyWithHTML(ctx.i18n.t('shift_show', {
             percent,
-            time: plur.hours(time),
+            time: plur.hours(time + timeZone),
             days: plur.days(days)
           }))
 

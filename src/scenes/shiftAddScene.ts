@@ -90,8 +90,9 @@ shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async
       await createShift({
         percent,
         // Пока хардкожу московское время, переводя его в utc
+        // TODO: Вынести временную зону в константу
         time: hoursToUtc(hour, -3),
-        timeOffset: -3,
+        timeZone: 3,
         days: daysInt,
         user
       })

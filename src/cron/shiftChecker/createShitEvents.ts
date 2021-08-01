@@ -1,3 +1,4 @@
+import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { EMarketDataSources } from '../../marketApi/types'
 import { getInstrumentsBySource } from '../../models'
@@ -23,8 +24,16 @@ export const createShitEvents = async (bot) => {
   // Считаем изменение цены за каждый день для каждого инструмента и кладем все в shifts
   await calculateShifts({ instruments, shifts })
 
-  // Получаем все подписки на шифты из базы
-  const shiftAlerts = await getAllShifts()
+  let shiftAlerts = []
+
+  try {
+    // Получаем все подписки на шифты из базы
+    shiftAlerts = await getAllShifts()
+  } catch (e) {
+    log.error(e)
+
+    return
+  }
 
   log.info('User alerts', shiftAlerts.length)
 

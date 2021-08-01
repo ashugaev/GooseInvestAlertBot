@@ -45,7 +45,9 @@ module.exports = {
     'import/no-unresolved': 0,
     'import/extensions': 0,
     '@typescript-eslint/ban-ts-comment': 0,
-    '@typescript-eslint/no-var-requires': 0
+    '@typescript-eslint/no-var-requires': 0,
+    '@typescript-eslint/explicit-function-return-type': 0,
+
   },
   overrides: [
     {
