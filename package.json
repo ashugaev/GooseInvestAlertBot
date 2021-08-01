@@ -15,7 +15,7 @@
     "dev:watch": "concurrently -k -i -p \"[{name}]\" -n \"Node,TypeScript\" -c \"yellow.bold,cyan.bold\" \"npm run watch:js\" \"npm run watch:ts\"",
     "dev:static": "npm run build:ts && node dist/app.js",
     "build:ts": "tsc --skipLibCheck",
-    "watch:ts": "tsc -w --skipLibCheck",
+    "watch:ts": "rimraf ./dist && tsc -w --skipLibCheck",
     "watch:js": "nodemon dist/app.js",
     "docker:up": "npm run build && docker-compose up -d --build --force-recreate",
     "docker:down": "docker-compose down"
@@ -61,6 +61,7 @@
     "mongoose": "^5.9.25",
     "node-cache": "^5.1.2",
     "plural-ru": "^2.0.2",
+    "rifraf": "^2.0.3",
     "telegraf": "^3.38.0",
     "telegraf-i18n": "^6.6.0"
   }
