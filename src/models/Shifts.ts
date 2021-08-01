@@ -67,3 +67,10 @@ export const getShiftsCountForUser = (user: number) => new Promise(async (rs, rj
     rj(e)
   }
 })
+
+export const getShiftsForUser = async (user: number) => {
+  const params: Partial<ShiftItem> = { user }
+  const shiftsCount = await ShiftModel.find(params)
+
+  return shiftsCount
+}

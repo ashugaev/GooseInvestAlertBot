@@ -5,14 +5,15 @@ module.exports = {
     sourceType: 'module', // Allows for the use of imports
     ecmaFeatures: {
       jsx: true // Allows for the parsing of JSX
-    }
+    },
+    project: './tsconfig.json'
   },
   plugins: [
     '@typescript-eslint',
     'unused-imports',
     'simple-import-sort'
   ],
-  extends: ['standard'],
+  extends: ['standard-with-typescript'],
   rules: {
     'no-return-assign': 'off',
     'no-continue': 'off',
