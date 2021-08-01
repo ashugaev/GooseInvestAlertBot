@@ -47,7 +47,8 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 0,
     '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
-
+    '@typescript-eslint/strict-boolean-expressions': 0,
+    '@typescript-eslint/no-floating-promises': 0,
   },
   overrides: [
     {

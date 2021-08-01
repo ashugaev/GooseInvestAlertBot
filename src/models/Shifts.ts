@@ -56,3 +56,8 @@ export const getShiftsForUser = async (user: number) => {
 
   return shiftsCount
 }
+
+export const removeShiftById = async (id: string) => {
+  const params = { _id: id }
+  await ShiftModel.remove(params)
+}

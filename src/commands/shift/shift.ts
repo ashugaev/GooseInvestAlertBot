@@ -1,9 +1,11 @@
 import { Telegraf, Context, Markup } from 'telegraf'
 import { commandWrapper } from '../../helpers/commandWrapper'
-import { Limits, Scenes } from '../../constants'
+import { Actions, Limits, Scenes } from '../../constants'
 import { plur } from '../../helpers/plural'
+import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
 import { getShiftsForUser } from '../../models/Shifts'
 import { log } from '../../helpers/log'
+import { shiftDeleteActions } from './shift.actions'
 import { buttonShiftDelete } from './shift.buttons'
 
 export function setupShift (bot: Telegraf<Context>) {
@@ -47,4 +49,6 @@ export function setupShift (bot: Telegraf<Context>) {
 
     ctx.replyWithHTML(ctx.i18n.t('shift_invalidFormat'))
   }))
+
+  bot.action(triggerActionRegexp(Actions.shift_delete), shiftDeleteActions)
 }
