@@ -8,8 +8,8 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet",
-    "lint:fix": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet",
+    "lint:fix": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "build": "npm run build:ts",
     "start": "node dist/app.js > logs/logfile",
     "dev:watch": "concurrently -k -i -p \"[{name}]\" -n \"Node,TypeScript\" -c \"yellow.bold,cyan.bold\" \"npm run watch:js\" \"npm run watch:ts\"",

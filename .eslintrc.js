@@ -6,7 +6,7 @@ module.exports = {
     ecmaFeatures: {
       jsx: true // Allows for the parsing of JSX
     },
-    project: './tsconfig.json'
+    project: './tsconfig.json',
   },
   plugins: [
     '@typescript-eslint',
