@@ -5,11 +5,11 @@ import { getShiftsCountForUser } from '../../models/Shifts'
 import { log } from '../../helpers/log'
 
 export function setupShift (bot: Telegraf<Context>) {
-  bot.command(['shift'], commandWrapper(async ctx => {
+  bot.command(['stats'], commandWrapper(async ctx => {
     const { text } = ctx.message
     const { id: user } = ctx.from
 
-    const data: string[] = text.match(/^\/shift$/)
+    const data: string[] = text.match(/^\/stats$/)
 
     if (data) {
       try {
