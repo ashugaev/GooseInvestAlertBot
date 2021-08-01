@@ -1,3 +1,4 @@
+import { SHIFT_CONFIG } from '../../commands/shift'
 import { getShiftEvents, removeShiftEvent } from '../../models/ShiftEvents'
 import { i18n } from '../../helpers/i18n'
 import { plur } from '../../helpers/plural'
@@ -11,7 +12,8 @@ export const shiftSender = async (bot) => {
   for (const event of events) {
     let message = i18n.t('ru', 'shift_alert_message', {
       percent: plur.percent(event.targetPercent),
-      days: plur.days(event.days)
+      days: plur.days(event.days),
+      itemsPerCategory: SHIFT_CONFIG.itemsPerCategory
     }) + '\n'
 
     const { Stock, Etf, Bond } = event.data

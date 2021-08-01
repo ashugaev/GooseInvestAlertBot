@@ -1,8 +1,8 @@
 import { Telegraf, Context } from 'telegraf'
-import { commandWrapper } from '../helpers/commandWrapper'
-import { Limits, Scenes } from '../constants'
-import { getShiftsCountForUser } from '../models/Shifts'
-import { log } from '../helpers/log'
+import { commandWrapper } from '../../helpers/commandWrapper'
+import { Limits, Scenes } from '../../constants'
+import { getShiftsCountForUser } from '../../models/Shifts'
+import { log } from '../../helpers/log'
 
 export function setupShift (bot: Telegraf<Context>) {
   bot.command(['shift'], commandWrapper(async ctx => {
