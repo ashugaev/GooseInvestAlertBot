@@ -1,10 +1,10 @@
 {
-  "name": "telegraf-template",
+  "name": "Goose Invers Alert",
   "version": "1.0.0",
-  "description": "Telegram bot template based on telegraf.js.org",
+  "description": "Бот пришлет уведомление, когда стоимость акции или криптовалюты достигнет указанного значения",
   "main": "dist/app.js",
-  "repository": "https://github.com/backmeupplz/telegraf-template",
-  "author": "backmeupplz <backmeupplz@gmail.com>",
+  "repository": "https://github.com/ashugaev/GooseInvestAlertBot",
+  "author": "ashugaev <alek-2020@yandex.ru>",
   "license": "MIT",
   "private": false,
   "scripts": {
@@ -60,6 +60,7 @@
     "lint-staged": "^10.5.3",
     "log4js": "^6.3.0",
     "mongoose": "^5.9.25",
+    "node-binance-api": "^0.12.5",
     "node-cache": "^5.1.2",
     "plural-ru": "^2.0.2",
     "rifraf": "^2.0.3",
