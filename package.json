@@ -1,5 +1,5 @@
 {
-  "name": "Goose Invers Alert",
+  "name": "goose-invest-alert",
   "version": "1.0.0",
   "description": "Бот пришлет уведомление, когда стоимость акции или криптовалюты достигнет указанного значения",
   "main": "dist/app.js",
