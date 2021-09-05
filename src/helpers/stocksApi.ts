@@ -14,15 +14,18 @@ const apiURL = 'https://api-invest.tinkoff.ru/openapi'
 const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
 const secretToken = process.env.STOCKS_API_TOKEN
 
+// Тут хранится время последней отправки логов в sentry, что бы ограничивать количество логов
+let tinkoffApiFailureSentTime = 0
+
 export const stocksApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
 export interface GetLastPriceData extends MarketInstrument {
-    lastPrice: number
+  lastPrice: number
 }
 
 export interface IGetInfoBySymbolParams {
-    instrumentData?: IBaseInstrumentData,
-    ticker?: string,
+  instrumentData?: IBaseInstrumentData
+  ticker?: string
 }
 
 const symbolInfoCache = new NodeCache({
@@ -53,11 +56,21 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
 
     rs(data)
   } catch (e) {
-    Sentry.captureException('Ошибка ответа тиньковской апишски', {
-      tags: TINKOFF_SENTRY_TAGS
-    })
+    const currentTime = new Date().getTime()
 
-    log.error(e)
+    // Если прошло больше часа
+    const noSentry = (currentTime - tinkoffApiFailureSentTime) < 3600000
+
+    console.error('[StocksApi] Ошибка ответа тиньковской апишски', e)
+
+    if (!noSentry) {
+      Sentry.captureException('Ошибка ответа тиньковской апишски', {
+        tags: TINKOFF_SENTRY_TAGS
+      })
+
+      tinkoffApiFailureSentTime = currentTime
+    }
+
     rj(e)
   }
 })

@@ -6,6 +6,8 @@ import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 
+let lastApiErrorSentrySentTime = 0
+
 export const setupPriceChecker = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
   // и успеть выполнить подготовительные ф-ции
@@ -31,7 +33,7 @@ export const setupPriceChecker = async (bot) => {
     for (let i = 0; symbols.length > i; i++) {
       const symbol = symbols[i]
 
-      let removeAlertsForSymbol = false
+      const removeAlertsForSymbol = false
       let price
       let instrumentData
 
@@ -51,11 +53,27 @@ export const setupPriceChecker = async (bot) => {
       } catch (e) {
         // Сейчас этот if не будет срабатывать из-за того хожу теперь в базу а не в апи за данными инструмента
         if (typeof e === 'object' && e !== null && e.cantFind) {
-          removeAlertsForSymbol = true
+          // FIXME: Пока закомментил. Слишком опасное место.
+          //  Потенциально может выкосить все алерты
+          // removeAlertsForSymbol = true
 
           log.error('Инструмент не найдет в апи', e)
         } else {
-          log.error('Ошибка получания цены для инструмента', e)
+          const currentTime = new Date().getTime()
+
+          // Если прошло больше часа
+          const noSentry = (currentTime - lastApiErrorSentrySentTime) < 3600000
+
+          if (noSentry) {
+            console.error('[PriceChecker] Ошибка получания цены для инструмента', e)
+
+            continue
+          } else {
+            // У логгера под капотом отправка сообщения в sentry
+            log.error('[PriceChecker] Ошибка получания цены для инструмента', e)
+
+            lastApiErrorSentrySentTime = currentTime
+          }
         }
 
         continue
@@ -72,6 +90,7 @@ export const setupPriceChecker = async (bot) => {
 
           try {
             // TODO: Удалаять алерт после нескольки падений отправки
+            //  Сейчас удалится даже если упадет отрпавка сообщения
             await removePriceAlert({ _id: alert._id })
 
             await bot.telegram.sendMessage(alert.user, i18n.t(
@@ -95,7 +114,7 @@ export const setupPriceChecker = async (bot) => {
       try {
         triggeredAlerts = await checkAlerts({ symbol, price })
       } catch (e) {
-        console.error('ошибка получения алертов', 'price', price, 'symbol', symbol, 'error', e)
+        log.error('ошибка получения алертов', 'price', price, 'symbol', symbol, 'error', e)
 
         continue
       }
