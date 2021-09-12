@@ -1,11 +1,11 @@
 import * as Sentry from '@sentry/node'
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
+import { getBinanceCoinLastPrice } from '../marketApi/binance/api/getPrice'
 import { coningeckoGetLasePrice } from '../marketApi/coingecko/api/getLastPrice'
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants'
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice'
 import { EMarketDataSources, IBaseInstrumentData } from '../marketApi/types'
 import { getInstrumentDataWithPrice } from './getInstrumentData'
-import { log } from './log'
 
 const NodeCache = require('node-cache')
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk')
@@ -104,10 +104,12 @@ export const getLastPrice = async ({
 
     let lastPrice
 
-    if (!instrumentData.source || instrumentData.source == EMarketDataSources.tinkoff) {
+    if (!instrumentData.source || instrumentData.source === EMarketDataSources.tinkoff) {
       lastPrice = await tinkoffGetLastPrice({ instrumentData })
-    } else if (instrumentData.source == EMarketDataSources.coingecko) {
+    } else if (instrumentData.source === EMarketDataSources.coingecko) {
       lastPrice = await coningeckoGetLasePrice({ instrumentData })
+    } else if (instrumentData.source === EMarketDataSources.binance) {
+      lastPrice = await getBinanceCoinLastPrice(instrumentData.ticker)
     } else {
       throw new Error('Инструмент без параметра source')
     }

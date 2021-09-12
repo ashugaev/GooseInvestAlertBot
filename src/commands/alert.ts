@@ -59,7 +59,10 @@ export function setupAlert (bot: Telegraf<Context>) {
         }
 
         await addAlert({
-          data: { symbol: data[2], price: data[3] },
+          data: {
+            symbol: data[2],
+            price: data[3]
+          },
           ctx
         })
       } catch (e) {

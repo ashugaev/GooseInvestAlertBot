@@ -38,6 +38,8 @@ export const setupPriceChecker = async (bot) => {
       let instrumentData
 
       try {
+        // TODO: ВЕрнуть
+        return;
         const result = await getInstrumentDataWithPrice({ symbol })
 
         instrumentData = result.instrumentData

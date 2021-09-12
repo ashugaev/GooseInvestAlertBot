@@ -1,3 +1,4 @@
+import { binanceGetAllInstruments } from './binance/api/getAllInstruments'
 import { coingeckoGetAllInstruments } from './coingecko/api/getAllInstruments'
 import { tinkoffGetAllInstruments } from './tinkoff/api/getAllInstruments'
 import { IBaseInstrumentData } from './types'
@@ -18,7 +19,8 @@ const excludeInstrumentDuplicates = (items): IBaseInstrumentData[] => {
 export const getAllInstruments = async (): Promise<IBaseInstrumentData[]> => {
   const allInstrumentsPromises = [
     coingeckoGetAllInstruments(),
-    tinkoffGetAllInstruments()
+    tinkoffGetAllInstruments(),
+    binanceGetAllInstruments()
   ]
 
   const allInstrumentsArr = await Promise.all(allInstrumentsPromises)

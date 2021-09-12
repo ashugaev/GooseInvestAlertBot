@@ -1,23 +1,24 @@
 import { prop, getModelForClass } from '@typegoose/typegoose'
+import { IBinanceSpecificInstrumentData } from "../marketApi/binance/types";
 import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../marketApi/types'
 
 export class InstrumentsList {
-    @prop({ required: true, unique: true })
-    ticker: string
+  @prop({ required: true, unique: true })
+  ticker: string
 
-    @prop({ required: true })
-    name: string
+  @prop({ required: true })
+  name: string
 
-    @prop({ required: true })
-    source: EMarketDataSources
+  @prop({ required: true })
+  source: EMarketDataSources
 
-    @prop({ required: true })
-    type: EMarketInstrumentTypes
+  @prop({ required: true })
+  type: EMarketInstrumentTypes
 
-    @prop({ required: true })
-    sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
+  @prop({ required: true })
+  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData | IBinanceSpecificInstrumentData
 }
 
 const InstrumentsListModel = getModelForClass(InstrumentsList, {
@@ -64,7 +65,7 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
 }
 
 export interface IGetInstrumentsByTypeParams {
-    source: EMarketDataSources
+  source: EMarketDataSources
 }
 
 export async function getInstrumentsBySource ({ source }: IGetInstrumentsByTypeParams) {
