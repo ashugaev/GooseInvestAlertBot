@@ -25,6 +25,7 @@ export function setupShift (bot: Telegraf<Context>) {
 
           const { days, percent, time, timeZone, _id } = shiftsForUser[0]
 
+          // Показать шифты, которые у юзара добавлены
           ctx.replyWithHTML(ctx.i18n.t('shift_show', {
             percent,
             time: plur.hours(time + timeZone),

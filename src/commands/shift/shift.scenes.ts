@@ -1,18 +1,18 @@
-import { Scenes } from '../constants'
+import { Scenes } from '../../constants'
 
 import * as WizardScene from 'telegraf/scenes/wizard'
 import * as Composer from 'telegraf/composer'
-import { hoursToUtc } from '../helpers/hoursToUtc'
-import { i18n } from '../helpers/i18n'
-import { log } from '../helpers/log'
-import { sceneWrapper } from '../helpers/sceneWrapper'
-import { createShift } from '../models/Shifts'
-import { plur } from '../helpers/plural'
+import { hoursToUtc } from '../../helpers/hoursToUtc'
+import { i18n } from '../../helpers/i18n'
+import { log } from '../../helpers/log'
+import { sceneWrapper } from '../../helpers/sceneWrapper'
+import { createShift } from '../../models/Shifts'
+import { plur } from '../../helpers/plural'
 
 // TODO: Спрашивать время когда присылать объявление вконце
 
 /**
- * Сцена сработает только на первое сообщение, которое явлется текстом и не командой
+ * Сцена сработает только на первое сообщение, которое является текстом и не командой
  */
 
 const startShiftAddScene = sceneWrapper('shift_add_start-scene', (ctx) => {
@@ -121,7 +121,7 @@ shiftAddSetHourScene.on('message', (ctx, next) => {
   return ctx.scene.leave()
 })
 
-export const shiftAddScene = new WizardScene(Scenes.shiftAdd,
+export const shiftScenes = new WizardScene(Scenes.shiftAdd,
   startShiftAddScene,
   shiftAddChoosePercentScent,
   shiftAddSetDays,
