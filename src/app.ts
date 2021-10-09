@@ -16,14 +16,13 @@ import { attachUser } from './middlewares/attachUser'
 import { setupHelp } from './commands/help'
 import { setupStart } from './commands/start'
 import { setupAlert } from './commands/alert'
-import { setupShift } from './commands/shift'
+import { setupShift, shiftScenes } from './commands/shift'
 import { setupLanguage } from './commands/language'
 import { setupList } from './commands/list'
 import { setupPrice } from './commands/price'
 
 import { alertAddMessageScene } from './scenes/alertAddMessageScene'
 import { alertAddScene } from './scenes/alertAddScene'
-import { shiftAddScene } from './scenes/shiftAddScene'
 
 import { configureAnalytics } from './middlewares/configureAnalytics'
 import { setupCheckers } from './cron'
@@ -36,7 +35,7 @@ Sentry.init({
   tracesSampleRate: 1.0
 })
 
-const stage = new Stage([alertAddMessageScene, alertAddScene, shiftAddScene])
+const stage = new Stage([alertAddMessageScene, alertAddScene, shiftScenes])
 
 bot.use(session())
 bot.use(stage.middleware())
