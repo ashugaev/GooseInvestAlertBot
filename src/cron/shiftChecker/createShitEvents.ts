@@ -1,4 +1,3 @@
-import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { EMarketDataSources } from '../../marketApi/types'
 import { getInstrumentsBySource } from '../../models'
@@ -11,12 +10,13 @@ export const createShitEvents = async (bot) => {
   let instruments = null
 
   try {
-    // Зафетчили акции/облигации/фонды массивом
+    // Зафетчили акции/облигации/фонды массивом из базы
     instruments = await getInstrumentsBySource({ source: EMarketDataSources.tinkoff })
   } catch (e) {
-    log.error('Ошибка получения инструментов из tinkoff', e)
+    log.error('Ошибка получения списка инструментов из базы для шифтов', e)
 
     // Тут поидее должен быть ретрай
+    return
   }
 
   const shifts = {}
@@ -37,6 +37,7 @@ export const createShitEvents = async (bot) => {
 
   log.info('User alerts', shiftAlerts.length)
 
+  // Смотрим какие алерты стриггерились
   const todayShiftEvents = shiftAlerts.reduce((acc, alert) => {
     // Получаем шифты отсеянные по проценту и отсортированные по объему + обрезка
     const filteredShifts = getShiftsByPercent({ percent: alert.percent, shifts: shifts[alert.days] })
@@ -56,9 +57,15 @@ export const createShitEvents = async (bot) => {
     return acc
   }, [])
 
-  await ShiftEventsModel.remove({})
+  try {
+    await ShiftEventsModel.remove({})
 
-  await createShiftEvents(todayShiftEvents)
+    await createShiftEvents(todayShiftEvents)
+  } catch (e) {
+    log.error('[ShiftEvents] Ошибка обновления данных в базе', e)
+
+    return
+  }
 
   log.info('Creating shift events is ready')
 }
