@@ -1,6 +1,6 @@
 import { SHIFT_CONFIG } from '../../commands/shift'
 import { log } from '../../helpers/log'
-import { getShiftEvents, removeShiftEvent } from '../../models/ShiftEvents'
+import { getShiftEvents, ShiftEventsModel } from '../../models/ShiftEvents'
 import { i18n } from '../../helpers/i18n'
 import { plur } from '../../helpers/plural'
 import { getItemText } from './getItemText'
@@ -8,7 +8,12 @@ import { getItemText } from './getItemText'
 export const shiftSender = async (bot) => {
   try {
     const hour = new Date().getHours()
-    const events = await getShiftEvents({ time: hour })
+
+    const events = await getShiftEvents({
+      time: hour,
+      forDay: new Date().getDate(),
+      wasSent: false
+    })
 
     // eslint-disable-next-line no-restricted-syntax
     for (const event of events) {
@@ -34,7 +39,7 @@ export const shiftSender = async (bot) => {
         log.error('[ShiftSender] Ошибка отправки сообщения юзеру', e)
       }
 
-      await removeShiftEvent({ _id: event._id })
+      await ShiftEventsModel.update({ _id: event._id }, { $set: { wasSent: true } })
     }
   } catch (e) {
     log.error('[ShiftSender] Что-то сломалось', e)
