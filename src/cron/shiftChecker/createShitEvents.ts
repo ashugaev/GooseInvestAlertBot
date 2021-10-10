@@ -7,6 +7,14 @@ import { getShiftsByPercent } from './utils'
 import { calculateShifts } from './utils/calculateShifts'
 
 export const createShitEvents = async (bot) => {
+  const weekDay = new Date().getDay()
+
+  // TODO: Делать основываясь на изменении рынка а не дне
+  // Если день в который не хотим собирать данные об изменениях
+  if ([6, 0].includes(weekDay)) {
+    return
+  }
+
   let instruments = null
 
   try {
@@ -48,7 +56,9 @@ export const createShitEvents = async (bot) => {
         time: alert.time,
         days: alert.days,
         targetPercent: alert.percent,
-        data: filteredShifts
+        forDay: new Date().getDate(),
+        data: filteredShifts,
+        wasSent: false
       }
 
       acc.push(shiftEvent)
@@ -58,7 +68,13 @@ export const createShitEvents = async (bot) => {
   }, [])
 
   try {
-    await ShiftEventsModel.remove({})
+    // TODO: Присылать алерты только если были изменения в ценах
+    //  для этого можно заюзать утилиту checksum и делать проверку по хэшу
+
+    // Удаляем алерты за это число месяца (подразумевается предыдущий месяц)
+    await ShiftEventsModel.remove({
+      forDay: new Date().getDate()
+    })
 
     await createShiftEvents(todayShiftEvents)
   } catch (e) {

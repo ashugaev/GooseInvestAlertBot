@@ -4,34 +4,42 @@ import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
 import { RemoveOrGetAlertParams } from './PriceAlert'
 
 interface ShiftEventDataItem {
-    currentPrice: number
-    maxPrice: number
-    minPrice: number
-    growPercent: number
-    fallPercent: number
-    sumVolume: number
-    instrument: MarketInstrument
+  currentPrice: number
+  maxPrice: number
+  minPrice: number
+  growPercent: number
+  fallPercent: number
+  sumVolume: number
+  instrument: MarketInstrument
 }
 
 export interface ShiftsData {
-    [key: string]: ShiftEventDataItem[]
+  [key: string]: ShiftEventDataItem[]
 }
 
 export class ShiftEvents {
-    @prop({ required: true })
-    user: number
+  @prop({ required: true })
+  user: number
 
-    @prop({ required: true })
-    time: number
+  @prop({ required: true })
+  time: number
 
-    @prop({ required: true })
-    days: number
+  @prop({ required: true })
+  days: number
 
-    @prop({ required: true })
-    targetPercent: number
+  @prop({ required: true })
+  targetPercent: number
 
-    @prop({ required: true })
-    data: ShiftsData
+  @prop({ required: true })
+  data: ShiftsData
+
+  // FIXME: Поле необязательно до тех пор пока есть уведомления без них
+  @prop({ required: false })
+  forDay: number
+
+  // FIXME: Поле необязательно до тех пор пока есть уведомления без них
+  @prop({ required: false })
+  wasSent: boolean
 }
 
 export const ShiftEventsModel = getModelForClass(ShiftEvents, {
@@ -42,14 +50,23 @@ export const ShiftEventsModel = getModelForClass(ShiftEvents, {
 })
 
 export interface ShiftEventItem {
-    _id?: string
-    user: number
-    time: number
-    days: number
-    targetPercent: number
-    data: {
-        [key: string]: ShiftEventDataItem[]
-    }
+  _id?: string
+  user: number
+  time: number
+  days: number
+  targetPercent: number
+  /**
+     * День для которого создаем оповещение
+     * Берем день месяца. Следовательно история будет храниться только за месяц.
+     */
+  forDay: number
+  /**
+   * Признак того, что данные отправили юзеру
+   */
+  wasSent: boolean
+  data: {
+    [key: string]: ShiftEventDataItem[]
+  }
 }
 
 export function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
@@ -65,27 +82,23 @@ export function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
 }
 
 type ShiftEventItemFindParams = Modify<ShiftEventItem, {
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    time: object | number,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  time: object | number
 }>
 
 /**
  * Присылает по времени события по указанному времени и меньше (что бы точно не пропустить что-нибудь)
  */
-export function getShiftEvents ({ time }: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      const params: Partial<ShiftEventItemFindParams> = {}
+export async function getShiftEvents ({ time, forDay, wasSent }: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
+  const params: Partial<ShiftEventItemFindParams> = {
+    time: { $lte: time },
+    forDay,
+    wasSent
+  }
 
-      time && (params.time = { $lte: time })
+  const shifts = await ShiftEventsModel.find(params)
 
-      const shifts = await ShiftEventsModel.find(params)
-
-      rs(shifts)
-    } catch (e) {
-      rj(e)
-    }
-  })
+  return shifts
 }
 
 export function removeShiftEvent ({ _id, user }: Partial<ShiftEventItem>): Promise<number> {
