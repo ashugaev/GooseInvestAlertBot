@@ -5,8 +5,8 @@ import { plur } from '../../helpers/plural'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
 import { getShiftsForUser } from '../../models/Shifts'
 import { log } from '../../helpers/log'
-import { shiftDeleteActions } from './shift.actions'
-import { buttonShiftDelete } from './shift.buttons'
+import { shiftDeleteActions } from './stat.actions'
+import { buttonShiftDelete } from './stat.buttons'
 
 export function setupShift (bot: Telegraf<Context>) {
   bot.command(['stats', 'stat'], commandWrapper(async ctx => {

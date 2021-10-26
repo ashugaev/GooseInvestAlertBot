@@ -1,4 +1,4 @@
-import { SHIFT_CONFIG } from '../../../commands/shift'
+import { SHIFT_CONFIG } from '../../../commands/stat'
 import { ShiftsData } from '../../../models/ShiftEvents'
 
 export const getShiftsByPercent = ({ percent, shifts = {} }: {percent: number, shifts: ShiftsData}): ShiftsData | undefined => {
