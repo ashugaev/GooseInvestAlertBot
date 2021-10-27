@@ -8,7 +8,7 @@ import { log } from '../../helpers/log'
 import { shiftDeleteActions } from './stat.actions'
 import { buttonShiftDelete } from './stat.buttons'
 
-export function setupShift (bot: Telegraf<Context>) {
+export function setupStat (bot: Telegraf<Context>) {
   bot.command(['stats', 'stat'], commandWrapper(async ctx => {
     const { text } = ctx.message
     const { id: user } = ctx.from

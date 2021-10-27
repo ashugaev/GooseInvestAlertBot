@@ -1,5 +1,3 @@
-import { Scenes } from '../../constants'
-
 import * as WizardScene from 'telegraf/scenes/wizard'
 import * as Composer from 'telegraf/composer'
 import { hoursToUtc } from '../../helpers/hoursToUtc'
@@ -8,42 +6,50 @@ import { log } from '../../helpers/log'
 import { sceneWrapper } from '../../helpers/sceneWrapper'
 import { createShift } from '../../models/Shifts'
 import { plur } from '../../helpers/plural'
-
-// TODO: Спрашивать время когда присылать объявление вконце
-
-/**
- * Сцена сработает только на первое сообщение, которое является текстом и не командой
- */
+import { SHIFT_SCENES } from './shift.constants'
+import { getInstrumentInfoByTicker } from '../../models'
 
 const startShiftAddScene = sceneWrapper('shift_add_start-scene', (ctx) => {
-  ctx.replyWithHTML(i18n.t('ru', 'stat_add_startScene'))
+  ctx.replyWithHTML(i18n.t('ru', 'shift_add_startScene'))
 
   return ctx.wizard.next()
 })
 
-const shiftAddChoosePercentScent = new Composer()
+const shiftAddChooseTickers = new Composer()
 
 // Не нечинается с /
-shiftAddChoosePercentScent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent', async (ctx) => {
-  const { text: percent } = ctx.message
+shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers', async (ctx) => {
+  const { text: tickers } = ctx.message
 
-  const floatPercent = parseFloat(percent)
+  const tickersArr = tickers.trim().toUpperCase().split(' ')
 
-  if (floatPercent) {
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTime'))
+  try {
+    const tickersInfo = await getInstrumentInfoByTicker({ ticker: tickersArr })
 
-    ctx.wizard.state.percent = floatPercent
+    console.log('tickersInfo', tickersInfo)
+
+    if (!tickersInfo.length) {
+      ctx.replyWithHTML(i18n.t('ru', 'shift_add_noTickers'))
+
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+
+    if (tickersInfo.length < tickers) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_wrongTicker', {
+        tickers: tickersInfo.map(el => el.ticker).join(' ,')
+      }))
+    }
 
     return ctx.wizard.next()
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_setPercentError'))
-    // Повторить текущий степ
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Add error', e)
     return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
 }))
 
 // Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddChoosePercentScent.on('message', (ctx, next) => {
+shiftAddChooseTickers.on('message', (ctx, next) => {
   next()
   return ctx.scene.leave()
 })
@@ -121,9 +127,9 @@ shiftAddSetHourScene.on('message', (ctx, next) => {
   return ctx.scene.leave()
 })
 
-export const statScenes = new WizardScene(Scenes.shiftAdd,
+export const shiftScenes = new WizardScene(SHIFT_SCENES.add,
   startShiftAddScene,
-  shiftAddChoosePercentScent,
-  shiftAddSetDays,
-  shiftAddSetHourScene
+  shiftAddChooseTickers
+  // shiftAddSetDays,
+  // shiftAddSetHourScene
 )

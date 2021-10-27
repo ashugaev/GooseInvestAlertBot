@@ -16,7 +16,8 @@ import { attachUser } from './middlewares/attachUser'
 import { setupHelp } from './commands/help'
 import { setupStart } from './commands/start'
 import { setupAlert } from './commands/alert'
-import { setupShift, shiftScenes } from './commands/stat'
+import { setupStat, statScenes } from './commands/stat'
+import { setupShift, shiftScenes } from './commands/shift'
 import { setupLanguage } from './commands/language'
 import { setupList } from './commands/list'
 import { setupPrice } from './commands/price'
@@ -35,7 +36,12 @@ Sentry.init({
   tracesSampleRate: 1.0
 })
 
-const stage = new Stage([alertAddMessageScene, alertAddScene, shiftScenes])
+const stage = new Stage([
+  alertAddMessageScene,
+  alertAddScene,
+  statScenes,
+  shiftScenes
+])
 
 bot.use(session())
 bot.use(stage.middleware())
@@ -60,6 +66,7 @@ setupLanguage(bot)
 setupPrice(bot)
 setupStart(bot)
 setupShift(bot)
+setupStat(bot)
 
 // Start bot
 bot.startPolling()
