@@ -1,14 +1,14 @@
 import { copyAlerts } from './copyAlerts'
 import { instrumentsListUpdater } from './instrumentsListUpdater'
 import { setupPriceChecker } from './priceChecker'
-import { createShitEvents } from './shiftChecker'
+import { createShitEvents } from './statChecker'
 import { startCronJob } from '../helpers/startCronJob'
-import { shiftSender } from './shiftSender'
+import { shiftSender } from './statSender'
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
   startCronJob({
-    name: 'Check shifts',
+    name: 'Check stat',
     callback: createShitEvents,
     callbackArgs: [bot],
     // раз в день в 2 часа 0 минут
@@ -16,7 +16,7 @@ export const setupCheckers = (bot) => {
   })
 
   startCronJob({
-    name: 'Send shifts',
+    name: 'Send stat',
     callback: shiftSender,
     callbackArgs: [bot],
     // раз в час
