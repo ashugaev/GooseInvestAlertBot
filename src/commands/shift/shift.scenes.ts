@@ -1,129 +1,217 @@
-import { Scenes } from '../../constants'
-
 import * as WizardScene from 'telegraf/scenes/wizard'
 import * as Composer from 'telegraf/composer'
-import { hoursToUtc } from '../../helpers/hoursToUtc'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { sceneWrapper } from '../../helpers/sceneWrapper'
-import { createShift } from '../../models/Shifts'
-import { plur } from '../../helpers/plural'
+import { SHIFT_ACTIONS, SHIFT_MAX_PERCENT, SHIFT_SCENES } from './shift.constants'
+import { getInstrumentInfoByTicker, ShiftTimeframeModel } from '../../models'
+import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
+import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
+import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
+import { Limits } from '../../constants'
+import { IAdditionalShiftConfig } from './shift.types'
 
-// TODO: Спрашивать время когда присылать объявление вконце
+const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => {
+  const { id: user } = ctx.from
 
-/**
- * Сцена сработает только на первое сообщение, которое является текстом и не командой
- */
+  const userShiftsCount = await getTimeShiftsCountForUser(user)
 
-const startShiftAddScene = sceneWrapper('shift_add_start-scene', (ctx) => {
+  // Проверка на выход за лимиты
+  if (userShiftsCount >= Limits.shifts) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit', {
+      limit: Limits.shifts
+    }))
+
+    return ctx.scene.leave()
+  }
+
+  ctx.wizard.state.shift = ctx.wizard.state.shift || {}
+  ctx.wizard.state.shift.userShiftsCount = userShiftsCount
+
   ctx.replyWithHTML(i18n.t('ru', 'shift_add_startScene'))
 
   return ctx.wizard.next()
 })
 
-const shiftAddChoosePercentScent = new Composer()
+const shiftAddChooseTickers = new Composer()
 
 // Не нечинается с /
-shiftAddChoosePercentScent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent', async (ctx) => {
-  const { text: percent } = ctx.message
+shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers', async (ctx) => {
+  const { text: tickers } = ctx.message
 
-  const floatPercent = parseFloat(percent)
+  const tickersArr = tickers.trim().toUpperCase().split(' ')
 
-  if (floatPercent) {
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTime'))
+  const { userShiftsCount } = ctx.wizard.state.shift
 
-    ctx.wizard.state.percent = floatPercent
+  try {
+    const tickersInfo = await getInstrumentInfoByTicker({ ticker: tickersArr })
 
-    return ctx.wizard.next()
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_setPercentError'))
-    // Повторить текущий степ
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
-  }
-}))
+    if (!tickersInfo.length) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_noTickers'))
 
-// Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddChoosePercentScent.on('message', (ctx, next) => {
-  next()
-  return ctx.scene.leave()
-})
-
-const shiftAddSetDays = new Composer()
-
-// Не нечинается с /
-shiftAddSetDays.hears(/^(?!\/).+$/, sceneWrapper('shift_add_set-time', async (ctx) => {
-  const { text: hour } = ctx.message
-
-  const intHour = parseInt(hour)
-
-  if (intHour >= 0 && intHour <= 24) {
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays'))
-
-    ctx.wizard.state.hour = intHour
-
-    return ctx.wizard.next()
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTimeError'))
-    // Повторить текущий степ
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
-  }
-}))
-
-// Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddSetDays.on('message', (ctx, next) => {
-  next()
-  return ctx.scene.leave()
-})
-
-const shiftAddSetHourScene = new Composer()
-
-// Не нечинается с '/'
-shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async (ctx) => {
-  const { text: days } = ctx.message
-  const { id: user } = ctx.from
-  const { percent, hour } = ctx.wizard.state
-
-  const daysInt = parseInt(days)
-
-  if (daysInt >= 1 && daysInt <= 30) {
-    try {
-      await createShift({
-        percent,
-        // Пока хардкожу московское время, переводя его в utc
-        // TODO: Вынести временную зону в константу
-        time: hoursToUtc(hour, -3),
-        timeZone: 3,
-        days: daysInt,
-        user
-      })
-    } catch (e) {
-      ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-      log.error(e)
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
 
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_created', {
-      time: plur.hours(hour),
-      days: plur.days(daysInt),
-      percent
-    }))
+    if ((userShiftsCount + tickersInfo.length) > Limits.shifts) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit-less-tickers', {
+        availableCount: Limits.shifts - userShiftsCount,
+        limit: Limits.shifts
+      }))
 
-    return ctx.scene.leave()
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays_error'))
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+
+    if (tickersInfo.length < tickersArr.length) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_wrongTicker', {
+        tickers: tickersInfo.map(el => el.ticker).join(' ,')
+      }))
+    }
+
+    const timeframes = await ShiftTimeframeModel.find().lean()
+
+    ctx.wizard.state.shift = ctx.wizard.state.shift || {}
+    ctx.wizard.state.shift.tickers = tickersInfo.map(el => el.ticker)
+    ctx.wizard.state.shift.tickersInfo = tickersInfo
+    ctx.wizard.state.shift.timeframes = timeframes
+
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'), {
+      reply_markup: getTimeframesKeyboard(timeframes)
+    })
+
+    return ctx.wizard.next()
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Add error', e)
     return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
 }))
 
 // Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddSetHourScene.on('message', (ctx, next) => {
+shiftAddChooseTickers.on('message', (ctx, next) => {
   next()
   return ctx.scene.leave()
 })
 
-export const shiftScenes = new WizardScene(Scenes.shiftAdd,
+const shiftAddChooseTimeframes = new Composer()
+
+shiftAddChooseTimeframes.action(triggerActionRegexp(SHIFT_ACTIONS.chooseTimeframe), sceneWrapper('shift_add_choose-timeframe', async (ctx) => {
+  const { timeframe } = JSON.parse(ctx.match[1])
+
+  ctx.wizard.state.shift.timeframe = timeframe
+
+  await ctx.replyWithHTML(i18n.t('ru', 'shift_add_choosePercent'))
+
+  return ctx.wizard.next()
+}))
+
+// Если сообщение не то, что ожидаем - покидаем сцену
+shiftAddChooseTimeframes.on('message', (ctx, next) => {
+  next()
+  return ctx.scene.leave()
+})
+
+const shiftAddChoosePercent = new Composer()
+
+// Не нечинается с '/'
+shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent', async (ctx) => {
+  const { text: percent } = ctx.message
+
+  const intPercent = parseInt(percent)
+
+  if (!intPercent || percent > SHIFT_MAX_PERCENT) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent'))
+
+    return ctx.wizard.selectStep(ctx.wizard.cursor)
+  }
+
+  const { tickers, timeframe, timeframes } = ctx.wizard.state.shift
+  const { id: user } = ctx.from
+
+  // Дефолтные доп настройки для шифта, которые ставятся после создания
+  const additionalShiftConfig: IAdditionalShiftConfig = {
+    muted: true,
+    growAlerts: true,
+    fallAlerts: true
+  }
+
+  const newShifts = tickers.map(ticker => ({
+    percent: intPercent,
+    timeframe,
+    ticker,
+    user,
+    ...additionalShiftConfig
+  }))
+
+  try {
+    const dbShifts = await TimeShiftModel.insertMany(newShifts)
+
+    ctx.wizard.state.shift.percent = intPercent
+    // @ts-expect-error
+    ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
+
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
+      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru,
+      percent: intPercent,
+      tickers: tickers.join(' ,')
+    }), {
+      reply_markup: getShiftConfigKeyboard(additionalShiftConfig)
+    })
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Update addtional config error', e)
+  }
+
+  return ctx.wizard.next()
+}))
+
+// Если сообщение не то, что ожидаем - покидаем сцену
+shiftAddChoosePercent.on('message', (ctx, next) => {
+  next()
+  return ctx.scene.leave()
+})
+
+/**
+ * Допнастройка шифта после его создания
+ */
+const shiftAddAdditionalConfiguration = new Composer()
+
+shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additionalConfiguration), sceneWrapper('shift_add_additional-configuration', async (ctx) => {
+  const config = JSON.parse(ctx.match[1])
+
+  const { tickers, timeframe, percent, newShiftsId, timeframes } = ctx.wizard.state.shift
+
+  try {
+    await ctx.editMessageText(i18n.t('ru', 'shift_add_success', {
+      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru,
+      percent,
+      tickers: tickers.join(' ,')
+    }), {
+      reply_markup: getShiftConfigKeyboard(config),
+      parse_mode: 'HTML'
+    })
+
+    // Отправить в базу апдейт конфига
+    await TimeShiftModel.updateMany({
+      _id: {
+        $in: newShiftsId
+      }
+    }, { $set: config })
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Update addtional config error', e)
+  }
+}))
+
+// Если сообщение не то, что ожидаем - покидаем сцену
+shiftAddAdditionalConfiguration.on('message', (ctx, next) => {
+  next()
+  return ctx.scene.leave()
+})
+
+export const shiftScenes = new WizardScene(SHIFT_SCENES.add,
   startShiftAddScene,
-  shiftAddChoosePercentScent,
-  shiftAddSetDays,
-  shiftAddSetHourScene
+  shiftAddChooseTickers,
+  shiftAddChooseTimeframes,
+  shiftAddChoosePercent,
+  shiftAddAdditionalConfiguration
 )
