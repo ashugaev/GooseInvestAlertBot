@@ -4,7 +4,7 @@ import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { sceneWrapper } from '../../helpers/sceneWrapper'
 import { SHIFT_ACTIONS, SHIFT_MAX_PERCENT, SHIFT_SCENES } from './shift.constants'
-import { getInstrumentInfoByTicker } from '../../models'
+import { getInstrumentInfoByTicker, ShiftTimeframeModel } from '../../models'
 import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
 import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
@@ -67,11 +67,12 @@ shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers
       }))
     }
 
+    const timeframes = await ShiftTimeframeModel.find().lean()
+
     ctx.wizard.state.shift = ctx.wizard.state.shift || {}
     ctx.wizard.state.shift.tickers = tickersInfo.map(el => el.ticker)
     ctx.wizard.state.shift.tickersInfo = tickersInfo
-
-    const timeframes = ['1m', '1d']
+    ctx.wizard.state.shift.timeframes = timeframes
 
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'), {
       reply_markup: getTimeframesKeyboard(timeframes)
@@ -123,7 +124,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
     return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
 
-  const { tickers, timeframe } = ctx.wizard.state.shift
+  const { tickers, timeframe, timeframes } = ctx.wizard.state.shift
   const { id: user } = ctx.from
 
   // Дефолтные доп настройки для шифта, которые ставятся после создания
@@ -149,7 +150,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
     ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
 
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
-      timeframe,
+      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru,
       percent: intPercent,
       tickers: tickers.join(' ,')
     }), {
@@ -177,16 +178,16 @@ const shiftAddAdditionalConfiguration = new Composer()
 shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additionalConfiguration), sceneWrapper('shift_add_additional-configuration', async (ctx) => {
   const config = JSON.parse(ctx.match[1])
 
-  const { tickers, timeframe, percent, newShiftsId } = ctx.wizard.state.shift
+  const { tickers, timeframe, percent, newShiftsId, timeframes } = ctx.wizard.state.shift
 
   try {
     await ctx.editMessageText(i18n.t('ru', 'shift_add_success', {
-      timeframe,
+      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru,
       percent,
       tickers: tickers.join(' ,')
     }), {
       reply_markup: getShiftConfigKeyboard(config),
-      parse_mode: 'HTML',
+      parse_mode: 'HTML'
     })
 
     // Отправить в базу апдейт конфига

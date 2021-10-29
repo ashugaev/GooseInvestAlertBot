@@ -3,11 +3,12 @@ import { SHIFT_ACTIONS } from './shift.constants'
 import { createActionString } from '../../helpers/createActionString'
 import { i18n } from '../../helpers/i18n'
 import { IAdditionalShiftConfig } from './shift.types'
+import {ShiftTimeframe} from "../../models";
 
-export const getTimeframesKeyboard = (timeframes) => {
+export const getTimeframesKeyboard = (timeframes: ShiftTimeframe[]) => {
   const buttons = timeframes.map(timeframe => [m.callbackButton(
-    timeframe,
-    createActionString(SHIFT_ACTIONS.chooseTimeframe, { timeframe })
+    timeframe.name_ru,
+    createActionString(SHIFT_ACTIONS.chooseTimeframe, { timeframe: timeframe.timeframe })
   )])
 
   return m.inlineKeyboard(buttons)
