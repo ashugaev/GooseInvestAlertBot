@@ -5,10 +5,11 @@ import { log } from '../../helpers/log'
 import { sceneWrapper } from '../../helpers/sceneWrapper'
 import { SHIFT_ACTIONS, SHIFT_MAX_PERCENT, SHIFT_SCENES } from './shift.constants'
 import { getInstrumentInfoByTicker } from '../../models'
-import { getTimeframesKeyboard } from './shift.keyboards'
+import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
 import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
 import { Limits } from '../../constants'
+import { IAdditionalShiftConfig } from './shift.types'
 
 const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => {
   const { id: user } = ctx.from
@@ -135,11 +136,22 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
 
   await TimeShiftModel.insertMany(newShifts)
 
+  // Доп настройки для шифта, которые ставятся после создания
+  const additionalShiftConfig: IAdditionalShiftConfig = {
+    muted: true,
+    growAlerts: true,
+    fallAlerts: true
+  }
+
+  ctx.wizard.state.shift.additionalConfig = additionalShiftConfig
+
   await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
     timeframe,
     percent: intPercent,
     tickers: tickers.join(' ,')
-  }))
+  }), {
+    reply_markup: getShiftConfigKeyboard(additionalShiftConfig)
+  })
 
   return ctx.scene.leave()
 }))
