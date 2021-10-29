@@ -4,6 +4,7 @@ import { setupPriceChecker } from './priceChecker'
 import { createShitEvents } from './statChecker'
 import { startCronJob } from '../helpers/startCronJob'
 import { shiftSender } from './statSender'
+import { setupShiftsChecker } from './shiftsChecker'
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -28,7 +29,7 @@ export const setupCheckers = (bot) => {
     callback: instrumentsListUpdater,
     callbackArgs: [bot],
     // раз день в 3 часа
-    period: '0 3 * * *',
+    period: '0 3 * * *'
     // TODO: Не проставлять в dev окружении
     // executeBeforeInit: true
   })
@@ -43,6 +44,8 @@ export const setupCheckers = (bot) => {
     executeBeforeInit: true
   })
 
-  // Непрерывные проверки цен
+  // Мониторинг достижения уровней
   setupPriceChecker(bot)
+  // Мониторинг скорости
+  setupShiftsChecker(bot)
 }
