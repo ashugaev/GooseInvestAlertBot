@@ -6,6 +6,7 @@ import { startCronJob } from '../helpers/startCronJob'
 import { shiftSender } from './shiftSender'
 
 export const setupCheckers = (bot) => {
+  // TODO: Не запускать не деве
   startCronJob({
     name: 'Check shifts',
     callback: createShitEvents,
@@ -28,7 +29,8 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз день в 3 часа
     period: '0 3 * * *',
-    executeBeforeInit: true
+    // TODO: Не проставлять в dev окружении
+    // executeBeforeInit: true
   })
 
   // Дамп коллекции с алертами

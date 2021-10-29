@@ -334,7 +334,7 @@ shift_add_chooseTimeframe: |
   Выбери таймфрейм свечи внутри которой будет отслеживаться скорость изменения цены
 
 shift_add_choosePercent: |
-  Отправь процент изменения цены при котором я пришлю тебе уведомление. Число не больше 200
+  <b>%</b> Отправь процент изменения цены при котором я пришлю тебе уведомление. Число <b>не больше 200</b>
 
 shift_add_error_maxPercent: |
   ❌ Не валидный ввод
@@ -354,4 +354,6 @@ shift_add_button_growAlert: Отслеживать рост
 
 shift_add_button_fallAlert: Отслеживать падение
 
-shift_add_button_mute: Присылать без звука
+shift_add_button_mute: Со звуком
+
+shift_add_button_unmute: Без звука

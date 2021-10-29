@@ -93,7 +93,6 @@ shiftAddChooseTickers.on('message', (ctx, next) => {
 
 const shiftAddChooseTimeframes = new Composer()
 
-// Не нечинается с /
 shiftAddChooseTimeframes.action(triggerActionRegexp(SHIFT_ACTIONS.chooseTimeframe), sceneWrapper('shift_add_choose-timeframe', async (ctx) => {
   const { timeframe } = JSON.parse(ctx.match[1])
 
@@ -127,33 +126,41 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
   const { tickers, timeframe } = ctx.wizard.state.shift
   const { id: user } = ctx.from
 
-  const newShifts = tickers.map(ticker => ({
-    percent: intPercent,
-    timeframe,
-    ticker,
-    user
-  }))
-
-  await TimeShiftModel.insertMany(newShifts)
-
-  // Доп настройки для шифта, которые ставятся после создания
+  // Дефолтные доп настройки для шифта, которые ставятся после создания
   const additionalShiftConfig: IAdditionalShiftConfig = {
     muted: true,
     growAlerts: true,
     fallAlerts: true
   }
 
-  ctx.wizard.state.shift.additionalConfig = additionalShiftConfig
-
-  await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
-    timeframe,
+  const newShifts = tickers.map(ticker => ({
     percent: intPercent,
-    tickers: tickers.join(' ,')
-  }), {
-    reply_markup: getShiftConfigKeyboard(additionalShiftConfig)
-  })
+    timeframe,
+    ticker,
+    user,
+    ...additionalShiftConfig
+  }))
 
-  return ctx.scene.leave()
+  try {
+    const dbShifts = await TimeShiftModel.insertMany(newShifts)
+
+    ctx.wizard.state.shift.percent = intPercent
+    // @ts-expect-error
+    ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
+
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
+      timeframe,
+      percent: intPercent,
+      tickers: tickers.join(' ,')
+    }), {
+      reply_markup: getShiftConfigKeyboard(additionalShiftConfig)
+    })
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Update addtional config error', e)
+  }
+
+  return ctx.wizard.next()
 }))
 
 // Если сообщение не то, что ожидаем - покидаем сцену
@@ -162,9 +169,48 @@ shiftAddChoosePercent.on('message', (ctx, next) => {
   return ctx.scene.leave()
 })
 
+/**
+ * Допнастройка шифта после его создания
+ */
+const shiftAddAdditionalConfiguration = new Composer()
+
+shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additionalConfiguration), sceneWrapper('shift_add_additional-configuration', async (ctx) => {
+  const config = JSON.parse(ctx.match[1])
+
+  const { tickers, timeframe, percent, newShiftsId } = ctx.wizard.state.shift
+
+  try {
+    await ctx.editMessageText(i18n.t('ru', 'shift_add_success', {
+      timeframe,
+      percent,
+      tickers: tickers.join(' ,')
+    }), {
+      reply_markup: getShiftConfigKeyboard(config),
+      parse_mode: 'HTML',
+    })
+
+    // Отправить в базу апдейт конфига
+    await TimeShiftModel.updateMany({
+      _id: {
+        $in: newShiftsId
+      }
+    }, { $set: config })
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Update addtional config error', e)
+  }
+}))
+
+// Если сообщение не то, что ожидаем - покидаем сцену
+shiftAddAdditionalConfiguration.on('message', (ctx, next) => {
+  next()
+  return ctx.scene.leave()
+})
+
 export const shiftScenes = new WizardScene(SHIFT_SCENES.add,
   startShiftAddScene,
   shiftAddChooseTickers,
   shiftAddChooseTimeframes,
-  shiftAddChoosePercent
+  shiftAddChoosePercent,
+  shiftAddAdditionalConfiguration
 )

@@ -16,11 +16,26 @@ export class TimeShift {
 
   @prop({ required: true })
   user: number
+
+  @prop({ required: true })
+  muted: boolean
+
+  /**
+   * Отслеживать рост
+   */
+  @prop({ required: true })
+  growAlerts: boolean
+
+  /**
+   * Отслеживать падения
+   */
+  @prop({ required: true })
+  fallAlerts: boolean
 }
 
 // Get User model
 export const TimeShiftModel = getModelForClass(TimeShift, {
-  schemaOptions: { timestamps: true },
+  schemaOptions: { timestamps: true }
 })
 
 export const getTimeShiftsCountForUser = async (user: number): Promise<number> => {
