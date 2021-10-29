@@ -7,9 +7,26 @@ import { SHIFT_ACTIONS, SHIFT_MAX_PERCENT, SHIFT_SCENES } from './shift.constant
 import { getInstrumentInfoByTicker } from '../../models'
 import { getTimeframesKeyboard } from './shift.keyboards'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
-import { TimeShiftModel } from '../../models/TimeShifts'
+import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
+import { Limits } from '../../constants'
 
-const startShiftAddScene = sceneWrapper('shift_add_start-scene', (ctx) => {
+const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => {
+  const { id: user } = ctx.from
+
+  const userShiftsCount = await getTimeShiftsCountForUser(user)
+
+  // Проверка на выход за лимиты
+  if (userShiftsCount >= Limits.shifts) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit', {
+      limit: Limits.shifts
+    }))
+
+    return ctx.scene.leave()
+  }
+
+  ctx.wizard.state.shift = ctx.wizard.state.shift || {}
+  ctx.wizard.state.shift.userShiftsCount = userShiftsCount
+
   ctx.replyWithHTML(i18n.t('ru', 'shift_add_startScene'))
 
   return ctx.wizard.next()
@@ -23,11 +40,22 @@ shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers
 
   const tickersArr = tickers.trim().toUpperCase().split(' ')
 
+  const { userShiftsCount } = ctx.wizard.state.shift
+
   try {
     const tickersInfo = await getInstrumentInfoByTicker({ ticker: tickersArr })
 
     if (!tickersInfo.length) {
       await ctx.replyWithHTML(i18n.t('ru', 'shift_add_noTickers'))
+
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+
+    if ((userShiftsCount + tickersInfo.length) > Limits.shifts) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit-less-tickers', {
+        availableCount: Limits.shifts - userShiftsCount,
+        limit: Limits.shifts
+      }))
 
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
@@ -38,10 +66,9 @@ shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers
       }))
     }
 
-    ctx.wizard.state.shift = {
-      tickers: tickersInfo.map(el => el.ticker),
-      tickersInfo
-    }
+    ctx.wizard.state.shift = ctx.wizard.state.shift || {}
+    ctx.wizard.state.shift.tickers = tickersInfo.map(el => el.ticker)
+    ctx.wizard.state.shift.tickersInfo = tickersInfo
 
     const timeframes = ['1m', '1d']
 

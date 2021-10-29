@@ -19,9 +19,9 @@ export function setupStat (bot: Telegraf<Context>) {
       try {
         const shiftsForUser = await getShiftsForUser(user)
 
-        if (shiftsForUser.length >= Limits.shifts) {
+        if (shiftsForUser.length >= Limits.stats) {
           // Пока доступен один шифт
-          // ctx.replyWithHTML(ctx.i18n.t('shift_overlimit', { limit: Limits.shifts }))
+          // ctx.replyWithHTML(ctx.i18n.t('shift_overlimit', { limit: Limits.stats }))
 
           const { days, percent, time, timeZone, _id } = shiftsForUser[0]
 

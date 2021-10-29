@@ -22,3 +22,10 @@ export class TimeShift {
 export const TimeShiftModel = getModelForClass(TimeShift, {
   schemaOptions: { timestamps: true },
 })
+
+export const getTimeShiftsCountForUser = async (user: number): Promise<number> => {
+  const params: Partial<TimeShift> = { user }
+  const shiftsCount = await TimeShiftModel.find(params).count()
+
+  return shiftsCount
+}

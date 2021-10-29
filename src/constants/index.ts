@@ -13,5 +13,7 @@ export enum Actions {
 
 export enum Limits {
   alerts = 100,
-  shifts = 1,
+  stats = 1,
+  // Скорость цены
+  shifts = 15,
 }
