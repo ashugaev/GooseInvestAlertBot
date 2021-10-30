@@ -1,5 +1,5 @@
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
-import { ShiftCandleModel } from '../../models/ShiftCandle'
+import { ShiftCandle, ShiftCandleModel } from '../../models/ShiftCandle'
 import { i18n } from '../../helpers/i18n'
 import { getInstrumentInfoByTicker } from '../../models'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
@@ -8,14 +8,15 @@ import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
  * Обновит свечу в базе и вернет новую свечу
  */
 export const updateCandle = async ({
+  shift,
   candle: c,
   price,
-  timeframe
+  timeframeData
 }) => {
   let candle = c
 
   // Время создания последней актуальной свечи
-  const actualCandleCreatedTime = getCandleCreatedTime(timeframe)
+  const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
 
   // Время создания последней сохраненной свечи
   const localCandleCreatedTime = candle?.createdAt
@@ -25,10 +26,12 @@ export const updateCandle = async ({
      * Это значит, что появилась новая свеча и текущая деактуализировалась
      * Либо свечи не существовало ранее
      */
-  if (!actualCandleCreatedTime !== localCandleCreatedTime) {
+  if (actualCandleCreatedTime !== localCandleCreatedTime) {
     // создать новую свечу и записать
 
     candle = {
+      ticker: shift.ticker,
+      timeframe: shift.timeframe,
       o: price,
       h: price,
       l: price,
@@ -36,6 +39,11 @@ export const updateCandle = async ({
       updatedAt: new Date().getTime()
     }
 
+    // FIXME: Вообще это можнро сделать одной командой
+    //  Но почему-то upsert не работает в typegoose
+    // Грохаем старую свечу (если была)
+    await ShiftCandleModel.deleteOne({ timeframe: shift.timeframe, ticker: shift.ticker })
+    // Делаем новую свечу
     await ShiftCandleModel.insertMany(candle)
   } else {
     if (price > candle.h) {
@@ -72,26 +80,27 @@ export const updateCandle = async ({
  */
 export const sendUserMessage = async ({
   candle,
-  user,
   bot,
   shift,
-  timeframe
+  timeframeData
 }) => {
   const growPercent = calcGrowPercent(candle.h, candle.o)
   const fallPercent = calcGrowPercent(candle.l, candle.o)
 
-  const { ticker } = shift
+  const { ticker, muted } = shift
 
   const sendMessage = async (isGrow) => {
-    const tickerInfo = await getInstrumentInfoByTicker({ ticker })?.[0]
+    const tickerInfo = (await getInstrumentInfoByTicker({ ticker }))[0]
 
-    await bot.telegram.sendMessage(user, i18n.t(
+    const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
+
+    await bot.telegram.sendMessage(shift.user, i18n.t(
       'ru', 'shift_alert',
       {
         name: tickerInfo.name,
         percent: shift.percent,
         isGrow,
-        time: timeframe.name_ru_plur,
+        time: timeframeData.name_ru_plur,
         ticker,
         link: getInstrumentLink({
           type: tickerInfo.type,
@@ -100,7 +109,15 @@ export const sendUserMessage = async ({
         })
       }
     ), {
-      parse_mode: 'HTML'
+      parse_mode: 'HTML',
+      disable_notification: muted
+    })
+
+    // Апдейт признака о том, что сообщение отправлено
+    ShiftCandleModel.update({ _id: candle._id }, {
+      $set: {
+        lastMessageCandleTime: actualCandleCreatedTime
+      }
     })
   }
 

@@ -150,7 +150,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
     ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
 
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
-      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru,
+      time: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
       percent: intPercent,
       tickers: tickers.join(' ,')
     }), {
@@ -182,7 +182,7 @@ shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additio
 
   try {
     await ctx.editMessageText(i18n.t('ru', 'shift_add_success', {
-      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru,
+      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
       percent,
       tickers: tickers.join(' ,')
     }), {

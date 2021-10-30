@@ -5,6 +5,7 @@ import { createShitEvents } from './statChecker'
 import { startCronJob } from '../helpers/startCronJob'
 import { shiftSender } from './statSender'
 import { setupShiftsChecker } from './shiftsChecker'
+import { log } from '../helpers/log'
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -46,6 +47,11 @@ export const setupCheckers = (bot) => {
 
   // Мониторинг достижения уровней
   setupPriceChecker(bot)
+
   // Мониторинг скорости
-  setupShiftsChecker(bot)
+  try {
+    setupShiftsChecker(bot)
+  } catch (e) {
+    log.error('[Cron] Упал чекер скорости цены')
+  }
 }

@@ -31,6 +31,13 @@ export class TimeShift {
    */
   @prop({ required: true })
   fallAlerts: boolean
+
+  /**
+   * Время начала свечи за которую был отправлен алерт
+   * Нужно для того, что бы слать алерт раз за свечу
+   */
+  @prop({ required: true })
+  lastMessageCandleTime: number
 }
 
 // Get User model

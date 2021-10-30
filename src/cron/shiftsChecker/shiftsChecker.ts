@@ -2,7 +2,7 @@
  * Мониторит скорость изменения цены
  */
 import { wait } from '../../helpers/wait'
-import { getUniqSymbols, getUniqTimeShiftTickers, ShiftCandle, ShiftTimeframeModel, TimeShiftModel } from '../../models'
+import { ShiftTimeframeModel, TimeShiftModel } from '../../models'
 import { log } from '../../helpers/log'
 import { getLastPrice } from '../../helpers/stocksApi'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
@@ -12,13 +12,13 @@ export const setupShiftsChecker = async (bot) => {
   let customTimeForWait = null
 
   while (true) {
-    // TODO: Возможно нужна другая задержка. Подумать перед деплоем.
+    // TODO: Вернуть задержку по дефолту на 30000
     // Между итерациями задержка в 30 секунд, либо то время, которое проставили в последней итерации
-    await wait(customTimeForWait ?? 30000)
+    await wait(customTimeForWait ?? 1000)
 
     customTimeForWait = null
 
-    const candles = ShiftCandleModel.find()
+    const candles = await ShiftCandleModel.find().lean()
 
     try {
       const shifts = await TimeShiftModel.find().lean()
@@ -44,35 +44,35 @@ export const setupShiftsChecker = async (bot) => {
 
         customCandleUpdateTimeForWait = null
 
-        console.time('iteration pause')
+        console.time('iteration time')
         // TODO: Возможно тут тоже нужна задержка между итерациями
 
         try {
           const shift = shifts[i]
 
-          const { ticker, timeframe, user } = shift
+          const { ticker, timeframe } = shift
 
-          const price = getLastPrice({ ticker })
+          const price = await getLastPrice({ ticker })
 
           // FIXME: Почему то не подхватывается тип модели
           const candle: any = candles.find(el => (
             el.timeframe === timeframe && el.ticker === ticker
           ))
 
-          const timeframeData = timeframes[candle.timeframe]
+          const timeframeData = timeframesObj[shift.timeframe]
 
-          const updatedCanlde = await updateCandle({
-            timeframe: timeframeData,
+          const updatedCandle = await updateCandle({
+            timeframeData,
             candle,
-            price
+            price,
+            shift
           })
 
           await sendUserMessage({
-            candle: updatedCanlde,
+            candle: updatedCandle,
             shift,
-            user,
             bot,
-            timeframe
+            timeframeData
           })
         } catch (e) {
           log.error('[ShiftsChecker] Candle update crash', e)
@@ -80,7 +80,7 @@ export const setupShiftsChecker = async (bot) => {
         }
 
         // TODO: Удалить console
-        console.timeEnd('iteration pause')
+        console.timeEnd('iteration time')
       }
     } catch (e) {
       log.error('[ShiftsChecker] Crash', e)
