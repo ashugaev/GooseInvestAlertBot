@@ -44,3 +44,11 @@ export const getTimeShiftsCountForUser = async (user: number): Promise<number> =
 
   return shiftsCount
 }
+
+export const getUniqTimeShiftTickers = async () => {
+  const data = await TimeShiftModel
+    .find({}, { ticker: 1 })
+    .lean()
+
+  return data
+}
