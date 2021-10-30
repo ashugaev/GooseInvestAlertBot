@@ -1,7 +1,7 @@
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
-import { ShiftCandle, ShiftCandleModel } from '../../models/ShiftCandle'
+import { ShiftCandleModel } from '../../models/ShiftCandle'
 import { i18n } from '../../helpers/i18n'
-import { getInstrumentInfoByTicker } from '../../models'
+import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 
 /**
@@ -120,8 +120,7 @@ export const sendUserMessage = async ({
     })
 
     // Апдейт признака о том, что сообщение отправлено
-    // TODO: Почему-то не апдейтится
-    ShiftCandleModel.update({ _id: candle._id }, {
+    await TimeShiftModel.updateOne({ _id: shift._id }, {
       $set: {
         lastMessageCandleTime: actualCandleCreatedTime
       }
