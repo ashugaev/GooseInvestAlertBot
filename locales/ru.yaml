@@ -363,4 +363,4 @@ shift_add_button_unmute: Без звука
 # Shift alert (скорость изменения цены)
 
 shift_alert: |
-  ⚡️ Цена <b>${name}</b> (${ticker}) ${isGrow ? '↗️ выросла' : '↘️ упала'} больше чем на <b>&{percent}%</b> за <b>${time}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  ⚡️ Цена <b>${name}</b> (${ticker}) ${isGrow ? '↗️ выросла' : '↘️ упала'} больше чем на <b>${percent}%</b> за <b>${time}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}

@@ -116,7 +116,7 @@ const shiftAddChoosePercent = new Composer()
 shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent', async (ctx) => {
   const { text: percent } = ctx.message
 
-  const intPercent = parseInt(percent)
+  const intPercent = parseFloat(percent)
 
   if (!intPercent || percent > SHIFT_MAX_PERCENT) {
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent'))
@@ -182,7 +182,7 @@ shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additio
 
   try {
     await ctx.editMessageText(i18n.t('ru', 'shift_add_success', {
-      timeframe: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
+      time: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
       percent,
       tickers: tickers.join(' ,')
     }), {

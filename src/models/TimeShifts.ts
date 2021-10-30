@@ -36,7 +36,7 @@ export class TimeShift {
    * Время начала свечи за которую был отправлен алерт
    * Нужно для того, что бы слать алерт раз за свечу
    */
-  @prop({ required: true })
+  @prop({ required: false })
   lastMessageCandleTime: number
 }
 

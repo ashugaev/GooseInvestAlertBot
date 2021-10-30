@@ -39,6 +39,7 @@ export const setupShiftsChecker = async (bot) => {
 
       let customCandleUpdateTimeForWait = null
 
+      // ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
       for (let i = 0; i < shifts.length; i++) {
         await wait(customCandleUpdateTimeForWait ?? 1000)
 

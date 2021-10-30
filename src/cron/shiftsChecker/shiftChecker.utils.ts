@@ -94,6 +94,12 @@ export const sendUserMessage = async ({
 
     const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
 
+    const messageAlreadyWasSent = shift.lastMessageCandleTime === actualCandleCreatedTime
+
+    if (messageAlreadyWasSent) {
+      return
+    }
+
     await bot.telegram.sendMessage(shift.user, i18n.t(
       'ru', 'shift_alert',
       {
@@ -114,6 +120,7 @@ export const sendUserMessage = async ({
     })
 
     // Апдейт признака о том, что сообщение отправлено
+    // TODO: Почему-то не апдейтится
     ShiftCandleModel.update({ _id: candle._id }, {
       $set: {
         lastMessageCandleTime: actualCandleCreatedTime
