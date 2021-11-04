@@ -31,6 +31,20 @@ export class TimeShift {
    */
   @prop({ required: true })
   fallAlerts: boolean
+
+  /**
+   * Время начала свечи за которую был отправлен алерт на падение
+   * Нужно для того, что бы слать алерт раз за свечу
+   */
+  @prop({ required: false })
+  lastMessageCandleGrowTime: number
+
+  /**
+   * Время начала свечи за которую был отправлен алерт на рост
+   * Нужно для того, что бы слать алерт раз за свечу
+   */
+  @prop({ required: false })
+  lastMessageCandleFallTime: number
 }
 
 // Get User model
@@ -43,4 +57,12 @@ export const getTimeShiftsCountForUser = async (user: number): Promise<number> =
   const shiftsCount = await TimeShiftModel.find(params).count()
 
   return shiftsCount
+}
+
+export const getUniqTimeShiftTickers = async () => {
+  const data = await TimeShiftModel
+    .find({}, { ticker: 1 })
+    .lean()
+
+  return data
 }
