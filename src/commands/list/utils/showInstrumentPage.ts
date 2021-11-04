@@ -15,6 +15,10 @@ interface IShowInstrumentPageParams {
   edit?: boolean
 }
 
+export const getAlertNumberByPage = ({ i, page }) => {
+  return i + 1 + (page * listConfig.itemsPerPage)
+}
+
 export const showInstrumentPage = async ({
   page, ctx, instrumentItems, symbol, edit, keyboardMode
 }: IShowInstrumentPageParams) => {
@@ -28,7 +32,8 @@ export const showInstrumentPage = async ({
       const price = lowerThen || greaterThen
 
       return ctx.i18n.t('alertList_item', {
-        number: i + 1,
+        // Номер элемента с учетом страницы
+        number: getAlertNumberByPage({ i, page }),
         price,
         message,
         currency: symbolOrCurrency(currency),
@@ -63,6 +68,7 @@ export const showInstrumentPage = async ({
       ...instrumentPageKeyboard(ctx, {
         page,
         itemsLength: instrumentItems.length,
+        itemsToShowLength: itemsToShow.length,
         symbol,
         withoutBackButton: false,
         keyboardMode

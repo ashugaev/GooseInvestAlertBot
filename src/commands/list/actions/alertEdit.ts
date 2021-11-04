@@ -1,6 +1,4 @@
-import { showInstrumentPage } from '../utils/showInstrumentPage'
 import { listConfig } from '../../../config'
-import { instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { i18n } from '../../../helpers/i18n'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
 import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
@@ -10,7 +8,12 @@ import { alertEditKeyboard } from '../keyboards/alertEditKeyboard'
  * Экшен перехода на страницу списка инструментов
  */
 export const alertEdit = async (ctx) => {
-  const { s: symbol, i, p: page } = JSON.parse(ctx.match[1])
+  const {
+    s: symbol,
+    // Индекс алерта на текущей странице
+    i,
+    p: page
+  } = JSON.parse(ctx.match[1])
 
   const alertsList = ctx.session.listCommand.alertsList
 
