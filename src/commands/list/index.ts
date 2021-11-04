@@ -52,7 +52,7 @@ export function setupList (bot: Telegraf<Context>) {
       ctx.replyWithHTML(ctx.i18n.t('alertList_titles'),
         Extra
           .HTML(true)
-          .markup(instrumentsListKeyboard({ page: 0, uniqTickersData }))
+          .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData }))
       )
     }
   }))

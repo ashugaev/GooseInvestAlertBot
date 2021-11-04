@@ -15,6 +15,8 @@ export const instrumentsListPagination = async (ctx) => {
       t: listType = EListTypes.shifts
     } = JSON.parse(ctx.match[1])
 
+    const { id: user } = ctx.from
+
     const alertsList = ctx.session?.listCommand?.alertsList
     const uniqTickersData = ctx.session?.listCommand?.uniqTickersData
 
@@ -27,8 +29,8 @@ export const instrumentsListPagination = async (ctx) => {
     ctx.editMessageText(ctx.i18n.t('alertList_titles'),
       Extra
         .HTML(true)
-        .markup(instrumentsListKeyboard({
-          page, uniqTickersData, listType
+        .markup(await instrumentsListKeyboard({
+          page, uniqTickersData, listType, user
         }))
     )
   } catch (e) {

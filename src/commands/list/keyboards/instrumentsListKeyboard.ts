@@ -5,14 +5,16 @@ import { createActionString } from '../../../helpers/createActionString'
 import { Actions } from '../../../constants'
 import { alertsTypeToggleButtons } from './alertsTypeToggleButtons'
 import { EListTypes } from '../list.types'
+import { getTimeShiftsCountForUser } from '../../../models'
 
 /**
  * Вернет список кнопок для каждого инструмента по массиву данных
  */
-export const instrumentsListKeyboard = ({
+export const instrumentsListKeyboard = async ({
   uniqTickersData,
   page,
-  listType = EListTypes.levels
+  listType = EListTypes.levels,
+  user = null
 }) => {
   // Тикеры которые выведем на это странице
   const pageTickers = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
@@ -43,8 +45,11 @@ export const instrumentsListKeyboard = ({
 
   getTickerButtons.push(paginatorButtons)
 
-  // FIXME: Только если есть шифты показывать
-  getTickerButtons.push(alertsTypeToggleButtons({ listType }))
+  const userShiftsCount = user ? await getTimeShiftsCountForUser(user) : 0
+
+  if (userShiftsCount > 0) {
+    getTickerButtons.push(alertsTypeToggleButtons({ listType }))
+  }
 
   return Markup.inlineKeyboard(getTickerButtons)
 }

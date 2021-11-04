@@ -29,7 +29,7 @@ export const alertDelete = async (ctx) => {
       ctx.editMessageText(ctx.i18n.t('alertList_titles'),
         Extra
           .HTML(true)
-          .markup(instrumentsListKeyboard({ page: 0, uniqTickersData: data.uniqTickersData }))
+          .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData: data.uniqTickersData }))
       )
     } else {
       ctx.deleteMessage()
