@@ -6,7 +6,7 @@ interface IBackButtonParams {
 
 export const backButton = ({ action }: IBackButtonParams) => {
   return Markup.callbackButton(
-    '↩ Назад',
+    '⏎ Назад',
     action
   )
 }

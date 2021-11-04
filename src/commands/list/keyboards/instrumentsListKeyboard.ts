@@ -3,11 +3,17 @@ import { Markup } from 'telegraf'
 import { paginationButtons } from '../../../keyboards/paginationButtons'
 import { createActionString } from '../../../helpers/createActionString'
 import { Actions } from '../../../constants'
+import { alertsTypeToggleButtons } from './alertsTypeToggleButtons'
+import { EListTypes } from '../list.types'
 
 /**
  * Вернет список кнопок для каждого инструмента по массиву данных
  */
-export const instrumentsListKeyboard = ({ uniqTickersData, page }) => {
+export const instrumentsListKeyboard = ({
+  uniqTickersData,
+  page,
+  listType = EListTypes.levels
+}) => {
   // Тикеры которые выведем на это странице
   const pageTickers = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
@@ -36,6 +42,9 @@ export const instrumentsListKeyboard = ({ uniqTickersData, page }) => {
   })
 
   getTickerButtons.push(paginatorButtons)
+
+  // FIXME: Только если есть шифты показывать
+  getTickerButtons.push(alertsTypeToggleButtons({ listType }))
 
   return Markup.inlineKeyboard(getTickerButtons)
 }

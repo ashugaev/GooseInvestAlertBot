@@ -184,6 +184,12 @@ alertsList_editOne: |
 alertList_deleted: |
   Удалил оповещение!
 
+alertsList_button_levels-list: |
+  ${active ? '◉' : '○'} Ценовые уровни
+
+alertsList_button_shifts-list: |
+  ${active ? '◉' : '○'} Скорость цены
+
 # Alert add
 
 alert_add_chooseInstrument: |
