@@ -1,12 +1,12 @@
 import { Markup } from 'telegraf'
 
 interface IBackButtonParams {
-    action: string,
+  action: string
 }
 
 export const backButton = ({ action }: IBackButtonParams) => {
   return Markup.callbackButton(
-    'Назад',
+    '↩ Назад',
     action
   )
 }

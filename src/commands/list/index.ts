@@ -32,6 +32,7 @@ export function setupList (bot: Telegraf<Context>) {
     let uniqTickersData
 
     try {
+      // Запишет алерты в том числе в конекст
       const data = await fetchAlerts({ ctx, forSymbol })
 
       alertsList = data.alertsList
