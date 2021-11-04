@@ -12,25 +12,31 @@ import { Limits } from '../../constants'
 import { IAdditionalShiftConfig } from './shift.types'
 
 const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => {
-  const { id: user } = ctx.from
+  try {
+    const { id: user } = ctx.from
 
-  const userShiftsCount = await getTimeShiftsCountForUser(user)
+    const userShiftsCount = await getTimeShiftsCountForUser(user)
 
-  // Проверка на выход за лимиты
-  if (userShiftsCount >= Limits.shifts) {
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit', {
-      limit: Limits.shifts
-    }))
+    // Проверка на выход за лимиты
+    if (userShiftsCount >= Limits.shifts) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit', {
+        limit: Limits.shifts
+      }))
 
-    return ctx.scene.leave()
+      return ctx.scene.leave()
+    }
+
+    ctx.wizard.state.shift = ctx.wizard.state.shift || {}
+    ctx.wizard.state.shift.userShiftsCount = userShiftsCount
+
+    ctx.replyWithHTML(i18n.t('ru', 'shift_add_startScene'))
+
+    return ctx.wizard.next()
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Add error', e)
+    return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
-
-  ctx.wizard.state.shift = ctx.wizard.state.shift || {}
-  ctx.wizard.state.shift.userShiftsCount = userShiftsCount
-
-  ctx.replyWithHTML(i18n.t('ru', 'shift_add_startScene'))
-
-  return ctx.wizard.next()
 })
 
 const shiftAddChooseTickers = new Composer()
@@ -95,13 +101,19 @@ shiftAddChooseTickers.on('message', (ctx, next) => {
 const shiftAddChooseTimeframes = new Composer()
 
 shiftAddChooseTimeframes.action(triggerActionRegexp(SHIFT_ACTIONS.chooseTimeframe), sceneWrapper('shift_add_choose-timeframe', async (ctx) => {
-  const { timeframe } = JSON.parse(ctx.match[1])
+  try {
+    const { timeframe } = JSON.parse(ctx.match[1])
 
-  ctx.wizard.state.shift.timeframe = timeframe
+    ctx.wizard.state.shift.timeframe = timeframe
 
-  await ctx.replyWithHTML(i18n.t('ru', 'shift_add_choosePercent'))
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_choosePercent'))
 
-  return ctx.wizard.next()
+    return ctx.wizard.next()
+  } catch (e) {
+    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+    log.error('[Shift] Add error', e)
+    return ctx.wizard.selectStep(ctx.wizard.cursor)
+  }
 }))
 
 // Если сообщение не то, что ожидаем - покидаем сцену
@@ -114,54 +126,60 @@ const shiftAddChoosePercent = new Composer()
 
 // Не нечинается с '/'
 shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent', async (ctx) => {
-  const { text: percent } = ctx.message
-
-  const intPercent = parseFloat(percent)
-
-  if (!intPercent || percent > SHIFT_MAX_PERCENT) {
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent'))
-
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
-  }
-
-  const { tickers, timeframe, timeframes } = ctx.wizard.state.shift
-  const { id: user } = ctx.from
-
-  // Дефолтные доп настройки для шифта, которые ставятся после создания
-  const additionalShiftConfig: IAdditionalShiftConfig = {
-    muted: true,
-    growAlerts: true,
-    fallAlerts: true
-  }
-
-  const newShifts = tickers.map(ticker => ({
-    percent: intPercent,
-    timeframe,
-    ticker,
-    user,
-    ...additionalShiftConfig
-  }))
-
   try {
-    const dbShifts = await TimeShiftModel.insertMany(newShifts)
+    const { text: percent } = ctx.message
 
-    ctx.wizard.state.shift.percent = intPercent
-    // @ts-expect-error
-    ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
+    const intPercent = parseFloat(percent)
 
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
-      time: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
+    if (!intPercent || percent > SHIFT_MAX_PERCENT) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent'))
+
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+
+    const { tickers, timeframe, timeframes } = ctx.wizard.state.shift
+    const { id: user } = ctx.from
+
+    // Дефолтные доп настройки для шифта, которые ставятся после создания
+    const additionalShiftConfig: IAdditionalShiftConfig = {
+      muted: true,
+      growAlerts: true,
+      fallAlerts: true
+    }
+
+    const newShifts = tickers.map(ticker => ({
       percent: intPercent,
-      tickers: tickers.join(' ,')
-    }), {
-      reply_markup: getShiftConfigKeyboard(additionalShiftConfig)
-    })
+      timeframe,
+      ticker,
+      user,
+      ...additionalShiftConfig
+    }))
+
+    try {
+      const dbShifts = await TimeShiftModel.insertMany(newShifts)
+
+      ctx.wizard.state.shift.percent = intPercent
+      // @ts-expect-error
+      ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
+
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
+        time: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
+        percent: intPercent,
+        tickers: tickers.join(' ,')
+      }), {
+        reply_markup: getShiftConfigKeyboard(additionalShiftConfig)
+      })
+    } catch (e) {
+      ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+      log.error('[Shift] Update addtional config error', e)
+    }
+
+    return ctx.wizard.next()
   } catch (e) {
     ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-    log.error('[Shift] Update addtional config error', e)
+    log.error('[Shift] Add error', e)
+    return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
-
-  return ctx.wizard.next()
 }))
 
 // Если сообщение не то, что ожидаем - покидаем сцену
