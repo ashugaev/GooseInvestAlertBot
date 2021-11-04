@@ -10,6 +10,7 @@ import { Actions } from '../../constants'
 import { alertEdit } from './actions/alertEdit'
 import { alertDelete } from './actions/alertDelete'
 import { fetchAlerts } from './utils/fetchAlerts'
+import { shiftsPage } from './actions/shiftsPage'
 
 export interface ITickerButtonItem {
   name: string
@@ -20,6 +21,8 @@ export interface ITickerButtonItem {
 export function setupList (bot: Telegraf<Context>) {
   bot.command('list', commandWrapper(async ctx => {
     const data = ctx.message.text.match(/list\s?(\w+)?$/)
+
+    const { id: user } = ctx.from
 
     // Invalid Format
     if (data === null) {
@@ -52,7 +55,7 @@ export function setupList (bot: Telegraf<Context>) {
       ctx.replyWithHTML(ctx.i18n.t('alertList_titles'),
         Extra
           .HTML(true)
-          .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData }))
+          .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData, user }))
       )
     }
   }))
@@ -63,4 +66,6 @@ export function setupList (bot: Telegraf<Context>) {
   bot.action(triggerActionRegexp(Actions.list_deleteAlert), alertDelete)
   // Пагинация по списку тикеров (верхнеуровневая)
   bot.action(triggerActionRegexp(Actions.list_instrumentsPage), instrumentsListPagination)
+  // Режим просмотра шифтов
+  bot.action(triggerActionRegexp(Actions.list_shiftsPage), shiftsPage)
 }

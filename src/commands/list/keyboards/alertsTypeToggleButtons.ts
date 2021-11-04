@@ -15,10 +15,9 @@ export const alertsTypeToggleButtons = ({ listType }) => {
     isShiftsList
     // Экшен при этом условии уйдет в пустото, потому что не хотим редактировать сообщение
       ? 'null'
-      : createActionString(Actions.list_instrumentsPage,
+      : createActionString(Actions.list_shiftsPage,
         {
-          p: 0,
-          t: EListTypes.shifts
+          p: 0
         })
   )
 
@@ -28,8 +27,7 @@ export const alertsTypeToggleButtons = ({ listType }) => {
       ? 'null'
       : createActionString(Actions.list_instrumentsPage,
         {
-          p: 0,
-          t: EListTypes.levels
+          p: 0
         })
   )
 

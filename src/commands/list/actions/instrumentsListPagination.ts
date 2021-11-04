@@ -5,14 +5,14 @@ import { log } from '../../../helpers/log'
 
 /**
  * Экшен перехода на страницу списка инструментов
- * @param ctx
+ *
+ * Эта страница актуальная только для ценовых уровней
  */
 export const instrumentsListPagination = async (ctx) => {
   try {
     const {
       p: page = 0,
       // type списка
-      t: listType = EListTypes.shifts
     } = JSON.parse(ctx.match[1])
 
     const { id: user } = ctx.from
@@ -30,7 +30,7 @@ export const instrumentsListPagination = async (ctx) => {
       Extra
         .HTML(true)
         .markup(await instrumentsListKeyboard({
-          page, uniqTickersData, listType, user
+          page, uniqTickersData, user
         }))
     )
   } catch (e) {

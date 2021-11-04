@@ -10,6 +10,7 @@ export enum Actions {
   list_deleteAlert = 'list_deleteAlert',
   shift_delete = 'shift_delete',
   list_instrumentsPage = 'liP',
+  list_shiftsPage = 'lShp'
 }
 
 export enum Limits {

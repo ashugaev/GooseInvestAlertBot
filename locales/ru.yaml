@@ -190,6 +190,16 @@ alertsList_button_levels-list: |
 alertsList_button_shifts-list: |
   ${active ? '◉' : '○'} Скорость цены
 
+alertsList_shifts_list: |
+  ⚡ Подписки на изменение скорости цены
+
+  ${list}
+
+  ${showEditMessage ? 'Выбери номер для редактирования' : ''}
+
+alertsList_shifts_listItem: |
+  ${number}. <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ РОСТ' : ''}${fallOnly ? '↘️ ПАДЕНИЕ' : ''}${change ? '↕️ ИЗМЕНЕНИЕ' : ''} на <b>${percent}%</b> за <b>${time}</b>
+
 # Alert add
 
 alert_add_chooseInstrument: |

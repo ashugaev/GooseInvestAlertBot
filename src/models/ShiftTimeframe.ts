@@ -30,3 +30,16 @@ export class ShiftTimeframe {
 export const ShiftTimeframeModel = getModelForClass(ShiftTimeframe, {
   schemaOptions: { timestamps: true }
 })
+
+export const getShiftTimeframesObject = async () => {
+  const timeframes = await ShiftTimeframeModel.find().lean()
+
+  // Нормализуем таймфреймы в объект для удобства
+  const timeframesObj = timeframes.reduce((acc, el) => {
+    acc[el.timeframe] = el
+
+    return acc
+  }, {})
+
+  return timeframesObj
+}

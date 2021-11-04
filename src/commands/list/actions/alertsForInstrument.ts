@@ -4,7 +4,8 @@ import { log } from '../../../helpers/log'
 
 /**
  * Экшен перехода на страницу списка инструментов
- * @param ctx
+ *
+ * Страницы для ценового уровня
  */
 export const alertsForInstrument = async (ctx) => {
   try {
