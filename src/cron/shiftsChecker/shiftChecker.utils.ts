@@ -94,9 +94,16 @@ export const sendUserMessage = async ({
 
     const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
 
-    const messageAlreadyWasSent = shift.lastMessageCandleTime === actualCandleCreatedTime
+    const growMessageAlreadyWasSent = shift.lastMessageCandleGrowTime === actualCandleCreatedTime
+    const fallMessageAlreadyWasSent = shift.lastMessageCandleFallTime === actualCandleCreatedTime
 
-    if (messageAlreadyWasSent) {
+    // Если уже отравили алерт на рост
+    if (growMessageAlreadyWasSent && isGrow) {
+      return
+    }
+
+    // Если уже отправили алерт на падение
+    if (fallMessageAlreadyWasSent && !isGrow) {
       return
     }
 
@@ -119,11 +126,13 @@ export const sendUserMessage = async ({
       disable_notification: muted
     })
 
+    const dataToUpdate = isGrow
+      ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })
+      : ({ lastMessageCandleFallTime: actualCandleCreatedTime })
+
     // Апдейт признака о том, что сообщение отправлено
     await TimeShiftModel.updateOne({ _id: shift._id }, {
-      $set: {
-        lastMessageCandleTime: actualCandleCreatedTime
-      }
+      $set: dataToUpdate
     })
   }
 

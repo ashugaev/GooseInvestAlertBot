@@ -222,11 +222,9 @@ shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additio
   }
 }))
 
-// Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddAdditionalConfiguration.on('message', (ctx, next) => {
-  next()
-  return ctx.scene.leave()
-})
+// WARN: Тут не выхожу из сцены, что бы она работала в истории сообщений.
+//  Потенциально это может случить местом для утечки памяти.
+//  Но хз сколько должно висеть сцен, что бы это произошло.
 
 export const shiftScenes = new WizardScene(SHIFT_SCENES.add,
   startShiftAddScene,

@@ -12,9 +12,8 @@ export const setupShiftsChecker = async (bot) => {
   let customTimeForWait = null
 
   while (true) {
-    // TODO: Вернуть задержку по дефолту на 30000
     // Между итерациями задержка в 30 секунд, либо то время, которое проставили в последней итерации
-    await wait(customTimeForWait ?? 1000)
+    await wait(customTimeForWait ?? 30000)
 
     customTimeForWait = null
 
@@ -42,11 +41,9 @@ export const setupShiftsChecker = async (bot) => {
       // ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
       for (let i = 0; i < shifts.length; i++) {
         await wait(customCandleUpdateTimeForWait ?? 1000)
+        // Время самой итерации в среднем 150-400мс
 
         customCandleUpdateTimeForWait = null
-
-        console.time('iteration time')
-        // TODO: Возможно тут тоже нужна задержка между итерациями
 
         try {
           const shift = shifts[i]
@@ -79,9 +76,6 @@ export const setupShiftsChecker = async (bot) => {
           log.error('[ShiftsChecker] Candle update crash', e)
           customCandleUpdateTimeForWait = 20000
         }
-
-        // TODO: Удалить console
-        console.timeEnd('iteration time')
       }
     } catch (e) {
       log.error('[ShiftsChecker] Crash', e)
