@@ -6,7 +6,7 @@ import { instrumentsListKeyboard } from '../keyboards/instrumentsListKeyboard'
  * @param ctx
  */
 export const instrumentsListPagination = async (ctx) => {
-  const page = Number(ctx.match[1])
+  const { p: page = 0 } = JSON.parse(ctx.match[1])
 
   const alertsList = ctx.session?.listCommand?.alertsList
   const uniqTickersData = ctx.session?.listCommand?.uniqTickersData

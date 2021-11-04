@@ -7,12 +7,12 @@ import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentP
 import { PriceAlertItem } from '../../../models'
 
 interface IShowInstrumentPageParams {
-    keyboardMode?: EKeyboardModes,
-    page: number,
-    ctx: any,
-    instrumentItems: PriceAlertItem[],
-    symbol: string,
-    edit?: boolean,
+  keyboardMode?: EKeyboardModes
+  page: number
+  ctx: any
+  instrumentItems: PriceAlertItem[]
+  symbol: string
+  edit?: boolean
 }
 
 export const showInstrumentPage = async ({

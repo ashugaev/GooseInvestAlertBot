@@ -1,4 +1,4 @@
-interface CreateActionStringPayload {
+export interface CreateActionStringPayload {
   [key: string]: any
 }
 

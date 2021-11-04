@@ -12,9 +12,9 @@ import { alertDelete } from './actions/alertDelete'
 import { fetchAlerts } from './utils/fetchAlerts'
 
 export interface ITickerButtonItem {
-    name: string,
-    symbol: string,
-    currency: string,
+  name: string
+  symbol: string
+  currency: string
 }
 
 export function setupList (bot: Telegraf<Context>) {
@@ -56,8 +56,10 @@ export function setupList (bot: Telegraf<Context>) {
     }
   }))
 
+  // Управление состоянием страницы одного инструмента
   bot.action(triggerActionRegexp(Actions.list_tickerPage), alertsForInstrument)
   bot.action(triggerActionRegexp(Actions.list_editAlert), alertEdit)
   bot.action(triggerActionRegexp(Actions.list_deleteAlert), alertDelete)
-  bot.action(/^instrumentsList_page_(\d+)$/, instrumentsListPagination)
+  // Пагинация по списку тикеров (верхнеуровневая)
+  bot.action(triggerActionRegexp(Actions.list_instrumentsPage), instrumentsListPagination)
 }

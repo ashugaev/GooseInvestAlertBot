@@ -11,8 +11,6 @@ export const instrumentsListKeyboard = ({ uniqTickersData, page }) => {
   // Тикеры которые выведем на это странице
   const pageTickers = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
-  const showInstrumentActionPayload = {}
-
   // Генерит инлайн кнопки по тикерам
   const getTickerButtons = pageTickers.map(({ name, symbol }) => {
     const payload = {
@@ -30,10 +28,11 @@ export const instrumentsListKeyboard = ({ uniqTickersData, page }) => {
 
   // Получаю кнопки пагинации
   const paginatorButtons = paginationButtons({
-    page,
-    itemsPerPage: listConfig.itemsPerPage,
     itemsLength: uniqTickersData.length,
-    name: 'instrumentsList'
+    action: Actions.list_instrumentsPage,
+    payload: {
+      p: page
+    }
   })
 
   getTickerButtons.push(paginatorButtons)
