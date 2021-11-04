@@ -132,7 +132,9 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
     const intPercent = parseFloat(percent)
 
     if (!intPercent || percent > SHIFT_MAX_PERCENT) {
-      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent'))
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent', {
+        maxPercent: SHIFT_MAX_PERCENT
+      }))
 
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
