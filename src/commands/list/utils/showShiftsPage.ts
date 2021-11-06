@@ -1,7 +1,9 @@
 import { listConfig } from '../../../config'
-import { EKeyboardModes } from '../keyboards/instrumentPageKeyboard'
+import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { getShiftTimeframesObject, TimeShift } from '../../../models'
 import { getAlertNumberByPage } from './showInstrumentPage'
+import { EListTypes } from '../list.types'
+import { Actions } from '../../../constants'
 const { set } = require('lodash')
 
 interface IShowShiftsPageParams {
@@ -52,18 +54,36 @@ export const showShiftsPage = async ({
     showEditMessage: keyboardMode === EKeyboardModes.edit
   })
 
-  ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
+  await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
-    disable_web_page_preview: true
-    // reply_markup: {
-    //   ...instrumentPageKeyboard(ctx, {
-    //     page,
-    //     itemsLength: instrumentItems.length,
-    //     itemsToShowLength: itemsToShow.length,
-    //     symbol,
-    //     withoutBackButton: false,
-    //     keyboardMode
-    //   })
-    // }
+    disable_web_page_preview: true,
+    reply_markup: {
+      ...instrumentPageKeyboard(ctx, {
+        page,
+        itemsLength: shiftsList.length,
+        itemsToShowLength: itemsToShow.length,
+        withoutBackButton: true,
+        keyboardMode,
+        showAlertsTypeToggler: true,
+        currentListType: EListTypes.shifts,
+        paginationButtonsConfig: {
+          action: Actions.list_shiftsPage,
+          payload: {
+            p: page,
+            kMode: keyboardMode
+          }
+        },
+        editButtonConfig: {
+          action: Actions.list_shiftsPage
+        },
+        editNumberButtonsConfig: {
+          action: Actions.list_shiftsPage,
+          payload: {
+            p: page,
+            kMode: EKeyboardModes.edit
+          }
+        }
+      })
+    }
   })
 }

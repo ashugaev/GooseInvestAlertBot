@@ -41,7 +41,7 @@ export const alertEdit = async (ctx) => {
 
     const keyboard = alertEditKeyboard({ idI, symbol })
 
-    ctx.editMessageText(message, {
+    await ctx.editMessageText(message, {
       parse_mode: 'HTML',
       disable_web_page_preview: true,
       reply_markup: {

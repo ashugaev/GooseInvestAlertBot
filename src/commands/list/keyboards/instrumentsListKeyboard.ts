@@ -9,6 +9,8 @@ import { getTimeShiftsCountForUser } from '../../../models'
 
 /**
  * Вернет список кнопок для каждого инструмента по массиву данных
+ *
+ * TODO: Возможно стоит объединить клавиатуры instrumentPageKeyboard и instrumentsListKeyboard
  */
 export const instrumentsListKeyboard = async ({
   uniqTickersData,

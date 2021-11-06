@@ -26,7 +26,7 @@ export const alertDelete = async (ctx) => {
     if (instrumentItems.length) {
       showInstrumentPage({ page: 0, symbol, ctx, instrumentItems, edit: true })
     } else if (data.uniqTickersData.length) {
-      ctx.editMessageText(ctx.i18n.t('alertList_titles'),
+      await ctx.editMessageText(ctx.i18n.t('alertList_titles'),
         Extra
           .HTML(true)
           .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData: data.uniqTickersData }))

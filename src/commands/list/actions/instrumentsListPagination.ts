@@ -21,12 +21,12 @@ export const instrumentsListPagination = async (ctx) => {
     const uniqTickersData = ctx.session?.listCommand?.uniqTickersData
 
     if (!alertsList?.length) {
-      ctx.editMessageText(ctx.i18n.t('unrecognizedError'))
+      await ctx.editMessageText(ctx.i18n.t('unrecognizedError'))
 
       return
     }
 
-    ctx.editMessageText(ctx.i18n.t('alertList_titles'),
+    await ctx.editMessageText(ctx.i18n.t('alertList_titles'),
       Extra
         .HTML(true)
         .markup(await instrumentsListKeyboard({
