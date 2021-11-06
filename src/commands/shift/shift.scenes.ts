@@ -139,8 +139,14 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
 
-    const { tickers, timeframe, timeframes } = ctx.wizard.state.shift
+    const { tickers, timeframe, timeframes, tickersInfo } = ctx.wizard.state.shift
     const { id: user } = ctx.from
+
+    const tickersInfoObj = tickersInfo.reduce((acc, el) => {
+      acc[el.ticker] = el
+
+      return acc
+    }, {})
 
     // Дефолтные доп настройки для шифта, которые ставятся после создания
     const additionalShiftConfig: IAdditionalShiftConfig = {
@@ -154,6 +160,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
       timeframe,
       ticker,
       user,
+      name: tickersInfoObj[ticker].name,
       ...additionalShiftConfig
     }))
 

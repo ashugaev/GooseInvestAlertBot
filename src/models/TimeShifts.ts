@@ -45,6 +45,12 @@ export class TimeShift {
    */
   @prop({ required: false })
   lastMessageCandleFallTime: number
+
+  /**
+   * Полное название инструмента
+   */
+  @prop({ required: true })
+  name: string
 }
 
 // Get User model

@@ -20,9 +20,8 @@ export const showShiftsPage = async ({
   keyboardMode
 }: IShowShiftsPageParams) => {
   const itemsToShow = shiftsList
-  // Сортировка по тикеру
-  // @ts-expect-error
-    .sort((a, b) => a.ticker > b.ticker)
+  // Сортировка по названию
+    .sort((a, b) => a.name > b.name ? 1 : -1)
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
   let timeframesObj = ctx.wizard?.state?.shiftsList?.timeframesObj
@@ -34,18 +33,17 @@ export const showShiftsPage = async ({
   }
 
   const itemsList = itemsToShow
-  // Сортировка по цене
-    .map(({ ticker, percent, growAlerts, fallAlerts, timeframe }, i) => {
+    .map(({ ticker, percent, growAlerts, fallAlerts, timeframe, name }, i) => {
       return ctx.i18n.t('alertsList_shifts_listItem', {
         // Номер элемента с учетом страницы
         number: getAlertNumberByPage({ i, page }),
-        name: 'Kek',
+        name,
         ticker,
         growthOnly: growAlerts && !fallAlerts,
         fallOnly: fallAlerts && !growAlerts,
         change: fallAlerts && growAlerts,
         percent,
-        time: timeframesObj[timeframe]
+        time: timeframesObj[timeframe].name_ru_plur
       })
     }).join('\n')
 
@@ -57,7 +55,6 @@ export const showShiftsPage = async ({
   ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
     disable_web_page_preview: true
-    // FIXME: Доделать
     // reply_markup: {
     //   ...instrumentPageKeyboard(ctx, {
     //     page,
