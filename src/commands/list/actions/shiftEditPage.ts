@@ -37,7 +37,11 @@ export const shiftEditPage = async (ctx) => {
     if (shiftData !== shiftDataCopy) {
       // Апдейт параметров
       await TimeShiftModel.updateOne({ _id }, {
-        $set: shiftDataCopy
+        $set: {
+          muted: shiftDataCopy.muted,
+          fallAlerts: shiftDataCopy.fallAlerts,
+          growAlerts: shiftDataCopy.growAlerts
+        }
       })
     }
 

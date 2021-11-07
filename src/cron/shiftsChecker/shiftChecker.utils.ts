@@ -3,6 +3,7 @@ import { ShiftCandleModel } from '../../models/ShiftCandle'
 import { i18n } from '../../helpers/i18n'
 import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
+import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
 
 /**
  * Обновит свечу в базе и вернет новую свечу
@@ -87,7 +88,7 @@ export const sendUserMessage = async ({
   const growPercent = calcGrowPercent(candle.h, candle.o)
   const fallPercent = calcGrowPercent(candle.l, candle.o)
 
-  const { ticker, muted } = shift
+  const { ticker, muted, _id } = shift
 
   const sendMessage = async (isGrow) => {
     const tickerInfo = (await getInstrumentInfoByTicker({ ticker }))[0]
@@ -123,7 +124,11 @@ export const sendUserMessage = async ({
       }
     ), {
       parse_mode: 'HTML',
-      disable_notification: muted
+      disable_web_page_preview: true,
+      disable_notification: muted,
+      reply_markup: {
+        inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+      }
     })
 
     const dataToUpdate = isGrow
