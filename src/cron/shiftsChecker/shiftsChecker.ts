@@ -2,7 +2,7 @@
  * Мониторит скорость изменения цены
  */
 import { wait } from '../../helpers/wait'
-import { ShiftTimeframeModel, TimeShiftModel } from '../../models'
+import {getShiftTimeframesObject, TimeShiftModel} from '../../models'
 import { log } from '../../helpers/log'
 import { getLastPrice } from '../../helpers/stocksApi'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
@@ -21,13 +21,9 @@ export const setupShiftsChecker = async (bot) => {
 
     try {
       const shifts = await TimeShiftModel.find().lean()
-      const timeframes = await ShiftTimeframeModel.find().lean()
 
       // Нормализуем таймфреймы в объект для удобства
-      const timeframesObj = timeframes.reduce((acc, el) => {
-        acc[el.timeframe] = el
-        return acc
-      }, {})
+      const timeframesObj = await getShiftTimeframesObject()
 
       if (!shifts.length) {
         customTimeForWait = 60000

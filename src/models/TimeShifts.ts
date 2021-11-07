@@ -5,6 +5,8 @@
 import { prop, getModelForClass } from '@typegoose/typegoose'
 
 export class TimeShift {
+  _id: string
+
   @prop({ required: true })
   percent: number
 
@@ -45,6 +47,12 @@ export class TimeShift {
    */
   @prop({ required: false })
   lastMessageCandleFallTime: number
+
+  /**
+   * Полное название инструмента
+   */
+  @prop({ required: true })
+  name: string
 }
 
 // Get User model

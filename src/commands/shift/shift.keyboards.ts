@@ -16,18 +16,44 @@ export const getTimeframesKeyboard = (timeframes: ShiftTimeframe[]) => {
   return m.inlineKeyboard(buttons)
 }
 
-export const getShiftConfigKeyboard = (config: IAdditionalShiftConfig) => {
-  const growMessage = (config.growAlerts ? '✅' : '❌') + ' ' + i18n.t('ru', 'shift_add_button_growAlert')
-  const fallMessage = (config.fallAlerts ? '✅' : '❌') + ' ' + i18n.t('ru', 'shift_add_button_fallAlert')
+export const getShiftConfigKeyboard = (payload: IAdditionalShiftConfig, action: string, { buttonsOnly = false } = {}) => {
+  const growMessage = (payload.growAlerts ? '✅' : '❌') + ' ' + i18n.t('ru', 'shift_add_button_growAlert')
+  const fallMessage = (payload.fallAlerts ? '✅' : '❌') + ' ' + i18n.t('ru', 'shift_add_button_fallAlert')
   const muteMessage = '🔊 ' + i18n.t('ru', 'shift_add_button_mute')
   const unmuteMessage = '🔇 ' + i18n.t('ru', 'shift_add_button_unmute')
 
-  const growData = createActionString(SHIFT_ACTIONS.additionalConfiguration, { ...config, growAlerts: !config.growAlerts, fallAlerts: true })
-  const fallData = createActionString(SHIFT_ACTIONS.additionalConfiguration, { ...config, fallAlerts: !config.fallAlerts, growAlerts: true })
-  const muteData = createActionString(SHIFT_ACTIONS.additionalConfiguration, { ...config, muted: false })
-  const unmuteData = createActionString(SHIFT_ACTIONS.additionalConfiguration, { ...config, muted: true })
+  const payloadCopy = {
+    m: payload.muted ? 1 : 0,
+    g: payload.growAlerts ? 1 : 0,
+    f: payload.fallAlerts ? 1 : 0,
+    ...payload
+  }
 
-  return m.inlineKeyboard([
+  // Выпиливаю старые/длинные названия
+  delete payloadCopy.growAlerts
+  delete payloadCopy.fallAlerts
+  delete payloadCopy.muted
+
+  const growData = createActionString(action, {
+    ...payloadCopy,
+    g: payload.growAlerts ? 0 : 1,
+    f: 1
+  })
+  const fallData = createActionString(action, {
+    ...payloadCopy,
+    f: payload.fallAlerts ? 0 : 1,
+    g: 1
+  })
+  const muteData = createActionString(action, {
+    ...payloadCopy,
+    m: 0
+  })
+  const unmuteData = createActionString(action, {
+    ...payloadCopy,
+    m: 1
+  })
+
+  const buttons = [
     [m.callbackButton(
       growMessage,
       growData
@@ -37,7 +63,7 @@ export const getShiftConfigKeyboard = (config: IAdditionalShiftConfig) => {
       fallData
     )],
     [
-      config.muted
+      payload.muted
         ? m.callbackButton(
             unmuteMessage,
             muteData
@@ -47,5 +73,7 @@ export const getShiftConfigKeyboard = (config: IAdditionalShiftConfig) => {
           unmuteData
         )
     ]
-  ])
+  ]
+
+  return buttonsOnly ? buttons : m.inlineKeyboard(buttons)
 }

@@ -139,8 +139,14 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
 
-    const { tickers, timeframe, timeframes } = ctx.wizard.state.shift
+    const { tickers, timeframe, timeframes, tickersInfo } = ctx.wizard.state.shift
     const { id: user } = ctx.from
+
+    const tickersInfoObj = tickersInfo.reduce((acc, el) => {
+      acc[el.ticker] = el
+
+      return acc
+    }, {})
 
     // Дефолтные доп настройки для шифта, которые ставятся после создания
     const additionalShiftConfig: IAdditionalShiftConfig = {
@@ -154,6 +160,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
       timeframe,
       ticker,
       user,
+      name: tickersInfoObj[ticker].name,
       ...additionalShiftConfig
     }))
 
@@ -169,7 +176,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
         percent: intPercent,
         tickers: tickers.join(' ,')
       }), {
-        reply_markup: getShiftConfigKeyboard(additionalShiftConfig)
+        reply_markup: getShiftConfigKeyboard(additionalShiftConfig, SHIFT_ACTIONS.additionalConfiguration)
       })
     } catch (e) {
       ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
@@ -196,7 +203,17 @@ shiftAddChoosePercent.on('message', (ctx, next) => {
 const shiftAddAdditionalConfiguration = new Composer()
 
 shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additionalConfiguration), sceneWrapper('shift_add_additional-configuration', async (ctx) => {
-  const config = JSON.parse(ctx.match[1])
+  const {
+    f,
+    g,
+    m
+  } = JSON.parse(ctx.match[1])
+
+  const config = {
+    fallAlerts: Boolean(f),
+    growAlerts: Boolean(g),
+    muted: Boolean(m)
+  }
 
   const { tickers, timeframe, percent, newShiftsId, timeframes } = ctx.wizard.state.shift
 
@@ -206,7 +223,7 @@ shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additio
       percent,
       tickers: tickers.join(' ,')
     }), {
-      reply_markup: getShiftConfigKeyboard(config),
+      reply_markup: getShiftConfigKeyboard(config, SHIFT_ACTIONS.additionalConfiguration),
       parse_mode: 'HTML'
     })
 

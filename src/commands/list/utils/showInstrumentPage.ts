@@ -5,14 +5,19 @@ import { log } from '../../../helpers/log'
 import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { PriceAlertItem } from '../../../models'
+import { Actions } from '../../../constants'
 
 interface IShowInstrumentPageParams {
-    keyboardMode?: EKeyboardModes,
-    page: number,
-    ctx: any,
-    instrumentItems: PriceAlertItem[],
-    symbol: string,
-    edit?: boolean,
+  keyboardMode?: EKeyboardModes
+  page: number
+  ctx: any
+  instrumentItems: PriceAlertItem[]
+  symbol: string
+  edit?: boolean
+}
+
+export const getAlertNumberByPage = ({ i, page }) => {
+  return i + 1 + (page * listConfig.itemsPerPage)
 }
 
 export const showInstrumentPage = async ({
@@ -28,7 +33,8 @@ export const showInstrumentPage = async ({
       const price = lowerThen || greaterThen
 
       return ctx.i18n.t('alertList_item', {
-        number: i + 1,
+        // Номер элемента с учетом страницы
+        number: getAlertNumberByPage({ i, page }),
         price,
         message,
         currency: symbolOrCurrency(currency),
@@ -56,16 +62,37 @@ export const showInstrumentPage = async ({
     showEditMessage: keyboardMode === EKeyboardModes.edit
   })
 
-  ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
+  await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
     disable_web_page_preview: true,
     reply_markup: {
       ...instrumentPageKeyboard(ctx, {
         page,
         itemsLength: instrumentItems.length,
+        itemsToShowLength: itemsToShow.length,
         symbol,
         withoutBackButton: false,
-        keyboardMode
+        keyboardMode,
+        paginationButtonsConfig: {
+          action: Actions.list_tickerPage,
+          payload: {
+            s: symbol,
+            p: page,
+            kMode: keyboardMode
+          }
+        },
+        editNumberButtonsConfig: {
+          action: Actions.list_editAlert,
+          payload: {
+            s: symbol.toUpperCase()
+          }
+        },
+        editButtonConfig: {
+          action: Actions.list_tickerPage,
+          payload: {
+            s: symbol.toUpperCase()
+          }
+        }
       })
     }
   })
