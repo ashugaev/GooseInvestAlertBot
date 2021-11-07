@@ -1,10 +1,10 @@
 import { listConfig } from '../../../config'
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
-import { getShiftTimeframesObject, TimeShift } from '../../../models'
+import { TimeShift } from '../../../models'
 import { getAlertNumberByPage } from './showInstrumentPage'
 import { EListTypes } from '../list.types'
 import { Actions } from '../../../constants'
-const { set } = require('lodash')
+import { getTimeframesObjFromStoreOrDB } from './getTimeframesObjFromStoreOrDB'
 
 interface IShowShiftsPageParams {
   keyboardMode?: EKeyboardModes
@@ -26,13 +26,7 @@ export const showShiftsPage = async ({
     .sort((a, b) => a.name > b.name ? 1 : -1)
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
-  let timeframesObj = ctx.wizard?.state?.shiftsList?.timeframesObj
-
-  if (!timeframesObj) {
-    timeframesObj = await getShiftTimeframesObject()
-
-    set(ctx, 'wizard.state.shiftsList.timeframesObj', timeframesObj)
-  }
+  const timeframesObj = await getTimeframesObjFromStoreOrDB(ctx)
 
   const itemsList = itemsToShow
     .map(({ ticker, percent, growAlerts, fallAlerts, timeframe, name }, i) => {
@@ -77,10 +71,13 @@ export const showShiftsPage = async ({
           action: Actions.list_shiftsPage
         },
         editNumberButtonsConfig: {
-          action: Actions.list_shiftsPage,
+          action: Actions.list_shiftEditPage,
           payload: {
             p: page,
             kMode: EKeyboardModes.edit
+          },
+          payloadCallback: (i) => {
+            return { d: itemsToShow[i]._id }
           }
         }
       })

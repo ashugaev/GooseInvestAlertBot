@@ -11,6 +11,7 @@ import { alertEdit } from './actions/alertEdit'
 import { alertDelete } from './actions/alertDelete'
 import { fetchAlerts } from './utils/fetchAlerts'
 import { shiftsPage } from './actions/shiftsPage'
+import { shiftEditPage } from './actions/shiftEditPage'
 
 export interface ITickerButtonItem {
   name: string
@@ -62,6 +63,8 @@ export function setupList (bot: Telegraf<Context>) {
 
   // Управление состоянием страницы одного инструмента
   bot.action(triggerActionRegexp(Actions.list_tickerPage), alertsForInstrument)
+  // Страница редактирования шифта
+  bot.action(triggerActionRegexp(Actions.list_shiftEditPage), shiftEditPage)
   bot.action(triggerActionRegexp(Actions.list_editAlert), alertEdit)
   bot.action(triggerActionRegexp(Actions.list_deleteAlert), alertDelete)
   // Пагинация по списку тикеров (верхнеуровневая)

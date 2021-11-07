@@ -5,6 +5,8 @@
 import { prop, getModelForClass } from '@typegoose/typegoose'
 
 export class TimeShift {
+  _id: string
+
   @prop({ required: true })
   percent: number
 

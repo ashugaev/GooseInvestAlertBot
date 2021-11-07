@@ -146,7 +146,7 @@ alertList_page: |
   ${showEditMessage ? 'Выбери номер для редактирования' : ''}
 
 alertList_item: |
-  ${number}. ${growth ? '↗️ РОСТ' : '↘️ ПАДЕНИЕ' } до <b>${price}${currency}</b>
+  ${number}. ${growth ? '↗️ <b>Рост</b>' : '↘️ <b>Падение</b>' } до <b>${price}${currency}</b>
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
 
 alertListDeleteButton: Удалить
@@ -177,7 +177,7 @@ alertListErrorInvalidFormat: |
   Чтобы увидеть весь список команд и получить больше информации, отправь команду /help
 
 alertsList_editOne: |
-  <b>${name}</b> (${symbol}) - ${growth ? '↗️ РОСТ' : '↘️ ПАДЕНИЕ' } до <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  <b>${name}</b> (${symbol}) - ${growth ? '↗️ <b>рост</b>' : '↘️ <b>падение</b>' } до <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
 
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
 
@@ -198,7 +198,10 @@ alertsList_shifts_list: |
   ${showEditMessage ? 'Выбери номер для редактирования' : ''}
 
 alertsList_shifts_listItem: |
-  ${number}. <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ РОСТ' : ''}${fallOnly ? '↘️ ПАДЕНИЕ' : ''}${change ? '↕️ ИЗМЕНЕНИЕ' : ''} на <b>${percent}%</b> за <b>${time}</b>
+  ${number}. <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
+
+alertsList_shifts_editOne: |
+  <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
 
 # Alert add
 
