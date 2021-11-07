@@ -27,6 +27,7 @@ import { alertAddScene } from './scenes/alertAddScene'
 
 import { configureAnalytics } from './middlewares/configureAnalytics'
 import { setupCheckers } from './cron'
+import { setupId } from './commands/id'
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
@@ -67,6 +68,7 @@ setupPrice(bot)
 setupStart(bot)
 setupShift(bot)
 setupStat(bot)
+setupId(bot)
 
 // Start bot
 bot.startPolling()
