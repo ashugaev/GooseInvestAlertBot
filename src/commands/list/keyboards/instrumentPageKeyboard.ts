@@ -50,7 +50,7 @@ export const instrumentPageKeyboard = (ctx, {
         p: page,
         i,
         ...(editNumberButtonsConfig.payload || {}),
-        ...(editNumberButtonsConfig?.payloadCallback(i) || {})
+        ...(editNumberButtonsConfig?.payloadCallback?.(i) || {})
       }
 
       return (

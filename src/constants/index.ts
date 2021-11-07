@@ -12,6 +12,7 @@ export enum Actions {
   list_instrumentsPage = 'liP',
   list_shiftsPage = 'lShp',
   list_shiftEditPage = 'shEp',
+  list_shiftDeleteOne = 'ddf',
 }
 
 export enum Limits {
