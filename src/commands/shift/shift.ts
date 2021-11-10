@@ -1,55 +1,13 @@
-import { Telegraf, Context, Markup } from 'telegraf'
+import { Telegraf, Context } from 'telegraf'
 import { commandWrapper } from '../../helpers/commandWrapper'
-import { Actions, Limits, Scenes } from '../../constants'
-import { plur } from '../../helpers/plural'
+import { SHIFT_ACTIONS, SHIFT_SCENES } from './shift.constants'
+import { shiftAlertSettings } from './shift.actions'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
-import { getShiftsForUser } from '../../models/Shifts'
-import { log } from '../../helpers/log'
-import { shiftDeleteActions } from './shift.actions'
-import { buttonShiftDelete } from './shift.buttons'
 
 export function setupShift (bot: Telegraf<Context>) {
-  bot.command(['stats', 'stat'], commandWrapper(async ctx => {
-    const { text } = ctx.message
-    const { id: user } = ctx.from
-
-    const data: string[] = text.match(/^\/(stats|stat)$/)
-
-    if (data) {
-      try {
-        const shiftsForUser = await getShiftsForUser(user)
-
-        if (shiftsForUser.length >= Limits.shifts) {
-          // Пока доступен один шифт
-          // ctx.replyWithHTML(ctx.i18n.t('shift_overlimit', { limit: Limits.shifts }))
-
-          const { days, percent, time, timeZone, _id } = shiftsForUser[0]
-
-          // Показать шифты, которые у юзара добавлены
-          ctx.replyWithHTML(ctx.i18n.t('shift_show', {
-            percent,
-            time: plur.hours(time + timeZone),
-            days: plur.days(days)
-          }), {
-            reply_markup: Markup.inlineKeyboard([buttonShiftDelete({ id: _id })])
-          })
-
-          return
-        }
-      } catch (e) {
-        ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-        log.error(e)
-
-        return
-      }
-
-      ctx.scene.enter(Scenes.shiftAdd)
-
-      return
-    }
-
-    ctx.replyWithHTML(ctx.i18n.t('shift_invalidFormat'))
+  bot.command(['shift'], commandWrapper(async ctx => {
+    ctx.scene.enter(SHIFT_SCENES.add)
   }))
 
-  bot.action(triggerActionRegexp(Actions.shift_delete), shiftDeleteActions)
+  bot.action(triggerActionRegexp(SHIFT_ACTIONS.alertSettings), shiftAlertSettings)
 }

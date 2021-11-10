@@ -10,16 +10,21 @@ import { Actions } from '../../constants'
 import { alertEdit } from './actions/alertEdit'
 import { alertDelete } from './actions/alertDelete'
 import { fetchAlerts } from './utils/fetchAlerts'
+import { shiftsPage } from './actions/shiftsPage'
+import { shiftEditPage } from './actions/shiftEditPage'
+import { shiftDelete } from './actions/shiftDelete'
 
 export interface ITickerButtonItem {
-    name: string,
-    symbol: string,
-    currency: string,
+  name: string
+  symbol: string
+  currency: string
 }
 
 export function setupList (bot: Telegraf<Context>) {
   bot.command('list', commandWrapper(async ctx => {
     const data = ctx.message.text.match(/list\s?(\w+)?$/)
+
+    const { id: user } = ctx.from
 
     // Invalid Format
     if (data === null) {
@@ -32,6 +37,7 @@ export function setupList (bot: Telegraf<Context>) {
     let uniqTickersData
 
     try {
+      // Запишет алерты в том числе в конекст
       const data = await fetchAlerts({ ctx, forSymbol })
 
       alertsList = data.alertsList
@@ -51,13 +57,21 @@ export function setupList (bot: Telegraf<Context>) {
       ctx.replyWithHTML(ctx.i18n.t('alertList_titles'),
         Extra
           .HTML(true)
-          .markup(instrumentsListKeyboard({ page: 0, uniqTickersData }))
+          .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData, user }))
       )
     }
   }))
 
+  // Управление состоянием страницы одного инструмента
   bot.action(triggerActionRegexp(Actions.list_tickerPage), alertsForInstrument)
+  // Страница редактирования шифта
+  bot.action(triggerActionRegexp(Actions.list_shiftEditPage), shiftEditPage)
+  // Удалить шифт
+  bot.action(triggerActionRegexp(Actions.list_shiftDeleteOne), shiftDelete)
   bot.action(triggerActionRegexp(Actions.list_editAlert), alertEdit)
   bot.action(triggerActionRegexp(Actions.list_deleteAlert), alertDelete)
-  bot.action(/^instrumentsList_page_(\d+)$/, instrumentsListPagination)
+  // Пагинация по списку тикеров (верхнеуровневая)
+  bot.action(triggerActionRegexp(Actions.list_instrumentsPage), instrumentsListPagination)
+  // Режим просмотра шифтов
+  bot.action(triggerActionRegexp(Actions.list_shiftsPage), shiftsPage)
 }

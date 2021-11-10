@@ -1,4 +1,4 @@
-import { SHIFT_CONFIG } from '../../commands/shift'
+import { SHIFT_CONFIG } from '../../commands/stat'
 import { log } from '../../helpers/log'
 import { getShiftEvents, ShiftEventsModel } from '../../models/ShiftEvents'
 import { i18n } from '../../helpers/i18n'

@@ -1,13 +1,16 @@
 import { copyAlerts } from './copyAlerts'
 import { instrumentsListUpdater } from './instrumentsListUpdater'
 import { setupPriceChecker } from './priceChecker'
-import { createShitEvents } from './shiftChecker'
+import { createShitEvents } from './statChecker'
 import { startCronJob } from '../helpers/startCronJob'
-import { shiftSender } from './shiftSender'
+import { shiftSender } from './statSender'
+import { setupShiftsChecker } from './shiftsChecker'
+import { log } from '../helpers/log'
 
 export const setupCheckers = (bot) => {
+  // TODO: Не запускать не деве
   startCronJob({
-    name: 'Check shifts',
+    name: 'Check stat',
     callback: createShitEvents,
     callbackArgs: [bot],
     // раз в день в 2 часа 0 минут
@@ -15,7 +18,7 @@ export const setupCheckers = (bot) => {
   })
 
   startCronJob({
-    name: 'Send shifts',
+    name: 'Send stat',
     callback: shiftSender,
     callbackArgs: [bot],
     // раз в час
@@ -27,8 +30,9 @@ export const setupCheckers = (bot) => {
     callback: instrumentsListUpdater,
     callbackArgs: [bot],
     // раз день в 3 часа
-    period: '0 3 * * *',
-    executeBeforeInit: true
+    period: '0 3 * * *'
+    // TODO: Не проставлять в dev окружении
+    // executeBeforeInit: true
   })
 
   // Дамп коллекции с алертами
@@ -41,6 +45,13 @@ export const setupCheckers = (bot) => {
     executeBeforeInit: true
   })
 
-  // Непрерывные проверки цен
+  // Мониторинг достижения уровней
   setupPriceChecker(bot)
+
+  // Мониторинг скорости
+  try {
+    setupShiftsChecker(bot)
+  } catch (e) {
+    log.error('[Cron] Упал чекер скорости цены')
+  }
 }

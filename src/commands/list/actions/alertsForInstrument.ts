@@ -1,14 +1,28 @@
 import { showInstrumentPage } from '../utils/showInstrumentPage'
+import { fetchAlerts } from '../utils/fetchAlerts'
+import { log } from '../../../helpers/log'
 
 /**
  * Экшен перехода на страницу списка инструментов
- * @param ctx
+ *
+ * Страницы для ценового уровня
  */
 export const alertsForInstrument = async (ctx) => {
-  const { s: symbol, p: page, kMode: keyboardMode } = JSON.parse(ctx.match[1])
+  try {
+    const { s: symbol, p: page, kMode: keyboardMode } = JSON.parse(ctx.match[1])
 
-  const instrumentItems = ctx.session.listCommand.alertsList
-    .filter(item => item.symbol === symbol)
+    const { alertsList } = await fetchAlerts({ forSymbol: symbol.toUpperCase(), ctx, noContextUpdate: true })
 
-  showInstrumentPage({ page, symbol, ctx, instrumentItems, edit: true, keyboardMode })
+    await showInstrumentPage({
+      page,
+      symbol,
+      ctx,
+      instrumentItems: alertsList,
+      edit: true,
+      keyboardMode
+    })
+  } catch (e) {
+    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+    log.error(e)
+  }
 }

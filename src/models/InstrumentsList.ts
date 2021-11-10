@@ -4,20 +4,20 @@ import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../marketApi/types'
 
 export class InstrumentsList {
-    @prop({ required: true, unique: true })
-    ticker: string
+  @prop({ required: true, unique: true })
+  ticker: string
 
-    @prop({ required: true })
-    name: string
+  @prop({ required: true })
+  name: string
 
-    @prop({ required: true })
-    source: EMarketDataSources
+  @prop({ required: true })
+  source: EMarketDataSources
 
-    @prop({ required: true })
-    type: EMarketInstrumentTypes
+  @prop({ required: true })
+  type: EMarketInstrumentTypes
 
-    @prop({ required: true })
-    sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
+  @prop({ required: true })
+  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
 }
 
 const InstrumentsListModel = getModelForClass(InstrumentsList, {
@@ -55,7 +55,7 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
       }
     }
 
-    const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
+    const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params).lean()
 
     return result
   } catch (e) {
@@ -64,7 +64,7 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
 }
 
 export interface IGetInstrumentsByTypeParams {
-    source: EMarketDataSources
+  source: EMarketDataSources
 }
 
 export async function getInstrumentsBySource ({ source }: IGetInstrumentsByTypeParams) {
