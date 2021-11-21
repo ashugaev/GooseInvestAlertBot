@@ -1,6 +1,13 @@
 import { log } from '../helpers/log'
-import { findUser } from '../models'
+import { findUser, UserLimits } from '../models'
 import { Context } from 'telegraf'
+
+// Используется только тут. Экспортить лимиты из ctx.userLimits
+enum Limits {
+  priceLevels = 100,
+  // Скорость цены
+  shifts = 30,
+}
 
 export async function attachUser (ctx: Context, next) {
   const userId = ctx.from?.id
@@ -13,7 +20,17 @@ export async function attachUser (ctx: Context, next) {
   }
 
   const dbuser = await findUser(userId)
-  // @ts-ignore
+  // @ts-expect-error
   ctx.dbuser = dbuser
+
+  // Проставим лимиты юзера с приоритетом того, что пришло из базы
+  const userLimits: UserLimits = {
+    priceLevels: dbuser.limits?.priceLevels ?? Limits.priceLevels,
+    shifts: dbuser.limits?.shifts ?? Limits.shifts
+  }
+
+  // @ts-expect-error: Типизировать данные в контексте
+  ctx.userLimits = userLimits
+
   next()
 }
