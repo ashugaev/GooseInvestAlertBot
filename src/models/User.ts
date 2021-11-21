@@ -1,5 +1,12 @@
-// Dependencies
 import { prop, getModelForClass } from '@typegoose/typegoose'
+
+export class UserLimits {
+  @prop({ required: false })
+  priceLevels: number
+
+  @prop({ required: false })
+  shifts: number
+}
 
 export class User {
   @prop({ required: true, index: true, unique: true })
@@ -7,6 +14,9 @@ export class User {
 
   @prop({ required: true, default: 'ru' })
   language: string
+
+  @prop({ required: false })
+  limits: UserLimits
 }
 
 // Get User model

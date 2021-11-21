@@ -1,7 +1,7 @@
 import { Telegraf, Context } from 'telegraf'
 import { getAlertsCountForUser, removePriceAlert } from '../models'
 import { log } from '../helpers/log'
-import { Limits, Scenes } from '../constants'
+import { Scenes } from '../constants'
 import { addAlert } from '../helpers/addAlert'
 import { i18n } from '../helpers/i18n'
 import { commandWrapper } from '../helpers/commandWrapper'
@@ -11,8 +11,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     const { text } = ctx.message
     const { id: user } = ctx.from
 
-    const customUserAlertsLimit = ctx.dbuser.limits?.alerts
-    const alertsLimit = customUserAlertsLimit ?? Limits.alerts
+    const alertsLimit = ctx.userLimits.priceLevels
 
     // Сценарий добавления
     let data: string[] = text.match(/^\/(alert|add)$/)
@@ -48,7 +47,7 @@ export function setupAlert (bot: Telegraf<Context>) {
       return
     }
 
-    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d\.\s\-\+%]+)$/)
+    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d.\s\-+%]+)$/)
 
     // Command to add alert
     if (data) {

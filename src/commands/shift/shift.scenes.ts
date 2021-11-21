@@ -8,8 +8,8 @@ import { getInstrumentInfoByTicker, ShiftTimeframeModel } from '../../models'
 import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
 import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
-import { Limits } from '../../constants'
 import { IAdditionalShiftConfig } from './shift.types'
+const { set, get } = require('lodash')
 
 const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => {
   try {
@@ -17,10 +17,15 @@ const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => 
 
     const userShiftsCount = await getTimeShiftsCountForUser(user)
 
+    const shiftsLimitForUser = ctx.userLimits.shifts
+
+    // Закинем в состояние для следующих шагов
+    set(ctx, 'wizard.state.shift.limit', shiftsLimitForUser)
+
     // Проверка на выход за лимиты
-    if (userShiftsCount >= Limits.shifts) {
+    if (userShiftsCount >= shiftsLimitForUser) {
       await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit', {
-        limit: Limits.shifts
+        limit: shiftsLimitForUser
       }))
 
       return ctx.scene.leave()
@@ -50,6 +55,8 @@ shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers
   const { userShiftsCount } = ctx.wizard.state.shift
 
   try {
+    const shiftsLimitForUser = get(ctx, 'wizard.state.shift.limit')
+
     const tickersInfo = await getInstrumentInfoByTicker({ ticker: tickersArr })
 
     if (!tickersInfo.length) {
@@ -58,10 +65,10 @@ shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
 
-    if ((userShiftsCount + tickersInfo.length) > Limits.shifts) {
+    if ((userShiftsCount + tickersInfo.length) > shiftsLimitForUser) {
       await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit-less-tickers', {
-        availableCount: Limits.shifts - userShiftsCount,
-        limit: Limits.shifts
+        availableCount: shiftsLimitForUser - userShiftsCount,
+        limit: shiftsLimitForUser
       }))
 
       return ctx.wizard.selectStep(ctx.wizard.cursor)
