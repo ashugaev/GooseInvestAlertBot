@@ -11,7 +11,7 @@ export const buttonShiftDelete = ({ id }: IDeleteButtonParams) => {
   const action = createActionString(Actions.shift_delete, { id })
 
   return Markup.callbackButton(
-    i18n.t('ru', 'button_delete'),
+    i18n.t('ru', 'button_unsubscribe'),
     action
   )
 }

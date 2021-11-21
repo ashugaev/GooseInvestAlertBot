@@ -7,6 +7,7 @@ import { getShiftsForUser } from '../../models/Shifts'
 import { log } from '../../helpers/log'
 import { shiftDeleteActions } from './stat.actions'
 import { buttonShiftDelete } from './stat.buttons'
+import {shiftAlertButtonClick} from "../../cron/statSender/statsSender.actions";
 
 export function setupStat (bot: Telegraf<Context>) {
   bot.command(['stats', 'stat'], commandWrapper(async ctx => {
@@ -52,5 +53,9 @@ export function setupStat (bot: Telegraf<Context>) {
     ctx.replyWithHTML(ctx.i18n.t('shift_invalidFormat'))
   }))
 
+  // Удаление сбора статистики
   bot.action(triggerActionRegexp(Actions.shift_delete), shiftDeleteActions)
+
+  // Обработка нажатия клавиш на пришедшей статистике
+  bot.action(triggerActionRegexp(Actions.shiftAlert_button_click), shiftAlertButtonClick)
 }

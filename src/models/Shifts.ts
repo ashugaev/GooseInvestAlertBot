@@ -15,10 +15,16 @@ export class Shift {
 
   @prop({ required: true })
   user: number
+
+  /**
+   * Присылать стату без звука
+   */
+  @prop({ required: false, default: true })
+  muted: boolean
 }
 
 // Get User model
-const ShiftModel = getModelForClass(Shift, {
+export const ShiftModel = getModelForClass(Shift, {
   schemaOptions: { timestamps: true },
   options: {
     customName: 'shifts'
@@ -34,7 +40,7 @@ interface ShiftItem {
 }
 
 export const createShift = async ({ percent, time, user, days, timeZone }: ShiftItem) => {
-  await ShiftModel.create({ user, time, percent, days, timeZone })
+  await ShiftModel.create({ user, time, percent, days, timeZone, muted: true })
 }
 
 export const getAllShifts = async () => {

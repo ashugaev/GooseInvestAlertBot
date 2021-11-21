@@ -1,7 +1,7 @@
 import { log } from '../../helpers/log'
 import { EMarketDataSources } from '../../marketApi/types'
 import { getInstrumentsBySource } from '../../models'
-import { createShiftEvents, ShiftEventItem, ShiftEventsModel } from '../../models/ShiftEvents'
+import {createShiftEvents, ShiftEvents, ShiftEventsModel} from '../../models/ShiftEvents'
 import { getAllShifts } from '../../models/Shifts'
 import { getShiftsByPercent } from './utils'
 import { calculateShifts } from './utils/calculateShifts'
@@ -52,7 +52,7 @@ export const createShitEvents = async (bot) => {
     const filteredShifts = getShiftsByPercent({ percent: alert.percent, shifts: shifts[alert.days] })
 
     if (filteredShifts) {
-      const shiftEvent: ShiftEventItem = {
+      const shiftEvent: ShiftEvents = {
         user: alert.user,
         time: alert.time,
         days: alert.days,
@@ -60,7 +60,8 @@ export const createShitEvents = async (bot) => {
         forDay: new Date().getDate(),
         data: filteredShifts,
         wasSent: false,
-        dayOfWeek: new Date().getDay()
+        dayOfWeek: new Date().getDay(),
+        createdFor: alert._id
       }
 
       acc.push(shiftEvent)

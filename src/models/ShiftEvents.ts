@@ -44,6 +44,12 @@ export class ShiftEvents {
   // FIXME: Поле необязательно до тех пор пока есть уведомления без них
   @prop({ required: false })
   wasSent: boolean
+
+  /**
+   * id(шифта) конфига по которому был создан эвент
+   */
+  @prop({ required: true })
+  createdFor: string
 }
 
 export const ShiftEventsModel = getModelForClass(ShiftEvents, {
@@ -78,7 +84,7 @@ export interface ShiftEventItem {
   }
 }
 
-export function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
+export function createShiftEvents (items: ShiftEvents[]): Promise<null> {
   return new Promise(async (rs, rj) => {
     try {
       await ShiftEventsModel.create(items)
@@ -98,7 +104,7 @@ type ShiftEventItemFindParams = Modify<ShiftEventItem, {
 /**
  * Присылает по времени события по указанному времени и меньше (что бы точно не пропустить что-нибудь)
  */
-export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
+export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>): Promise<ShiftEvents[]> {
   const params: Partial<ShiftEventItemFindParams> = {
     time: { $lte: time },
     // forDay,
