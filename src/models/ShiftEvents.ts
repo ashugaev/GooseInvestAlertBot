@@ -39,6 +39,10 @@ export class ShiftEvents {
 
   // FIXME: Поле необязательно до тех пор пока есть уведомления без них
   @prop({ required: false })
+  dayOfWeek: number
+
+  // FIXME: Поле необязательно до тех пор пока есть уведомления без них
+  @prop({ required: false })
   wasSent: boolean
 }
 
@@ -60,6 +64,11 @@ export interface ShiftEventItem {
      * Берем день месяца. Следовательно история будет храниться только за месяц.
      */
   forDay: number
+
+  /**
+   * День недели за который был сбор данных
+   */
+  dayOfWeek: number
   /**
    * Признак того, что данные отправили юзеру
    */
@@ -89,14 +98,14 @@ type ShiftEventItemFindParams = Modify<ShiftEventItem, {
 /**
  * Присылает по времени события по указанному времени и меньше (что бы точно не пропустить что-нибудь)
  */
-export async function getShiftEvents ({ time, forDay, wasSent }: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
+export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
   const params: Partial<ShiftEventItemFindParams> = {
     time: { $lte: time },
-    forDay,
+    // forDay,
     wasSent
   }
 
-  const shifts = await ShiftEventsModel.find(params)
+  const shifts = await ShiftEventsModel.find(params).lean()
 
   return shifts
 }

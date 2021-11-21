@@ -1,6 +1,6 @@
 import { Telegraf, Context, Markup } from 'telegraf'
 import { commandWrapper } from '../../helpers/commandWrapper'
-import { Actions, Limits, Scenes } from '../../constants'
+import { Actions, Scenes } from '../../constants'
 import { plur } from '../../helpers/plural'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
 import { getShiftsForUser } from '../../models/Shifts'
@@ -19,7 +19,8 @@ export function setupStat (bot: Telegraf<Context>) {
       try {
         const shiftsForUser = await getShiftsForUser(user)
 
-        if (shiftsForUser.length >= Limits.stats) {
+        // TODO: Вероятно стата будет только одна, по этому убрал из константы и захардкодил 1
+        if (shiftsForUser.length >= 1) {
           // Пока доступен один шифт
           // ctx.replyWithHTML(ctx.i18n.t('shift_overlimit', { limit: Limits.stats }))
 

@@ -14,10 +14,3 @@ export enum Actions {
   list_shiftEditPage = 'shEp',
   list_shiftDeleteOne = 'ddf',
 }
-
-export enum Limits {
-  alerts = 100,
-  stats = 1,
-  // Скорость цены
-  shifts = 15,
-}
