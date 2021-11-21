@@ -11,6 +11,7 @@ export const createShitEvents = async (bot) => {
 
   // TODO: Делать основываясь на изменении рынка а не дне
   // Если день в который не хотим собирать данные об изменениях
+  // 6 - суббота, 0 - понедельник
   if ([6, 0].includes(weekDay)) {
     return
   }
@@ -58,7 +59,8 @@ export const createShitEvents = async (bot) => {
         targetPercent: alert.percent,
         forDay: new Date().getDate(),
         data: filteredShifts,
-        wasSent: false
+        wasSent: false,
+        dayOfWeek: new Date().getDay()
       }
 
       acc.push(shiftEvent)
