@@ -37,6 +37,7 @@ export class ShiftEvents {
   @prop({ required: false })
   forDay: number
 
+  // День за которые собраны данные
   // FIXME: Поле необязательно до тех пор пока есть уведомления без них
   @prop({ required: false })
   dayOfWeek: number
