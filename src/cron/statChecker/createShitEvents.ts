@@ -7,6 +7,7 @@ import { getShiftsByPercent } from './utils'
 import { calculateShifts } from './utils/calculateShifts'
 
 export const createShitEvents = async (bot) => {
+  // WARN: Полагается на то, что начало сбора данных произошло в день за который собираем данные
   const weekDay = new Date().getDay()
 
   // TODO: Делать основываясь на изменении рынка а не дне
@@ -60,7 +61,7 @@ export const createShitEvents = async (bot) => {
         forDay: new Date().getDate(),
         data: filteredShifts,
         wasSent: false,
-        dayOfWeek: new Date().getDay()
+        dayOfWeek: weekDay
       }
 
       acc.push(shiftEvent)
