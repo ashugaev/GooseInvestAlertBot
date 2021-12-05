@@ -17,7 +17,7 @@ interface IGetInstrumentDataWithPrice {
 export async function getInstrumentDataWithPrice ({
   symbol,
   ctx
-}: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice> {
+}: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice[]> {
   symbol = symbol.toUpperCase()
 
   try {
@@ -46,20 +46,26 @@ export async function getInstrumentDataWithPrice ({
 
       log.info('не пришли данные из апишки', instrumentDataArr)
 
-      return
+      return []
     }
 
-    const instrumentDataItem = instrumentDataArr[0]
+    const itemsWithPrice = []
 
-    if (instrumentDataItem.source === EMarketDataSources.coingecko) {
-      // Подсовываем валюту, если не была указана пара
-      // @ts-expect-error
-      instrumentDataItem.sourceSpecificData.currency = customCurrency ?? 'USD'
+    for (let i = 0; i < instrumentDataArr.length; i++) {
+      const instrumentDataItem = instrumentDataArr[i]
+
+      if (instrumentDataItem.source === EMarketDataSources.coingecko) {
+        // Подсовываем валюту, если не была указана пара
+        // @ts-expect-error
+        instrumentDataItem.sourceSpecificData.currency = customCurrency ?? 'USD'
+      }
+
+      const lastPrice = await getLastPrice({ instrumentData: instrumentDataItem })
+
+      itemsWithPrice.push({ instrumentData: instrumentDataItem, price: lastPrice })
     }
 
-    const lastPrice = await getLastPrice({ instrumentData: instrumentDataItem })
-
-    return { instrumentData: instrumentDataItem, price: lastPrice }
+    return itemsWithPrice
   } catch (e) {
     throw new Error(e)
   }

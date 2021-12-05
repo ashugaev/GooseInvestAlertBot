@@ -14,7 +14,7 @@ export function setupPrice (bot: Telegraf<Context>) {
       let price
 
       try {
-        const data = await getInstrumentDataWithPrice({ symbol, ctx })
+        const data = (await getInstrumentDataWithPrice({ symbol, ctx }))[0]
 
         price = data.price
         instrumentData = data.instrumentData

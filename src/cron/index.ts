@@ -30,7 +30,7 @@ export const setupCheckers = (bot) => {
     callback: instrumentsListUpdater,
     callbackArgs: [bot],
     // раз день в 3 часа
-    period: '0 3 * * *'
+    period: '0 3 * * *',
     // TODO: Не проставлять в dev окружении
     // executeBeforeInit: true
   })

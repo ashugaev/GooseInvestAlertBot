@@ -38,7 +38,7 @@ export const setupPriceChecker = async (bot) => {
       let instrumentData
 
       try {
-        const result = await getInstrumentDataWithPrice({ symbol })
+        const result = (await getInstrumentDataWithPrice({ symbol }))[0]
 
         instrumentData = result.instrumentData
         price = result.price

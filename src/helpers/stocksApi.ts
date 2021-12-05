@@ -94,7 +94,7 @@ export const getLastPrice = async ({
       // FIXME: Тут получаетсякакая-то хрень, потом что getInstrumentDataWithPrice вызывает внутри getLastPrice
       //  Хотя это судя по всему оправдано тем, что ниже берем цены из разных источников
       // Нужно разбить getInstrumentDataWithPrice на получение цены и нормализация данных
-      const data = await getInstrumentDataWithPrice({ symbol: ticker })
+      const data = (await getInstrumentDataWithPrice({ symbol: ticker }))[0]
 
       instrumentData = data.instrumentData
 

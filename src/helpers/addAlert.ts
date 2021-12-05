@@ -36,7 +36,7 @@ export const addAlert = ({
         throw new Error('Не пришел символ при установке алерта')
       }
 
-      const result = await getInstrumentDataWithPrice({ symbol, ctx })
+      const result = (await getInstrumentDataWithPrice({ symbol, ctx }))[0]
 
       instrumentData = result.instrumentData
       lastPrice = result.price
