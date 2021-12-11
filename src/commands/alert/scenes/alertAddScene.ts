@@ -1,14 +1,14 @@
-import { Scenes } from '../constants'
-
-import * as WizardScene from 'telegraf/scenes/wizard'
 import * as Composer from 'telegraf/composer'
-import { i18n } from '../helpers/i18n'
-import { log } from '../helpers/log'
-import { getInstrumentDataWithPrice } from '../helpers/getInstrumentData'
-import { symbolOrCurrency } from '../helpers/symbolOrCurrency'
-import { addAlert } from '../helpers/addAlert'
+import * as WizardScene from 'telegraf/scenes/wizard'
+
+import { Scenes } from '../../../constants'
+import { addAlert } from '../../../helpers/addAlert'
+import { getInstrumentDataWithPrice } from '../../../helpers/getInstrumentData'
+import { i18n } from '../../../helpers/i18n'
+import { log } from '../../../helpers/log'
+import { sceneWrapper } from '../../../helpers/sceneWrapper'
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
 import { addMessageStep } from './alertAddMessageScene'
-import { sceneWrapper } from '../helpers/sceneWrapper'
 
 /**
  * Сцена сработает только на первое сообщение, которое явлется текстом и не командой
@@ -33,7 +33,7 @@ addInstrumentNameStep.hears(/^(?!\/).+$/, sceneWrapper('add-choose-instrument', 
 
     await ctx.replyWithHTML(i18n.t('ru', 'alert_add_choosePrice', {
       price,
-      // @ts-ignore
+      // @ts-expect-error
       currency: symbolOrCurrency(instrumentData.sourceSpecificData.currency)
     }))
 

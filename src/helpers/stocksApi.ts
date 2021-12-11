@@ -1,10 +1,13 @@
 import * as Sentry from '@sentry/node'
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
+
 import { coingeckoGetLasePrice } from '../marketApi/coingecko/api/getLastPrice'
+import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants'
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice'
-import { getInstrumentDataWithPrice } from './getInstrumentData'
+import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi'
 import { EMarketDataSources, InstrumentsList } from '../models'
+import { getInstrumentDataWithPrice } from './getInstrumentData'
 
 const NodeCache = require('node-cache')
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk')
@@ -108,6 +111,31 @@ export const getLastPrice = async ({
       lastPrice = await tinkoffGetLastPrice({ instrumentData })
     } else if (instrumentData.source == EMarketDataSources.coingecko) {
       lastPrice = await coingeckoGetLasePrice({ instrumentData })
+    } else {
+      throw new Error('Инструмент без параметра source')
+    }
+
+    if (!lastPrice) {
+      throw new Error('Не была получена последняя цена инструмента')
+    }
+
+    return lastPrice
+  } catch (e) {
+    throw new Error(e)
+  }
+}
+
+/**
+ * Вернет цену по id монеты
+ */
+export const getLastPriceById = async (id: string, source: EMarketDataSources) => {
+  try {
+    let lastPrice
+
+    if (source === EMarketDataSources.tinkoff) {
+      lastPrice = await tinkoffGetLastPriceByFigi(id)
+    } else if (source === EMarketDataSources.coingecko) {
+      lastPrice = await coingeckoGetLastPriceById(id)
     } else {
       throw new Error('Инструмент без параметра source')
     }

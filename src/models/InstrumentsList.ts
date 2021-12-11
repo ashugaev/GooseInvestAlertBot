@@ -1,4 +1,5 @@
-import { prop, getModelForClass } from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
+
 import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 
@@ -39,6 +40,9 @@ export class InstrumentsList {
 
   @prop({ required: true })
   type: EMarketInstrumentTypes
+
+  @prop({ required: true })
+  currency: string
 
   @prop({ required: true })
   sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
@@ -85,6 +89,12 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
   } catch (e) {
     throw new Error(e)
   }
+}
+
+export async function getInstrumentDataById (id) {
+  const result = await InstrumentsListModel.find({ id }).lean()
+
+  return result[0]
 }
 
 export interface IGetInstrumentsByTypeParams {

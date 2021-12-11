@@ -1,11 +1,11 @@
+import { log } from '../helpers/log'
+import { startCronJob } from '../helpers/startCronJob'
 import { copyAlerts } from './copyAlerts'
 import { instrumentsListUpdater } from './instrumentsListUpdater'
 import { setupPriceChecker } from './priceChecker'
-import { createShitEvents } from './statChecker'
-import { startCronJob } from '../helpers/startCronJob'
-import { shiftSender } from './statSender'
 import { setupShiftsChecker } from './shiftsChecker'
-import { log } from '../helpers/log'
+import { createShitEvents } from './statChecker'
+import { shiftSender } from './statSender'
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -30,9 +30,9 @@ export const setupCheckers = (bot) => {
     callback: instrumentsListUpdater,
     callbackArgs: [bot],
     // раз день в 3 часа
-    period: '0 3 * * *'
+    period: '0 3 * * *',
     // TODO: Раскомментить для первого деплоя
-    // executeBeforeInit: true
+    executeBeforeInit: true
   })
 
   // Дамп коллекции с алертами

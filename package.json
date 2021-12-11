@@ -20,6 +20,11 @@
     "docker:up": "npm run build && docker-compose up -d --build --force-recreate",
     "docker:down": "docker-compose down"
   },
+  "_moduleAliases": {
+    "@helpers": "dist/helpers/",
+    "@commands": "dist/commands/",
+    "@constants": "dist/constants/"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -60,6 +65,7 @@
     "lint-staged": "^10.5.3",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
+    "module-alias": "^2.2.2",
     "mongoose": "^5.9.25",
     "node-binance-api": "^0.12.5",
     "node-cache": "^5.1.2",

@@ -1,4 +1,4 @@
-import {EMarketDataSources, EMarketInstrumentTypes, InstrumentsList} from "../../../models";
+import { EMarketDataSources, EMarketInstrumentTypes, InstrumentsList } from '../../../models'
 const CoinGecko = require('coingecko-api')
 
 export const CoinGeckoClient = new CoinGecko()
@@ -10,6 +10,7 @@ const normalizeCoingeckoItem = (item): InstrumentsList => {
     name: item.name,
     ticker: item.symbol.toUpperCase(),
     type: EMarketInstrumentTypes.Crypto,
+    currency: 'USD',
     sourceSpecificData: {
       id: item.id
     }

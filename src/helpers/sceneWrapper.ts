@@ -4,7 +4,7 @@ import { addAnalyticsToReply, chb_m } from './analytics'
 import { Middleware } from 'telegraf'
 import { TelegrafContext } from 'telegraf/typings/context'
 
-export function sceneWrapper (intent: string, callback: (ctx) => void):Middleware<TelegrafContext> {
+export function sceneWrapper (intent: string, callback: (ctx) => void | Promise<void>): Middleware<TelegrafContext> {
   return (ctx) => {
     try {
       addAnalyticsToReply(ctx)

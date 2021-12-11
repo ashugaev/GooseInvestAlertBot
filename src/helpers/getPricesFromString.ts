@@ -1,24 +1,24 @@
 interface GetPriceFromStringParams {
-    string: string,
-    lastPrice: number,
+  string: string
+  lastPrice: number
 }
 
 interface IGetPriceFromString {
-    prices: number[],
-    invalidValues: string[]
+  prices: number[]
+  invalidValues: string[]
 }
 
 export function getPricesFromString ({ string, lastPrice }: GetPriceFromStringParams): IGetPriceFromString {
   // -10 +10
-  const relativeValueMinusRegExp = new RegExp(/^\-([\d\.]+)$/)
-  const relativeValuePlusRegExp = new RegExp(/^\+([\d\.]+)$/)
+  const relativeValueMinusRegExp = new RegExp(/^-([\d.]+)$/)
+  const relativeValuePlusRegExp = new RegExp(/^\+([\d.]+)$/)
 
   // 10% +10% -10%
-  const percentMinusRegExp = new RegExp(/^\-([\d\.]+)%$/)
-  const percentPlusRegExp = new RegExp(/^(\+)?([\d\.]+)%$/)
+  const percentMinusRegExp = new RegExp(/^-([\d.]+)%$/)
+  const percentPlusRegExp = new RegExp(/^(\+)?([\d.]+)%$/)
 
   // 10 30 59
-  const pureNumberRegExp = new RegExp(/^[\d\.]+$/)
+  const pureNumberRegExp = new RegExp(/^[\d.]+$/)
 
   const invalidValues = []
 

@@ -1,10 +1,11 @@
-import { Telegraf, Context } from 'telegraf'
-import { getAlertsCountForUser, removePriceAlert } from '../models'
-import { log } from '../helpers/log'
-import { Scenes } from '../constants'
-import { addAlert } from '../helpers/addAlert'
-import { i18n } from '../helpers/i18n'
-import { commandWrapper } from '../helpers/commandWrapper'
+import { Context, Telegraf } from 'telegraf'
+
+import { addAlert } from '../../helpers/addAlert'
+import { commandWrapper } from '../../helpers/commandWrapper'
+import { i18n } from '../../helpers/i18n'
+import { log } from '../../helpers/log'
+import { getAlertsCountForUser, removePriceAlert } from '../../models'
+import { addAlert as addAlert2 } from './utils/addAlert'
 
 export function setupAlert (bot: Telegraf<Context>) {
   const callback = commandWrapper(async ctx => {
@@ -13,21 +14,28 @@ export function setupAlert (bot: Telegraf<Context>) {
 
     const alertsLimit = ctx.userLimits.priceLevels
 
+    try {
+      if (await getAlertsCountForUser(user) >= alertsLimit) {
+        ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }))
+        return
+      }
+    } catch (e) {
+      ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+      log.error(e)
+    }
+
     // Сценарий добавления
-    let data: string[] = text.match(/^\/(alert|add)$/)
+    let data = text.match(/^\/(alert|add)$/)
 
     if (data) {
       try {
-        if (await getAlertsCountForUser(user) >= alertsLimit) {
-          // TODO: Плюрализация для количества алертов
-          ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }))
-          return
-        }
+        addAlert2(ctx, { instrumentId: '01coin' })
+
+        // FIXME: catch можно сделать общий для всех шаблонов
       } catch (e) {
+        ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
         log.error(e)
       }
-
-      ctx.scene.enter(Scenes.alertAdd)
 
       return
     }
@@ -52,11 +60,6 @@ export function setupAlert (bot: Telegraf<Context>) {
     // Command to add alert
     if (data) {
       try {
-        if (await getAlertsCountForUser(user) >= alertsLimit) {
-          ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }))
-          return
-        }
-
         await addAlert({
           data: { symbol: data[2], price: data[3] },
           ctx

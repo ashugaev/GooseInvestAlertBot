@@ -1,11 +1,12 @@
-import { stocksApi } from '../../../helpers/stocksApi'
-import { log } from '../../../helpers/log'
-import { wait } from '../../../helpers/wait'
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
-import {EMarketDataSources, InstrumentsList} from "../../../models";
+
+import { log } from '../../../helpers/log'
+import { stocksApi } from '../../../helpers/stocksApi'
+import { wait } from '../../../helpers/wait'
+import { EMarketDataSources, InstrumentsList } from '../../../models'
 
 const normalizeTinkoffItem = (item): InstrumentsList => {
-  const { ticker, name, type, ...specificData } = item
+  const { ticker, name, type, currency, ...specificData } = item
 
   return {
     id: specificData.figi,
@@ -13,6 +14,7 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     name,
     ticker,
     type,
+    currency,
     sourceSpecificData: specificData
   }
 }
