@@ -6,8 +6,9 @@ const coinGeckoPriceCache = new NodeCache({
   stdTTL: 60
 })
 
-export async function coningeckoGetLasePrice ({ instrumentData }) {
+export async function coingeckoGetLasePrice ({ instrumentData }) {
   try {
+    // FIXME: цену берем не по тикеру
     let currencyPrices = coinGeckoPriceCache.get(instrumentData.ticker)
 
     if (!currencyPrices) {
@@ -23,8 +24,12 @@ export async function coningeckoGetLasePrice ({ instrumentData }) {
       coinGeckoPriceCache.set(instrumentData.ticker, currencyPrices)
     }
 
-    const price = currencyPrices.data[instrumentData.sourceSpecificData.id]
-      ?.[instrumentData.sourceSpecificData?.currency?.toLowerCase() ?? 'usd']
+    // FIXME: Это костыль который будет работать только до тех пор пока будем запрошивать по одной менете
+    const pricesForCurrencies = Object.entries(currencyPrices.data)[0][1]
+
+    const currency = instrumentData.sourceSpecificData?.currency?.toLowerCase() ?? 'usd'
+
+    const price = pricesForCurrencies[currency]
 
     if (!price) {
       throw new Error('Невалидные данные от CoinGecko')
@@ -32,6 +37,6 @@ export async function coningeckoGetLasePrice ({ instrumentData }) {
 
     return price
   } catch (e) {
-    throw new Error('Ошибка получения данных от CoinGecko')
+    throw new Error(`Ошибка получения данных от CoinGecko, ${JSON.stringify(e)}`)
   }
 }
