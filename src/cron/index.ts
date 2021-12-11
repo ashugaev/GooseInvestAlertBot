@@ -31,8 +31,8 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз день в 3 часа
     period: '0 3 * * *',
-    // TODO: Не проставлять в dev окружении
-    // executeBeforeInit: true
+    // TODO: Раскомментить для первого деплоя
+    executeBeforeInit: true
   })
 
   // Дамп коллекции с алертами

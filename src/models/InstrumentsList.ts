@@ -1,10 +1,34 @@
 import { prop, getModelForClass } from '@typegoose/typegoose'
 import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
-import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../marketApi/types'
 
+export enum EMarketDataSources {
+  tinkoff = 'tinkoff',
+  coingecko = 'coingecko'
+}
+
+export enum EMarketInstrumentTypes {
+  Stock = 'Stock',
+  Crypto = 'Crypto'
+}
+
+/**
+ * Нормализованный элемент бумаги/монеты
+ *
+ * TODO: Переименовать в Instrument
+ *  тут блокер в том, что раньше не работало проставление кастомного названия коллекции
+ *  если этого не сделать то коллекция пересоздастся
+ */
 export class InstrumentsList {
+  /**
+   * id содержит разные поля в зависимости от source
+   * для крипты это id coingecke
+   * для бумаг это figi
+   */
   @prop({ required: true, unique: true })
+  id: string
+
+  @prop({ required: true, unique: false })
   ticker: string
 
   @prop({ required: true })
@@ -35,7 +59,7 @@ export async function clearInstrumentsList () {
   }
 }
 
-export async function putItemsToInstrumentsList (items: IBaseInstrumentData[]) {
+export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
   try {
     await InstrumentsListModel.insertMany(items)
   } catch (e) {
@@ -43,7 +67,7 @@ export async function putItemsToInstrumentsList (items: IBaseInstrumentData[]) {
   }
 }
 
-export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<IBaseInstrumentData[]> {
+export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<InstrumentsList[]> {
   try {
     if (!ticker?.length) {
       throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
@@ -55,7 +79,7 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
       }
     }
 
-    const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params).lean()
+    const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
 
     return result
   } catch (e) {
@@ -70,7 +94,7 @@ export interface IGetInstrumentsByTypeParams {
 export async function getInstrumentsBySource ({ source }: IGetInstrumentsByTypeParams) {
   const params = { source }
 
-  const result: IBaseInstrumentData[] = await InstrumentsListModel.find(params)
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params)
 
   return result
 }

@@ -1,12 +1,14 @@
 import { stocksApi } from '../../../helpers/stocksApi'
 import { log } from '../../../helpers/log'
 import { wait } from '../../../helpers/wait'
-import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../../types'
+import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
+import {EMarketDataSources, InstrumentsList} from "../../../models";
 
-const normalizeTinkoffItem = (item): IBaseInstrumentData => {
+const normalizeTinkoffItem = (item): InstrumentsList => {
   const { ticker, name, type, ...specificData } = item
 
   return {
+    id: specificData.figi,
     source: EMarketDataSources.tinkoff,
     name,
     ticker,
@@ -23,9 +25,9 @@ export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (rs) => {
       stocksApi.bonds()
     ]
 
-    const allInstruments:any[] = await Promise.all(allInstrumentsPromises)
+    const allInstruments = await Promise.all(allInstrumentsPromises)
 
-    const instrumentsArray = allInstruments.reduce((acc, el) => acc.concat(el.instruments), [])
+    const instrumentsArray = allInstruments.reduce<MarketInstrument[]>((acc, el) => acc.concat(el.instruments), [])
 
     const normalizedInstrumentsArray = instrumentsArray.map(normalizeTinkoffItem)
 

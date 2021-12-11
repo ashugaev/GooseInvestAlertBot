@@ -1,4 +1,4 @@
-import { EMarketDataSources, EMarketInstrumentTypes } from '../marketApi/types'
+import { EMarketDataSources, EMarketInstrumentTypes } from '../models'
 
 const getTinkoffInstrumentLink = ({ type, ticker }) => {
   if (!type && !ticker) {

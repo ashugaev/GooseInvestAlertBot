@@ -3,9 +3,8 @@ import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
 import { coningeckoGetLasePrice } from '../marketApi/coingecko/api/getLastPrice'
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants'
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice'
-import { EMarketDataSources, IBaseInstrumentData } from '../marketApi/types'
 import { getInstrumentDataWithPrice } from './getInstrumentData'
-import { log } from './log'
+import {EMarketDataSources, InstrumentsList} from "../models";
 
 const NodeCache = require('node-cache')
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk')
@@ -24,7 +23,7 @@ export interface GetLastPriceData extends MarketInstrument {
 }
 
 export interface IGetInfoBySymbolParams {
-  instrumentData?: IBaseInstrumentData
+  instrumentData?: InstrumentsList
   ticker?: string
 }
 

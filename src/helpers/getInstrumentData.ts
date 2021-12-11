@@ -1,12 +1,11 @@
-import { EMarketDataSources, IBaseInstrumentData } from '../marketApi/types'
-import { getInstrumentInfoByTicker } from '../models'
+import {EMarketDataSources, getInstrumentInfoByTicker, InstrumentsList} from '../models'
 import { i18n } from './i18n'
 import { log } from './log'
 import { getLastPrice } from './stocksApi'
 
 interface GetInstrumentDataWithPrice {
   price: number
-  instrumentData: IBaseInstrumentData
+  instrumentData: InstrumentsList
 }
 
 interface IGetInstrumentDataWithPrice {

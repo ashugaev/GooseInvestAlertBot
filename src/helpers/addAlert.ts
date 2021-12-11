@@ -1,7 +1,6 @@
-import { EMarketInstrumentTypes } from '../marketApi/types'
 import { getInstrumentDataWithPrice } from './getInstrumentData'
 import { log } from './log'
-import { addPriceAlert, AddPriceAlertParams } from '../models'
+import {addPriceAlert, AddPriceAlertParams, EMarketInstrumentTypes} from '../models'
 import { symbolOrCurrency } from './symbolOrCurrency'
 import { getPricesFromString } from './getPricesFromString'
 import { i18n } from './i18n'
@@ -9,12 +8,12 @@ import { Context as TelegrafContext } from 'telegraf'
 import { Scenes } from '../constants'
 
 interface AddAlertParams {
-    data: {
-        symbol: string,
-        price: string,
-    },
-    ctx: TelegrafContext,
-    startedFromScene?: boolean
+  data: {
+    symbol: string
+    price: string
+  }
+  ctx: TelegrafContext
+  startedFromScene?: boolean
 }
 
 export const addAlert = ({

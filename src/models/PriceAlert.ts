@@ -1,7 +1,7 @@
 // Dependencies
 import { prop, getModelForClass } from '@typegoose/typegoose'
 import { InstrumentType } from '@tinkoff/invest-openapi-js-sdk/build/domain'
-import { EMarketDataSources } from '../marketApi/types'
+import {EMarketDataSources} from "./InstrumentsList";
 
 export interface AddPriceAlertParams {
     user: number,
