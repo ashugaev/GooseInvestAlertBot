@@ -1,23 +1,33 @@
 import { log } from '../../helpers/log'
 import { getAllInstruments } from '../../marketApi'
-import { clearInstrumentsList, putItemsToInstrumentsList } from '../../models'
+import { clearInstrumentsList, InstrumentsListModel, putItemsToInstrumentsList } from '../../models'
 
 /**
  * Обновляет список доступных инструментов в базе
  */
 export const instrumentsListUpdater = async () => {
   try {
-    const instruments = await getAllInstruments()
+    const newInstrumentsList = await getAllInstruments()
+    const oldInstrumentsList = await InstrumentsListModel.find({}).lean()
 
-    if (!instruments.length) {
+    if (!newInstrumentsList.length) {
       throw new Error('Ошибка получения списка инструментов')
     }
 
+    // TODO: Делать очищение с обновлением одной командой
+    //  Что бы падение было сразе двух команд и никак не после удаления
     await clearInstrumentsList()
 
-    await putItemsToInstrumentsList(instruments)
+    try {
+      await putItemsToInstrumentsList(newInstrumentsList)
+    } catch (e) {
+      log.error('Ошибка обновления списка инcтрументов', e)
 
-    log.info('Список доступных инструментов в базе был обновлен', instruments.length)
+      // Если с новыми что-то не так, вернем старые
+      await putItemsToInstrumentsList(oldInstrumentsList)
+    }
+
+    log.info('Список доступных инструментов в базе был обновлен', newInstrumentsList.length)
   } catch (e) {
     log.error('Ошибка обновления списка инcтрументов', e)
   }
