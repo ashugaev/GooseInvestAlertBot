@@ -20,7 +20,7 @@ export class InstrumentsList {
   sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
 }
 
-const InstrumentsListModel = getModelForClass(InstrumentsList, {
+export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   schemaOptions: { timestamps: true },
   options: {
     customName: 'instrumentslist'
