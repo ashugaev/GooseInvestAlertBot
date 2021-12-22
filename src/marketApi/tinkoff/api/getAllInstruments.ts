@@ -1,12 +1,14 @@
 import { stocksApi } from '../../../helpers/stocksApi'
 import { log } from '../../../helpers/log'
 import { wait } from '../../../helpers/wait'
-import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../../types'
+import { EMarketDataSources } from '../../types'
+import { InstrumentsList } from '../../../models'
 
-const normalizeTinkoffItem = (item): IBaseInstrumentData => {
+const normalizeTinkoffItem = (item): InstrumentsList => {
   const { ticker, name, type, ...specificData } = item
 
   return {
+    id: specificData.figi,
     source: EMarketDataSources.tinkoff,
     name,
     ticker,
@@ -15,7 +17,7 @@ const normalizeTinkoffItem = (item): IBaseInstrumentData => {
   }
 }
 
-export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (rs) => {
+export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve) => {
   try {
     const allInstrumentsPromises = [
       stocksApi.stocks(),
@@ -23,19 +25,19 @@ export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (rs) => {
       stocksApi.bonds()
     ]
 
-    const allInstruments:any[] = await Promise.all(allInstrumentsPromises)
+    const allInstruments: any[] = await Promise.all(allInstrumentsPromises)
 
     const instrumentsArray = allInstruments.reduce((acc, el) => acc.concat(el.instruments), [])
 
     const normalizedInstrumentsArray = instrumentsArray.map(normalizeTinkoffItem)
 
-    rs(normalizedInstrumentsArray)
+    resolve(normalizedInstrumentsArray)
   } catch (e) {
     log.error('Ошибка получения списка иструментов:', e)
 
     await wait(30000)
 
     // Ретрай
-    rs(await tinkoffGetAllInstruments())
+    resolve(await tinkoffGetAllInstruments())
   }
 })
