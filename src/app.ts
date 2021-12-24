@@ -29,6 +29,7 @@ import { log } from './helpers/log'
 import { attachUser } from './middlewares/attachUser'
 import { checkTime } from './middlewares/checkTime'
 import { configureAnalytics } from './middlewares/configureAnalytics'
+import { commonScenes } from './scenes'
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
@@ -47,7 +48,8 @@ const stage = new Stage([
   // stat
   statScenes,
   // shift
-  shiftScenes
+  shiftScenes,
+  ...commonScenes
 ])
 
 bot.use(session())

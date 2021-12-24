@@ -1,11 +1,12 @@
-import { getInstrumentDataWithPrice } from './getInstrumentData'
-import { log } from './log'
-import {addPriceAlert, AddPriceAlertParams, EMarketInstrumentTypes} from '../models'
-import { symbolOrCurrency } from './symbolOrCurrency'
-import { getPricesFromString } from './getPricesFromString'
-import { i18n } from './i18n'
-import { Context as TelegrafContext } from 'telegraf'
-import { Scenes } from '../constants'
+import { Context as TelegrafContext } from 'telegraf';
+
+import { Scenes } from '../constants';
+import { addPriceAlert, AddPriceAlertParams, EMarketInstrumentTypes } from '../models';
+import { getInstrumentDataWithPrice } from './getInstrumentData';
+import { getPricesFromString } from './getPricesFromString';
+import { i18n } from './i18n';
+import { log } from './log';
+import { symbolOrCurrency } from './symbolOrCurrency';
 
 interface AddAlertParams {
   data: {
@@ -48,7 +49,7 @@ export const addAlert = ({
       ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
 
       rj(e)
-      return
+      return;
     }
 
     const { prices, invalidValues } = getPricesFromString({
@@ -92,14 +93,14 @@ export const addAlert = ({
         await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
         log.error(e)
 
-        continue
+        continue;
       }
     }
 
     if (!priceAlerts.length) {
       ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
       rj('Не добавлено ни одного оповещения')
-      return
+      return;
     }
 
     const { name } = instrumentData

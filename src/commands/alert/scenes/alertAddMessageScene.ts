@@ -1,21 +1,16 @@
-import { Scenes } from '../../../constants'
+import * as Composer from 'telegraf/composer';
+import * as WizardScene from 'telegraf/scenes/wizard';
 
-import * as WizardScene from 'telegraf/scenes/wizard'
-import * as Composer from 'telegraf/composer'
-import { updateAlert } from '../../../models'
-import { i18n } from '../../../helpers/i18n'
-import { log } from '../../../helpers/log'
-import { sceneWrapper } from '../../../helpers/sceneWrapper'
-import { checkTickerDuplicatesScene } from '../../../scenes'
-
-/**
- * Сцена сработает только на первое сообщение, которое явлется текстом и не командой
- */
+import { Scenes } from '../../../constants';
+import { i18n } from '../../../helpers/i18n';
+import { log } from '../../../helpers/log';
+import { sceneWrapper } from '../../../helpers/sceneWrapper';
+import { updateAlert } from '../../../models';
 
 const startAddMessageScene = sceneWrapper('add-set-comment-start-scene', (ctx) => {
   ctx.replyWithHTML(i18n.t('ru', 'alertCreatedAddMessage'))
   return ctx.wizard.next()
-})
+});
 
 export const addMessageStep = new Composer()
 
@@ -49,7 +44,7 @@ addMessageStep.hears(/^(?!\/).+$/, sceneWrapper('add-set-comment', async (ctx) =
 addMessageStep.on('message', (ctx, next) => {
   next()
   return ctx.scene.leave()
-})
+});
 
 export const alertAddMessageScene = new WizardScene(Scenes.alertMessage,
   startAddMessageScene,

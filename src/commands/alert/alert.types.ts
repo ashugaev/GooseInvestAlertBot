@@ -1,3 +1,5 @@
+import { InstrumentsList } from '../../models'
+
 export interface AddAlertPayload {
   /**
    * Список ценовых уровней для алертов
@@ -8,7 +10,9 @@ export interface AddAlertPayload {
    */
   ticker?: string
   /**
-   * id монеты
+   * Инфо о тикере. Может быть несколько шт.
+   *
+   * Если тикер существует не в одном экземпляре, то предложим выбрать один из них
    */
-  instrumentId?: string
+  instrumentsList?: InstrumentsList[]
 }

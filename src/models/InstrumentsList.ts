@@ -79,7 +79,7 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
 
     const params = {
       ticker: {
-        $in: [].concat(ticker)
+        $in: [].concat(ticker).map(el => el.toUpperCase())
       }
     }
 

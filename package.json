@@ -22,6 +22,7 @@
   },
   "_moduleAliases": {
     "@helpers": "dist/helpers/",
+    "@scenes": "dist/scenes/",
     "@commands": "dist/commands/",
     "@constants": "dist/constants/"
   },
