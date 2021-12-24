@@ -4,7 +4,10 @@ import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../marketApi/types'
 
 export class InstrumentsList {
-  @prop({ required: true, unique: true })
+  @prop({ unique: true})
+  id: string
+
+  @prop({ required: true })
   ticker: string
 
   @prop({ required: true })
@@ -20,7 +23,7 @@ export class InstrumentsList {
   sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
 }
 
-const InstrumentsListModel = getModelForClass(InstrumentsList, {
+export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   schemaOptions: { timestamps: true },
   options: {
     customName: 'instrumentslist'
@@ -36,11 +39,7 @@ export async function clearInstrumentsList () {
 }
 
 export async function putItemsToInstrumentsList (items: IBaseInstrumentData[]) {
-  try {
-    await InstrumentsListModel.insertMany(items)
-  } catch (e) {
-    throw new Error(e)
-  }
+  await InstrumentsListModel.insertMany(items)
 }
 
 export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<IBaseInstrumentData[]> {

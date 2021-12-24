@@ -5,13 +5,13 @@ import { log } from './log'
 import { getLastPrice } from './stocksApi'
 
 interface GetInstrumentDataWithPrice {
-    price: number,
-    instrumentData: IBaseInstrumentData,
+  price: number
+  instrumentData: IBaseInstrumentData
 }
 
 interface IGetInstrumentDataWithPrice {
-    symbol: string,
-    ctx?: any,
+  symbol: string
+  ctx?: any
 }
 
 export async function getInstrumentDataWithPrice ({
@@ -53,7 +53,7 @@ export async function getInstrumentDataWithPrice ({
 
     if (instrumentDataItem.source === EMarketDataSources.coingecko) {
       // Подсовываем валюту, если не была указана пара
-      // @ts-ignore
+      // @ts-expect-error
       instrumentDataItem.sourceSpecificData.currency = customCurrency ?? 'USD'
     }
 

@@ -4,39 +4,34 @@ import { TINKOFF_SENTRY_TAGS } from '../../constants'
 
 const NodeCache = require('node-cache')
 
-const candlesCache = new NodeCache({
-  stdTTL: 40
+const lastPriceCache = new NodeCache({
+  stdTTL: 60
 })
 
+// TODO: Пропаботать кейс, где ночью или на выхах мы не получим данных
+//  Проверять выходной или конец торговой сессии можно запросом за минутной свечей. Если она пустая, то закрыто
+//  Либо смотреть на tradingStatus и выключать инератор, если он NotAvailableForTrading
+// INFO: В приложении тинька в списке акций показываетс цена закрытия, а когда открываешь тикер - цена последней сделаки
 export async function tinkoffGetLastPrice ({ instrumentData }) {
   try {
-    const dateTo = new Date()
-    const dateToISO = dateTo.toISOString()
+    let lastPrice = lastPriceCache.get(instrumentData.sourceSpecificData.figi)
 
-    dateTo.setMonth(dateTo.getMonth() - 2)
-
-    const dateFromISO = dateTo.toISOString()
-
-    let candles = candlesCache.get(instrumentData.ticker)
-
-    if (!candles) {
-      const candlesData = await stocksApi.candlesGet({
-        from: dateFromISO,
-        to: dateToISO,
-        interval: 'month',
-        figi: instrumentData.sourceSpecificData.figi
+    if (!lastPrice) {
+      const orderBook = await stocksApi.orderbookGet({
+        figi: instrumentData.sourceSpecificData.figi,
+        depth: 0
       })
 
-      candles = candlesData.candles
+      lastPrice = orderBook.lastPrice
 
-      candlesCache.set(instrumentData.ticker, candlesData.candles)
+      lastPrice && (lastPriceCache.set(instrumentData.id, lastPrice))
     }
 
-    const lastCandle = candles[candles.length - 1]
+    if (!lastPrice) {
+      throw new Error('Отсутствует lastPrice')
+    }
 
-    const lasePrice = lastCandle.c
-
-    return lasePrice
+    return lastPrice
   } catch (e) {
     Sentry.captureException('Ошибка ответа тиньковской апишски', {
       tags: TINKOFF_SENTRY_TAGS
