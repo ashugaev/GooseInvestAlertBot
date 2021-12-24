@@ -49,9 +49,5 @@ export const setupCheckers = (bot) => {
   setupPriceChecker(bot)
 
   // Мониторинг скорости
-  try {
-    setupShiftsChecker(bot)
-  } catch (e) {
-    log.error('[Cron] Упал чекер скорости цены')
-  }
+  setupShiftsChecker(bot)
 }
