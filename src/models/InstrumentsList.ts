@@ -1,7 +1,7 @@
-import { getModelForClass, prop } from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose';
 
-import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
-import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
+import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types';
+import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types';
 
 export enum EMarketDataSources {
   tinkoff = 'tinkoff',
@@ -27,25 +27,25 @@ export class InstrumentsList {
    * для бумаг это figi
    */
   @prop({ required: true, unique: true })
-  id: string
+  id: string;
 
   @prop({ required: true, unique: false })
-  ticker: string
+  ticker: string;
 
   @prop({ required: true })
-  name: string
+  name: string;
 
   @prop({ required: true })
-  source: EMarketDataSources
+  source: EMarketDataSources;
 
   @prop({ required: true })
-  type: EMarketInstrumentTypes
+  type: EMarketInstrumentTypes;
 
   @prop({ required: true })
-  currency: string
+  currency: string;
 
   @prop({ required: true })
-  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
+  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData;
 }
 
 const InstrumentsListModel = getModelForClass(InstrumentsList, {
@@ -53,48 +53,48 @@ const InstrumentsListModel = getModelForClass(InstrumentsList, {
   options: {
     customName: 'instrumentslist'
   }
-})
+});
 
 export async function clearInstrumentsList () {
   try {
-    await InstrumentsListModel.deleteMany({})
+    await InstrumentsListModel.deleteMany({});
   } catch (e) {
-    throw new Error(e)
+    throw new Error(e);
   }
 }
 
 export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
   try {
-    await InstrumentsListModel.insertMany(items)
+    await InstrumentsListModel.insertMany(items);
   } catch (e) {
-    throw new Error(e)
+    throw new Error(e);
   }
 }
 
 export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<InstrumentsList[]> {
   try {
     if (!ticker?.length) {
-      throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
+      throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker');
     }
 
     const params = {
       ticker: {
         $in: [].concat(ticker).map(el => el.toUpperCase())
       }
-    }
+    };
 
-    const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
+    const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
 
-    return result
+    return result;
   } catch (e) {
-    throw new Error(e)
+    throw new Error(e);
   }
 }
 
 export async function getInstrumentDataById (id) {
-  const result = await InstrumentsListModel.find({ id }).lean()
+  const result = await InstrumentsListModel.find({ id }).lean();
 
-  return result[0]
+  return result[0];
 }
 
 export interface IGetInstrumentsByTypeParams {
@@ -102,9 +102,9 @@ export interface IGetInstrumentsByTypeParams {
 }
 
 export async function getInstrumentsBySource ({ source }: IGetInstrumentsByTypeParams) {
-  const params = { source }
+  const params = { source };
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params)
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params);
 
-  return result
+  return result;
 }

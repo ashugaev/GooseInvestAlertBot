@@ -1,4 +1,4 @@
-import { InstrumentsList } from '../../models'
+import { InstrumentsList, PriceAlertItem } from '../../models';
 
 export interface AddAlertPayload {
   /**
@@ -15,4 +15,24 @@ export interface AddAlertPayload {
    * Если тикер существует не в одном экземпляре, то предложим выбрать один из них
    */
   instrumentsList?: InstrumentsList[]
+  /**
+   * Additional info message for alert
+   */
+  message?: string
+  /**
+   * Признак того, что создали алерт (отправили в базу)
+   */
+  alertCreated?: boolean
+  /**
+   * Признак того, что сообщение добавлено к алерту (отправлено в базу)
+   */
+  messageAttached?: boolean
+  /**
+   * Текущая цена по монете
+   */
+  currentPrice?: number
+  /**
+   * Объект созданного алерта из DB
+   */
+  createdItemsList?: PriceAlertItem[]
 }

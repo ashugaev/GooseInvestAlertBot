@@ -17,7 +17,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     try {
       if (await getAlertsCountForUser(user) >= alertsLimit) {
         ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }))
-        return
+        return;
       }
     } catch (e) {
       ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
@@ -29,7 +29,32 @@ export function setupAlert (bot: Telegraf<Context>) {
 
     if (data) {
       try {
-        addAlert2(ctx, { instrumentId: '01coin' })
+        addAlert2(ctx, {
+          // instrumentsList: [
+          //   {
+          //     id: 'binancecoin',
+          //     source: EMarketDataSources.coingecko,
+          //     name: 'Binance Coin',
+          //     ticker: 'BNB',
+          //     type: EMarketInstrumentTypes.Crypto,
+          //     currency: 'USD',
+          //     sourceSpecificData: {
+          //       id: 'binancecoin'
+          //     }
+          //   },
+          //   {
+          //     id: 'oec-binance-coin',
+          //     source: EMarketDataSources.coingecko,
+          //     name: 'OEC Binance Coin',
+          //     ticker: 'BNB',
+          //     type: EMarketInstrumentTypes.Crypto,
+          //     currency: 'USD',
+          //     sourceSpecificData: {
+          //       id: 'oec-binance-coin'
+          //     }
+          //   }
+          // ]
+        })
 
         // FIXME: catch можно сделать общий для всех шаблонов
       } catch (e) {
@@ -73,7 +98,7 @@ export function setupAlert (bot: Telegraf<Context>) {
 
     // Invalid Format
     ctx.replyWithHTML(ctx.i18n.t('alertErrorInvalidFormat'))
-  })
+  });
 
   bot.command(['alert', 'add'], callback)
   bot.hears(i18n.t('ru', 'alert_button'), callback)

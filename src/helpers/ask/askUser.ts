@@ -1,6 +1,7 @@
 /**
  * TODO: Доделать этот модуль
  */
+// @ts-nocheck
 
 import { TelegrafContext } from 'telegraf/typings/context'
 
