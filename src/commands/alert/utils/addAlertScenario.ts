@@ -17,7 +17,7 @@ type AddAlertParams = [
  * TODO: Можно сделать утилиту которая будет вызывать ифаки последовательно
  *  Под капотом это может быть генератор
  */
-export function addAlert (ctx, payload: AddAlertPayload) {
+export function addAlertScenario (ctx, payload: AddAlertPayload) {
   const {
     prices, ticker, instrumentsList, message, alertCreated, messageAttached, currentPrice, createdItemsList
   } = payload;
@@ -26,7 +26,7 @@ export function addAlert (ctx, payload: AddAlertPayload) {
   if (!ticker) {
     ctx.scene.enter(ALERT_SCENES.askTicker, {
       payload,
-      callback: addAlert
+      callback: addAlertScenario
     });
 
     return;
@@ -36,7 +36,7 @@ export function addAlert (ctx, payload: AddAlertPayload) {
   if (instrumentsList?.length > 1) {
     ctx.scene.enter(COMMON_SCENES.tickerDuplicates, {
       payload,
-      callback: addAlert
+      callback: addAlertScenario
     });
 
     return;
@@ -46,7 +46,7 @@ export function addAlert (ctx, payload: AddAlertPayload) {
   if (!prices) {
     ctx.scene.enter(ALERT_SCENES.askPrice, {
       payload,
-      callback: addAlert
+      callback: addAlertScenario
     });
 
     return;
@@ -57,14 +57,14 @@ export function addAlert (ctx, payload: AddAlertPayload) {
     createAlertInDb({
       ctx,
       payload,
-      callback: addAlert
+      callback: addAlertScenario
     });
 
     return;
   }
 
   // Если нет сообщения
-  if (!message && createdItemsList?.length > 1) {
+  if (!message && createdItemsList?.length === 1) {
     return;
   }
 
