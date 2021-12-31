@@ -5,7 +5,6 @@ import { getPricesFromString } from '../../../helpers/getPricesFromString';
 import { i18n } from '../../../helpers/i18n';
 import { getLastPriceById } from '../../../helpers/stocksApi';
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
-import { getInstrumentDataById } from '../../../models';
 import { ALERT_SCENES } from '../alert.constants';
 
 /**
@@ -18,9 +17,8 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
   const { state } = ctx.wizard;
   const { instrumentsList } = state.payload;
 
-  const instrumentId = instrumentsList[0].id;
-
-  const instrumentData = await getInstrumentDataById(instrumentId);
+  const instrumentData = instrumentsList[0];
+  const instrumentId = instrumentData.id;
 
   const { source, currency } = instrumentData;
 
@@ -39,7 +37,6 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
 const validateAndSaveStep = waitMessageStep('ask-alert-price-validate-and-save', (ctx, message, state) => {
   const {
     price: lastPrice,
-    payload,
     callback
   } = state;
 
@@ -64,8 +61,7 @@ const validateAndSaveStep = waitMessageStep('ask-alert-price-validate-and-save',
     return ctx.wizard.selectStep(ctx.wizard.cursor);
   }
 
-  // Добавим к payload цены (prices)
-  callback(ctx, { ...payload, prices, currentPrice: lastPrice });
+  callback({ prices, currentPrice: lastPrice });
 
   return ctx.scene.leave();
 });

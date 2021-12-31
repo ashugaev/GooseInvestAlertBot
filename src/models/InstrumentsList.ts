@@ -72,23 +72,19 @@ export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
 }
 
 export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<InstrumentsList[]> {
-  try {
-    if (!ticker?.length) {
-      throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker');
-    }
-
-    const params = {
-      ticker: {
-        $in: [].concat(ticker).map(el => el.toUpperCase())
-      }
-    };
-
-    const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
-
-    return result;
-  } catch (e) {
-    throw new Error(e);
+  if (!ticker?.length) {
+    throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker');
   }
+
+  const params = {
+    ticker: {
+      $in: [].concat(ticker).map(el => el.toUpperCase())
+    }
+  };
+
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
+
+  return result;
 }
 
 export async function getInstrumentDataById (id) {

@@ -6,10 +6,12 @@ import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
 import { AddPriceAlertParams, addPriceAlerts } from '../../../models';
 import { AddAlertPayload } from '../alert.types';
 
+type CreateAlertInDbPayload = Partial<AddAlertPayload>;
+
 interface CreateAlertInDbParams {
   ctx: TelegrafContext
-  payload: AddAlertPayload
-  callback: (ctx: TelegrafContext, payload: AddAlertPayload) => void
+  payload: CreateAlertInDbPayload
+  callback: (payload: AddAlertPayload) => void
 }
 
 /**
@@ -67,7 +69,7 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
 
     await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams));
 
-    callback(ctx, { ...payload, alertCreated: true, createdItemsList });
+    callback({ createdItemsList });
   } catch (e) {
     log.error('Ошибка добавления алерта', e);
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));

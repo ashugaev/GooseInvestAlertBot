@@ -20,6 +20,10 @@ const requestStep = immediateStep('check-ticker-duplicates-send-message', async 
     instrumentsList
   } = state.payload;
 
+  if (!instrumentsList.length) {
+    throw new Error('Недостаточно входных данных для tickerDuplicatesScene');
+  }
+
   const keyboard = m.inlineKeyboard(instrumentsList.map(item => [m.callbackButton(
     `${item.name} (${item.ticker})`,
     createActionString(COMMON_ACTIONS.chooseTickerId, {
@@ -34,33 +38,35 @@ const requestStep = immediateStep('check-ticker-duplicates-send-message', async 
   return ctx.wizard.next();
 });
 
-const validateAndSaveStep = waitButtonClickStep(COMMON_ACTIONS.chooseTickerId, 'shift_add_choose-timeframe', async (ctx, actionPayload, state) => {
-  const {
-    payload,
-    callback
-  } = state;
+const validateAndSaveStep = waitButtonClickStep(
+  COMMON_ACTIONS.chooseTickerId,
+  'shift_add_choose-timeframe',
+  async (ctx, actionPayload, state) => {
+    const {
+      payload,
+      callback
+    } = state;
 
-  const {
-    instrumentsList: allInstruments
-  } = payload;
+    const {
+      instrumentsList
+    } = payload;
 
-  const { id } = actionPayload;
+    const { id } = actionPayload;
 
-  if (!id) {
-    throw new Error('[CheckTickerDuplicates] Нет id выборе тикера');
-  }
+    if (!id) {
+      throw new Error('[CheckTickerDuplicates] Нет id выборе тикера');
+    }
 
-  const chosenInstrument = allInstruments.find(el => el.id === id);
+    const chosenInstrument = instrumentsList.find(el => el.id === id);
 
-  if (!chosenInstrument) {
-    throw new Error('[CheckTickerDuplicates] Не сработал выбор инструмента');
-  }
+    if (!chosenInstrument) {
+      throw new Error('[CheckTickerDuplicates] Не сработал выбор инструмента');
+    }
 
-  // Апдейтим данные
-  callback(ctx, { ...payload, instrumentsList: [chosenInstrument] });
+    callback({ instrumentsList: [chosenInstrument] });
 
-  return ctx.scene.leave();
-});
+    return ctx.scene.leave();
+  });
 
 export const tickerDuplicatesScene = new WizardScene(COMMON_SCENES.tickerDuplicates,
   requestStep,

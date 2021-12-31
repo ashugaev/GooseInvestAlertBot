@@ -1,25 +1,25 @@
-import * as Sentry from '@sentry/node'
-import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
+import * as Sentry from '@sentry/node';
+import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 
-import { coingeckoGetLasePrice } from '../marketApi/coingecko/api/getLastPrice'
-import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
-import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants'
-import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice'
-import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi'
-import { EMarketDataSources, InstrumentsList } from '../models'
-import { getInstrumentDataWithPrice } from './getInstrumentData'
+import { coingeckoGetLasePrice } from '../marketApi/coingecko/api/getLastPrice';
+import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById';
+import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants';
+import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
+import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi';
+import { EMarketDataSources, InstrumentsList } from '../models';
+import { getInstrumentDataWithPrice } from './getInstrumentData';
 
-const NodeCache = require('node-cache')
-const OpenAPI = require('@tinkoff/invest-openapi-js-sdk')
+const NodeCache = require('node-cache');
+const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
 
-const apiURL = 'https://api-invest.tinkoff.ru/openapi'
-const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
-const secretToken = process.env.STOCKS_API_TOKEN
+const apiURL = 'https://api-invest.tinkoff.ru/openapi';
+const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws';
+const secretToken = process.env.STOCKS_API_TOKEN;
 
 // Тут хранится время последней отправки логов в sentry, что бы ограничивать количество логов
-let tinkoffApiFailureSentTime = 0
+let tinkoffApiFailureSentTime = 0;
 
-export const stocksApi = new OpenAPI({ apiURL, secretToken, socketURL })
+export const stocksApi = new OpenAPI({ apiURL, secretToken, socketURL });
 
 export interface GetLastPriceData extends MarketInstrument {
   lastPrice: number
@@ -34,16 +34,16 @@ const symbolInfoCache = new NodeCache({
   // Кэшируем на всегда (обновится при только после перезапуска контейнера)
   // TODO: Возможно это имеет смысл хранить в базе, эти данные вероятно не изменятся никогда
   stdTTL: 0
-})
+});
 
 export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>(async (rs, rj) => {
   try {
-    let data = symbolInfoCache.get(symbol)
+    let data = symbolInfoCache.get(symbol);
 
     if (!data) {
-      data = await stocksApi.searchOne({ ticker: symbol })
+      data = await stocksApi.searchOne({ ticker: symbol });
 
-      symbolInfoCache.set(symbol, data)
+      symbolInfoCache.set(symbol, data);
     }
 
     // Полагаюсь что data=null признак того, что это успешный ответ от апи и мы просто ничего не нашли по тикеру
@@ -51,31 +51,31 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
       rj({
         cantFind: true,
         message: `Заданный инструмент ${symbol} не найден у брокера`
-      })
+      });
 
-      return
+      return;
     }
 
-    rs(data)
+    rs(data);
   } catch (e) {
-    const currentTime = new Date().getTime()
+    const currentTime = new Date().getTime();
 
     // Если прошло больше часа
-    const noSentry = (currentTime - tinkoffApiFailureSentTime) < 3600000
+    const noSentry = (currentTime - tinkoffApiFailureSentTime) < 3600000;
 
-    console.error('[StocksApi] Ошибка ответа тиньковской апишски', e)
+    console.error('[StocksApi] Ошибка ответа тиньковской апишски', e);
 
     if (!noSentry) {
       Sentry.captureException('Ошибка ответа тиньковской апишски', {
         tags: TINKOFF_SENTRY_TAGS
-      })
+      });
 
-      tinkoffApiFailureSentTime = currentTime
+      tinkoffApiFailureSentTime = currentTime;
     }
 
-    rj(e)
+    rj(e);
   }
-})
+});
 
 /**
  * Вернет цену по instrumentData
@@ -89,63 +89,63 @@ export const getLastPrice = async ({
 }: IGetInfoBySymbolParams) => {
   try {
     if (!instrumentData && !ticker) {
-      throw new Error('Необходимо предоставить istrumentData либо ticker для получения последней цены')
+      throw new Error('Необходимо предоставить istrumentData либо ticker для получения последней цены');
     }
 
     if (!instrumentData) {
       // FIXME: Тут получаетсякакая-то хрень, потом что getInstrumentDataWithPrice вызывает внутри getLastPrice
       //  Хотя это судя по всему оправдано тем, что ниже берем цены из разных источников
       // Нужно разбить getInstrumentDataWithPrice на получение цены и нормализация данных
-      const data = (await getInstrumentDataWithPrice({ symbol: ticker }))[0]
+      const data = (await getInstrumentDataWithPrice({ symbol: ticker }))[0];
 
-      instrumentData = data.instrumentData
+      instrumentData = data.instrumentData;
 
       if (!instrumentData) {
-        throw new Error('Ошибка получения информации по инструменту')
+        throw new Error('Ошибка получения информации по инструменту');
       }
     }
 
-    let lastPrice
+    let lastPrice;
 
     if (!instrumentData.source || instrumentData.source == EMarketDataSources.tinkoff) {
-      lastPrice = await tinkoffGetLastPrice({ instrumentData })
+      lastPrice = await tinkoffGetLastPrice({ instrumentData });
     } else if (instrumentData.source == EMarketDataSources.coingecko) {
-      lastPrice = await coingeckoGetLasePrice({ instrumentData })
+      lastPrice = await coingeckoGetLasePrice({ instrumentData });
     } else {
-      throw new Error('Инструмент без параметра source')
+      throw new Error('Инструмент без параметра source');
     }
 
     if (!lastPrice) {
-      throw new Error('Не была получена последняя цена инструмента')
+      throw new Error('Не была получена последняя цена инструмента');
     }
 
-    return lastPrice
+    return lastPrice;
   } catch (e) {
-    throw new Error(e)
+    throw new Error(e);
   }
-}
+};
 
 /**
  * Вернет цену по id монеты
  */
 export const getLastPriceById = async (id: string, source: EMarketDataSources) => {
   try {
-    let lastPrice
+    let lastPrice;
 
     if (source === EMarketDataSources.tinkoff) {
-      lastPrice = await tinkoffGetLastPriceByFigi(id)
+      lastPrice = await tinkoffGetLastPriceByFigi(id);
     } else if (source === EMarketDataSources.coingecko) {
-      lastPrice = await coingeckoGetLastPriceById(id)
+      lastPrice = await coingeckoGetLastPriceById(id);
     } else {
-      throw new Error('Инструмент без параметра source')
+      throw new Error('Инструмент без параметра source');
     }
 
     if (!lastPrice) {
-      throw new Error('Не была получена последняя цена инструмента')
+      throw new Error('Не была получена последняя цена инструмента');
     }
 
-    return lastPrice
+    return lastPrice;
   } catch (e) {
-    throw new Error(e)
+    throw new Error(e);
   }
-}
+};

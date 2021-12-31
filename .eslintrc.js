@@ -33,6 +33,7 @@ module.exports = {
     'no-unused-expressions': 0,
     'no-new': 0,
     'consistent-return': 0,
+    'node/no-callback-literal': 0,
     'no-restricted-syntax': [
       'error',
       'ForOfStatement',

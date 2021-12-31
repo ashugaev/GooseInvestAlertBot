@@ -3,7 +3,6 @@ import * as WizardScene from 'telegraf/scenes/wizard';
 
 import { i18n } from '../../../helpers/i18n';
 import { sceneWrapper } from '../../../helpers/sceneWrapper';
-import { updateAlert } from '../../../models';
 import { ALERT_SCENES } from '../alert.constants';
 
 /**
@@ -22,7 +21,8 @@ const requestStep = sceneWrapper('ask-alert-message-request', async (ctx) => {
  */
 const validateAndSaveStep = waitMessageStep('ask-alert-message-validate-and-save', async (ctx, message, state) => {
   const {
-    payload
+    payload,
+    callback
   } = state;
 
   const {
@@ -37,22 +37,7 @@ const validateAndSaveStep = waitMessageStep('ask-alert-message-validate-and-save
     throw new Error('Пустое сообщение');
   }
 
-  const createdItem = createdItemsList[0];
-
-  const { _id } = createdItem;
-
-  const result = await updateAlert({
-    _id,
-    data: {
-      message
-    }
-  });
-
-  if (result.nModified) {
-    ctx.replyWithHTML(i18n.t('ru', 'alertMessageUpdated'));
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'alertMessageUpdateError'));
-  }
+  callback({ message });
 
   return ctx.scene.leave();
 });

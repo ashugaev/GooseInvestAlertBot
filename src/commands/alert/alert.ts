@@ -1,41 +1,52 @@
 import { Context, Telegraf } from 'telegraf';
 
-import { addAlert } from '../../helpers/addAlert';
 import { commandWrapper } from '../../helpers/commandWrapper';
 import { i18n } from '../../helpers/i18n';
 import { log } from '../../helpers/log';
 import { getAlertsCountForUser, removePriceAlert } from '../../models';
-import { addAlertScenario } from './utils/addAlertScenario';
+import { addAlertScenario } from './scenarios/addAlertScenario';
 
 export function setupAlert (bot: Telegraf<Context>) {
-  const callback = commandWrapper(async ctx => {
+  const callback = commandWrapper(async (ctx) => {
     const { text } = ctx.message;
     const { id: user } = ctx.from;
 
     const alertsLimit = ctx.userLimits.priceLevels;
+    const userAlertsCount = await getAlertsCountForUser(user);
 
-    try {
-      if (await getAlertsCountForUser(user) >= alertsLimit) {
-        ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }));
-        return;
-      }
-    } catch (e) {
-      ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
-      log.error(e);
+    if (userAlertsCount >= alertsLimit) {
+      await ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }));
+      return;
     }
 
     // Сценарий добавления
     let data = text.match(/^\/(alert|add)$/);
 
     if (data) {
-      try {
-        addAlertScenario(ctx, { });
+      addAlertScenario(ctx, {});
+      return;
+    }
 
-        // FIXME: catch можно сделать общий для всех шаблонов
-      } catch (e) {
-        ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
-        log.error(e);
-      }
+    // Добавление одной командой
+    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d.\s\-+%]+)$/);
+
+    if (data) {
+      await addAlertScenario(ctx, {
+        ticker: data[2],
+        prices: data[3]
+      });
+
+      return;
+    }
+
+    // Добавление неполной командой
+    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+)$/);
+
+    if (data) {
+      await addAlertScenario(ctx,
+        {
+          ticker: data[2].toUpperCase()
+        });
 
       return;
     }
@@ -44,29 +55,9 @@ export function setupAlert (bot: Telegraf<Context>) {
     data = text.match(/^\/alert remove ([a-zA-Zа-яА-ЯёЁ0-9]+)$/);
 
     if (data) {
-      const symbol = data[1];
+      const symbol = data[1].toUpperCase();
 
-      try {
-        await removePriceAlertAndSendMessage({ symbol, user, ctx });
-      } catch (e) {
-        log.error(e);
-      }
-
-      return;
-    }
-
-    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d.\s\-+%]+)$/);
-
-    // Command to add alert
-    if (data) {
-      try {
-        await addAlert({
-          data: { symbol: data[2], price: data[3] },
-          ctx
-        });
-      } catch (e) {
-        log.error(e);
-      }
+      await removePriceAlertAndSendMessage({ symbol, user, ctx });
 
       return;
     }
