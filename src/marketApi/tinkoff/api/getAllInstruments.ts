@@ -4,10 +4,18 @@ import { wait } from '../../../helpers/wait'
 import { EMarketDataSources } from '../../types'
 import { InstrumentsList } from '../../../models'
 
+/**
+ * Замены для зашкварных тикеров валют
+  */
+const tickerReplacements = {
+  USD000UTSTOM: 'USDRUB',
+  EUR_RUB__TOM: 'EURRUB'
+}
+
 const normalizeTinkoffItem = (item): InstrumentsList => {
   const { ticker, name, type, ...specificData } = item
 
-  return {
+  const result = {
     id: specificData.figi,
     source: EMarketDataSources.tinkoff,
     name,
@@ -15,6 +23,11 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     type,
     sourceSpecificData: specificData
   }
+
+  // Замена тикера по шаблону
+  result.ticker = tickerReplacements[ticker] ?? ticker
+
+  return result
 }
 
 export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve) => {
@@ -22,7 +35,8 @@ export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve)
     const allInstrumentsPromises = [
       stocksApi.stocks(),
       stocksApi.etfs(),
-      stocksApi.bonds()
+      stocksApi.bonds(),
+      stocksApi.currencies()
     ]
 
     const allInstruments: any[] = await Promise.all(allInstrumentsPromises)

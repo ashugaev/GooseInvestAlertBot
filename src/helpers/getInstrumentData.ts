@@ -28,7 +28,9 @@ export async function getInstrumentDataWithPrice ({
     const tickerWithCurrency = symbol.match(/^(.+)(usd|eur|rub)$/i)
 
     // Если тикер содержит в себе валютную пару, то попробуем искать без нее (для крипты)
-    if (tickerWithCurrency) {
+    // FIXME: Хардкод для валют, что бы не искать крипту вместе с ними.
+    //  Уберется, когда случится переезд на получение по id
+    if (tickerWithCurrency && (ticker[0] !== 'USDRUB' && ticker[0] !== 'EURRUB')) {
       customCurrency = tickerWithCurrency[2].toUpperCase()
       // Добавить в список для поиска крипту без валютной пары
       ticker.push(tickerWithCurrency[1])
