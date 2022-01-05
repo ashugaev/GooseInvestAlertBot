@@ -1,3 +1,4 @@
+
 import { getInstrumentInfoByTicker } from '../../../models';
 import { COMMON_SCENES } from '../../../scenes/scenes.constants';
 import { ALERT_SCENES } from '../alert.constants';
@@ -11,6 +12,9 @@ import { createAlertInDb } from '../utils/createAlertInDb';
  *
  * TODO: Можно сделать утилиту которая будет вызывать ифаки последовательно
  *  Под капотом это может быть генератор
+ *
+ * TODO: Оторвать валидация от получения данных, тогда на вход сможем подавать просто данные
+ *  без их запроса отдельным шагом
  */
 export function addAlertScenario (ctx, payload: AddAlertPayload) {
   // Состояние в замыкании, которое сохранится между вызовами nextStep

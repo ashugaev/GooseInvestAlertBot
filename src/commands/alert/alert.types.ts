@@ -1,4 +1,10 @@
-import { InstrumentsList, PriceAlertItem } from '../../models';
+import { ValidatorResult } from '@types';
+
+import { InstrumentsList, PriceAlertItem } from '@models';
+
+export interface UserInputData {
+  [key: string]: ValidatorResult
+}
 
 export interface AddAlertPayload {
   /**

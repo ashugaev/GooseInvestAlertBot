@@ -1,7 +1,7 @@
-import { EMarketDataSources, EMarketInstrumentTypes, InstrumentsList } from '../../../models'
-const CoinGecko = require('coingecko-api')
+import { EMarketDataSources, EMarketInstrumentTypes, InstrumentsList } from '../../../models';
+const CoinGecko = require('coingecko-api');
 
-export const CoinGeckoClient = new CoinGecko()
+export const CoinGeckoClient = new CoinGecko();
 
 const normalizeCoingeckoItem = (item): InstrumentsList => {
   return {
@@ -14,11 +14,11 @@ const normalizeCoingeckoItem = (item): InstrumentsList => {
     sourceSpecificData: {
       id: item.id
     }
-  }
-}
+  };
+};
 
 export const coingeckoGetAllInstruments = async () => {
-  const result = await CoinGeckoClient.coins.list()
+  const result = await CoinGeckoClient.coins.list();
 
-  return result.data.map(normalizeCoingeckoItem)
-}
+  return result.data.map(normalizeCoingeckoItem);
+};

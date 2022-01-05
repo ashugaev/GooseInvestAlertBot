@@ -1,5 +1,6 @@
 import { Context, Telegraf } from 'telegraf';
 
+import { addAlert } from '../../helpers/addAlert';
 import { commandWrapper } from '../../helpers/commandWrapper';
 import { i18n } from '../../helpers/i18n';
 import { log } from '../../helpers/log';
@@ -31,9 +32,13 @@ export function setupAlert (bot: Telegraf<Context>) {
     data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+) ([\d.\s\-+%]+)$/);
 
     if (data) {
-      await addAlertScenario(ctx, {
-        ticker: data[2],
-        prices: data[3]
+      // FIXME: Используется deprecated ф-ция, нужно поддержать для этого кейса addAlertScenario
+      await addAlert({
+        ctx,
+        data: {
+          symbol: data[2],
+          price: data[3]
+        }
       });
 
       return;

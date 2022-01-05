@@ -1,22 +1,21 @@
 /**
- * TODO: Доделать этот модуль
+ * TODO: Модуль не работает, его нужно доделать
  */
 // @ts-nocheck
 
-import { TelegrafContext } from 'telegraf/typings/context'
+import { TelegrafContext } from 'telegraf/typings/context';
 
-import { ALERT_SCENES } from '../../commands/alert/alert.constants'
-import { AddAlertPayload } from '../../commands/alert/alert.types'
-import { i18n } from '../i18n'
+import { ALERT_SCENES } from '../../commands/alert/alert.constants';
+import { i18n } from '../i18n';
 
-export type AskUserCollectedValues = Record<string, any>
+type AskUserCollectedValues = Record<string, any>;
 
-export interface UserInputValidator {
+interface UserInputValidator {
   validate: () => {}
   onError: () => string
 }
 
-export interface AskUserQuestionConfig {
+interface AskUserQuestionConfig {
   /**
    * Название поля под которым будет результат
    */
@@ -49,7 +48,7 @@ export interface AskUserQuestionConfig {
   }
 }
 
-export interface AskUser {
+interface AskUser {
   ctx: TelegrafContext
   questionConfig: AskUserQuestionConfig
   onSuccess: (userInput: {[key: string]: string}) => boolean | undefined
@@ -65,13 +64,13 @@ export interface AskUser {
  * - текстовое сообщение
  * - нажатие кнопки
  */
-export const askUser = ({ ctx, questionConfig, onSuccess }: AskUser) => {
+const askUser = ({ ctx, questionConfig, onSuccess }: AskUser) => {
   // Эта сцена просто для примера
   ctx.scene.enter(ALERT_SCENES.askPrice, {
     payload: questionConfig,
     onSuccess: onSuccess
-  })
-}
+  });
+};
 
 /// ///
 
@@ -80,7 +79,7 @@ const questionConfig: AskUserQuestionConfig = {
   validators: [
     {
       validate: (userInput) => {
-        return 'kek'
+        return 'kek';
       },
       errorMessage: (validateResult) => i18n.t('ru', 'alert_add_choosePrice_invalid', {
         invalid: collectedValues.invalidPricesString
@@ -95,36 +94,36 @@ const questionConfig: AskUserQuestionConfig = {
     }),
     success: (collectedValues) => {}
   }
-}
+};
 
 /**
  * Ф-ция добавления алерта
  * Если на входе недостаточно данных она их запрашивает у юзера
  */
-export const addAlert = (ctx, payload: AddAlertPayload) => {
-  const { prices, ticker, instrumentId } = payload
-
-  // if (!ticker) {
-  //   ctx.scene.enter(ALERT_SCENES.askTicker)
-  //
-  //   return
-  // }
-
-  if (!prices) {
-    // askUser({
-    //
-    //   ...questionConfig,
-    // })
-
-    const config: AskUserQuestionConfig = {
-      ...questionConfig,
-      callbacks: {
-        onSuccess: (updatedValues) => addAlert(ctx, updatedValues),
-        onValidate: () => true
-      },
-      collectedValues: payload
-    }
-
-    ctx.scene.enter(ALERT_SCENES.askPrice, config)
-  }
-}
+// const addAlert = (ctx, payload: AddAlertPayload) => {
+//   const { prices, ticker, instrumentId } = payload
+//
+//   // if (!ticker) {
+//   //   ctx.scene.enter(ALERT_SCENES.askTicker)
+//   //
+//   //   return
+//   // }
+//
+//   if (!prices) {
+//     // askUser({
+//     //
+//     //   ...questionConfig,
+//     // })
+//
+//     const config: AskUserQuestionConfig = {
+//       ...questionConfig,
+//       callbacks: {
+//         onSuccess: (updatedValues) => addAlert(ctx, updatedValues),
+//         onValidate: () => true
+//       },
+//       collectedValues: payload
+//     }
+//
+//     ctx.scene.enter(ALERT_SCENES.askPrice, config)
+//   }
+// }

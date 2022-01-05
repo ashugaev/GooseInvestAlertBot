@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 
-import { coingeckoGetLasePrice } from '../marketApi/coingecko/api/getLastPrice';
+import { coingeckoGetLastPrice } from '../marketApi/coingecko/api/getLastPrice';
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById';
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants';
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
@@ -110,7 +110,7 @@ export const getLastPrice = async ({
     if (!instrumentData.source || instrumentData.source == EMarketDataSources.tinkoff) {
       lastPrice = await tinkoffGetLastPrice({ instrumentData });
     } else if (instrumentData.source == EMarketDataSources.coingecko) {
-      lastPrice = await coingeckoGetLasePrice({ instrumentData });
+      lastPrice = await coingeckoGetLastPrice({ instrumentData });
     } else {
       throw new Error('Инструмент без параметра source');
     }

@@ -1,11 +1,11 @@
-import { log } from '../helpers/log'
-import { startCronJob } from '../helpers/startCronJob'
-import { copyAlerts } from './copyAlerts'
-import { instrumentsListUpdater } from './instrumentsListUpdater'
-import { setupPriceChecker } from './priceChecker'
-import { setupShiftsChecker } from './shiftsChecker'
-import { createShitEvents } from './statChecker'
-import { shiftSender } from './statSender'
+import { log } from '../helpers/log';
+import { startCronJob } from '../helpers/startCronJob';
+import { copyAlerts } from './copyAlerts';
+import { instrumentsListUpdater } from './instrumentsListUpdater';
+import { setupPriceChecker } from './priceChecker';
+import { setupShiftsChecker } from './shiftsChecker';
+import { createShitEvents } from './statChecker';
+import { shiftSender } from './statSender';
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -15,7 +15,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз в день в 2 часа 0 минут
     period: '0 2 * * *'
-  })
+  });
 
   startCronJob({
     name: 'Send stat',
@@ -23,17 +23,17 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз в час
     period: '0 * * * *'
-  })
+  });
 
   startCronJob({
     name: 'Update Instruments List',
     callback: instrumentsListUpdater,
     callbackArgs: [bot],
     // раз день в 3 часа
-    period: '0 3 * * *',
+    period: '0 3 * * *'
     // TODO: Раскомментить для первого релиза
     // executeBeforeInit: true
-  })
+  });
 
   // Дамп коллекции с алертами
   startCronJob({
@@ -43,15 +43,15 @@ export const setupCheckers = (bot) => {
     // раз в час
     period: '0 * * * *',
     executeBeforeInit: true
-  })
+  });
 
   // Мониторинг достижения уровней
-  setupPriceChecker(bot)
+  setupPriceChecker(bot);
 
   // Мониторинг скорости
   try {
-    setupShiftsChecker(bot)
+    setupShiftsChecker(bot);
   } catch (e) {
-    log.error('[Cron] Упал чекер скорости цены')
+    log.error('[Cron] Упал чекер скорости цены');
   }
-}
+};

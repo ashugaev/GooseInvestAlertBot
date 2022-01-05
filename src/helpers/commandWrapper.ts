@@ -8,7 +8,7 @@ export function commandWrapper (callback: (ctx: any) => Promise<void>): Middlewa
     try {
       await callback(ctx);
     } catch (e) {
-      ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+      await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
       log.error(e);
     }
   };

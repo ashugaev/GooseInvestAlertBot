@@ -12,7 +12,9 @@
       "@helpers": ["src/helpers/"],
       "@scenes": ["src/scenes/"],
       "@commands": ["src/commands/"],
-      "@constants": ["src/constants/"]
+      "@constants": ["src/constants/"],
+      "@types": ["src/types/"],
+      "@models": ["src/models/"]
     },
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true

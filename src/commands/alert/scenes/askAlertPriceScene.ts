@@ -1,11 +1,11 @@
 import { immediateStep, waitMessageStep } from '@scenes';
 import * as WizardScene from 'telegraf/scenes/wizard';
 
-import { getPricesFromString } from '../../../helpers/getPricesFromString';
 import { i18n } from '../../../helpers/i18n';
 import { getLastPriceById } from '../../../helpers/stocksApi';
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
 import { ALERT_SCENES } from '../alert.constants';
+import { validateAlertPrice } from '../validators';
 
 /**
  * Запрашивает у юзера цену
@@ -34,34 +34,23 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
   return ctx.wizard.next();
 });
 
-const validateAndSaveStep = waitMessageStep('ask-alert-price-validate-and-save', (ctx, message, state) => {
+const validateAndSaveStep = waitMessageStep('ask-alert-price-validate-and-save', async (ctx, message, state) => {
   const {
     price: lastPrice,
     callback
   } = state;
 
-  const { prices, invalidValues } = getPricesFromString({
-    string: message,
+  const { normalized, isValid } = await validateAlertPrice({
+    ctx,
+    message,
     lastPrice
   });
 
-  if (invalidValues.length) {
-    const invalidPricesString = invalidValues.join(' ,');
-
-    ctx.replyWithHTML(i18n.t('ru', 'alert_add_choosePrice_invalid', {
-      invalid: invalidPricesString
-    }));
-
+  if (!isValid) {
     return ctx.wizard.selectStep(ctx.wizard.cursor);
   }
 
-  if (!invalidValues.length && !prices.length) {
-    ctx.replyWithHTML(i18n.t('ru', 'alert_add_choosePrice_invalid'));
-
-    return ctx.wizard.selectStep(ctx.wizard.cursor);
-  }
-
-  callback({ prices, currentPrice: lastPrice });
+  callback({ prices: normalized, currentPrice: lastPrice });
 
   return ctx.scene.leave();
 });
