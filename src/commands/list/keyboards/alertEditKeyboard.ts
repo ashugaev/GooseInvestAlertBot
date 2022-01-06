@@ -3,8 +3,9 @@ import { createActionString } from '../../../helpers/createActionString'
 import { Actions } from '../../../constants'
 import { backButton } from '../../../keyboards/backButton'
 import { i18n } from '../../../helpers/i18n'
+import { EKeyboardModes } from './instrumentPageKeyboard'
 
-export const alertEditKeyboard = ({ idI, symbol }) => {
+export const alertEditKeyboard = ({ idI, symbol, page, tickersPage }) => {
   const keys = []
 
   const deleteButton = Markup.callbackButton(
@@ -14,7 +15,11 @@ export const alertEditKeyboard = ({ idI, symbol }) => {
 
   keys.push([deleteButton])
 
-  keys.push([backButton({ action: createActionString(Actions.list_tickerPage, { s: symbol, p: 0 }) })])
+  keys.push([backButton({
+    action: createActionString(Actions.list_tickerPage, {
+      s: symbol, p: page, kMode: EKeyboardModes.edit, tp: tickersPage
+    })
+  })])
 
   return keys
 }

@@ -9,7 +9,7 @@ import { log } from '../../../helpers/log'
  */
 export const alertsForInstrument = async (ctx) => {
   try {
-    const { s: symbol, p: page, kMode: keyboardMode } = JSON.parse(ctx.match[1])
+    const { s: symbol, p: page, kMode: keyboardMode, tp: tickersPage } = JSON.parse(ctx.match[1])
 
     const { alertsList } = await fetchAlerts({ forSymbol: symbol.toUpperCase(), ctx, noContextUpdate: true })
 
@@ -19,7 +19,8 @@ export const alertsForInstrument = async (ctx) => {
       ctx,
       instrumentItems: alertsList,
       edit: true,
-      keyboardMode
+      keyboardMode,
+      tickersPage
     })
   } catch (e) {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
