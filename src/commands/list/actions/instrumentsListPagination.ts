@@ -11,7 +11,7 @@ import { log } from '../../../helpers/log'
 export const instrumentsListPagination = async (ctx) => {
   try {
     const {
-      p: page = 0,
+      p: page = 0
       // type списка
     } = JSON.parse(ctx.match[1])
 

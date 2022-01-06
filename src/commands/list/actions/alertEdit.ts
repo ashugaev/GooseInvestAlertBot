@@ -14,7 +14,8 @@ export const alertEdit = async (ctx) => {
       s: symbol,
       // Индекс алерта на текущей странице
       i,
-      p: page
+      p: page,
+      tp: tickersPage
     } = JSON.parse(ctx.match[1])
 
     const alertsList = ctx.session.listCommand.alertsList
@@ -39,7 +40,7 @@ export const alertEdit = async (ctx) => {
     // index of id
     const idI = alertsList.findIndex(el => el._id.toString() === alert._id.toString())
 
-    const keyboard = alertEditKeyboard({ idI, symbol })
+    const keyboard = alertEditKeyboard({ idI, symbol, page, tickersPage })
 
     await ctx.editMessageText(message, {
       parse_mode: 'HTML',

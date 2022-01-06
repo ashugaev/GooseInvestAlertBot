@@ -23,13 +23,14 @@ export const instrumentPageKeyboard = (ctx, {
   itemsLength,
   symbol = null,
   withoutBackButton,
-  keyboardMode,
+  keyboardMode = EKeyboardModes.edit,
   itemsToShowLength,
   showAlertsTypeToggler = false,
   currentListType = EListTypes.levels,
   paginationButtonsConfig,
   editNumberButtonsConfig,
-  editButtonConfig
+  editButtonConfig,
+  tickersPage = 0
 }) => {
   const keys = []
 
@@ -49,6 +50,7 @@ export const instrumentPageKeyboard = (ctx, {
       const payload = {
         p: page,
         i,
+        tp: tickersPage,
         ...(editNumberButtonsConfig.payload || {}),
         ...(editNumberButtonsConfig?.payloadCallback?.(i) || {})
       }
@@ -67,6 +69,7 @@ export const instrumentPageKeyboard = (ctx, {
     const payload = {
       p: page,
       kMode: EKeyboardModes.edit,
+      tp: tickersPage,
       ...(editButtonConfig.payload || {})
     }
 
@@ -77,12 +80,7 @@ export const instrumentPageKeyboard = (ctx, {
   }
 
   if (symbol) {
-    const backButtonAction = isEditMode
-      ? createActionString(Actions.list_tickerPage, {
-          p: page,
-          s: symbol.toUpperCase()
-        })
-      : createActionString(Actions.list_instrumentsPage, {})
+    const backButtonAction = createActionString(Actions.list_instrumentsPage, { p: tickersPage })
 
     !withoutBackButton && (keys.push([backButton({ action: backButtonAction })]))
   }

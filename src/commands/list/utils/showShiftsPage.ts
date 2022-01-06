@@ -73,8 +73,7 @@ export const showShiftsPage = async ({
         editNumberButtonsConfig: {
           action: Actions.list_shiftEditPage,
           payload: {
-            p: page,
-            kMode: EKeyboardModes.edit
+            p: page
           },
           payloadCallback: (i) => {
             return { d: itemsToShow[i]._id }

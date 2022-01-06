@@ -14,6 +14,7 @@ interface IShowInstrumentPageParams {
   instrumentItems: PriceAlertItem[]
   symbol: string
   edit?: boolean
+  tickersPage?: number
 }
 
 export const getAlertNumberByPage = ({ i, page }) => {
@@ -21,7 +22,7 @@ export const getAlertNumberByPage = ({ i, page }) => {
 }
 
 export const showInstrumentPage = async ({
-  page, ctx, instrumentItems, symbol, edit, keyboardMode
+  page, ctx, instrumentItems, symbol, edit, keyboardMode, tickersPage = 0
 }: IShowInstrumentPageParams) => {
   const itemsToShow = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
@@ -73,18 +74,21 @@ export const showInstrumentPage = async ({
         symbol,
         withoutBackButton: false,
         keyboardMode,
+        tickersPage,
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
             s: symbol,
             p: page,
-            kMode: keyboardMode
+            kMode: keyboardMode,
+            tp: tickersPage
           }
         },
         editNumberButtonsConfig: {
           action: Actions.list_editAlert,
           payload: {
-            s: symbol.toUpperCase()
+            s: symbol.toUpperCase(),
+            p: page,
           }
         },
         editButtonConfig: {

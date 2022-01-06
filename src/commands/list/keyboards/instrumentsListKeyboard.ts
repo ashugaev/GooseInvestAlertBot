@@ -6,6 +6,7 @@ import { Actions } from '../../../constants'
 import { alertsTypeToggleButtons } from './alertsTypeToggleButtons'
 import { EListTypes } from '../list.types'
 import { getTimeShiftsCountForUser } from '../../../models'
+import { EKeyboardModes } from './instrumentPageKeyboard'
 
 /**
  * Вернет список кнопок для каждого инструмента по массиву данных
@@ -25,7 +26,9 @@ export const instrumentsListKeyboard = async ({
   const getTickerButtons = pageTickers.map(({ name, symbol }) => {
     const payload = {
       s: symbol.toUpperCase(),
-      p: 0
+      p: 0,
+      tp: page,
+      kMode: EKeyboardModes.edit
     }
 
     return ([
