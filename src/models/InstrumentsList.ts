@@ -4,10 +4,14 @@ import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources, EMarketInstrumentTypes, IBaseInstrumentData } from '../marketApi/types'
 
 export class InstrumentsList {
-  @prop({ unique: true})
+  @prop({ unique: true })
   id: string
 
-  @prop({ required: true })
+  /**
+   * Тикер не обязательный, потому что это иногда крашит бота
+   * Может появиться монета без тикера
+   */
+  @prop({ required: false, unique: false })
   ticker: string
 
   @prop({ required: true })

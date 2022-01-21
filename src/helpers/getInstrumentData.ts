@@ -46,7 +46,7 @@ export async function getInstrumentDataWithPrice ({
         )
       }
 
-      log.info('не пришли данные из апишки', instrumentDataArr)
+      log.info('не пришли данные из базы данных', instrumentDataArr)
 
       return
     }
