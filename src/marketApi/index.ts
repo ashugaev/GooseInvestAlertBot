@@ -5,7 +5,7 @@ import { tinkoffGetAllInstruments } from './tinkoff/api/getAllInstruments';
 /**
  * Получает список всех инструментов подключенных к боту
  *
- * TODO: перенести внутрь cron папки
+ * TODO: перенести внутрь cron/ папки
  */
 export const getAllInstruments = async (): Promise<InstrumentsList[]> => {
   const allInstrumentsPromises = [
