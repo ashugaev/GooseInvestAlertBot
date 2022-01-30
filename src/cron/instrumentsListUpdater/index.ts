@@ -1,1 +1,1 @@
-export * from './instrumentListUpdater'
+export * from './instrumentListUpdater';

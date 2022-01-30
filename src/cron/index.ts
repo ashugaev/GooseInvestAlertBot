@@ -31,9 +31,9 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз день в 3 часа
     period: '0 3 * * *',
-    // TODO: Раскомментить для первого релиза
+    // TODO: Не проставлять в dev окружении
     executeBeforeInit: true
-  });
+  })
 
   // Дамп коллекции с алертами
   startCronJob({
@@ -49,9 +49,5 @@ export const setupCheckers = (bot) => {
   setupPriceChecker(bot);
 
   // Мониторинг скорости
-  try {
-    setupShiftsChecker(bot);
-  } catch (e) {
-    log.error('[Cron] Упал чекер скорости цены');
-  }
-};
+  setupShiftsChecker(bot)
+}

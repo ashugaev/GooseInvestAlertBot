@@ -1,5 +1,6 @@
-import { EMarketDataSources, EMarketInstrumentTypes, InstrumentsList } from '../../../models';
-const CoinGecko = require('coingecko-api');
+import { EMarketDataSources, EMarketInstrumentTypes } from '../../types'
+import { InstrumentsList } from '../../../models'
+const CoinGecko = require('coingecko-api')
 
 export const CoinGeckoClient = new CoinGecko();
 

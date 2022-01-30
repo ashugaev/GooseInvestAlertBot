@@ -10,8 +10,12 @@ const getTinkoffInstrumentLink = ({ type, ticker }) => {
     return
   }
 
-  // Добавляет s потому что в урле нужно множественное число
-  type = type.toLowerCase() + 's'
+  if (type === EMarketInstrumentTypes.Currency) {
+    type = 'currencies'
+  } else {
+    // Добавляет s потому что в урле нужно множественное число
+    type = type.toLowerCase() + 's'
+  }
 
   return `https://www.tinkoff.ru/invest/${type}/${ticker}/`
 }

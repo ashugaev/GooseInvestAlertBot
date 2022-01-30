@@ -1,3 +1,4 @@
+import { log } from '../helpers/log';
 import { InstrumentsList } from '../models';
 import { coingeckoGetAllInstruments } from './coingecko/api/getAllInstruments';
 import { tinkoffGetAllInstruments } from './tinkoff/api/getAllInstruments';
@@ -16,6 +17,8 @@ export const getAllInstruments = async (): Promise<InstrumentsList[]> => {
   const allInstrumentsArr = await Promise.all(allInstrumentsPromises);
 
   const allInstruments = allInstrumentsArr.reduce((acc, el) => acc.concat(el), []);
+
+  log.info('Получены монеты и акции', allInstruments.length);
 
   return allInstruments;
 };

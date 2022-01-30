@@ -1,24 +1,36 @@
-import { log } from '../../helpers/log'
-import { getAllInstruments } from '../../marketApi'
-import { clearInstrumentsList, putItemsToInstrumentsList } from '../../models'
+import { log } from '../../helpers/log';
+import { wait } from '../../helpers/wait';
+import { getAllInstruments } from '../../marketApi';
+import { clearInstrumentsList, putItemsToInstrumentsList } from '../../models';
 
 /**
  * Обновляет список доступных инструментов в базе
  */
 export const instrumentsListUpdater = async () => {
   try {
-    const instruments = await getAllInstruments()
+    const newInstrumentsList = await getAllInstruments();
 
-    if (!instruments.length) {
-      throw new Error('Ошибка получения списка инструментов')
+    if (!newInstrumentsList.length) {
+      throw new Error('Ошибка получения списка инструментов');
     }
 
-    await clearInstrumentsList()
+    // TODO: Делать очищение с обновлением одной командой
+    //  Что бы падение было сразе двух команд и никак не после удаления
+    await clearInstrumentsList();
 
-    await putItemsToInstrumentsList(instruments)
+    await putItemsToInstrumentsList(newInstrumentsList);
+    log.info('Instrument list updated');
 
-    log.info('Список доступных инструментов в базе был обновлен', instruments.length)
+    log.info('Список доступных инструментов в базе был обновлен', newInstrumentsList.length);
   } catch (e) {
-    log.error('Ошибка обновления списка инcтрументов', e)
+    try {
+      log.error('Ошибка обновления списка инcтрументов', e);
+      log.error('Retrying');
+
+      await wait(60000);
+      await instrumentsListUpdater();
+    } catch (e) {
+      log.error('Ошибка обновления списка инcтрументов', e);
+    }
   }
-}
+};

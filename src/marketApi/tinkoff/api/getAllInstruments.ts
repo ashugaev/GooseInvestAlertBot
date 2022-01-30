@@ -8,7 +8,7 @@ import { EMarketDataSources, InstrumentsList } from '../../../models';
 const normalizeTinkoffItem = (item): InstrumentsList => {
   const { ticker, name, type, currency, ...specificData } = item;
 
-  return {
+  const result = {
     id: specificData.figi,
     source: EMarketDataSources.tinkoff,
     name,
@@ -16,16 +16,22 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     type,
     currency,
     sourceSpecificData: specificData
-  };
-};
+  }
 
-export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (rs) => {
+  // Замена тикера по шаблону
+  result.ticker = tickerReplacements[ticker] ?? ticker
+
+  return result
+}
+
+export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve) => {
   try {
     const allInstrumentsPromises = [
       stocksApi.stocks(),
       stocksApi.etfs(),
-      stocksApi.bonds()
-    ];
+      stocksApi.bonds(),
+      stocksApi.currencies()
+    ]
 
     const allInstruments = await Promise.all(allInstrumentsPromises);
 
@@ -33,13 +39,13 @@ export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (rs) => {
 
     const normalizedInstrumentsArray = instrumentsArray.map(normalizeTinkoffItem);
 
-    rs(normalizedInstrumentsArray);
+    resolve(normalizedInstrumentsArray)
   } catch (e) {
     log.error('Ошибка получения списка иструментов:', e);
 
     await wait(30000);
 
     // Ретрай
-    rs(await tinkoffGetAllInstruments());
+    resolve(await tinkoffGetAllInstruments())
   }
 });

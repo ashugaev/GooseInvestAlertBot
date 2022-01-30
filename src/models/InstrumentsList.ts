@@ -29,8 +29,12 @@ export class InstrumentsList {
   @prop({ required: true, unique: true })
   id: string;
 
-  @prop({ required: true, unique: false })
-  ticker: string;
+  /**
+   * Тикер не обязательный, потому что это иногда крашит бота
+   * Может появиться монета без тикера
+   */
+  @prop({ required: false, unique: false })
+  ticker: string
 
   @prop({ required: true })
   name: string;
@@ -48,7 +52,7 @@ export class InstrumentsList {
   sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData;
 }
 
-const InstrumentsListModel = getModelForClass(InstrumentsList, {
+export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   schemaOptions: { timestamps: true },
   options: {
     customName: 'instrumentslist'
@@ -63,12 +67,8 @@ export async function clearInstrumentsList () {
   }
 }
 
-export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
-  try {
-    await InstrumentsListModel.insertMany(items);
-  } catch (e) {
-    throw new Error(e);
-  }
+export async function putItemsToInstrumentsList (items: IBaseInstrumentData[]) {
+  await InstrumentsListModel.insertMany(items)
 }
 
 export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<InstrumentsList[]> {

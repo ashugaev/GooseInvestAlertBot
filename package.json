@@ -14,7 +14,7 @@
     "start": "node dist/app.js > logs/logfile",
     "dev:watch": "concurrently -k -i -p \"[{name}]\" -n \"Node,TypeScript\" -c \"yellow.bold,cyan.bold\" \"npm run watch:js\" \"npm run watch:ts\"",
     "dev:static": "rimraf ./dist && npm run build:ts && node dist/app.js",
-    "build:ts": "tsc --skipLibCheck",
+    "build:ts": "rimraf ./dist && tsc --skipLibCheck",
     "watch:ts": "rimraf ./dist && tsc -w --skipLibCheck",
     "watch:js": "nodemon dist/app.js",
     "docker:up": "npm run build && docker-compose up -d --build --force-recreate",

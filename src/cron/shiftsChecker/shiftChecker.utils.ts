@@ -4,6 +4,7 @@ import { i18n } from '../../helpers/i18n'
 import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
+import { log } from '../../helpers/log'
 
 /**
  * Обновит свечу в базе и вернет новую свечу
@@ -39,6 +40,14 @@ export const updateCandle = async ({
       createdAt: actualCandleCreatedTime,
       updatedAt: new Date().getTime()
     }
+
+    // FIXME: Удалить после дебага
+    log.debug('[Reset candle]',
+      'Prev Value', c,
+      'New Value', candle,
+      'Creation time', new Date(localCandleCreatedTime),
+      'New Candle time', new Date(actualCandleCreatedTime)
+    )
 
     // FIXME: Вообще это можнро сделать одной командой
     //  Но почему-то upsert не работает в typegoose
