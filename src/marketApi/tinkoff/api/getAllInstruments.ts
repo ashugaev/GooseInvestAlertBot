@@ -5,6 +5,14 @@ import { stocksApi } from '../../../helpers/stocksApi';
 import { wait } from '../../../helpers/wait';
 import { EMarketDataSources, InstrumentsList } from '../../../models';
 
+/**
+ * Замены для зашкварных тикеров валют
+ */
+const tickerReplacements = {
+  USD000UTSTOM: 'USDRUB',
+  EUR_RUB__TOM: 'EURRUB'
+};
+
 const normalizeTinkoffItem = (item): InstrumentsList => {
   const { ticker, name, type, currency, ...specificData } = item;
 
@@ -16,13 +24,13 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     type,
     currency,
     sourceSpecificData: specificData
-  }
+  };
 
   // Замена тикера по шаблону
-  result.ticker = tickerReplacements[ticker] ?? ticker
+  result.ticker = tickerReplacements[ticker] ?? ticker;
 
-  return result
-}
+  return result;
+};
 
 export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve) => {
   try {
@@ -31,7 +39,7 @@ export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve)
       stocksApi.etfs(),
       stocksApi.bonds(),
       stocksApi.currencies()
-    ]
+    ];
 
     const allInstruments = await Promise.all(allInstrumentsPromises);
 
@@ -39,13 +47,13 @@ export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve)
 
     const normalizedInstrumentsArray = instrumentsArray.map(normalizeTinkoffItem);
 
-    resolve(normalizedInstrumentsArray)
+    resolve(normalizedInstrumentsArray);
   } catch (e) {
     log.error('Ошибка получения списка иструментов:', e);
 
     await wait(30000);
 
     // Ретрай
-    resolve(await tinkoffGetAllInstruments())
+    resolve(await tinkoffGetAllInstruments());
   }
 });

@@ -10,7 +10,8 @@ export enum EMarketDataSources {
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
-  Crypto = 'Crypto'
+  Crypto = 'Crypto',
+  Currency = 'Currency'
 }
 
 /**
@@ -34,7 +35,7 @@ export class InstrumentsList {
    * Может появиться монета без тикера
    */
   @prop({ required: false, unique: false })
-  ticker: string
+  ticker: string;
 
   @prop({ required: true })
   name: string;
@@ -67,8 +68,8 @@ export async function clearInstrumentsList () {
   }
 }
 
-export async function putItemsToInstrumentsList (items: IBaseInstrumentData[]) {
-  await InstrumentsListModel.insertMany(items)
+export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
+  await InstrumentsListModel.insertMany(items);
 }
 
 export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<InstrumentsList[]> {

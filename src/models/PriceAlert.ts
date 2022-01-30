@@ -26,6 +26,14 @@ export interface RemoveOrGetAlertParams {
 }
 
 export class PriceAlert {
+  /**
+   * Id по по которому ищем данные о цене (отвязываемся от названия тикера)
+   *
+   * "required: false" и "unique:false" - временное решение. Вообще у всех новых алертов id будет в обязательном порядке
+   */
+  @prop({ unique: false })
+  tickerId: string;
+
   @prop({ required: true })
   user: number;
 

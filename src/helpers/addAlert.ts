@@ -63,11 +63,11 @@ export const addAlert = async ({
 
     try {
       const params: AddPriceAlertParams = {
-        tickerId: 'kek',
+        tickerId: instrumentData.id,
         user,
         symbol,
         name: instrumentData.name,
-        currency: instrumentData.sourceSpecificData.currency,
+        currency: instrumentData.currency,
         type: instrumentData.type,
         source: instrumentData.source,
         initialPrice: lastPrice
@@ -105,7 +105,7 @@ export const addAlert = async ({
   const { currency } = instrumentData.sourceSpecificData;
 
   const i18nParams = {
-    price: priceAlerts.map(el => `${el}${symbolOrCurrency(currency)}`).join(', '),
+    price: priceAlerts.map((el: string) => `${el}${symbolOrCurrency(currency)}`).join(', '),
     symbol,
     name,
     invalid: null,

@@ -1,4 +1,3 @@
-import { log } from '../helpers/log';
 import { startCronJob } from '../helpers/startCronJob';
 import { copyAlerts } from './copyAlerts';
 import { instrumentsListUpdater } from './instrumentsListUpdater';
@@ -33,15 +32,15 @@ export const setupCheckers = (bot) => {
     period: '0 3 * * *',
     // TODO: Не проставлять в dev окружении
     executeBeforeInit: true
-  })
+  });
 
   // Дамп коллекции с алертами
   startCronJob({
     name: 'Copy alerts collection',
     callback: copyAlerts,
     callbackArgs: [bot],
-    // раз в час
-    period: '0 * * * *',
+    // В полночь и при деплое
+    period: '0 0 * * *',
     executeBeforeInit: true
   });
 
@@ -49,5 +48,5 @@ export const setupCheckers = (bot) => {
   setupPriceChecker(bot);
 
   // Мониторинг скорости
-  setupShiftsChecker(bot)
-}
+  setupShiftsChecker(bot);
+};
