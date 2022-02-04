@@ -20,5 +20,6 @@ const normalizeCoingeckoItem = (item): InstrumentsList => {
 export const coingeckoGetAllInstruments = async () => {
   const result = await CoinGeckoClient.coins.list()
 
-  return result.data.map(normalizeCoingeckoItem)
+  // FIXME: Удаление wormhole монет это костыль, который уберется после перехода на id
+  return result.data.map(normalizeCoingeckoItem).filter(el => !(/.*\(Wormhole\)$/.test(el.name)))
 }
