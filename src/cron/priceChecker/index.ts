@@ -7,6 +7,7 @@ import { wait } from '../../helpers/wait'
 import { checkAlerts, getAlerts, getUniqSymbols, removePriceAlert, setLaseCheckedAt } from '../../models'
 
 let lastApiErrorSentrySentTime = 0
+const logPrefix = '[PRICE CHECKER]';
 
 export const setupPriceChecker = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -47,6 +48,7 @@ export const setupPriceChecker = async (bot) => {
           //  FIXME: Если монета удалена - повещать юзера и ставить статус алерту DELETED_TICKER
           if (!result) {
             await setLaseCheckedAt(symbol)
+            log.info(logPrefix,'Пропустил проверку цена для', symbol)
             continue
           }
 
