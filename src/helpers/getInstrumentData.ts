@@ -9,7 +9,7 @@ interface GetInstrumentDataWithPrice {
   instrumentData: IBaseInstrumentData
 }
 
-interface IGetInstrumentDataWithPrice {
+export interface IGetInstrumentDataWithPrice {
   symbol: string
   ctx?: any
 }
@@ -46,7 +46,7 @@ export async function getInstrumentDataWithPrice ({
         )
       }
 
-      log.info('не пришли данные из базы данных', instrumentDataArr)
+      log.info('не пришли данные из базы данных для ', symbol)
 
       return
     }

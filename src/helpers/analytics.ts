@@ -12,10 +12,10 @@ export const getChb = (user: string) => chatbase
 
 // generate initial chb instance
 interface ChbMParams {
-    intent?: string,
-    isBotResponse?: boolean,
-    ctx: TelegrafContext
-    message?: string
+  intent?: string
+  isBotResponse?: boolean
+  ctx: TelegrafContext
+  message?: string
 }
 
 // handle message
@@ -24,7 +24,7 @@ export const chb_m = ({
   ctx,
   isBotResponse,
   message
-}: ChbMParams):void => {
+}: ChbMParams): void => {
   try {
     const { id: user } = ctx.from
 
@@ -53,6 +53,7 @@ export const chb_m = ({
       chb.setAsTypeUser()
     }
 
+    /* Chatbase is RIP
     chb
       .newMessage()
       .setMessage(message.slice(0, 150))
@@ -64,6 +65,7 @@ export const chb_m = ({
       .catch((err) => {
         log.error('Ошибка отправки сообщения в chatbase', err)
       })
+     **/
   } catch (e) {
     log.error('Сломалась отправка статистики', e)
   }

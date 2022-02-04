@@ -32,6 +32,6 @@ export async function coningeckoGetLasePrice ({ instrumentData }) {
 
     return price
   } catch (e) {
-    throw new Error('Ошибка получения данных от CoinGecko')
+    throw new Error('Ошибка получения данных от CoinGecko', e)
   }
 }
