@@ -7,7 +7,7 @@ import { wait } from '../../helpers/wait'
 import { checkAlerts, getAlerts, getUniqSymbols, removePriceAlert, setLastCheckedAt } from '../../models'
 
 let lastApiErrorSentrySentTime = 0
-const logPrefix = '[PRICE CHECKER]';
+const logPrefix = '[PRICE CHECKER]'
 
 export const setupPriceChecker = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -40,7 +40,14 @@ export const setupPriceChecker = async (bot) => {
         let instrumentData
 
         try {
-          const result = await getInstrumentDataWithPrice({ symbol })
+          let result
+
+          try {
+            result = await getInstrumentDataWithPrice({ symbol })
+          } catch (e) {
+            log.error(logPrefix, 'Ошибка проверки цены для', symbol)
+            // NOTE: Пропуск итерации будет в условии ниже, потому
+          }
 
           // Если по каким-то причинам данные об алерта не были получены
           //  то все равно поставим символу дату проверки, т.к. иначе для удаленных монет буедет
@@ -48,7 +55,7 @@ export const setupPriceChecker = async (bot) => {
           //  FIXME: Если монета удалена - повещать юзера и ставить статус алерту DELETED_TICKER
           if (!result) {
             await setLastCheckedAt(symbol)
-            log.info(logPrefix,'Пропустил проверку цена для', symbol)
+            log.info(logPrefix, 'Пропустил проверку цена для', symbol)
             continue
           }
 
@@ -78,12 +85,12 @@ export const setupPriceChecker = async (bot) => {
             const noSentry = (currentTime - lastApiErrorSentrySentTime) < 3600000
 
             if (noSentry) {
-              console.error('[PriceChecker] Ошибка получания цены для инструмента', e)
+              console.error('[PriceChecker] Ошибка получания цены для тикера', symbol, e)
 
               continue
             } else {
             // У логгера под капотом отправка сообщения в sentry
-              log.error('[PriceChecker] Ошибка получания цены для инструмента', e)
+              log.error('[PriceChecker] Ошибка получания цены для тикера', symbol, e)
 
               lastApiErrorSentrySentTime = currentTime
             }
