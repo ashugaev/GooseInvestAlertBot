@@ -4,7 +4,7 @@ import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { symbolOrCurrency } from '../../helpers/symbolOrCurrency'
 import { wait } from '../../helpers/wait'
-import { checkAlerts, getAlerts, getUniqSymbols, removePriceAlert, setLaseCheckedAt } from '../../models'
+import { checkAlerts, getAlerts, getUniqSymbols, removePriceAlert, setLastCheckedAt } from '../../models'
 
 let lastApiErrorSentrySentTime = 0
 const logPrefix = '[PRICE CHECKER]';
@@ -47,7 +47,7 @@ export const setupPriceChecker = async (bot) => {
           //  копиться список, который рано или поздно вытеснит "живые монеты"
           //  FIXME: Если монета удалена - повещать юзера и ставить статус алерту DELETED_TICKER
           if (!result) {
-            await setLaseCheckedAt(symbol)
+            await setLastCheckedAt(symbol)
             log.info(logPrefix,'Пропустил проверку цена для', symbol)
             continue
           }

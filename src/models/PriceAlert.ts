@@ -145,7 +145,7 @@ export function getUniqSymbols (number: number): Promise<string[]> {
   })
 }
 
-export const setLaseCheckedAt = async (symbol: string): Promise<void> => {
+export const setLastCheckedAt = async (symbol: string): Promise<void> => {
   // Актуализируем timestamp о последней проверке
   await PriceAlertModel.updateMany({ symbol }, { $set: { lastCheckedAt: new Date() } });
 };
