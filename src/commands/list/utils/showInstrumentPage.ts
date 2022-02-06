@@ -1,11 +1,11 @@
-import { listConfig } from '../../../config'
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { getLastPrice } from '../../../helpers/stocksApi'
-import { log } from '../../../helpers/log'
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
-import { PriceAlertItem } from '../../../models'
-import { Actions } from '../../../constants'
+import { listConfig } from '../../../config';
+import { Actions } from '../../../constants';
+import { getInstrumentLink } from '../../../helpers/getInstrumentLInk';
+import { log } from '../../../helpers/log';
+import { getLastPrice } from '../../../helpers/stocksApi';
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
+import { PriceAlertItem } from '../../../models';
+import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard';
 
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
@@ -18,20 +18,20 @@ interface IShowInstrumentPageParams {
 }
 
 export const getAlertNumberByPage = ({ i, page }) => {
-  return i + 1 + (page * listConfig.itemsPerPage)
-}
+  return i + 1 + (page * listConfig.itemsPerPage);
+};
 
 export const showInstrumentPage = async ({
   page, ctx, instrumentItems, symbol, edit, keyboardMode, tickersPage = 0
 }: IShowInstrumentPageParams) => {
   const itemsToShow = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
-    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
+    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage);
 
   const itemsList = itemsToShow
   // Сортировка по цене
     .map(({ symbol, message, lowerThen, greaterThen, currency, name }, i) => {
-      const price = lowerThen || greaterThen
+      const price = lowerThen || greaterThen;
 
       return ctx.i18n.t('alertList_item', {
         // Номер элемента с учетом страницы
@@ -40,17 +40,17 @@ export const showInstrumentPage = async ({
         message,
         currency: symbolOrCurrency(currency),
         growth: Boolean(greaterThen)
-      })
-    }).join('\n')
+      });
+    }).join('\n');
 
-  const { type: instrumentType, name: instrumentName, currency: instrumentCurrency, source } = instrumentItems[0]
+  const { type: instrumentType, name: instrumentName, currency: instrumentCurrency, source, tickerId } = instrumentItems[0];
 
-  let lastPrice
+  let lastPrice;
 
   try {
-    lastPrice = await getLastPrice({ ticker: symbol })
+    lastPrice = await getLastPrice({ id: tickerId });
   } catch (e) {
-    log.error('ошибка получения цены', e)
+    log.error('ошибка получения цены', e);
   }
 
   const message = ctx.i18n.t('alertList_page', {
@@ -61,7 +61,7 @@ export const showInstrumentPage = async ({
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
     showEditMessage: keyboardMode === EKeyboardModes.edit
-  })
+  });
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
@@ -88,7 +88,7 @@ export const showInstrumentPage = async ({
           action: Actions.list_editAlert,
           payload: {
             s: symbol.toUpperCase(),
-            p: page,
+            p: page
           }
         },
         editButtonConfig: {
@@ -99,5 +99,5 @@ export const showInstrumentPage = async ({
         }
       })
     }
-  })
-}
+  });
+};

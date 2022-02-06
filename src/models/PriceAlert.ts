@@ -26,12 +26,12 @@ export interface RemoveOrGetAlertParams {
 }
 
 export class PriceAlert {
+  _id: string;
+
   /**
    * Id по по которому ищем данные о цене (отвязываемся от названия тикера)
-   *
-   * "required: false" и "unique:false" - временное решение. Вообще у всех новых алертов id будет в обязательном порядке
    */
-  @prop({ unique: false })
+  @prop({ required: true })
   tickerId: string;
 
   @prop({ required: true })
@@ -78,12 +78,15 @@ export interface PriceAlertItem extends PriceAlert {
 }
 
 interface ICheckAlertsParams {
-  symbol: string
+  /**
+   * id тикера
+   */
+  id: string
   price: number
 }
 
 // Get PriceAlertModel model
-const PriceAlertModel = getModelForClass(PriceAlert, {
+export const PriceAlertModel = getModelForClass(PriceAlert, {
   schemaOptions: { timestamps: true },
   options: {
     customName: 'priceAlerts'
@@ -102,65 +105,60 @@ export const addPriceAlerts = (newAlerts: AddPriceAlertParams[]): Promise<PriceA
   return PriceAlertModel.insertMany(normalizedAlerts);
 };
 
-export function getUniqSymbols (number: number): Promise<string[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      // Последнее время проверки должно быть не меньше этого
-      const secondsAgo = 30;
-      const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000);
+/**
+ * Вернет из базы указанное кол-во уникальных id тикеров, которые давно не проверялись
+ *
+ * @param number - кол-во, которое нужно проверять. Вернется по факту после схлопывания меньше.
+ */
+export const getUniqOutdatedAlertsIds = async (number: number): Promise<string[]> => {
+  // Вернем тикеры, которые проверялись больше чем "secondsAgo" назад
+  const secondsAgo = 30;
+  const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000);
 
-      const data = await PriceAlertModel
-        .find(
-          {
-            $or: [
-              { lastCheckedAt: null },
-              { lastCheckedAt: { $lte: dateToCheck } }
-            ]
-          },
-          { symbol: 1 })
-        .sort({ lastCheckedAt: 1 })
-        .limit(number)
-        .lean();
-      const allSymbols = data.map(elem => elem.symbol);
-      const uniqSymbols = Array.from(new Set(allSymbols));
+  const data = await PriceAlertModel
+    .find(
+      {
+        $or: [
+          { lastCheckedAt: null },
+          { lastCheckedAt: { $lte: dateToCheck } }
+        ]
+      },
+      { tickerId: 1 })
+    .sort({ lastCheckedAt: 1 })
+    .limit(number * 3)
+    .lean();
+  const allIds = data.map(elem => elem.tickerId);
+  const uniqIds = Array.from(new Set(allIds));
 
-      rs(uniqSymbols);
-    } catch (e) {
-      rj(e);
-    }
-  });
-}
-
-export const setLastCheckedAt = async (symbol: string): Promise<void> => {
-  // Актуализируем timestamp о последней проверке
-  await PriceAlertModel.updateMany({ symbol }, { $set: { lastCheckedAt: new Date() } });
+  return uniqIds;
 };
 
-// Вернет массив сработавших алертов
-export function checkAlerts ({ symbol, price }: ICheckAlertsParams): Promise<PriceAlertItem[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      if (!symbol || !price) {
-        throw new Error(`[checkAlerts] Не хватает входных данных ${symbol} ${price}`);
-      }
+export const setLastCheckedAt = async (tickerId: string): Promise<void> => {
+  // Актуализируем timestamp о последней проверке
+  await PriceAlertModel.updateMany({ tickerId: tickerId }, { $set: { lastCheckedAt: new Date() } });
+};
 
-      const triggeredAlerts = await PriceAlertModel.find({
-        symbol: symbol.toUpperCase(),
-        $or: [
-          { lowerThen: { $gte: price } },
-          { greaterThen: { $lte: price } }
-        ]
-      });
+/**
+ * Вернет массив сработавших алертов
+ */
+export const checkAlerts = async ({ id, price }: ICheckAlertsParams): Promise<PriceAlertItem[]> => {
+  if (!id || !price) {
+    throw new Error(`[checkAlerts] Не хватает входных данных ${id} ${price}`);
+  }
 
-      // Актуализируем timestamp о последней проверке
-      await PriceAlertModel.updateMany({ symbol }, { $set: { lastCheckedAt: new Date() } });
-
-      rs(triggeredAlerts);
-    } catch (e) {
-      rj(e);
-    }
+  const triggeredAlerts = await PriceAlertModel.find({
+    tickerId: id,
+    $or: [
+      { lowerThen: { $gte: price } },
+      { greaterThen: { $lte: price } }
+    ]
   });
-}
+
+  // Актуализируем timestamp о последней проверке
+  await PriceAlertModel.updateMany({ tickerId: id }, { $set: { lastCheckedAt: new Date() } });
+
+  return triggeredAlerts;
+};
 
 // TODO: Сделать отдельные методы для получения алертов по разным параметрам.
 //  Что бы делать проверку на входные данные и случайно не вернуть лишнего.

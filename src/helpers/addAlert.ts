@@ -35,7 +35,14 @@ export const addAlert = async ({
       throw new Error('Не пришел символ при установке алерта');
     }
 
-    const result = (await getInstrumentDataWithPrice({ symbol, ctx }))[0];
+    const result = (await getInstrumentDataWithPrice({ symbol }))[0];
+
+    if (!result) {
+      await ctx.replyWithHTML(
+        i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
+        { disable_web_page_preview: true }
+      );
+    };
 
     instrumentData = result.instrumentData;
     lastPrice = result.price;

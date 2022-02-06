@@ -1,13 +1,18 @@
-import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData'
-import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
-import { i18n } from '../../helpers/i18n'
-import { log } from '../../helpers/log'
-import { symbolOrCurrency } from '../../helpers/symbolOrCurrency'
-import { wait } from '../../helpers/wait'
-import { checkAlerts, getAlerts, getUniqSymbols, removePriceAlert, setLastCheckedAt } from '../../models'
 
-let lastApiErrorSentrySentTime = 0
-const logPrefix = '[PRICE CHECKER]'
+import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData';
+import { getInstrumentLink } from '../../helpers/getInstrumentLInk';
+import { i18n } from '../../helpers/i18n';
+import { log } from '../../helpers/log';
+import { symbolOrCurrency } from '../../helpers/symbolOrCurrency';
+import { wait } from '../../helpers/wait';
+import {
+  checkAlerts, getUniqOutdatedAlertsIds, PriceAlert, PriceAlertModel,
+  removePriceAlert,
+  setLastCheckedAt
+} from '../../models';
+
+let lastApiErrorSentrySentTime = 0;
+const logPrefix = '[PRICE CHECKER]';
 
 export const setupPriceChecker = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -16,36 +21,36 @@ export const setupPriceChecker = async (bot) => {
 
   while (true) {
     try {
-      let symbols = [];
+      let ids = [];
 
       try {
-        symbols = await getUniqSymbols(100)
+        ids = await getUniqOutdatedAlertsIds(100);
       } catch (e) {
         log.error('[setupPriceChecker] ошибка подключения к базе', e);
       }
 
       // Если пока нечего проверять
-      if (!symbols?.length) {
+      if (!ids?.length) {
         await wait(30000);
         continue;
       } else {
-        log.debug('Проверяю символы', symbols);
+        log.debug('Проверяю id', ids);
       }
 
-      for (let i = 0; symbols.length > i; i++) {
-        const symbol: string = symbols[i]
+      for (let i = 0; ids.length > i; i++) {
+        const symbolId: string = ids[i];
 
         const removeAlertsForSymbol = false;
         let price;
         let instrumentData;
 
         try {
-          let result
+          let result;
 
           try {
-            result = (await getInstrumentDataWithPrice({ symbol }))[0]
+            result = (await getInstrumentDataWithPrice({ id: symbolId }))[0];
           } catch (e) {
-            log.error(logPrefix, 'Ошибка проверки цены для', symbol)
+            log.error(logPrefix, 'Ошибка проверки цены для', symbolId);
             // NOTE: Пропуск итерации будет в условии ниже, потому
           }
 
@@ -54,16 +59,16 @@ export const setupPriceChecker = async (bot) => {
           //  копиться список, который рано или поздно вытеснит "живые монеты"
           //  FIXME: Если монета удалена - повещать юзера и ставить статус алерту DELETED_TICKER
           if (!result) {
-            await setLastCheckedAt(symbol)
-            log.info(logPrefix, 'Пропустил проверку цена для', symbol)
-            continue
+            await setLastCheckedAt(symbolId);
+            log.info(logPrefix, 'Пропустил проверку цена для', symbolId);
+            continue;
           }
 
           instrumentData = result.instrumentData;
           price = result.price;
 
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          log.info(`${symbol}:${price}`)
+          log.info(`${instrumentData.ticker}:${symbolId}:${price}`);
 
           const isPriceValidValue = typeof price === 'number' && price > 0;
 
@@ -85,12 +90,12 @@ export const setupPriceChecker = async (bot) => {
             const noSentry = (currentTime - lastApiErrorSentrySentTime) < 3600000;
 
             if (noSentry) {
-              console.error('[PriceChecker] Ошибка получания цены для тикера', symbol, e)
+              console.error('[PriceChecker] Ошибка получания цены для тикера', symbolId, e);
 
               continue;
             } else {
             // У логгера под капотом отправка сообщения в sentry
-              log.error('[PriceChecker] Ошибка получания цены для тикера', symbol, e)
+              log.error('[PriceChecker] Ошибка получания цены для тикера', symbolId, e);
 
               lastApiErrorSentrySentTime = currentTime;
             }
@@ -101,9 +106,9 @@ export const setupPriceChecker = async (bot) => {
 
         // Если инструмента больше нет в апи
         if (removeAlertsForSymbol) {
-          log.debug('Удаляю все по символу', symbol);
+          log.debug('Удаляю все по symbolId', symbolId);
 
-          const alertsToRemove = await getAlerts({ symbol });
+          const alertsToRemove = await PriceAlertModel.find({ tickerId: symbolId }).lean();
 
           for (let j = 0; alertsToRemove.length > j; j++) {
             const alert = alertsToRemove[j];
@@ -132,19 +137,19 @@ export const setupPriceChecker = async (bot) => {
         let triggeredAlerts = [];
 
         try {
-          triggeredAlerts = await checkAlerts({ symbol, price });
+          triggeredAlerts = await checkAlerts({ id: symbolId, price });
         } catch (e) {
-          log.error('ошибка получения алертов', 'price', price, 'symbol', symbol, 'error', e);
+          log.error('ошибка получения алертов', 'price', price, 'symbolId', symbolId, 'error', e);
 
           continue;
         }
 
         if (triggeredAlerts?.length) {
-          log.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' Символ:', symbol);
+          log.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' symbolId:', symbolId);
 
           for (let j = 0; triggeredAlerts.length > j; j++) {
-            const alert = triggeredAlerts[j];
-            const { message, symbol, lowerThen, greaterThen, type, source } = alert;
+            const alert: PriceAlert = triggeredAlerts[j];
+            const { message, lowerThen, greaterThen, type, source } = alert;
             const price = lowerThen || greaterThen;
 
             try {
@@ -156,7 +161,7 @@ export const setupPriceChecker = async (bot) => {
                   greaterThen,
                   price,
                   message,
-                  link: type && getInstrumentLink({ type, ticker: symbol, source })
+                  link: type && getInstrumentLink({ type, ticker: instrumentData.ticker, source })
                 }),
                 {
                   parse_mode: 'HTML',

@@ -1,7 +1,8 @@
-import { prop, getModelForClass } from '@typegoose/typegoose'
-import { Modify } from 'Modify'
-import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
-import { RemoveOrGetAlertParams } from './PriceAlert'
+import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
+import { getModelForClass, prop } from '@typegoose/typegoose';
+import { Modify } from 'Modify';
+
+import { RemoveOrGetAlertParams } from './PriceAlert';
 
 interface ShiftEventDataItem {
   currentPrice: number
@@ -19,32 +20,32 @@ export interface ShiftsData {
 
 export class ShiftEvents {
   @prop({ required: true })
-  user: number
+  user: number;
 
   @prop({ required: true })
-  time: number
+  time: number;
 
   @prop({ required: true })
-  days: number
+  days: number;
 
   @prop({ required: true })
-  targetPercent: number
+  targetPercent: number;
 
   @prop({ required: true })
-  data: ShiftsData
+  data: ShiftsData;
 
   // FIXME: Поле необязательно до тех пор пока есть уведомления без них
   @prop({ required: false })
-  forDay: number
+  forDay: number;
 
   // День за которые собраны данные
   // FIXME: Поле необязательно до тех пор пока есть уведомления без них
   @prop({ required: false })
-  dayOfWeek: number
+  dayOfWeek: number;
 
   // FIXME: Поле необязательно до тех пор пока есть уведомления без них
   @prop({ required: false })
-  wasSent: boolean
+  wasSent: boolean;
 }
 
 export const ShiftEventsModel = getModelForClass(ShiftEvents, {
@@ -52,7 +53,7 @@ export const ShiftEventsModel = getModelForClass(ShiftEvents, {
   options: {
     customName: 'shiftevents'
   }
-})
+});
 
 export interface ShiftEventItem {
   _id?: string
@@ -82,19 +83,19 @@ export interface ShiftEventItem {
 export function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
   return new Promise(async (rs, rj) => {
     try {
-      await ShiftEventsModel.create(items)
+      await ShiftEventsModel.create(items);
 
-      rs()
+      rs();
     } catch (e) {
-      rj(e)
+      rj(e);
     }
-  })
+  });
 }
 
 type ShiftEventItemFindParams = Modify<ShiftEventItem, {
   // eslint-disable-next-line @typescript-eslint/ban-types
   time: object | number
-}>
+}>;
 
 /**
  * Присылает по времени события по указанному времени и меньше (что бы точно не пропустить что-нибудь)
@@ -104,31 +105,31 @@ export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>
     time: { $lte: time },
     // forDay,
     wasSent
-  }
+  };
 
-  const shifts = await ShiftEventsModel.find(params).lean()
+  const shifts = await ShiftEventsModel.find(params).lean();
 
-  return shifts
+  return shifts;
 }
 
 export function removeShiftEvent ({ _id, user }: Partial<ShiftEventItem>): Promise<number> {
   return new Promise(async (rs, rj) => {
     try {
-      const params: RemoveOrGetAlertParams = {}
+      const params: RemoveOrGetAlertParams = {};
 
-      user && (params.user = user)
-      _id && (params._id = _id)
+      user && (params.user = user);
+      _id && (params._id = _id);
 
       if (!Object.keys(params).length) {
-        rj('Не указанны параметры')
-        return
+        rj('Не указанны параметры');
+        return;
       }
 
-      const { deletedCount } = await ShiftEventsModel.deleteMany(params)
+      const { deletedCount } = await ShiftEventsModel.deleteMany(params);
 
-      rs(deletedCount)
+      rs(deletedCount);
     } catch (e) {
-      rj(e)
+      rj(e);
     }
-  })
+  });
 }

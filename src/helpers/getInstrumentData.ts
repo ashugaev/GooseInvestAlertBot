@@ -1,7 +1,8 @@
-import { EMarketDataSources, getInstrumentInfoByTicker, InstrumentsList } from '../models';
-import { i18n } from './i18n';
+import { InstrumentsList, InstrumentsListModel } from '../models';
 import { log } from './log';
 import { getLastPrice } from './stocksApi';
+
+const logPrefix = '[GET INSTRUMENT DATA WITH PRICE]';
 
 interface GetInstrumentDataWithPrice {
   price: number
@@ -9,61 +10,53 @@ interface GetInstrumentDataWithPrice {
 }
 
 export interface IGetInstrumentDataWithPrice {
-  symbol: string
-  ctx?: any
+  /**
+   * Только для случая, когда мы получаем тикер из ввода юзер, во всех остальных кейсах юзать id
+   * Только для этого кейса в массиве может быть больше одного элемента
+   */
+  symbol?: string
+  id?: string
 }
 
 export async function getInstrumentDataWithPrice ({
   symbol,
-  ctx
+  id
 }: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice[]> {
-  symbol = symbol.toUpperCase();
-
-  const ticker = [symbol];
-  let customCurrency;
-
-  // TODO: Брать символы из symbols объекта
-  const tickerWithCurrency = symbol.match(/^(.+)(usd|eur|rub)$/i);
-
-    // Если тикер содержит в себе валютную пару, то попробуем искать без нее (для крипты)
-    // FIXME: Хардкод для валют, что бы не искать крипту вместе с ними.
-    //  Уберется, когда случится переезд на получение по id
-    if (tickerWithCurrency && (ticker[0] !== 'USDRUB' && ticker[0] !== 'EURRUB')) {
-      customCurrency = tickerWithCurrency[2].toUpperCase()
-      // Добавить в список для поиска крипту без валютной пары
-      ticker.push(tickerWithCurrency[1])
+  try {
+    if (!id && !symbol) {
+      log.error(logPrefix, 'Ошибка входных данных');
+      return [];
     }
 
-  const instrumentDataArr = await getInstrumentInfoByTicker({ ticker });
+    let instrumentsList = null;
 
-  if (!instrumentDataArr.length) {
-    if (ctx) {
-      await ctx.replyWithHTML(
-        i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
-        { disable_web_page_preview: true }
-      );
+    if (id && !symbol) {
+      instrumentsList = await InstrumentsListModel.find({ id }).lean();
     }
 
-      log.info('не пришли данные из базы данных для ', symbol)
+    if (symbol && !id) {
+      instrumentsList = await InstrumentsListModel.find({ symbol }).lean();
+    }
+
+    if (!instrumentsList?.length) {
+      log.error(logPrefix, 'Ошибка получения данных для', symbol || id);
+
+      return [];
+    }
+
+    const dataWithPrice = [];
+
+    for (let i = 0; i < instrumentsList.length; i++) {
+      const instrumentData = instrumentsList[i];
+      const lastPrice = await getLastPrice({ id: instrumentData.id, instrumentData });
+
+      dataWithPrice.push({ instrumentData, price: lastPrice });
+    }
+
+    return dataWithPrice;
+  } catch (e) {
+    log.error(logPrefix, 'Ошибка получения данных', e);
 
     return [];
   }
-
-  const itemsWithPrice = [];
-
-  for (let i = 0; i < instrumentDataArr.length; i++) {
-    const instrumentDataItem = instrumentDataArr[i];
-
-    if (instrumentDataItem.source === EMarketDataSources.coingecko) {
-      // Подсовываем валюту, если не была указана пара
-      // @ts-expect-error
-      instrumentDataItem.sourceSpecificData.currency = customCurrency ?? 'USD';
-    }
-
-    const lastPrice = await getLastPrice({ instrumentData: instrumentDataItem });
-
-    itemsWithPrice.push({ instrumentData: instrumentDataItem, price: lastPrice });
-  }
-
-  return itemsWithPrice;
 }

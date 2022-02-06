@@ -6,8 +6,7 @@ import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPri
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants';
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
 import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi';
-import { EMarketDataSources, InstrumentsList } from '../models';
-import { getInstrumentDataWithPrice } from './getInstrumentData';
+import { EMarketDataSources, InstrumentsList, InstrumentsListModel } from '../models';
 
 const NodeCache = require('node-cache');
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
@@ -26,8 +25,14 @@ export interface GetLastPriceData extends MarketInstrument {
 }
 
 export interface IGetInfoBySymbolParams {
+  /**
+   * id тикера по которому получим данные
+   */
+  id: string
+  /**
+   * Вспомогательные необязательные данные, что бы не делать допзапрос для их получения
+   */
   instrumentData?: InstrumentsList
-  ticker?: string
 }
 
 const symbolInfoCache = new NodeCache({
@@ -78,51 +83,45 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
 });
 
 /**
- * Вернет цену по instrumentData
+ * Вернет цену по id
  * Если нет instrumentData, то сходит в базу и достанет его по тикеру
  *
- * TODO: Разбить на getLastPriceByTicker и getLastPriceByInstrumentData
+ * TODO: Отвязаться в логике от эксепшенов этой-фции
  */
 export const getLastPrice = async ({
-  instrumentData,
-  ticker
+  id,
+  instrumentData: data
 }: IGetInfoBySymbolParams) => {
-  try {
-    if (!instrumentData && !ticker) {
-      throw new Error('Необходимо предоставить istrumentData либо ticker для получения последней цены');
-    }
+  let instrumentData = data;
 
-    if (!instrumentData) {
-      // FIXME: Тут получаетсякакая-то хрень, потом что getInstrumentDataWithPrice вызывает внутри getLastPrice
-      //  Хотя это судя по всему оправдано тем, что ниже берем цены из разных источников
-      // Нужно разбить getInstrumentDataWithPrice на получение цены и нормализация данных
-      const data = (await getInstrumentDataWithPrice({ symbol: ticker }))[0];
-
-      instrumentData = data.instrumentData;
-
-      if (!instrumentData) {
-        throw new Error('Ошибка получения информации по инструменту');
-      }
-    }
-
-    let lastPrice;
-
-    if (!instrumentData.source || instrumentData.source == EMarketDataSources.tinkoff) {
-      lastPrice = await tinkoffGetLastPrice({ instrumentData });
-    } else if (instrumentData.source == EMarketDataSources.coingecko) {
-      lastPrice = await coingeckoGetLastPrice({ instrumentData });
-    } else {
-      throw new Error('Инструмент без параметра source');
-    }
-
-    if (!lastPrice) {
-      throw new Error('Не была получена последняя цена инструмента');
-    }
-
-    return lastPrice;
-  } catch (e) {
-    throw new Error(e);
+  if (!id) {
+    throw new Error('Необходимо предоставить id либо ticker для получения последней цены');
   }
+
+  if (!instrumentData) {
+    // @ts-expect-error FIXME: Тип проверить
+    instrumentData = (await InstrumentsListModel.find({ id }).lean())[0];
+  }
+
+  if (!instrumentData) {
+    throw new Error('Ошибка получения информации по инструменту');
+  }
+
+  let lastPrice;
+
+  if (!instrumentData.source || (instrumentData.source === EMarketDataSources.tinkoff)) {
+    lastPrice = await tinkoffGetLastPrice({ instrumentData });
+  } else if (instrumentData.source === EMarketDataSources.coingecko) {
+    lastPrice = await coingeckoGetLastPrice({ instrumentData });
+  } else {
+    throw new Error('Инструмент без параметра source');
+  }
+
+  if (!lastPrice) {
+    throw new Error('Не была получена последняя цена инструмента');
+  }
+
+  return lastPrice;
 };
 
 /**

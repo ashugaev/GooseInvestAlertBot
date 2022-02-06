@@ -27,7 +27,7 @@ export async function coingeckoGetLastPrice ({ instrumentData }) {
     // FIXME: Это костыль который будет работать только до тех пор пока будем запрошивать по одной менете
     const pricesForCurrencies = Object.entries(currencyPrices.data)[0][1];
 
-    const currency = instrumentData.sourceSpecificData?.currency?.toLowerCase() ?? 'usd';
+    const currency = instrumentData.currency?.toLowerCase() ?? 'usd';
 
     const price = pricesForCurrencies[currency];
 
