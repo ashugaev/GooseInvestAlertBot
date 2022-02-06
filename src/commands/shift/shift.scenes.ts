@@ -174,7 +174,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
     }));
 
     try {
-g      const dbShifts = await TimeShiftModel.insertMany(newShifts);
+      const dbShifts = await TimeShiftModel.insertMany(newShifts);
 
       ctx.wizard.state.shift.percent = intPercent;
       // @ts-expect-error

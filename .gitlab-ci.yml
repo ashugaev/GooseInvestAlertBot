@@ -45,6 +45,7 @@ release_bot:
   script:
     - "docker build --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1 ."
     - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1"
+    - npm run db-migration:up
   after_script:
     - "docker logout ${CI_REGISTRY}"
 
