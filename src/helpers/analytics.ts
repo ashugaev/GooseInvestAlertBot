@@ -54,6 +54,7 @@ export const chb_m = ({
       chb.setAsTypeUser();
     }
 
+    /* Chatbase is RIP
     chb
       .newMessage()
       .setMessage(message.slice(0, 150))
@@ -63,9 +64,9 @@ export const chb_m = ({
         log.info('сообщение отправлено в chatbase', msg);
       })
       .catch((err) => {
-        // FIXME: Другой логгер
-        // log.error('Ошибка отправки сообщения в chatbase', err);
-      });
+        log.error('Ошибка отправки сообщения в chatbase', err)
+      })
+     **/
   } catch (e) {
     log.error('Сломалась отправка статистики', e);
   }

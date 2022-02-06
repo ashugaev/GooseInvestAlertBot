@@ -1,12 +1,13 @@
-import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData';
-import { getInstrumentLink } from '../../helpers/getInstrumentLInk';
-import { i18n } from '../../helpers/i18n';
-import { log } from '../../helpers/log';
-import { symbolOrCurrency } from '../../helpers/symbolOrCurrency';
-import { wait } from '../../helpers/wait';
-import { checkAlerts, getAlerts, getUniqSymbols, removePriceAlert } from '../../models';
+import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData'
+import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
+import { i18n } from '../../helpers/i18n'
+import { log } from '../../helpers/log'
+import { symbolOrCurrency } from '../../helpers/symbolOrCurrency'
+import { wait } from '../../helpers/wait'
+import { checkAlerts, getAlerts, getUniqSymbols, removePriceAlert, setLastCheckedAt } from '../../models'
 
-let lastApiErrorSentrySentTime = 0;
+let lastApiErrorSentrySentTime = 0
+const logPrefix = '[PRICE CHECKER]'
 
 export const setupPriceChecker = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
@@ -18,7 +19,7 @@ export const setupPriceChecker = async (bot) => {
       let symbols = [];
 
       try {
-        symbols = await getUniqSymbols(50);
+        symbols = await getUniqSymbols(100)
       } catch (e) {
         log.error('[setupPriceChecker] ошибка подключения к базе', e);
       }
@@ -32,19 +33,37 @@ export const setupPriceChecker = async (bot) => {
       }
 
       for (let i = 0; symbols.length > i; i++) {
-        const symbol = symbols[i];
+        const symbol: string = symbols[i]
 
         const removeAlertsForSymbol = false;
         let price;
         let instrumentData;
 
         try {
-          const result = (await getInstrumentDataWithPrice({ symbol }))[0];
+          let result
+
+          try {
+            result = (await getInstrumentDataWithPrice({ symbol }))[0]
+          } catch (e) {
+            log.error(logPrefix, 'Ошибка проверки цены для', symbol)
+            // NOTE: Пропуск итерации будет в условии ниже, потому
+          }
+
+          // Если по каким-то причинам данные об алерта не были получены
+          //  то все равно поставим символу дату проверки, т.к. иначе для удаленных монет буедет
+          //  копиться список, который рано или поздно вытеснит "живые монеты"
+          //  FIXME: Если монета удалена - повещать юзера и ставить статус алерту DELETED_TICKER
+          if (!result) {
+            await setLastCheckedAt(symbol)
+            log.info(logPrefix, 'Пропустил проверку цена для', symbol)
+            continue
+          }
 
           instrumentData = result.instrumentData;
           price = result.price;
 
-          log.info(`${symbol}:${price}`);
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          log.info(`${symbol}:${price}`)
 
           const isPriceValidValue = typeof price === 'number' && price > 0;
 
@@ -66,12 +85,12 @@ export const setupPriceChecker = async (bot) => {
             const noSentry = (currentTime - lastApiErrorSentrySentTime) < 3600000;
 
             if (noSentry) {
-              console.error('[PriceChecker] Ошибка получания цены для инструмента', e);
+              console.error('[PriceChecker] Ошибка получания цены для тикера', symbol, e)
 
               continue;
             } else {
             // У логгера под капотом отправка сообщения в sentry
-              log.error('[PriceChecker] Ошибка получания цены для инструмента', e);
+              log.error('[PriceChecker] Ошибка получания цены для тикера', symbol, e)
 
               lastApiErrorSentrySentTime = currentTime;
             }
@@ -148,6 +167,7 @@ export const setupPriceChecker = async (bot) => {
               await removePriceAlert({ _id: alert._id });
             } catch (e) {
             // Если юзер блокнул бота
+              // TODO: Проверить сценарий
               if (e.code === 403) {
                 try {
                   await removePriceAlert({ _id: alert._id });
