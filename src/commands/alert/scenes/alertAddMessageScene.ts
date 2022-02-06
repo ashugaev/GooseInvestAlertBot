@@ -1,7 +1,7 @@
 /**
  * Нужен только для addAlert, который используется в добавлении алерта одной командой. Со временем удалится.
  *
- * @deprecated Использовать askAlertMessageScene
+ * @deprecated Использовать askAlertMessageScene. Нужен до момента рефакторинга полной команды.
  */
 
 import * as Composer from 'telegraf/composer';
