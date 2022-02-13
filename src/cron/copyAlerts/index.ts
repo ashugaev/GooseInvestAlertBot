@@ -10,7 +10,10 @@ import {
  */
 export const copyAlerts = async () => {
   try {
-    const alerts = await getAllAlerts();
+    let alerts = await getAllAlerts();
+
+    // фильтруем невалидные застрявшие в базе алерты
+    alerts = alerts.filter(el => el.tickerId);
 
     if (!alerts.length) {
       log.info('Нет алертов для резервной копии');

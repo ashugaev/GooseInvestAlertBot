@@ -5,7 +5,7 @@ export enum Scenes {
 }
 
 export enum Actions {
-  list_tickerPage = 'list_tickerPage',
+  list_tickerPage = 'lkv',
   list_editAlert = 'list_editAlert',
   list_deleteAlert = 'list_deleteAlert',
   shift_delete = 'shift_delete',

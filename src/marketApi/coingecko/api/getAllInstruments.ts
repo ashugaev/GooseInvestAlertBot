@@ -19,10 +19,14 @@ const normalizeCoingeckoItem = (item): InstrumentsList => {
 };
 
 export const coingeckoGetAllInstruments = async () => {
-  const result = await CoinGeckoClient.coins.list();
+  const { data } = await CoinGeckoClient.coins.list();
 
-  return result.data.map(normalizeCoingeckoItem)
+  if (!data.length) {
+    throw new Error('Не пришли данные из CoinGeko');
+  }
+
+  return data.map(normalizeCoingeckoItem)
   // FIXME: Удаление wormhole монет это костыль, который уберется после перехода на id
   // Фильтрация говнотикеров у которых нет основных данных
-    .filter(el => !(/.*\(Wormhole\)$/.test(el.name)) && el.id?.length && el.name?.length && el.symbol?.length);
+    .filter(el => !(/.*\(Wormhole\)$/.test(el.name)) && el.id?.length && el.name?.length && el.ticker?.length);
 };

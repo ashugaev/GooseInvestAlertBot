@@ -1,6 +1,6 @@
-import { showInstrumentPage } from '../utils/showInstrumentPage'
-import { fetchAlerts } from '../utils/fetchAlerts'
-import { log } from '../../../helpers/log'
+import { log } from '../../../helpers/log';
+import { fetchAlerts } from '../utils/fetchAlerts';
+import { showInstrumentPage } from '../utils/showInstrumentPage';
 
 /**
  * Экшен перехода на страницу списка инструментов
@@ -21,9 +21,9 @@ export const alertsForInstrument = async (ctx) => {
       edit: true,
       keyboardMode,
       tickersPage
-    })
+    });
   } catch (e) {
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-    log.error(e)
+    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+    log.error(e);
   }
-}
+};

@@ -12,7 +12,6 @@ interface IShowInstrumentPageParams {
   page: number
   ctx: any
   instrumentItems: PriceAlertItem[]
-  symbol: string
   edit?: boolean
   tickersPage?: number
 }

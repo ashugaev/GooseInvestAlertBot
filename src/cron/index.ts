@@ -31,8 +31,7 @@ export const setupCheckers = (bot) => {
     // раз день в 3 часа
     period: '0 3 * * *',
     // TODO: Не проставлять в dev окружении
-    // FIXME: Вернуть
-    // executeBeforeInit: true
+    executeBeforeInit: true
   });
 
   // Дамп коллекции с алертами
