@@ -1,14 +1,14 @@
-import { Markup } from 'telegraf'
-import { createActionString } from '../../../helpers/createActionString'
-import { Actions } from '../../../constants'
+import { Markup } from 'telegraf';
 
-import { i18n } from '../../../helpers/i18n'
-import { EListTypes } from '../list.types'
+import { Actions } from '../../../constants';
+import { createActionString } from '../../../helpers/createActionString';
+import { i18n } from '../../../helpers/i18n';
+import { EListTypes } from '../list.types';
 
 // Buttons потому что не цельная клава, а её часть
 export const alertsTypeToggleButtons = ({ listType }) => {
-  const isShiftsList = listType === EListTypes.shifts
-  const isLevelsList = listType === EListTypes.levels
+  const isShiftsList = listType === EListTypes.shifts;
+  const isLevelsList = listType === EListTypes.levels;
 
   const shiftsList = Markup.callbackButton(
     i18n.t('ru', 'alertsList_button_shifts-list', { active: isShiftsList }),
@@ -19,7 +19,7 @@ export const alertsTypeToggleButtons = ({ listType }) => {
         {
           p: 0
         })
-  )
+  );
 
   const alertsList = Markup.callbackButton(
     i18n.t('ru', 'alertsList_button_levels-list', { active: isLevelsList }),
@@ -29,7 +29,7 @@ export const alertsTypeToggleButtons = ({ listType }) => {
         {
           p: 0
         })
-  )
+  );
 
-  return [alertsList, shiftsList]
-}
+  return [alertsList, shiftsList];
+};
