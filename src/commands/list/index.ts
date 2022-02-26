@@ -39,7 +39,7 @@ export function setupList (bot: Telegraf<Context>) {
         tickersPage: 0,
         tickerAlertsPage: 0,
         selectedTickerId: null,
-        selectedAlert: null
+        selectedAlertId: null
       },
       shifts: {
         page: 0

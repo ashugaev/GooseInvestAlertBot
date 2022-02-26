@@ -5,7 +5,7 @@ import { Actions } from '../../../constants';
 import { createActionString } from '../../../helpers/createActionString';
 import { paginationButtons } from '../../../keyboards/paginationButtons';
 import { getTimeShiftsCountForUser, PriceAlert } from '../../../models';
-import { EListTypes, ListActionsDateKeys } from '../list.types';
+import { EListTypes, ListActionsDataKeys } from '../list.types';
 import { alertsTypeToggleButtons } from './alertsTypeToggleButtons';
 import { EKeyboardModes } from './instrumentPageKeyboard';
 
@@ -26,7 +26,7 @@ export const instrumentsListKeyboard = async ({
   // Генерит инлайн кнопки по тикерам
   const getTickerButtons = pageTickers.map(({ name, symbol, tickerId }) => {
     const payload = {
-      [ListActionsDateKeys.selectedTickerId]: tickerId,
+      [ListActionsDataKeys.selectedTickerId]: tickerId,
       p: 0,
       tp: page,
       kMode: EKeyboardModes.edit

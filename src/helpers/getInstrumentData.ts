@@ -35,7 +35,9 @@ export async function getInstrumentDataWithPrice ({
     }
 
     if (symbol && !id) {
-      instrumentsList = await InstrumentsListModel.find({ symbol }).lean();
+      symbol = symbol.toUpperCase();
+
+      instrumentsList = await InstrumentsListModel.find({ ticker: symbol }).lean();
     }
 
     if (!instrumentsList?.length) {

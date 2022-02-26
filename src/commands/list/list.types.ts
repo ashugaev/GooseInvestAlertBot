@@ -31,7 +31,7 @@ export interface ListCommandState {
     /**
      * Id алерта, которые открыли (реадктируем)
      */
-    selectedAlert?: string
+    selectedAlertId?: string
   }
   /**
    * Скорости цены
@@ -58,6 +58,7 @@ export interface ListCommandState {
   }
 }
 
-export enum ListActionsDateKeys {
-  selectedTickerId = 'vdd'
+export enum ListActionsDataKeys {
+  selectedTickerId = 'vdd',
+  selectedAlertId = 'eke'
 }

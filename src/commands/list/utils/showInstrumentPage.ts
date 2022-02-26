@@ -6,7 +6,7 @@ import { getLastPrice } from '../../../helpers/stocksApi';
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
 import { PriceAlertItem } from '../../../models';
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard';
-import { ListActionsDateKeys } from '../list.types';
+import { ListActionsDataKeys } from '../list.types';
 
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
@@ -55,7 +55,8 @@ export const showInstrumentPage = async ({
     currency: instrumentCurrency,
     source,
     tickerId,
-    symbol
+    symbol,
+    _id
   } = instrumentItems[0];
 
   let lastPrice;
@@ -91,7 +92,7 @@ export const showInstrumentPage = async ({
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDateKeys.selectedTickerId]: tickerId,
+            [ListActionsDataKeys.selectedTickerId]: tickerId,
             p: page,
             kMode: keyboardMode,
             tp: tickersPage
@@ -99,15 +100,19 @@ export const showInstrumentPage = async ({
         },
         editNumberButtonsConfig: {
           action: Actions.list_editAlert,
-          payload: {
-            s: symbol.toUpperCase(),
-            p: page
+          // payload: {
+          //   [ListActionsDataKeys.selectedAlertId]: _id
+          // }
+          payloadCallback: (i) => {
+            return {
+              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+            };
           }
         },
         editButtonConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDateKeys.selectedTickerId]: tickerId
+            [ListActionsDataKeys.selectedTickerId]: tickerId
           }
         }
       })

@@ -10,11 +10,11 @@ import { showInstrumentPage } from '../utils/showInstrumentPage';
 
 export const alertDelete = async (ctx) => {
   try {
-    const selectedAlert = get(ctx, 'session.listCommand.price.selectedAlert');
+    const selectedAlertId = get(ctx, 'session.listCommand.price.selectedAlertId');
     // FIXME: Записать этот id в месте, где происходит клик по тикеру в пагинации
     const selectedTickerId = get(ctx, 'session.listCommand.price.selectedTickerId');
 
-    await removePriceAlert({ _id: selectedAlert });
+    await removePriceAlert({ _id: selectedAlertId });
 
     ctx.replyWithHTML(i18n.t('ru', 'alertList_deleted'));
 

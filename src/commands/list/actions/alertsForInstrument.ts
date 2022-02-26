@@ -1,7 +1,7 @@
 import { set } from 'lodash';
 
 import { log } from '../../../helpers/log';
-import { ListActionsDateKeys } from '../list.types';
+import { ListActionsDataKeys } from '../list.types';
 import { fetchAlerts } from '../utils/fetchAlerts';
 import { showInstrumentPage } from '../utils/showInstrumentPage';
 
@@ -13,7 +13,7 @@ import { showInstrumentPage } from '../utils/showInstrumentPage';
 export const alertsForInstrument = async (ctx) => {
   try {
     const {
-      [ListActionsDateKeys.selectedTickerId]: selectedTickerId,
+      [ListActionsDataKeys.selectedTickerId]: selectedTickerId,
       p: page,
       kMode: keyboardMode,
       tp: tickersPage

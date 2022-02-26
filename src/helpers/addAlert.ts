@@ -36,7 +36,6 @@ export const addAlert = async ({
     }
 
     const result = (await getInstrumentDataWithPrice({ symbol }))[0];
-
     if (!result) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
@@ -109,7 +108,7 @@ export const addAlert = async ({
   }
 
   const { name } = instrumentData;
-  const { currency } = instrumentData.sourceSpecificData;
+  const { currency } = instrumentData;
 
   const i18nParams = {
     price: priceAlerts.map((el: string) => `${el}${symbolOrCurrency(currency)}`).join(', '),

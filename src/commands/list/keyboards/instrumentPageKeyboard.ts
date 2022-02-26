@@ -49,9 +49,9 @@ export const instrumentPageKeyboard = (ctx, {
   if (isEditMode) {
     const editListButtons = Array.from(new Array(itemsToShowLength)).map((_, i) => {
       const payload = {
-        p: page,
-        i,
-        tp: tickersPage,
+        // p: page,
+        // i,
+        // tp: tickersPage,
         ...(editNumberButtonsConfig.payload || {}),
         ...(editNumberButtonsConfig?.payloadCallback?.(i) || {})
       };
@@ -68,9 +68,9 @@ export const instrumentPageKeyboard = (ctx, {
     keys.push(editListButtons);
   } else {
     const payload = {
-      p: page,
-      kMode: EKeyboardModes.edit,
-      tp: tickersPage,
+      // p: page,
+      // kMode: EKeyboardModes.edit,
+      // tp: tickersPage,
       ...(editButtonConfig.payload || {})
     };
 

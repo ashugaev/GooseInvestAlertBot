@@ -1,12 +1,13 @@
-import { PriceAlert } from '@models';
 import { get, set } from 'lodash';
 
-import { listConfig } from '../../../config';
 import { getInstrumentLink } from '../../../helpers/getInstrumentLInk';
 import { i18n } from '../../../helpers/i18n';
 import { log } from '../../../helpers/log';
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
 import { alertEditKeyboard } from '../keyboards/alertEditKeyboard';
+import { ListActionsDataKeys } from '../list.types';
+
+const logPrefix = '[ALERT EDIT]';
 
 /**
  * Экшен перехода на страницу списка инструментов
@@ -14,25 +15,24 @@ import { alertEditKeyboard } from '../keyboards/alertEditKeyboard';
 export const alertEdit = async (ctx) => {
   try {
     const {
-      s: symbol,
+      [ListActionsDataKeys.selectedAlertId]: selectedAlertId
       // Индекс алерта на текущей странице
-      i,
-      p: page,
-      tp: tickersPage
+      // i,
+      // p: page,
+      // tp: tickersPage
     } = JSON.parse(ctx.match[1]);
 
-    const alertsList = get(ctx, 'session.listCommand.alertsList');
+    const alertsList = get(ctx, 'session.listCommand.data.alertsList');
 
-    // TODO: Копиипаст логики. Нужно сделать хелперы для вытаскивания данных из контекста
-    // FIXME: Брать алерт не по символу
-    const sortedInstrumentItems = alertsList
-      .filter(item => item.symbol === symbol)
-      .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen));
+    const alert = alertsList
+      .find(item => item._id.toString() === selectedAlertId);
 
-    const alert: PriceAlert = sortedInstrumentItems[page * listConfig.itemsPerPage + i];
+    if (!alert) {
+      throw new Error(logPrefix + 'Алерт не найдет');
+    }
 
     // Проставяем id алерта для которого открыли редактирование
-    set(ctx, 'session.listCommand.price.selectedAlert', alert._id);
+    set(ctx, 'session.listCommand.price.selectedAlertId', alert._id);
 
     const message = i18n.t('ru', 'alertsList_editOne', {
       name: alert.name,
@@ -45,8 +45,8 @@ export const alertEdit = async (ctx) => {
     });
 
     const keyboard = alertEditKeyboard({
-      page,
-      tickersPage,
+      // page,
+      // tickersPage,
       tickerId: alert.tickerId,
       ctx
     });

@@ -4,18 +4,22 @@ import { Actions } from '../../../constants';
 import { createActionString } from '../../../helpers/createActionString';
 import { i18n } from '../../../helpers/i18n';
 import { backButton } from '../../../keyboards/backButton';
-import { ListActionsDateKeys } from '../list.types';
+import { ListActionsDataKeys } from '../list.types';
 import { EKeyboardModes } from './instrumentPageKeyboard';
 
-export const alertEditKeyboard = ({ page, tickersPage, tickerId, ctx }) => {
+export const alertEditKeyboard = ({ tickerId, ctx }) => {
   const keys = [];
 
   const deleteButton = Markup.callbackButton(
     i18n.t('ru', 'button_delete'),
     createActionString(Actions.list_deleteAlert, {
-      [ListActionsDateKeys.selectedTickerId]: tickerId
+      [ListActionsDataKeys.selectedTickerId]: tickerId
     })
   );
+
+  // FIXME: Брать из стора
+  const page = 0;
+  const tickersPage = 0;
 
   keys.push([deleteButton]);
 
@@ -24,7 +28,7 @@ export const alertEditKeyboard = ({ page, tickersPage, tickerId, ctx }) => {
       p: page,
       kMode: EKeyboardModes.edit,
       tp: tickersPage,
-      [ListActionsDateKeys.selectedTickerId]: tickerId
+      [ListActionsDataKeys.selectedTickerId]: tickerId
     })
   })]);
 
