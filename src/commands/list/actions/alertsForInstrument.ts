@@ -1,6 +1,9 @@
-import { showInstrumentPage } from '../utils/showInstrumentPage'
-import { fetchAlerts } from '../utils/fetchAlerts'
-import { log } from '../../../helpers/log'
+import { set } from 'lodash';
+
+import { log } from '../../../helpers/log';
+import { ListActionsDateKeys } from '../list.types';
+import { fetchAlerts } from '../utils/fetchAlerts';
+import { showInstrumentPage } from '../utils/showInstrumentPage';
 
 /**
  * Экшен перехода на страницу списка инструментов
@@ -9,21 +12,27 @@ import { log } from '../../../helpers/log'
  */
 export const alertsForInstrument = async (ctx) => {
   try {
-    const { s: symbol, p: page, kMode: keyboardMode, tp: tickersPage } = JSON.parse(ctx.match[1])
+    const {
+      [ListActionsDateKeys.selectedTickerId]: selectedTickerId,
+      p: page,
+      kMode: keyboardMode,
+      tp: tickersPage
+    } = JSON.parse(ctx.match[1]);
 
-    const { alertsList } = await fetchAlerts({ forSymbol: symbol.toUpperCase(), ctx, noContextUpdate: true })
+    set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId);
+
+    const { alertsList } = await fetchAlerts({ tickerId: selectedTickerId, ctx, noContextUpdate: true });
 
     await showInstrumentPage({
       page,
-      symbol,
       ctx,
       instrumentItems: alertsList,
       edit: true,
       keyboardMode,
       tickersPage
-    })
+    });
   } catch (e) {
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-    log.error(e)
+    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+    log.error(e);
   }
-}
+};

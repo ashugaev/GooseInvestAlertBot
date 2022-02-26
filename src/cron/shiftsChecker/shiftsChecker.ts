@@ -21,7 +21,7 @@ export const setupShiftsChecker = async (bot) => {
       const candles = await ShiftCandleModel.find().lean();
 
       try {
-        const shifts = await TimeShiftModel.find().lean();
+        const shifts = await TimeShiftModel.find({ tickerId: { $exists: true } }).lean();
 
         // Нормализуем таймфреймы в объект для удобства
         const timeframesObj = await getShiftTimeframesObject();
@@ -55,6 +55,12 @@ export const setupShiftsChecker = async (bot) => {
             ));
 
             const timeframeData = timeframesObj[shift.timeframe];
+
+            console.log(timeframeData, shift);
+
+            if (!timeframeData) {
+              debugger;
+            }
 
             const updatedCandle = await updateCandle({
               timeframeData,

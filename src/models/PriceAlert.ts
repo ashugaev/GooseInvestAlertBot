@@ -22,6 +22,7 @@ export interface RemoveOrGetAlertParams {
   symbol?: string
   lowerThen?: number
   greaterThen?: number
+  tickerId?: string
   _id?: string
 }
 
@@ -121,7 +122,8 @@ export const getUniqOutdatedAlertsIds = async (number: number): Promise<string[]
         $or: [
           { lastCheckedAt: null },
           { lastCheckedAt: { $lte: dateToCheck } }
-        ]
+        ],
+        tickerId: { $exists: true }
       },
       { tickerId: 1 })
     .sort({ lastCheckedAt: 1 })
@@ -162,23 +164,18 @@ export const checkAlerts = async ({ id, price }: ICheckAlertsParams): Promise<Pr
 
 // TODO: Сделать отдельные методы для получения алертов по разным параметрам.
 //  Что бы делать проверку на входные данные и случайно не вернуть лишнего.
-export function getAlerts ({ symbol, user, _id }: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      const params: RemoveOrGetAlertParams = {};
+export const getAlerts = async ({ symbol, user, _id, tickerId }: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> => {
+  const params: RemoveOrGetAlertParams = {};
 
-      symbol && (params.symbol = symbol.toUpperCase());
-      user && (params.user = user);
-      _id && (params._id = _id);
+  symbol && (params.symbol = symbol.toUpperCase());
+  tickerId && (params.tickerId = tickerId);
+  user && (params.user = user);
+  _id && (params._id = _id);
 
-      const alerts = await PriceAlertModel.find(params);
+  const alerts = await PriceAlertModel.find(params).lean();
 
-      rs(alerts);
-    } catch (e) {
-      rj(e);
-    }
-  });
-}
+  return alerts;
+};
 
 export async function getAllAlerts (): Promise<PriceAlertItem[]> {
   try {

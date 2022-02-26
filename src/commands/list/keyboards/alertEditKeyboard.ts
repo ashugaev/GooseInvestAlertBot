@@ -1,25 +1,32 @@
-import { Markup } from 'telegraf'
-import { createActionString } from '../../../helpers/createActionString'
-import { Actions } from '../../../constants'
-import { backButton } from '../../../keyboards/backButton'
-import { i18n } from '../../../helpers/i18n'
-import { EKeyboardModes } from './instrumentPageKeyboard'
+import { Markup } from 'telegraf';
 
-export const alertEditKeyboard = ({ idI, symbol, page, tickersPage }) => {
-  const keys = []
+import { Actions } from '../../../constants';
+import { createActionString } from '../../../helpers/createActionString';
+import { i18n } from '../../../helpers/i18n';
+import { backButton } from '../../../keyboards/backButton';
+import { ListActionsDateKeys } from '../list.types';
+import { EKeyboardModes } from './instrumentPageKeyboard';
+
+export const alertEditKeyboard = ({ page, tickersPage, tickerId, ctx }) => {
+  const keys = [];
 
   const deleteButton = Markup.callbackButton(
     i18n.t('ru', 'button_delete'),
-    createActionString(Actions.list_deleteAlert, { idI, s: symbol })
-  )
+    createActionString(Actions.list_deleteAlert, {
+      [ListActionsDateKeys.selectedTickerId]: tickerId
+    })
+  );
 
-  keys.push([deleteButton])
+  keys.push([deleteButton]);
 
   keys.push([backButton({
     action: createActionString(Actions.list_tickerPage, {
-      s: symbol, p: page, kMode: EKeyboardModes.edit, tp: tickersPage
+      p: page,
+      kMode: EKeyboardModes.edit,
+      tp: tickersPage,
+      [ListActionsDateKeys.selectedTickerId]: tickerId
     })
-  })])
+  })]);
 
-  return keys
-}
+  return keys;
+};

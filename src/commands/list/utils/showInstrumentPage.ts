@@ -6,13 +6,13 @@ import { getLastPrice } from '../../../helpers/stocksApi';
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
 import { PriceAlertItem } from '../../../models';
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard';
+import { ListActionsDateKeys } from '../list.types';
 
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
   page: number
   ctx: any
   instrumentItems: PriceAlertItem[]
-  symbol: string
   edit?: boolean
   tickersPage?: number
 }
@@ -22,16 +22,22 @@ export const getAlertNumberByPage = ({ i, page }) => {
 };
 
 export const showInstrumentPage = async ({
-  page, ctx, instrumentItems, symbol, edit, keyboardMode, tickersPage = 0
+  page,
+  ctx,
+  instrumentItems,
+  edit,
+  keyboardMode,
+  tickersPage = 0
 }: IShowInstrumentPageParams) => {
+  // Получаем сортированный список инструментов для страницы
+  // FIXME: Вынести
   const itemsToShow = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage);
 
   const itemsList = itemsToShow
-  // Сортировка по цене
     .map(({ symbol, message, lowerThen, greaterThen, currency, name }, i) => {
-      const price = lowerThen || greaterThen;
+      const price = lowerThen ?? greaterThen;
 
       return ctx.i18n.t('alertList_item', {
         // Номер элемента с учетом страницы
@@ -43,7 +49,14 @@ export const showInstrumentPage = async ({
       });
     }).join('\n');
 
-  const { type: instrumentType, name: instrumentName, currency: instrumentCurrency, source, tickerId } = instrumentItems[0];
+  const {
+    type: instrumentType,
+    name: instrumentName,
+    currency: instrumentCurrency,
+    source,
+    tickerId,
+    symbol
+  } = instrumentItems[0];
 
   let lastPrice;
 
@@ -78,7 +91,7 @@ export const showInstrumentPage = async ({
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            s: symbol,
+            [ListActionsDateKeys.selectedTickerId]: tickerId,
             p: page,
             kMode: keyboardMode,
             tp: tickersPage
@@ -94,7 +107,7 @@ export const showInstrumentPage = async ({
         editButtonConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            s: symbol.toUpperCase()
+            [ListActionsDateKeys.selectedTickerId]: tickerId
           }
         }
       })

@@ -17,8 +17,8 @@ export const instrumentsListPagination = async (ctx) => {
 
     const { id: user } = ctx.from
 
-    const alertsList = ctx.session?.listCommand?.alertsList
-    const uniqTickersData = ctx.session?.listCommand?.uniqTickersData
+    const alertsList = ctx.session?.listCommand?.data?.alertsList
+    const uniqTickersData = ctx.session?.listCommand?.data?.uniqTickersData
 
     if (!alertsList?.length) {
       await ctx.editMessageText(ctx.i18n.t('unrecognizedError'))

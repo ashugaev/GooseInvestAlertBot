@@ -1,12 +1,13 @@
-import { listConfig } from '../../../config'
-import { Markup } from 'telegraf'
-import { paginationButtons } from '../../../keyboards/paginationButtons'
-import { createActionString } from '../../../helpers/createActionString'
-import { Actions } from '../../../constants'
-import { alertsTypeToggleButtons } from './alertsTypeToggleButtons'
-import { EListTypes } from '../list.types'
-import { getTimeShiftsCountForUser } from '../../../models'
-import { EKeyboardModes } from './instrumentPageKeyboard'
+import { Markup } from 'telegraf';
+
+import { listConfig } from '../../../config';
+import { Actions } from '../../../constants';
+import { createActionString } from '../../../helpers/createActionString';
+import { paginationButtons } from '../../../keyboards/paginationButtons';
+import { getTimeShiftsCountForUser, PriceAlert } from '../../../models';
+import { EListTypes, ListActionsDateKeys } from '../list.types';
+import { alertsTypeToggleButtons } from './alertsTypeToggleButtons';
+import { EKeyboardModes } from './instrumentPageKeyboard';
 
 /**
  * Вернет список кнопок для каждого инструмента по массиву данных
@@ -20,24 +21,24 @@ export const instrumentsListKeyboard = async ({
   user = null
 }) => {
   // Тикеры которые выведем на это странице
-  const pageTickers = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
+  const pageTickers: PriceAlert[] = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage);
 
   // Генерит инлайн кнопки по тикерам
-  const getTickerButtons = pageTickers.map(({ name, symbol }) => {
+  const getTickerButtons = pageTickers.map(({ name, symbol, tickerId }) => {
     const payload = {
-      s: symbol.toUpperCase(),
+      [ListActionsDateKeys.selectedTickerId]: tickerId,
       p: 0,
       tp: page,
       kMode: EKeyboardModes.edit
-    }
+    };
 
     return ([
       Markup.callbackButton(
                 `${name} (${symbol})`,
                 createActionString(Actions.list_tickerPage, payload)
       )
-    ])
-  })
+    ]);
+  });
 
   // Получаю кнопки пагинации
   const paginatorButtons = paginationButtons({
@@ -46,15 +47,15 @@ export const instrumentsListKeyboard = async ({
     payload: {
       p: page
     }
-  })
+  });
 
-  getTickerButtons.push(paginatorButtons)
+  getTickerButtons.push(paginatorButtons);
 
-  const userShiftsCount = user ? await getTimeShiftsCountForUser(user) : 0
+  const userShiftsCount = user ? await getTimeShiftsCountForUser(user) : 0;
 
   if (userShiftsCount > 0) {
-    getTickerButtons.push(alertsTypeToggleButtons({ listType }))
+    getTickerButtons.push(alertsTypeToggleButtons({ listType }));
   }
 
-  return Markup.inlineKeyboard(getTickerButtons)
-}
+  return Markup.inlineKeyboard(getTickerButtons);
+};
