@@ -1,6 +1,6 @@
 interface GetPercentParams {
-    initialValue: number,
-    diff: number,
+  initialValue: number
+  diff: number
 }
 
 export function getPercent ({ initialValue, diff }: GetPercentParams) {

@@ -68,10 +68,20 @@ export function getPricesFromString ({ string, lastPrice }: GetPriceFromStringPa
       invalidValues.push(stringVal);
     }
 
-    // TODO: toFixedValue можно посчитать из шага, который лежит в данных инструмента
-    const toFixedValue = lastPrice < 1 ? 5 : 2;
+    if (!resultNumberVal) {
+      return acc
+    }
 
-    resultNumberVal && acc.push(+resultNumberVal.toFixed(toFixedValue));
+    // Limit decimal value length if user sen not fixed value
+    if (percentMinusMatch || percentPlusMath) {
+      const toFixedValue = lastPrice < 1 ? 6 : 2
+
+      resultNumberVal = +resultNumberVal.toFixed(toFixedValue)
+    } else {
+      resultNumberVal = +resultNumberVal.toFixed(12)
+    }
+
+    resultNumberVal && acc.push(resultNumberVal)
 
     return acc;
   }, []);
