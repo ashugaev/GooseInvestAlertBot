@@ -1,7 +1,7 @@
-import { tickerDuplicatesScene } from './TickerDuplicatesScene'
+import { tickerDuplicatesScene } from './TickerDuplicatesScene';
 
-export const commonScenes = [tickerDuplicatesScene]
+export const commonScenes = [tickerDuplicatesScene];
 
-export * from './tickerDuplicatesScene'
-export * from './wrappers/immediateStep'
-export * from './wrappers/waitMessageStep'
+export * from './tickerDuplicatesScene';
+export * from './wrappers/immediateStep';
+export * from './wrappers/waitMessageStep';
