@@ -26,9 +26,14 @@ build:
   script:
     - npm ci
     - npm run build
+    # Пишет энвы на сервер
+    - chmod +x setup_env.sh
+    - ./setup_env.sh
+    - npm run db-migration:up
   artifacts:
     paths:
      - dist/
+     - .env
 
 release_bot:
   stage: release
@@ -38,14 +43,10 @@ release_bot:
   services:
     - docker:dind
   before_script:
-    # Пишет энвы на сервер
-    - chmod +x setup_env.sh
-    - ./setup_env.sh
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
   script:
     - "docker build --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1 ."
     - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1"
-    - npm run db-migration:up
   after_script:
     - "docker logout ${CI_REGISTRY}"
 
