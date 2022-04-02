@@ -20,7 +20,7 @@ stages:
 
 build:
   stage: build
-  image: node:10-alpine
+  image: node:15-alpine
   only:
     - master
   script:
