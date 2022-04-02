@@ -1,4 +1,4 @@
-import { tickerDuplicatesScene } from './TickerDuplicatesScene';
+import { tickerDuplicatesScene } from './tickerDuplicatesScene';
 
 export const commonScenes = [tickerDuplicatesScene];
 
