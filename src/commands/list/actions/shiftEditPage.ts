@@ -1,8 +1,8 @@
-import { i18n } from '../../../helpers/i18n'
-import { log } from '../../../helpers/log'
-import { TimeShiftModel } from '../../../models'
-import { getTimeframesObjFromStoreOrDB } from '../utils/getTimeframesObjFromStoreOrDB'
-import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
+import { i18n } from '../../../helpers/i18n';
+import { log } from '../../../helpers/log';
+import { TimeShiftModel } from '../../../models';
+import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard';
+import { getTimeframesObjFromStoreOrDB } from '../utils/getTimeframesObjFromStoreOrDB';
 
 /**
  * Страница редактирования шифта
@@ -17,13 +17,13 @@ export const shiftEditPage = async (ctx) => {
       m: muted,
       g: growAlerts,
       f: fallAlerts
-    } = JSON.parse(ctx.match[1])
-    const { id: user } = ctx.from
+    } = JSON.parse(ctx.match[1]);
+    const { id: user } = ctx.from;
 
-    const shiftData = (await TimeShiftModel.find({ _id, user }).lean())[0]
+    const shiftData = (await TimeShiftModel.find({ _id, user }).lean())[0];
 
     if (!shiftData) {
-      throw new Error('Не могу получить шифт по id')
+      throw new Error('Не могу получить шифт по id');
     }
 
     let shiftDataCopy = shiftData;
@@ -31,7 +31,7 @@ export const shiftEditPage = async (ctx) => {
     // Меняем параметры
     (typeof muted === 'number') && (shiftDataCopy = { ...shiftDataCopy, muted: Boolean(muted) });
     (typeof growAlerts === 'number') && (shiftDataCopy = { ...shiftDataCopy, growAlerts: Boolean(growAlerts) });
-    (typeof fallAlerts === 'number') && (shiftDataCopy = { ...shiftDataCopy, fallAlerts: Boolean(fallAlerts) })
+    (typeof fallAlerts === 'number') && (shiftDataCopy = { ...shiftDataCopy, fallAlerts: Boolean(fallAlerts) });
 
     // Если изменились параметры шифта
     if (shiftData !== shiftDataCopy) {
@@ -42,10 +42,10 @@ export const shiftEditPage = async (ctx) => {
           fallAlerts: shiftDataCopy.fallAlerts,
           growAlerts: shiftDataCopy.growAlerts
         }
-      })
+      });
     }
 
-    const timeframesObj = await getTimeframesObjFromStoreOrDB(ctx)
+    const timeframesObj = await getTimeframesObjFromStoreOrDB(ctx);
 
     const message = i18n.t('ru', 'alertsList_shifts_editOne', {
       name: shiftDataCopy.name,
@@ -55,12 +55,12 @@ export const shiftEditPage = async (ctx) => {
       change: shiftDataCopy.fallAlerts && shiftDataCopy.growAlerts,
       percent: shiftDataCopy.percent,
       time: timeframesObj[shiftDataCopy.timeframe].name_ru_plur
-    })
+    });
 
     const keyboard = shiftEditKeyboard({
       page,
       shiftData: shiftDataCopy
-    })
+    });
 
     await ctx.editMessageText(message, {
       parse_mode: 'HTML',
@@ -68,9 +68,9 @@ export const shiftEditPage = async (ctx) => {
       reply_markup: {
         inline_keyboard: keyboard
       }
-    })
+    });
   } catch (e) {
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-    log.error(e)
+    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+    log.error(e);
   }
-}
+};
