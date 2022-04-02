@@ -28,7 +28,7 @@ export const instrumentsListPagination = async (ctx) => {
       Extra
         .HTML(true)
         .markup(await instrumentsListKeyboard({
-          page, uniqTickersData, user
+          page, uniqTickersData, user, ctx
         }))
     );
   } catch (e) {

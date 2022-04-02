@@ -59,6 +59,6 @@ export interface ListCommandState {
 }
 
 export enum ListActionsDataKeys {
-  selectedTickerId = 'vdd',
+  selectedTickerIdShortened = 'vdd',
   selectedAlertId = 'eke'
 }

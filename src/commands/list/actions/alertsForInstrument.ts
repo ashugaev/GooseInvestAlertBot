@@ -1,3 +1,4 @@
+import { shortenerGetFull } from '@helpers';
 import { set } from 'lodash';
 
 import { log } from '../../../helpers/log';
@@ -13,11 +14,13 @@ import { showInstrumentPage } from '../utils/showInstrumentPage';
 export const alertsForInstrument = async (ctx) => {
   try {
     const {
-      [ListActionsDataKeys.selectedTickerId]: selectedTickerId,
+      [ListActionsDataKeys.selectedTickerIdShortened]: selectedTickerIdShortened,
       p: page,
       kMode: keyboardMode,
       tp: tickersPage
     } = JSON.parse(ctx.match[1]);
+
+    const selectedTickerId = shortenerGetFull(selectedTickerIdShortened, ctx);
 
     set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId);
 

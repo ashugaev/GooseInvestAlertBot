@@ -75,7 +75,8 @@ export function setupList (bot: Telegraf<Context>) {
         .markup(await instrumentsListKeyboard({
           page: 0,
           uniqTickersData,
-          user
+          user,
+          ctx,
         }))
     );
 
@@ -89,7 +90,7 @@ export function setupList (bot: Telegraf<Context>) {
           ctx.replyWithHTML(ctx.i18n.t('alertList_titles'),
             Extra
               .HTML(true)
-              .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData, user }))
+              .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData, user, ctx}))
           );
         }
          */

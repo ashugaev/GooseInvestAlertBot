@@ -7,6 +7,7 @@ import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
 import { PriceAlertItem } from '../../../models';
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard';
 import { ListActionsDataKeys } from '../list.types';
+import {shortenerCreateShort} from "@helpers";
 
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
@@ -92,7 +93,7 @@ export const showInstrumentPage = async ({
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDataKeys.selectedTickerId]: tickerId,
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx),
             p: page,
             kMode: keyboardMode,
             tp: tickersPage
@@ -112,7 +113,7 @@ export const showInstrumentPage = async ({
         editButtonConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDataKeys.selectedTickerId]: tickerId
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
           }
         }
       })

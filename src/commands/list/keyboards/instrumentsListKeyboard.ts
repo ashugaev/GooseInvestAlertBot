@@ -2,7 +2,7 @@ import { Markup } from 'telegraf';
 
 import { listConfig } from '../../../config';
 import { Actions } from '../../../constants';
-import { createActionString } from '../../../helpers/createActionString';
+import { createActionString, shortenerCreateShort } from '../../../helpers';
 import { paginationButtons } from '../../../keyboards/paginationButtons';
 import { getTimeShiftsCountForUser, PriceAlert } from '../../../models';
 import { EListTypes, ListActionsDataKeys } from '../list.types';
@@ -18,7 +18,8 @@ export const instrumentsListKeyboard = async ({
   uniqTickersData,
   page,
   listType = EListTypes.levels,
-  user = null
+  user = null,
+  ctx
 }) => {
   // Тикеры которые выведем на это странице
   const pageTickers: PriceAlert[] = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage);
@@ -26,7 +27,7 @@ export const instrumentsListKeyboard = async ({
   // Генерит инлайн кнопки по тикерам
   const getTickerButtons = pageTickers.map(({ name, symbol, tickerId }) => {
     const payload = {
-      [ListActionsDataKeys.selectedTickerId]: tickerId,
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx),
       p: 0,
       tp: page,
       kMode: EKeyboardModes.edit

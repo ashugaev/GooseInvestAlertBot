@@ -6,6 +6,7 @@ import { i18n } from '../../../helpers/i18n';
 import { backButton } from '../../../keyboards/backButton';
 import { ListActionsDataKeys } from '../list.types';
 import { EKeyboardModes } from './instrumentPageKeyboard';
+import {shortenerCreateShort} from "@helpers";
 
 export const alertEditKeyboard = ({ tickerId, ctx }) => {
   const keys = [];
@@ -13,7 +14,7 @@ export const alertEditKeyboard = ({ tickerId, ctx }) => {
   const deleteButton = Markup.callbackButton(
     i18n.t('ru', 'button_delete'),
     createActionString(Actions.list_deleteAlert, {
-      [ListActionsDataKeys.selectedTickerId]: tickerId
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
     })
   );
 
@@ -28,7 +29,7 @@ export const alertEditKeyboard = ({ tickerId, ctx }) => {
       p: page,
       kMode: EKeyboardModes.edit,
       tp: tickersPage,
-      [ListActionsDataKeys.selectedTickerId]: tickerId
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
     })
   })]);
 
