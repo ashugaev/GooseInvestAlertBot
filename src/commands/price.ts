@@ -36,7 +36,7 @@ export function setupPrice (bot: Telegraf<Context>) {
       }
 
       const { name } = instrumentData;
-      const { currency } = instrumentData.sourceSpecificData;
+      const { currency } = instrumentData;
 
       ctx.replyWithHTML(ctx.i18n.t('price', {
         price,
