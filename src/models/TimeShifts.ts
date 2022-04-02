@@ -2,75 +2,81 @@
  * Отслеживание скорости изменения цены
  */
 
-import { prop, getModelForClass } from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose';
 
 export class TimeShift {
-  _id: string
+  _id: string;
+
+  /**
+   * Id по по которому ищу данные тикера (отвязываемся от названия тикера)
+   */
+  @prop({ required: true })
+  tickerId: string;
 
   @prop({ required: true })
-  percent: number
+  percent: number;
 
   @prop({ required: true })
-  ticker: string
+  ticker: string;
 
   @prop({ required: true })
-  timeframe: string
+  timeframe: string;
 
   @prop({ required: true })
-  user: number
+  user: number;
 
   @prop({ required: true })
-  muted: boolean
+  muted: boolean;
 
   /**
    * Отслеживать рост
    */
   @prop({ required: true })
-  growAlerts: boolean
+  growAlerts: boolean;
 
   /**
    * Отслеживать падения
    */
   @prop({ required: true })
-  fallAlerts: boolean
+  fallAlerts: boolean;
 
   /**
    * Время начала свечи за которую был отправлен алерт на падение
    * Нужно для того, что бы слать алерт раз за свечу
    */
   @prop({ required: false })
-  lastMessageCandleGrowTime: number
+  lastMessageCandleGrowTime: number;
 
   /**
    * Время начала свечи за которую был отправлен алерт на рост
    * Нужно для того, что бы слать алерт раз за свечу
    */
   @prop({ required: false })
-  lastMessageCandleFallTime: number
+  lastMessageCandleFallTime: number;
 
   /**
    * Полное название инструмента
    */
   @prop({ required: true })
-  name: string
+  name: string;
 }
 
 // Get User model
 export const TimeShiftModel = getModelForClass(TimeShift, {
   schemaOptions: { timestamps: true }
-})
+});
 
 export const getTimeShiftsCountForUser = async (user: number): Promise<number> => {
-  const params: Partial<TimeShift> = { user }
-  const shiftsCount = await TimeShiftModel.find(params).count()
+  const params: Partial<TimeShift> = { user };
+  const shiftsCount = await TimeShiftModel.find(params).count();
 
-  return shiftsCount
-}
+  return shiftsCount;
+};
 
 export const getUniqTimeShiftTickers = async () => {
   const data = await TimeShiftModel
     .find({}, { ticker: 1 })
-    .lean()
+    .lean();
 
-  return data
-}
+  return data;
+};

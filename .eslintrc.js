@@ -15,6 +15,9 @@ module.exports = {
   ],
   extends: ['standard-with-typescript'],
   rules: {
+    'simple-import-sort/imports': 'warn',
+    'simple-import-sort/exports': 'warn',
+    'unused-imports/no-unused-imports': 'warn',
     'no-return-assign': 'off',
     'no-continue': 'off',
     'no-plusplus': 'off',
@@ -30,12 +33,14 @@ module.exports = {
     'no-unused-expressions': 0,
     'no-new': 0,
     'consistent-return': 0,
+    'node/no-callback-literal': 0,
     'no-restricted-syntax': [
       'error',
       'ForOfStatement',
       'LabeledStatement',
       'WithStatement'
     ],
+    "@typescript-eslint/semi": ["error", "always"],
     'arrow-body-style': 0,
     'no-eval': 0,
     'no-loop-func': 0,
@@ -49,6 +54,8 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/strict-boolean-expressions': 0,
     '@typescript-eslint/no-floating-promises': 0,
+    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-misused-promises': 0,
   },
   overrides: [
     {

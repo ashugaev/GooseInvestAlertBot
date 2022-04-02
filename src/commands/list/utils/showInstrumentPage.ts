@@ -1,37 +1,44 @@
-import { listConfig } from '../../../config'
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { getLastPrice } from '../../../helpers/stocksApi'
-import { log } from '../../../helpers/log'
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
-import { PriceAlertItem } from '../../../models'
-import { Actions } from '../../../constants'
+import { listConfig } from '../../../config';
+import { Actions } from '../../../constants';
+import { getInstrumentLink } from '../../../helpers/getInstrumentLInk';
+import { log } from '../../../helpers/log';
+import { getLastPrice } from '../../../helpers/stocksApi';
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
+import { PriceAlertItem } from '../../../models';
+import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard';
+import { ListActionsDataKeys } from '../list.types';
+import {shortenerCreateShort} from "@helpers";
 
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
   page: number
   ctx: any
   instrumentItems: PriceAlertItem[]
-  symbol: string
   edit?: boolean
   tickersPage?: number
 }
 
 export const getAlertNumberByPage = ({ i, page }) => {
-  return i + 1 + (page * listConfig.itemsPerPage)
-}
+  return i + 1 + (page * listConfig.itemsPerPage);
+};
 
 export const showInstrumentPage = async ({
-  page, ctx, instrumentItems, symbol, edit, keyboardMode, tickersPage = 0
+  page,
+  ctx,
+  instrumentItems,
+  edit,
+  keyboardMode,
+  tickersPage = 0
 }: IShowInstrumentPageParams) => {
+  // Получаем сортированный список инструментов для страницы
+  // FIXME: Вынести
   const itemsToShow = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
-    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
+    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage);
 
   const itemsList = itemsToShow
-  // Сортировка по цене
     .map(({ symbol, message, lowerThen, greaterThen, currency, name }, i) => {
-      const price = lowerThen || greaterThen
+      const price = lowerThen ?? greaterThen;
 
       return ctx.i18n.t('alertList_item', {
         // Номер элемента с учетом страницы
@@ -40,17 +47,25 @@ export const showInstrumentPage = async ({
         message,
         currency: symbolOrCurrency(currency),
         growth: Boolean(greaterThen)
-      })
-    }).join('\n')
+      });
+    }).join('\n');
 
-  const { type: instrumentType, name: instrumentName, currency: instrumentCurrency, source } = instrumentItems[0]
+  const {
+    type: instrumentType,
+    name: instrumentName,
+    currency: instrumentCurrency,
+    source,
+    tickerId,
+    symbol,
+    _id
+  } = instrumentItems[0];
 
-  let lastPrice
+  let lastPrice;
 
   try {
-    lastPrice = await getLastPrice({ ticker: symbol })
+    lastPrice = await getLastPrice({ id: tickerId });
   } catch (e) {
-    log.error('ошибка получения цены', e)
+    log.error('ошибка получения цены', e);
   }
 
   const message = ctx.i18n.t('alertList_page', {
@@ -61,7 +76,7 @@ export const showInstrumentPage = async ({
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
     showEditMessage: keyboardMode === EKeyboardModes.edit
-  })
+  });
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
@@ -78,7 +93,7 @@ export const showInstrumentPage = async ({
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            s: symbol,
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx),
             p: page,
             kMode: keyboardMode,
             tp: tickersPage
@@ -86,18 +101,22 @@ export const showInstrumentPage = async ({
         },
         editNumberButtonsConfig: {
           action: Actions.list_editAlert,
-          payload: {
-            s: symbol.toUpperCase(),
-            p: page,
+          // payload: {
+          //   [ListActionsDataKeys.selectedAlertId]: _id
+          // }
+          payloadCallback: (i) => {
+            return {
+              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+            };
           }
         },
         editButtonConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            s: symbol.toUpperCase()
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
           }
         }
       })
     }
-  })
-}
+  });
+};

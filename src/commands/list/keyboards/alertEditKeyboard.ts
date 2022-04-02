@@ -1,25 +1,37 @@
-import { Markup } from 'telegraf'
-import { createActionString } from '../../../helpers/createActionString'
-import { Actions } from '../../../constants'
-import { backButton } from '../../../keyboards/backButton'
-import { i18n } from '../../../helpers/i18n'
-import { EKeyboardModes } from './instrumentPageKeyboard'
+import { Markup } from 'telegraf';
 
-export const alertEditKeyboard = ({ idI, symbol, page, tickersPage }) => {
-  const keys = []
+import { Actions } from '../../../constants';
+import { createActionString } from '../../../helpers/createActionString';
+import { i18n } from '../../../helpers/i18n';
+import { backButton } from '../../../keyboards/backButton';
+import { ListActionsDataKeys } from '../list.types';
+import { EKeyboardModes } from './instrumentPageKeyboard';
+import {shortenerCreateShort} from "@helpers";
+
+export const alertEditKeyboard = ({ tickerId, ctx }) => {
+  const keys = [];
 
   const deleteButton = Markup.callbackButton(
     i18n.t('ru', 'button_delete'),
-    createActionString(Actions.list_deleteAlert, { idI, s: symbol })
-  )
+    createActionString(Actions.list_deleteAlert, {
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
+    })
+  );
 
-  keys.push([deleteButton])
+  // FIXME: Брать из стора
+  const page = 0;
+  const tickersPage = 0;
+
+  keys.push([deleteButton]);
 
   keys.push([backButton({
     action: createActionString(Actions.list_tickerPage, {
-      s: symbol, p: page, kMode: EKeyboardModes.edit, tp: tickersPage
+      p: page,
+      kMode: EKeyboardModes.edit,
+      tp: tickersPage,
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
     })
-  })])
+  })]);
 
-  return keys
-}
+  return keys;
+};

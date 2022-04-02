@@ -8,7 +8,13 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/*", "src/types/*"]
+      "*": ["node_modules/*", "src/types/*"],
+      "@helpers": ["src/helpers/"],
+      "@scenes": ["src/scenes/"],
+      "@commands": ["src/commands/"],
+      "@constants": ["src/constants/"],
+      "@types": ["src/types/"],
+      "@models": ["src/models/"]
     },
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true

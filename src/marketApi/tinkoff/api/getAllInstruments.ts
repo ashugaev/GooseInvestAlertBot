@@ -1,19 +1,20 @@
-import { stocksApi } from '../../../helpers/stocksApi'
-import { log } from '../../../helpers/log'
-import { wait } from '../../../helpers/wait'
-import { EMarketDataSources } from '../../types'
-import { InstrumentsList } from '../../../models'
+import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
+
+import { log } from '../../../helpers/log';
+import { stocksApi } from '../../../helpers/stocksApi';
+import { wait } from '../../../helpers/wait';
+import { EMarketDataSources, InstrumentsList } from '../../../models';
 
 /**
  * Замены для зашкварных тикеров валют
-  */
+ */
 const tickerReplacements = {
   USD000UTSTOM: 'USDRUB',
   EUR_RUB__TOM: 'EURRUB'
-}
+};
 
 const normalizeTinkoffItem = (item): InstrumentsList => {
-  const { ticker, name, type, ...specificData } = item
+  const { ticker, name, type, currency, ...specificData } = item;
 
   const result = {
     id: specificData.figi,
@@ -21,14 +22,15 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     name,
     ticker,
     type,
+    currency,
     sourceSpecificData: specificData
-  }
+  };
 
   // Замена тикера по шаблону
-  result.ticker = tickerReplacements[ticker] ?? ticker
+  result.ticker = tickerReplacements[ticker] ?? ticker;
 
-  return result
-}
+  return result;
+};
 
 export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve) => {
   try {
@@ -37,21 +39,21 @@ export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve)
       stocksApi.etfs(),
       stocksApi.bonds(),
       stocksApi.currencies()
-    ]
+    ];
 
-    const allInstruments: any[] = await Promise.all(allInstrumentsPromises)
+    const allInstruments = await Promise.all(allInstrumentsPromises);
 
-    const instrumentsArray = allInstruments.reduce((acc, el) => acc.concat(el.instruments), [])
+    const instrumentsArray = allInstruments.reduce<MarketInstrument[]>((acc, el) => acc.concat(el.instruments), []);
 
-    const normalizedInstrumentsArray = instrumentsArray.map(normalizeTinkoffItem)
+    const normalizedInstrumentsArray = instrumentsArray.map(normalizeTinkoffItem);
 
-    resolve(normalizedInstrumentsArray)
+    resolve(normalizedInstrumentsArray);
   } catch (e) {
-    log.error('Ошибка получения списка иструментов:', e)
+    log.error('Ошибка получения списка иструментов:', e);
 
-    await wait(30000)
+    await wait(30000);
 
     // Ретрай
-    resolve(await tinkoffGetAllInstruments())
+    resolve(await tinkoffGetAllInstruments());
   }
-})
+});

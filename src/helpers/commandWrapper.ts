@@ -1,14 +1,15 @@
-import { log } from './log'
-import { TelegrafContext } from 'telegraf/typings/context'
-import { Middleware } from 'telegraf'
+import { Middleware } from 'telegraf';
+import { TelegrafContext } from 'telegraf/typings/context';
 
-export function commandWrapper (callback):Middleware<TelegrafContext> {
-  return (ctx) => {
+import { log } from './log';
+
+export function commandWrapper (callback: (ctx: any) => Promise<void>): Middleware<TelegrafContext> {
+  return async (ctx) => {
     try {
-      callback(ctx)
+      await callback(ctx);
     } catch (e) {
-      ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-      log.error(e)
+      await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+      log.error(e);
     }
-  }
+  };
 }

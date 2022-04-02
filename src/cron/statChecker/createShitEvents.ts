@@ -1,6 +1,5 @@
 import { log } from '../../helpers/log'
-import { EMarketDataSources } from '../../marketApi/types'
-import { getInstrumentsBySource } from '../../models'
+import {EMarketDataSources, getInstrumentsBySource} from '../../models'
 import { createShiftEvents, ShiftEventItem, ShiftEventsModel } from '../../models/ShiftEvents'
 import { getAllShifts } from '../../models/Shifts'
 import { getShiftsByPercent } from './utils'

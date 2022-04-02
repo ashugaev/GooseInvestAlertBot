@@ -1,11 +1,10 @@
-import { copyAlerts } from './copyAlerts'
-import { instrumentsListUpdater } from './instrumentsListUpdater'
-import { setupPriceChecker } from './priceChecker'
-import { createShitEvents } from './statChecker'
-import { startCronJob } from '../helpers/startCronJob'
-import { shiftSender } from './statSender'
-import { setupShiftsChecker } from './shiftsChecker'
-import { log } from '../helpers/log'
+import { startCronJob } from '../helpers/startCronJob';
+import { copyAlerts } from './copyAlerts';
+import { instrumentsListUpdater } from './instrumentsListUpdater';
+import { setupPriceChecker } from './priceChecker';
+import { setupShiftsChecker } from './shiftsChecker';
+import { createShitEvents } from './statChecker';
+import { shiftSender } from './statSender';
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -15,7 +14,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз в день в 2 часа 0 минут
     period: '0 2 * * *'
-  })
+  });
 
   startCronJob({
     name: 'Send stat',
@@ -23,7 +22,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз в час
     period: '0 * * * *'
-  })
+  });
 
   startCronJob({
     name: 'Update Instruments List',
@@ -33,21 +32,21 @@ export const setupCheckers = (bot) => {
     period: '0 3 * * *',
     // TODO: Не проставлять в dev окружении
     executeBeforeInit: true
-  })
+  });
 
   // Дамп коллекции с алертами
   startCronJob({
     name: 'Copy alerts collection',
     callback: copyAlerts,
     callbackArgs: [bot],
-    // раз в час
-    period: '0 * * * *',
+    // В полночь и при деплое
+    period: '0 0 * * *',
     executeBeforeInit: true
-  })
+  });
 
   // Мониторинг достижения уровней
-  setupPriceChecker(bot)
+  setupPriceChecker(bot);
 
   // Мониторинг скорости
-  setupShiftsChecker(bot)
-}
+  setupShiftsChecker(bot);
+};
