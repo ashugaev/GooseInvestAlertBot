@@ -2,7 +2,9 @@
 import { InstrumentType } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 import { getModelForClass, prop } from '@typegoose/typegoose';
 
-import { EMarketDataSources, EMarketInstrumentTypes } from './InstrumentsList';
+import { TickerPrices } from '../cron/priceChecker/binance';
+import { EMarketDataSources } from '../marketApi/types';
+import { EMarketInstrumentTypes } from './InstrumentsList';
 
 export interface AddPriceAlertParams {
   tickerId: string
@@ -126,11 +128,11 @@ export const getUniqOutdatedAlertsIds = async (source: EMarketDataSources, numbe
           { lastCheckedAt: { $lte: dateToCheck } }
         ],
         tickerId: { $exists: true },
-        source,
+        source
       },
       { tickerId: 1 })
     .sort({ lastCheckedAt: 1 })
-     // 3 - magic number. Can't predict how many alerts with the same tickers.
+  // 3 - magic number. Can't predict how many alerts with the same tickers.
     .limit(number * 3)
     .lean();
   const allIds = data.map(elem => elem.tickerId);
@@ -142,10 +144,10 @@ export const getUniqOutdatedAlertsIds = async (source: EMarketDataSources, numbe
 /**
  * Актуализируем timestamp о последней проверке
  */
-export const setLastCheckedAt = async (tickerIds: string[] ): Promise<void> => {
+export const setLastCheckedAt = async (tickerIds: string[]): Promise<void> => {
   const $or = tickerIds.map(ticker => ({
-      tickerId: ticker
-  }))
+    tickerId: ticker
+  }));
 
   await PriceAlertModel.updateMany({ $or }, { $set: { lastCheckedAt: new Date() } });
 };
@@ -153,21 +155,31 @@ export const setLastCheckedAt = async (tickerIds: string[] ): Promise<void> => {
 /**
  * Вернет массив сработавших алертов
  */
-export const checkAlerts = async ({ id, price }: ICheckAlertsParams): Promise<PriceAlertItem[]> => {
-  if (!id || !price) {
-    throw new Error(`[checkAlerts] Не хватает входных данных ${id} ${price}`);
+export const checkAlerts = async (tickerPrices: TickerPrices): Promise<PriceAlertItem[]> => {
+  if (!tickerPrices.length) {
+    throw new Error('[checkAlerts] Не хватает входных данных');
   }
 
-  const triggeredAlerts = await PriceAlertModel.find({
-    tickerId: id,
-    $or: [
-      { lowerThen: { $gte: price } },
-      { greaterThen: { $lte: price } }
-    ]
-  });
+  const $or = tickerPrices.reduce((acc, [ticker, price, tickerId]) => {
+    acc.push(
+      {
+        tickerId,
+        ticker,
+        lowerThen: { $gte: price }
+      },
+      {
+        tickerId,
+        ticker,
+        greaterThen: { $lte: price }
+      }
+    );
 
-  // Актуализируем timestamp о последней проверке
-  await PriceAlertModel.updateMany({ tickerId: id }, { $set: { lastCheckedAt: new Date() } });
+    return acc;
+  }, []);
+
+  const triggeredAlerts = await PriceAlertModel.find({ $or });
+
+  await setLastCheckedAt(tickerPrices.map(([a, b, tickerId]) => tickerId));
 
   return triggeredAlerts;
 };

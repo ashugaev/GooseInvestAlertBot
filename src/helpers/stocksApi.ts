@@ -6,7 +6,8 @@ import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPri
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants';
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
 import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi';
-import { EMarketDataSources, InstrumentsList, InstrumentsListModel } from '../models';
+import {  InstrumentsList, InstrumentsListModel } from '../models';
+import {EMarketDataSources} from "../marketApi/types";
 
 const NodeCache = require('node-cache');
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');

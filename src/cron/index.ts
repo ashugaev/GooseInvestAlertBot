@@ -1,5 +1,3 @@
-import { EMarketDataSources } from '@models';
-
 import { startCronJob } from '../helpers/startCronJob';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
 import { copyAlerts } from './copyAlerts';
@@ -8,6 +6,7 @@ import { setupPriceChecker } from './priceChecker/binance';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
+import {EMarketDataSources} from "../marketApi/types";
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве

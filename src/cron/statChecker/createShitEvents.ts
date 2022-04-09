@@ -1,9 +1,10 @@
 import { log } from '../../helpers/log'
-import {EMarketDataSources, getInstrumentsBySource} from '../../models'
+import { getInstrumentsBySource} from '../../models'
 import { createShiftEvents, ShiftEventItem, ShiftEventsModel } from '../../models/ShiftEvents'
 import { getAllShifts } from '../../models/Shifts'
 import { getShiftsByPercent } from './utils'
 import { calculateShifts } from './utils/calculateShifts'
+import {EMarketDataSources} from "../../marketApi/types";
 
 export const createShitEvents = async (bot) => {
   try {
@@ -21,7 +22,7 @@ export const createShitEvents = async (bot) => {
 
     try {
     // Зафетчили акции/облигации/фонды массивом из базы
-      instruments = await getInstrumentsBySource({ source: EMarketDataSources.tinkoff })
+      instruments = await getInstrumentsBySource(EMarketDataSources.tinkoff )
     } catch (e) {
       log.error('Ошибка получения списка инструментов из базы для шифтов', e)
 

@@ -1,5 +1,4 @@
-import { IMarketDataSourcesConfig } from './types'
-import { EMarketDataSources } from '../models'
+import {EMarketDataSources, IMarketDataSourcesConfig} from './types'
 
 /**
  * Источники из которых получаем котировки

@@ -5,7 +5,7 @@
 // Соответственно у других чекеров этот источник должен быть в исключениях
 
 import {
-  EMarketDataSources,
+  checkAlerts,
   getUniqOutdatedAlertsIds,
   InstrumentsList,
   setLastCheckedAt
@@ -13,9 +13,19 @@ import {
 
 import { log } from '../../helpers/log';
 import { wait } from '../../helpers/wait';
+import { EMarketDataSources } from '../../marketApi/types';
 
 const logPrefix = '[PRICE CHECKER]';
 
+const dropOutInvalidPrices = (prices: TickerPrices) => {
+  const result = prices.filter(([ticker, price]) => (typeof price === 'number' && price > 0));
+
+  if (result.length !== prices.length) {
+    log.error(logPrefix, 'Prices partially invalid');
+  }
+
+  return result;
+};
 /**
  * Алгоритм проверки
  *
@@ -36,7 +46,10 @@ const logPrefix = '[PRICE CHECKER]';
  * Хранит последнюю полученную цену в кэше, что бы избежать проблем с лагающей апишкой
  */
 
-export type TickerPrices = Array<[string, number]>;
+/**
+ *
+ */
+export type TickerPrices = Array<[ticker: string, price: number, tickerId: string]>;
 
 /**
  * Every mitTimeBetweenRequests does request updatePrice, then check triggered alerts
@@ -141,7 +154,29 @@ export const setupPriceChecker = async ({
       continue;
     }
 
-    console.log('prices', prices);
+    prices = dropOutInvalidPrices(prices);
+
+    // No prices case
+    if (!prices.length) {
+      log.error(logPrefix, 'No prices after filtering');
+      continue;
+    }
+
+    let triggeredAlerts = [];
+
+    // Check triggered
+    try {
+      triggeredAlerts = await checkAlerts(prices);
+    } catch (e) {
+      log.error(logPrefix, 'Ошибка проверки сработавших алертов');
+
+      continue;
+    }
+
+    if (triggeredAlerts.length) {
+      // TODO: Добавить сюда цены тригернутых алертов
+      log.info(logPrefix, triggeredAlerts.length, 'Alerts triggered', triggeredAlerts.map(el => ([el.ticker, el.price])));
+    }
   }
 
   /*
@@ -213,6 +248,9 @@ export const setupPriceChecker = async ({
                     if (!isPriceValidValue) {
                         throw new Error('Невалидная цена инструмента');
                     }
+
+                    /////////////
+
                 } catch (e) {
                     // Сейчас этот if не будет срабатывать из-за того хожу теперь в базу а не в апи за данными инструмента
                     if (typeof e === 'object' && e !== null && e.cantFind) {
@@ -241,6 +279,8 @@ export const setupPriceChecker = async ({
 
                     continue;
                 }
+
+                 ///////////
 
                 // Если инструмента больше нет в апи
                 if (removeAlertsForSymbol) {
@@ -272,6 +312,8 @@ export const setupPriceChecker = async ({
                     continue;
                 }
 
+                ///////
+
                 let triggeredAlerts = [];
 
                 try {
@@ -281,6 +323,8 @@ export const setupPriceChecker = async ({
 
                     continue;
                 }
+
+//////////////
 
                 if (triggeredAlerts?.length) {
                     log.debug('Сработали алерты', triggeredAlerts, ' Цена: ', price, ' symbolId:', symbolId);

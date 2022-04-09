@@ -3,7 +3,8 @@ import { ITinkoffSpecificBaseData } from './tinkoff/types';
 
 export enum EMarketDataSources {
   tinkoff = 'tinkoff',
-  coingecko = 'coingecko'
+  coingecko = 'coingecko',
+  binance = 'binance'
 }
 
 // TODO: Можно взять тиньковский тип, вроде там то же самое
