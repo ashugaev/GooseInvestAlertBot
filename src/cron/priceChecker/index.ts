@@ -1,4 +1,6 @@
-
+/**
+ * Old price checker for coingecko and tinkoff
+ */
 import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData';
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk';
 import { i18n } from '../../helpers/i18n';
@@ -13,8 +15,8 @@ import {
 
 let lastApiErrorSentrySentTime = 0;
 const logPrefix = '[PRICE CHECKER]';
-
-export const setupPriceChecker = async (bot) => {
+/*
+export const setupPriceCheckerOld = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
   // и успеть выполнить подготовительные ф-ции
   await wait(30000);
@@ -193,3 +195,4 @@ export const setupPriceChecker = async (bot) => {
     }
   }
 };
+ */

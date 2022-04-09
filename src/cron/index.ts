@@ -1,7 +1,10 @@
+import { EMarketDataSources } from '@models';
+
 import { startCronJob } from '../helpers/startCronJob';
+import { getBinancePrices } from '../marketApi/binance/api/getPrices';
 import { copyAlerts } from './copyAlerts';
 import { instrumentsListUpdater } from './instrumentsListUpdater';
-import { setupPriceChecker } from './priceChecker';
+import { setupPriceChecker } from './priceChecker/binance';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
@@ -45,7 +48,19 @@ export const setupCheckers = (bot) => {
   });
 
   // Мониторинг достижения уровней
-  setupPriceChecker(bot);
+  // setupPriceCheckerOld(bot);
+
+  // TODO: Запускать чекеры через одну команду
+  //
+
+  // Binance
+  setupPriceChecker({
+    source: EMarketDataSources.coingecko,
+    getPrices: getBinancePrices,
+    minTimeBetweenRequests: 10000,
+    sendUserMessage: () => {},
+    waitTimeBeforeStart: 1000
+  });
 
   // Мониторинг скорости
   setupShiftsChecker(bot);

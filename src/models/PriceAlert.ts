@@ -110,10 +110,12 @@ export const addPriceAlerts = (newAlerts: AddPriceAlertParams[]): Promise<PriceA
  * Вернет из базы указанное кол-во уникальных id тикеров, которые давно не проверялись
  *
  * @param number - кол-во, которое нужно проверять. Вернется по факту после схлопывания меньше.
+ *
+ * 10000 - magic number. Just less logic with default value.
  */
-export const getUniqOutdatedAlertsIds = async (number: number): Promise<string[]> => {
+export const getUniqOutdatedAlertsIds = async (source: EMarketDataSources, number?: number = 10000): Promise<string[]> => {
   // Вернем тикеры, которые проверялись больше чем "secondsAgo" назад
-  const secondsAgo = 30;
+  const secondsAgo = 10;
   const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000);
 
   const data = await PriceAlertModel
@@ -123,21 +125,29 @@ export const getUniqOutdatedAlertsIds = async (number: number): Promise<string[]
           { lastCheckedAt: null },
           { lastCheckedAt: { $lte: dateToCheck } }
         ],
-        tickerId: { $exists: true }
+        tickerId: { $exists: true },
+        source,
       },
       { tickerId: 1 })
     .sort({ lastCheckedAt: 1 })
+     // 3 - magic number. Can't predict how many alerts with the same tickers.
     .limit(number * 3)
     .lean();
   const allIds = data.map(elem => elem.tickerId);
-  const uniqIds = Array.from(new Set(allIds));
+  const uniqIds = Array.from(new Set(allIds)).slice(0, number);
 
   return uniqIds;
 };
 
-export const setLastCheckedAt = async (tickerId: string): Promise<void> => {
-  // Актуализируем timestamp о последней проверке
-  await PriceAlertModel.updateMany({ tickerId: tickerId }, { $set: { lastCheckedAt: new Date() } });
+/**
+ * Актуализируем timestamp о последней проверке
+ */
+export const setLastCheckedAt = async (tickerIds: string[] ): Promise<void> => {
+  const $or = tickerIds.map(ticker => ({
+      tickerId: ticker
+  }))
+
+  await PriceAlertModel.updateMany({ $or }, { $set: { lastCheckedAt: new Date() } });
 };
 
 /**

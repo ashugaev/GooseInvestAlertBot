@@ -5,7 +5,8 @@ import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types';
 
 export enum EMarketDataSources {
   tinkoff = 'tinkoff',
-  coingecko = 'coingecko'
+  coingecko = 'coingecko',
+  binance = 'binance'
 }
 
 export enum EMarketInstrumentTypes {
