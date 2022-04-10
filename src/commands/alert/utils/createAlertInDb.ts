@@ -60,7 +60,7 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
     }
 
     const i18nParams = {
-      price: addedPrices.map((el) => `${el}${symbolOrCurrency(instrumentData.currency)}`).join(', '),
+      price: addedPrices.map((el) => `${el}${symbolOrCurrency(instrumentData.currency) ?? ''}`).join(', '),
       symbol: instrumentData.ticker,
       name: instrumentData.name,
       onePrice: createdItemsList.length === 1,
