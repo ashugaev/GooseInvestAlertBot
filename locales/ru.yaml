@@ -49,7 +49,7 @@ help: |
   <b>Источники котировок</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
 
   Все вопросы и пожелания можно написать в чат Гуся: @GooseInvestAlertChat 🦢️️
 
@@ -63,7 +63,7 @@ start: |
   <b>Поддерживаю инструменты</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
 
   Задержка может быть 1-3 минуты
 
@@ -102,7 +102,7 @@ alertErrorUnexistedSymbol: |
   <b>Поддерживаемые инструменты</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
 
 
 alertCreated: |
@@ -223,8 +223,8 @@ alert_choose_between_duplicates: |
 
 ### PRICE
 
-price: |
-  Цена <b>${name}</b> (${symbol}) — <b>${price}${currency}</b>
+price: |  
+  Цена <b>${name}</b>${symbol ? " (" + symbol + ")" : ''} — <b>${price}${currency ? currency : ''}</b>
 
 priceInvalidFormat: |
   ❌ Некорректный ввод!

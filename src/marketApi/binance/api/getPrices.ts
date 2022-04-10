@@ -15,7 +15,7 @@ const allBinanceInstrumentsCache = new NodeCache({
 });
 
 export const getBinancePrices = async (): Promise<TickerPrices> => {
-  const allBinanceInstruments = allBinanceInstrumentsCache.get(null);
+  const allBinanceInstruments = allBinanceInstrumentsCache.get('null');
 
   if (!allBinanceInstruments) {
     const allBinanceInstruments = await getInstrumentsBySource(EMarketDataSources.binance);
@@ -24,15 +24,17 @@ export const getBinancePrices = async (): Promise<TickerPrices> => {
       throw new Error('Ошибка получения списка тикеров Binance');
     }
 
-    allBinanceInstrumentsCache.set(null, allBinanceInstruments);
+    allBinanceInstrumentsCache.set('null', allBinanceInstruments);
   }
 
   const pricesObj = await binance.prices();
 
   const pricesArr = Object.entries(pricesObj).map(([key, val]) => ([key, Number(val)]));
 
+  log.info('Binance instruments', allBinanceInstruments.length);
+
   const pricesArrWithId: TickerPrices = pricesArr.reduce<TickerPrices>((acc, [ticker, price]) => {
-    const tickerId = allBinanceInstruments.find(el => el.ticker === ticker)?.ticker;
+    const tickerId = allBinanceInstruments.find(el => el.ticker === ticker)?.id;
 
     if (tickerId) {
       // @ts-expect-error Вообще типы корректные

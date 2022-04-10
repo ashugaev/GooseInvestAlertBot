@@ -5,17 +5,18 @@
 // Соответственно у других чекеров этот источник должен быть в исключениях
 
 import {
-  checkAlerts,
+  checkAlerts, getInstrumentsBySource,
   getUniqOutdatedAlertsIds,
   InstrumentsList,
   setLastCheckedAt
 } from '@models';
 
 import { log } from '../../helpers/log';
+import { splitArray } from '../../helpers/splitArray';
 import { wait } from '../../helpers/wait';
 import { EMarketDataSources } from '../../marketApi/types';
 
-const logPrefix = '[PRICE CHECKER]';
+const logPrefix = '[BINANCE PRICE CHECKER]';
 
 const dropOutInvalidPrices = (prices: TickerPrices) => {
   const result = prices.filter(([ticker, price]) => (typeof price === 'number' && price > 0));
@@ -113,7 +114,7 @@ export const setupPriceChecker = async ({
 
     lastIterationStartTime = new Date().getTime();
 
-    // Get tickers to ckeck
+    // Get tickers to check
     try {
       tickerIds = await getUniqOutdatedAlertsIds(source, maxTickersForRequest);
     } catch (e) {
@@ -125,7 +126,7 @@ export const setupPriceChecker = async ({
 
     // If nothing to check
     if (!tickerIds?.length) {
-      log.error(logPrefix, 'Нет тикеров для проверки');
+      log.info(logPrefix, 'Нет тикеров для проверки');
       continue;
     } else {
       log.debug(logPrefix, 'Checking tickerIds', tickerIds);
@@ -376,4 +377,138 @@ export const setupPriceChecker = async ({
     }
 
     */
+};
+
+export interface PriceUpdaterParams {
+  /**
+   * The source to be checked
+   */
+  source: EMarketDataSources
+  /**
+   * tickerIds length will be equal maxTickersForRequest
+   */
+  getPrices: (tickerIds: Array<Pick<InstrumentsList, 'id'>>) => Promise<TickerPrices>
+  /**
+   * The maximum number that can be updated for one request of 'updateRequest' callback
+   * null means all tickers for one request
+   */
+  maxTickersForRequest?: number
+  /**
+   * Mit timeout between requests
+   * In ms
+   */
+  minTimeBetweenRequests: number
+}
+
+const NodeCache = require('node-cache');
+
+/**
+ * Cache with all prices by id
+ *
+ * No time limits for cache
+ */
+export const lastPriceCache = new NodeCache();
+
+export const getLastPriceFromCache = async (id) => {
+  const lastPrice = lastPriceCache.get(id);
+
+  // На всякий случай. Вообще пока не должно быть таких кейсов, когда кэш не обновляется сам.
+
+  if (!lastPrice) {
+    throw new Error(`${logPrefix} Get price error`);
+  }
+
+  return lastPrice;
+};
+
+/**
+ * Поддерживает кэш с актуальными ценами для источника
+ */
+export const setupPriceUpdater = async ({
+  getPrices,
+  maxTickersForRequest = 10000,
+  minTimeBetweenRequests,
+  source
+}: PriceUpdaterParams) => {
+  // TODO: Запуск только когда отработало обновление списка инструментов
+
+  let lastIterationStartTime = new Date().getTime();
+
+  while (true) {
+    let sourceInstrumentsList = [];
+
+    // Instruments fetch and error handling
+    try {
+      sourceInstrumentsList = await getInstrumentsBySource(source);
+
+      if (!sourceInstrumentsList.length) {
+        log.error(logPrefix, 'Нет инструментов в списке');
+        await wait(CRASH_WAIT_TIME);
+        continue;
+      }
+    } catch (e) {
+      log.error(logPrefix, 'Ошибки получения списка инструментов');
+      await wait(CRASH_WAIT_TIME);
+      continue;
+    }
+
+    const arrChunks = splitArray(sourceInstrumentsList, maxTickersForRequest);
+
+    log.info(logPrefix, 'Chunks len', arrChunks.length);
+
+    for (let i = 0; i < arrChunks.length; i++) {
+      const chunk = arrChunks[i];
+
+      // Делаем время между итерациями более предсказуемым учитывая время запроса
+      const timeToWait = minTimeBetweenRequests - (new Date().getTime() - lastIterationStartTime);
+
+      if (timeToWait > 0) {
+        log.info(logPrefix, 'waiting', timeToWait);
+        await wait(timeToWait);
+      }
+
+      lastIterationStartTime = new Date().getTime();
+
+      const tickerIds: Array<Pick<InstrumentsList, 'id'>> = chunk.map(el => el.id);
+
+      let prices = [];
+
+      // Get prices for tickers
+      try {
+        prices = await getPrices(tickerIds);
+
+        // No prices case
+        if (!prices?.length) {
+          log.error(logPrefix, 'No prices found for tickers', tickerIds);
+          continue;
+        }
+      } catch (e) {
+        log.error(logPrefix, 'Get price error', e);
+        await wait(CRASH_WAIT_TIME);
+        continue;
+      }
+
+      prices = dropOutInvalidPrices(prices);
+
+      // No prices case
+      if (!prices.length) {
+        log.error(logPrefix, 'No prices after filtering');
+        continue;
+      }
+
+      const cacheData = prices.map(([ticker, price, tickerId]) => ({
+        key: tickerId,
+        val: price
+      }));
+
+      const success = lastPriceCache.mset(cacheData);
+
+      if (!success) {
+        log.error(logPrefix, 'Cache update error');
+        continue;
+      }
+
+      log.info(logPrefix, 'Price cache successfully updated');
+    }
+  }
 };

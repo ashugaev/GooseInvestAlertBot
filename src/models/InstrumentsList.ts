@@ -94,7 +94,7 @@ export async function getInstrumentDataById (id) {
 export async function getInstrumentsBySource (source: EMarketDataSources) {
   const params = { source };
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params);
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
 
   return result;
 }

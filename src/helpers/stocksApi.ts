@@ -1,13 +1,14 @@
 import * as Sentry from '@sentry/node';
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 
+import { getLastPriceFromCache } from '../cron/priceChecker/binance';
 import { coingeckoGetLastPrice } from '../marketApi/coingecko/api/getLastPrice';
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById';
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants';
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
 import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi';
-import {  InstrumentsList, InstrumentsListModel } from '../models';
-import {EMarketDataSources} from "../marketApi/types";
+import { EMarketDataSources } from '../marketApi/types';
+import { InstrumentsList, InstrumentsListModel } from '../models';
 
 const NodeCache = require('node-cache');
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
@@ -42,7 +43,8 @@ const symbolInfoCache = new NodeCache({
   stdTTL: 0
 });
 
-export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>(async (rs, rj) => {
+// eslint-disable-next-line no-async-promise-executor,@typescript-eslint/promise-function-async
+export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>(async (resolve, reject) => {
   try {
     let data = symbolInfoCache.get(symbol);
 
@@ -54,7 +56,7 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
 
     // Полагаюсь что data=null признак того, что это успешный ответ от апи и мы просто ничего не нашли по тикеру
     if (data === null) {
-      rj({
+      reject({
         cantFind: true,
         message: `Заданный инструмент ${symbol} не найден у брокера`
       });
@@ -62,7 +64,7 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
       return;
     }
 
-    rs(data);
+    resolve(data);
   } catch (e) {
     const currentTime = new Date().getTime();
 
@@ -79,7 +81,7 @@ export const getInfoBySymbol = (symbol: string) => new Promise<MarketInstrument>
       tinkoffApiFailureSentTime = currentTime;
     }
 
-    rj(e);
+    reject(e);
   }
 });
 
@@ -114,6 +116,8 @@ export const getLastPrice = async ({
     lastPrice = await tinkoffGetLastPrice({ instrumentData });
   } else if (instrumentData.source === EMarketDataSources.coingecko) {
     lastPrice = await coingeckoGetLastPrice({ instrumentData });
+  } else if (instrumentData.source === EMarketDataSources.binance) {
+    lastPrice = await getLastPriceFromCache(instrumentData.id);
   } else {
     throw new Error('Инструмент без параметра source');
   }

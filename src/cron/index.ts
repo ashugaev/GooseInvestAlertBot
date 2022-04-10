@@ -1,12 +1,12 @@
 import { startCronJob } from '../helpers/startCronJob';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
+import { EMarketDataSources } from '../marketApi/types';
 import { copyAlerts } from './copyAlerts';
 import { instrumentsListUpdater } from './instrumentsListUpdater';
-import { setupPriceChecker } from './priceChecker/binance';
+import { setupPriceUpdater } from './priceChecker/binance';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
-import {EMarketDataSources} from "../marketApi/types";
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -31,9 +31,10 @@ export const setupCheckers = (bot) => {
     callback: instrumentsListUpdater,
     callbackArgs: [bot],
     // раз день в 3 часа
-    period: '0 3 * * *',
+    period: '0 3 * * *'
     // TODO: Не проставлять в dev окружении
-    executeBeforeInit: true
+    // FIXME: Вернуть
+    // executeBeforeInit: true
   });
 
   // Дамп коллекции с алертами
@@ -53,13 +54,18 @@ export const setupCheckers = (bot) => {
   //
 
   // Binance
-  setupPriceChecker({
-    source: EMarketDataSources.coingecko,
-    getPrices: getBinancePrices,
+  setupPriceUpdater({
     minTimeBetweenRequests: 10000,
-    sendUserMessage: () => {},
-    waitTimeBeforeStart: 1000
+    getPrices: getBinancePrices,
+    source: EMarketDataSources.binance
   });
+  // setupPriceChecker({
+  //   source: EMarketDataSources.binance,
+  //   getPrices: getBinancePrices,
+  //   minTimeBetweenRequests: 10000,
+  //   sendUserMessage: () => {},
+  //   waitTimeBeforeStart: 1000
+  // });
 
   // Мониторинг скорости
   setupShiftsChecker(bot);
