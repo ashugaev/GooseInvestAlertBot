@@ -1,5 +1,6 @@
 import { log } from '../helpers/log';
 import { InstrumentsList } from '../models';
+import { binanceGetAllInstruments } from './binance/api/getAllInstruments';
 import { coingeckoGetAllInstruments } from './coingecko/api/getAllInstruments';
 import { tinkoffGetAllInstruments } from './tinkoff/api/getAllInstruments';
 
@@ -11,7 +12,8 @@ import { tinkoffGetAllInstruments } from './tinkoff/api/getAllInstruments';
 export const getAllInstruments = async (): Promise<InstrumentsList[]> => {
   const allInstrumentsPromises = [
     coingeckoGetAllInstruments(),
-    tinkoffGetAllInstruments()
+    tinkoffGetAllInstruments(),
+    binanceGetAllInstruments()
   ];
 
   const allInstrumentsArr = await Promise.all(allInstrumentsPromises);
