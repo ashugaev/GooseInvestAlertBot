@@ -8,7 +8,6 @@ import { binance } from '../utils/binance';
 export interface BinanceSourceSpecificData {
   status: string
   baseAsset: string
-  quoteAsset: string
   quote: string
   quotePrecision: number
   quoteAssetPrecision: number
@@ -18,14 +17,16 @@ export interface BinanceSourceSpecificData {
 
 export interface BinanceTicker extends BinanceSourceSpecificData {
   symbol: string
+  quoteAsset: string
 }
 
 const normalizeItem = (item: BinanceTicker): InstrumentsList => {
-  const { symbol, ...specificData } = item;
+  const { symbol, quoteAsset, ...specificData } = item;
 
   const result = {
     id: `binance_${symbol}`,
     source: EMarketDataSources.binance,
+    currency: quoteAsset,
     name: symbol,
     ticker: symbol,
     type: EMarketInstrumentTypes.Crypto,

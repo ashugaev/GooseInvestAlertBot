@@ -137,7 +137,7 @@ alertList_titles: |
   🔔 Подписки на достижение ценовых уровней. Выбери тикер для просмотра списка оповещений
 
 alertList_page: |
-  🔔 Список оповещений для: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${price ? '<b>' + price + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  🔔 Список оповещений для: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[график]</a>' : ''}
 
   ${list}
 
@@ -196,7 +196,7 @@ alertsList_shifts_list: |
   ${showEditMessage ? 'Выбери номер для редактирования' : ''}
 
 alertsList_shifts_listItem: |
-  ${number}. <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
+  ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
 
 alertsList_shifts_editOne: |
   <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>

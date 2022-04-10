@@ -140,6 +140,8 @@ export const getLastPriceById = async (id: string, source: EMarketDataSources) =
       lastPrice = await tinkoffGetLastPriceByFigi(id);
     } else if (source === EMarketDataSources.coingecko) {
       lastPrice = await coingeckoGetLastPriceById(id);
+    } else if (source === EMarketDataSources.binance) {
+      lastPrice = await getLastPriceFromCache(id);
     } else {
       throw new Error('Инструмент без параметра source');
     }
