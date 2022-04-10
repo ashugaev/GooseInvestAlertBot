@@ -115,7 +115,7 @@ export const addPriceAlerts = (newAlerts: AddPriceAlertParams[]): Promise<PriceA
  *
  * 10000 - magic number. Just less logic with default value.
  */
-export const getUniqOutdatedAlertsIds = async (source: EMarketDataSources, number: number = 10000): Promise<string[]> => {
+export const getUniqOutdatedAlertsIds = async (source?: EMarketDataSources, number: number = 10000): Promise<string[]> => {
   // Вернем тикеры, которые проверялись больше чем "secondsAgo" назад
   const secondsAgo = 10;
   const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000);

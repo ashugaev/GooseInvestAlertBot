@@ -3,6 +3,7 @@ import { getBinancePrices } from '../marketApi/binance/api/getPrices';
 import { EMarketDataSources } from '../marketApi/types';
 import { copyAlerts } from './copyAlerts';
 import { instrumentsListUpdater } from './instrumentsListUpdater';
+import { setupPriceCheckerOld } from './priceChecker';
 import { setupPriceUpdater } from './priceChecker/binance';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
@@ -48,12 +49,12 @@ export const setupCheckers = (bot) => {
   });
 
   // Мониторинг достижения уровней
-  // setupPriceCheckerOld(bot);
+  setupPriceCheckerOld(bot);
 
   // TODO: Запускать чекеры через одну команду
   //
 
-  // Binance
+  // BINANCE
   setupPriceUpdater({
     minTimeBetweenRequests: 10000,
     getPrices: getBinancePrices,

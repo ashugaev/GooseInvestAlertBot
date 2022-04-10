@@ -15,7 +15,7 @@ import {
 
 let lastApiErrorSentrySentTime = 0;
 const logPrefix = '[PRICE CHECKER]';
-/*
+
 export const setupPriceCheckerOld = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
   // и успеть выполнить подготовительные ф-ции
@@ -26,7 +26,7 @@ export const setupPriceCheckerOld = async (bot) => {
       let ids = [];
 
       try {
-        ids = await getUniqOutdatedAlertsIds(100);
+        ids = await getUniqOutdatedAlertsIds(undefined, 100);
       } catch (e) {
         log.error('[setupPriceChecker] ошибка подключения к базе', e);
       }
@@ -61,7 +61,7 @@ export const setupPriceCheckerOld = async (bot) => {
           //  копиться список, который рано или поздно вытеснит "живые монеты"
           //  FIXME: Если монета удалена - повещать юзера и ставить статус алерту DELETED_TICKER
           if (!result) {
-            await setLastCheckedAt(symbolId);
+            await setLastCheckedAt([symbolId]);
             log.info(logPrefix, 'Пропустил проверку цена для', symbolId);
             continue;
           }
@@ -139,7 +139,7 @@ export const setupPriceCheckerOld = async (bot) => {
         let triggeredAlerts = [];
 
         try {
-          triggeredAlerts = await checkAlerts({ id: symbolId, price });
+          triggeredAlerts = await checkAlerts([[instrumentData.ticker, price, symbolId]]);
         } catch (e) {
           log.error('ошибка получения алертов', 'price', price, 'symbolId', symbolId, 'error', e);
 
@@ -195,4 +195,3 @@ export const setupPriceCheckerOld = async (bot) => {
     }
   }
 };
- */
