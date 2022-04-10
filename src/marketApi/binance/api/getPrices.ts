@@ -15,10 +15,10 @@ const allBinanceInstrumentsCache = new NodeCache({
 });
 
 export const getBinancePrices = async (): Promise<TickerPrices> => {
-  const allBinanceInstruments = allBinanceInstrumentsCache.get('null');
+  let allBinanceInstruments = allBinanceInstrumentsCache.get('null');
 
   if (!allBinanceInstruments) {
-    const allBinanceInstruments = await getInstrumentsBySource(EMarketDataSources.binance);
+    allBinanceInstruments = await getInstrumentsBySource(EMarketDataSources.binance);
 
     if (!allBinanceInstruments) {
       throw new Error('Ошибка получения списка тикеров Binance');

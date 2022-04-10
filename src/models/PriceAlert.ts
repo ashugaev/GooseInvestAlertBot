@@ -58,8 +58,8 @@ export class PriceAlert {
   @prop({ required: true })
   name: string;
 
-  @prop({ required: true })
-  currency: string;
+  @prop({ required: false })
+  currency?: string;
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
