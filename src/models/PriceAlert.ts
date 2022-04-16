@@ -120,16 +120,22 @@ export const getUniqOutdatedAlertsIds = async (source?: EMarketDataSources, numb
   const secondsAgo = 10;
   const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000);
 
+  const findParams = {
+    $or: [
+      { lastCheckedAt: null },
+      { lastCheckedAt: { $lte: dateToCheck } }
+    ],
+    tickerId: { $exists: true }
+  };
+
+  if (source) {
+    // @ts-expect-error
+    findParams.source = source;
+  }
+
   const data = await PriceAlertModel
     .find(
-      {
-        $or: [
-          { lastCheckedAt: null },
-          { lastCheckedAt: { $lte: dateToCheck } }
-        ],
-        tickerId: { $exists: true },
-        source
-      },
+      findParams,
       { tickerId: 1 })
     .sort({ lastCheckedAt: 1 })
   // 3 - magic number. Can't predict how many alerts with the same tickers.

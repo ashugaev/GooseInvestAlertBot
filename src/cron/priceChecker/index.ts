@@ -33,7 +33,7 @@ export const setupPriceCheckerOld = async (bot) => {
 
       // Если пока нечего проверять
       if (!ids?.length) {
-        await wait(30000);
+        await wait(10000);
         continue;
       } else {
         log.debug('Проверяю id', ids);
