@@ -3,7 +3,8 @@ import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 import { log } from '../../../helpers/log';
 import { stocksApi } from '../../../helpers/stocksApi';
 import { wait } from '../../../helpers/wait';
-import { EMarketDataSources, InstrumentsList } from '../../../models';
+import { InstrumentsList } from '../../../models';
+import { EMarketDataSources } from '../../types';
 
 /**
  * Замены для зашкварных тикеров валют

@@ -49,7 +49,7 @@ help: |
   <b>Источники котировок</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
 
   Все вопросы и пожелания можно написать в чат Гуся: @GooseInvestAlertChat 🦢️️
 
@@ -63,7 +63,7 @@ start: |
   <b>Поддерживаю инструменты</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
 
   Задержка может быть 1-3 минуты
 
@@ -85,7 +85,7 @@ alertRemovedBySymbolNothingDeleted: |
   🛑 У тебя нет оповещений для <b>${symbol}</b>
 
 alertRemovedBySymbolWithAlias: |
-  🦢 Удалил все оповещения для <b>${aliasName}</b> (${symbol})
+  🦢 Удалил все оповещения для <b>${aliasName}</b> ${(symbol && symbol !== name) ? " (" + symbol + ")" : ''}
 
 alertRemoveError: |
   ❌ Ошибка удаления оповещения!
@@ -102,11 +102,11 @@ alertErrorUnexistedSymbol: |
   <b>Поддерживаемые инструменты</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
 
 
 alertCreated: |
-  🦢 Когда цена <b>${name}</b> (${symbol}) достигнет ${onePrice ? 'уровня' : 'каждого из уровней'} <b>${price}</b>, я тебе сообщу!
+  🦢 Когда цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} достигнет ${onePrice ? 'уровня' : 'каждого из уровней'} <b>${price}</b>, я тебе сообщу!
 
   ${invalid ? '❌ Не смог распознать уровни <b>' + invalid + '</b>' : ''}
 
@@ -127,7 +127,7 @@ priceCheckerErrorCantFind: |
   ❌ Ошибка оповещения для <b>${symbol}</b> на цену <b>${price}</b>. Инструмент не найден. Удаляю его.
 
 priceChecker_triggeredAlert: |
-  🔔 Цена <b>${name}</b> (${symbol}) ${greaterThen ? '↗️ <b>выросла</b>' : '↘️ <b>упала</b>'} до целевого значения <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  🔔 Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${greaterThen ? '↗️ <b>выросла</b>' : '↘️ <b>упала</b>'} до целевого значения <b>${price}${currency ? currency : ''}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
 
   ${message ? '💬 <b>Твой комментарий:</b>\n<i>' + message + '</i>' : ''}
 
@@ -137,14 +137,14 @@ alertList_titles: |
   🔔 Подписки на достижение ценовых уровней. Выбери тикер для просмотра списка оповещений
 
 alertList_page: |
-  🔔 Список оповещений для: <b>${name}</b> (${symbol}) - ${price ? '<b>' + price + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  🔔 Список оповещений для: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[график]</a>' : ''}
 
   ${list}
 
   ${showEditMessage ? 'Выбери номер для редактирования' : ''}
 
 alertList_item: |
-  ${number}. ${growth ? '↗️ <b>Рост</b>' : '↘️ <b>Падение</b>' } до <b>${price}${currency}</b>
+  ${number}. ${growth ? '↗️ <b>Рост</b>' : '↘️ <b>Падение</b>' } до <b>${price}${currency ? currency : ''}</b>
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
 
 alertListDeleteButton: Удалить
@@ -175,7 +175,7 @@ alertListErrorInvalidFormat: |
   Чтобы увидеть весь список команд и получить больше информации, отправь команду /help
 
 alertsList_editOne: |
-  <b>${name}</b> (${symbol}) - ${growth ? '↗️ <b>рост</b>' : '↘️ <b>падение</b>' } до <b>${price}${currency}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${growth ? '↗️ <b>рост</b>' : '↘️ <b>падение</b>' } до <b>${price}${currency ? currency : ''}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
 
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
 
@@ -196,7 +196,7 @@ alertsList_shifts_list: |
   ${showEditMessage ? 'Выбери номер для редактирования' : ''}
 
 alertsList_shifts_listItem: |
-  ${number}. <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
+  ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
 
 alertsList_shifts_editOne: |
   <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
@@ -223,8 +223,8 @@ alert_choose_between_duplicates: |
 
 ### PRICE
 
-price: |
-  Цена <b>${name}</b> (${symbol}) — <b>${price}${currency}</b>
+price: |  
+  Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} — <b>${price}${currency ? currency : ''}</b>
 
 priceInvalidFormat: |
   ❌ Некорректный ввод!

@@ -35,15 +35,24 @@ export function setupPrice (bot: Telegraf<Context>) {
         return;
       }
 
-      const { name } = instrumentData;
-      const { currency } = instrumentData;
+      const { name, currency, ticker } = instrumentData;
 
-      ctx.replyWithHTML(ctx.i18n.t('price', {
+      const templateData = {
         price,
-        currency: symbolOrCurrency(currency),
         name,
-        symbol: symbol.toUpperCase()
-      }));
+        symbol: null,
+        currency: null
+      };
+
+      if (currency) {
+        templateData.currency = symbolOrCurrency(currency);
+      }
+
+      if (name.toUpperCase() !== ticker.toUpperCase()) {
+        templateData.symbol = ticker;
+      }
+
+      ctx.replyWithHTML(ctx.i18n.t('price', templateData));
 
       return;
     }

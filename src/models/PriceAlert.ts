@@ -1,8 +1,10 @@
 // Dependencies
 import { InstrumentType } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 import { getModelForClass, prop } from '@typegoose/typegoose';
+import { TickerPrices } from 'prices';
 
-import { EMarketDataSources, EMarketInstrumentTypes } from './InstrumentsList';
+import { EMarketDataSources } from '../marketApi/types';
+import { EMarketInstrumentTypes } from './InstrumentsList';
 
 export interface AddPriceAlertParams {
   tickerId: string
@@ -56,8 +58,8 @@ export class PriceAlert {
   @prop({ required: true })
   name: string;
 
-  @prop({ required: true })
-  currency: string;
+  @prop({ required: false })
+  currency?: string;
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
@@ -110,54 +112,80 @@ export const addPriceAlerts = (newAlerts: AddPriceAlertParams[]): Promise<PriceA
  * Вернет из базы указанное кол-во уникальных id тикеров, которые давно не проверялись
  *
  * @param number - кол-во, которое нужно проверять. Вернется по факту после схлопывания меньше.
+ *
+ * 10000 - magic number. Just less logic with default value.
  */
-export const getUniqOutdatedAlertsIds = async (number: number): Promise<string[]> => {
+export const getUniqOutdatedAlertsIds = async (source?: EMarketDataSources, number: number = 10000): Promise<string[]> => {
   // Вернем тикеры, которые проверялись больше чем "secondsAgo" назад
-  const secondsAgo = 30;
+  const secondsAgo = 10;
   const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000);
+
+  const findParams = {
+    $or: [
+      { lastCheckedAt: null },
+      { lastCheckedAt: { $lte: dateToCheck } }
+    ],
+    tickerId: { $exists: true }
+  };
+
+  if (source) {
+    // @ts-expect-error
+    findParams.source = source;
+  }
 
   const data = await PriceAlertModel
     .find(
-      {
-        $or: [
-          { lastCheckedAt: null },
-          { lastCheckedAt: { $lte: dateToCheck } }
-        ],
-        tickerId: { $exists: true }
-      },
+      findParams,
       { tickerId: 1 })
     .sort({ lastCheckedAt: 1 })
+  // 3 - magic number. Can't predict how many alerts with the same tickers.
     .limit(number * 3)
     .lean();
   const allIds = data.map(elem => elem.tickerId);
-  const uniqIds = Array.from(new Set(allIds));
+  const uniqIds = Array.from(new Set(allIds)).slice(0, number);
 
   return uniqIds;
 };
 
-export const setLastCheckedAt = async (tickerId: string): Promise<void> => {
-  // Актуализируем timestamp о последней проверке
-  await PriceAlertModel.updateMany({ tickerId: tickerId }, { $set: { lastCheckedAt: new Date() } });
+/**
+ * Актуализируем timestamp о последней проверке
+ */
+export const setLastCheckedAt = async (tickerIds: string[]): Promise<void> => {
+  const $or = tickerIds.map(ticker => ({
+    tickerId: ticker
+  }));
+
+  await PriceAlertModel.updateMany({ $or }, { $set: { lastCheckedAt: new Date() } });
 };
 
 /**
  * Вернет массив сработавших алертов
  */
-export const checkAlerts = async ({ id, price }: ICheckAlertsParams): Promise<PriceAlertItem[]> => {
-  if (!id || !price) {
-    throw new Error(`[checkAlerts] Не хватает входных данных ${id} ${price}`);
+export const checkAlerts = async (tickerPrices: TickerPrices): Promise<PriceAlertItem[]> => {
+  if (!tickerPrices.length) {
+    throw new Error('[checkAlerts] Не хватает входных данных');
   }
 
-  const triggeredAlerts = await PriceAlertModel.find({
-    tickerId: id,
-    $or: [
-      { lowerThen: { $gte: price } },
-      { greaterThen: { $lte: price } }
-    ]
-  });
+  const $or = tickerPrices.reduce((acc, [symbol, price, tickerId]) => {
+    acc.push(
+      {
+        tickerId,
+        // symbol,
+        lowerThen: { $gte: price }
+      },
+      {
+        tickerId,
+        // symbol,
+        greaterThen: { $lte: price }
+      }
+    );
 
-  // Актуализируем timestamp о последней проверке
-  await PriceAlertModel.updateMany({ tickerId: id }, { $set: { lastCheckedAt: new Date() } });
+    return acc;
+  }, []);
+
+  const triggeredAlerts = await PriceAlertModel.find({ $or }).lean();
+
+  await setLastCheckedAt(tickerPrices.map(([a, b, tickerId]) => tickerId));
 
   return triggeredAlerts;
 };

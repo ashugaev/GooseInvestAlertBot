@@ -1,7 +1,10 @@
 import { startCronJob } from '../helpers/startCronJob';
+import { getBinancePrices } from '../marketApi/binance/api/getPrices';
+import { EMarketDataSources } from '../marketApi/types';
+import { setupPriceUpdater } from '../modules';
 import { copyAlerts } from './copyAlerts';
 import { instrumentsListUpdater } from './instrumentsListUpdater';
-import { setupPriceChecker } from './priceChecker';
+import { setupPriceCheckerOld } from './priceChecker';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
@@ -45,7 +48,16 @@ export const setupCheckers = (bot) => {
   });
 
   // Мониторинг достижения уровней
-  setupPriceChecker(bot);
+  setupPriceCheckerOld(bot);
+
+  /**
+   * BINANCE prices updater
+   */
+  setupPriceUpdater({
+    minTimeBetweenRequests: 10000,
+    getPrices: getBinancePrices,
+    source: EMarketDataSources.binance
+  });
 
   // Мониторинг скорости
   setupShiftsChecker(bot);

@@ -1,4 +1,8 @@
-
+/**
+ * Old price checker for coingecko and tinkoff
+ *
+ * TODO: ПЕРЕЙТИ НА НОВУЮ ВЕРСИЮ ИЗ modules/priceChecker ПОСЛЕ ПОДКЛЮЧЕНИЯ АПДЕЙТЕРА ЦЕН ДЛЯ ВСЕХ АПИ
+ */
 import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData';
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk';
 import { i18n } from '../../helpers/i18n';
@@ -14,7 +18,7 @@ import {
 let lastApiErrorSentrySentTime = 0;
 const logPrefix = '[PRICE CHECKER]';
 
-export const setupPriceChecker = async (bot) => {
+export const setupPriceCheckerOld = async (bot) => {
   // Ожидание преред запуском что бы не спамить на хотрелоаде
   // и успеть выполнить подготовительные ф-ции
   await wait(30000);
@@ -24,14 +28,14 @@ export const setupPriceChecker = async (bot) => {
       let ids = [];
 
       try {
-        ids = await getUniqOutdatedAlertsIds(100);
+        ids = await getUniqOutdatedAlertsIds(undefined, 100);
       } catch (e) {
         log.error('[setupPriceChecker] ошибка подключения к базе', e);
       }
 
       // Если пока нечего проверять
       if (!ids?.length) {
-        await wait(30000);
+        await wait(10000);
         continue;
       } else {
         log.debug('Проверяю id', ids);
@@ -59,7 +63,7 @@ export const setupPriceChecker = async (bot) => {
           //  копиться список, который рано или поздно вытеснит "живые монеты"
           //  FIXME: Если монета удалена - повещать юзера и ставить статус алерту DELETED_TICKER
           if (!result) {
-            await setLastCheckedAt(symbolId);
+            await setLastCheckedAt([symbolId]);
             log.info(logPrefix, 'Пропустил проверку цена для', symbolId);
             continue;
           }
@@ -137,7 +141,7 @@ export const setupPriceChecker = async (bot) => {
         let triggeredAlerts = [];
 
         try {
-          triggeredAlerts = await checkAlerts({ id: symbolId, price });
+          triggeredAlerts = await checkAlerts([[instrumentData.ticker, price, symbolId]]);
         } catch (e) {
           log.error('ошибка получения алертов', 'price', price, 'symbolId', symbolId, 'error', e);
 

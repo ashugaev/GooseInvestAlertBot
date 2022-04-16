@@ -4,4 +4,4 @@ export const symbols = {
   EUR: '€'
 };
 
-export const symbolOrCurrency = (currency: string): string => symbols[currency] || currency;
+export const symbolOrCurrency = (currency: string): string => currency && (symbols[currency] || ' ' + currency);

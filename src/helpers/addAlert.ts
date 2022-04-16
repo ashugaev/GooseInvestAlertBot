@@ -111,7 +111,7 @@ export const addAlert = async ({
   const { currency } = instrumentData;
 
   const i18nParams = {
-    price: priceAlerts.map((el: string) => `${el}${symbolOrCurrency(currency)}`).join(', '),
+    price: priceAlerts.map((el: string) => `${el}${symbolOrCurrency(currency) ?? ''}`).join(', '),
     symbol,
     name,
     invalid: null,

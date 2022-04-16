@@ -1,12 +1,9 @@
 import { getModelForClass, prop } from '@typegoose/typegoose';
 
+import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstruments';
 import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types';
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types';
-
-export enum EMarketDataSources {
-  tinkoff = 'tinkoff',
-  coingecko = 'coingecko'
-}
+import { EMarketDataSources } from '../marketApi/types';
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
@@ -46,11 +43,11 @@ export class InstrumentsList {
   @prop({ required: true })
   type: EMarketInstrumentTypes;
 
-  @prop({ required: true })
-  currency: string;
+  @prop({ required: false })
+  currency?: string;
 
   @prop({ required: true })
-  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData;
+  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData | BinanceSourceSpecificData;
 }
 
 export const InstrumentsListModel = getModelForClass(InstrumentsList, {
@@ -94,14 +91,10 @@ export async function getInstrumentDataById (id) {
   return result[0];
 }
 
-export interface IGetInstrumentsByTypeParams {
-  source: EMarketDataSources
-}
-
-export async function getInstrumentsBySource ({ source }: IGetInstrumentsByTypeParams) {
+export async function getInstrumentsBySource (source: EMarketDataSources) {
   const params = { source };
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params);
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
 
   return result;
 }
