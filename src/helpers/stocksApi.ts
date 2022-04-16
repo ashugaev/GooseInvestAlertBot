@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 
-import { getLastPriceFromCache } from '../cron/priceChecker/binance';
 import { coingeckoGetLastPrice } from '../marketApi/coingecko/api/getLastPrice';
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById';
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants';
@@ -9,6 +8,7 @@ import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
 import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi';
 import { EMarketDataSources } from '../marketApi/types';
 import { InstrumentsList, InstrumentsListModel } from '../models';
+import {getLastPriceFromCache} from "../modules";
 
 const NodeCache = require('node-cache');
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');

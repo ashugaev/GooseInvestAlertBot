@@ -1,8 +1,8 @@
 // Dependencies
 import { InstrumentType } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 import { getModelForClass, prop } from '@typegoose/typegoose';
+import { TickerPrices } from 'prices';
 
-import { TickerPrices } from '../cron/priceChecker/binance';
 import { EMarketDataSources } from '../marketApi/types';
 import { EMarketInstrumentTypes } from './InstrumentsList';
 

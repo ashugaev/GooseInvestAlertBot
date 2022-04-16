@@ -1,5 +1,7 @@
 /**
  * Old price checker for coingecko and tinkoff
+ *
+ * TODO: ПЕРЕЙТИ НА НОВУЮ ВЕРСИЮ ИЗ modules/priceChecker ПОСЛЕ ПОДКЛЮЧЕНИЯ АПДЕЙТЕРА ЦЕН ДЛЯ ВСЕХ АПИ
  */
 import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData';
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk';

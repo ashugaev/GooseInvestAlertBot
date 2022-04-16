@@ -3,12 +3,14 @@
  */
 
 import { getInstrumentsBySource } from '@models';
+import { TickerPrices } from 'prices';
 
-import { TickerPrices } from '../../../cron/priceChecker/binance';
 import { log } from '../../../helpers/log';
 import { EMarketDataSources } from '../../types';
 import { binance } from '../utils/binance';
 const NodeCache = require('node-cache');
+
+const logPrefix = '[GET PRICES]';
 
 const allBinanceInstrumentsCache = new NodeCache({
   stdTTL: 60 // sec
@@ -40,7 +42,7 @@ export const getBinancePrices = async (): Promise<TickerPrices> => {
       // @ts-expect-error Вообще типы корректные
       acc.push([ticker, price, tickerId]);
     } else {
-      log.error('Can\'t find ticker in database', ticker);
+      log.error(logPrefix, 'Can\'t find ticker in database', ticker);
     }
 
     return acc;
