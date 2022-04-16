@@ -1,7 +1,5 @@
 // FIXME: KILL or change path
 
-// FIXME: Kill this file after api implementation
-
 const https = require("https");
 
 // Репа с примером
