@@ -166,16 +166,16 @@ export const checkAlerts = async (tickerPrices: TickerPrices): Promise<PriceAler
     throw new Error('[checkAlerts] Не хватает входных данных');
   }
 
-  const $or = tickerPrices.reduce((acc, [ticker, price, tickerId]) => {
+  const $or = tickerPrices.reduce((acc, [symbol, price, tickerId]) => {
     acc.push(
       {
         tickerId,
-        ticker,
+        // symbol,
         lowerThen: { $gte: price }
       },
       {
         tickerId,
-        ticker,
+        // symbol,
         greaterThen: { $lte: price }
       }
     );
@@ -183,7 +183,7 @@ export const checkAlerts = async (tickerPrices: TickerPrices): Promise<PriceAler
     return acc;
   }, []);
 
-  const triggeredAlerts = await PriceAlertModel.find({ $or });
+  const triggeredAlerts = await PriceAlertModel.find({ $or }).lean();
 
   await setLastCheckedAt(tickerPrices.map(([a, b, tickerId]) => tickerId));
 
