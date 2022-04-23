@@ -48,10 +48,11 @@ export function setupAlert (bot: Telegraf<Context>) {
     data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9]+)$/);
 
     if (data) {
-      await addAlertScenario(ctx,
+      addAlertScenario(ctx,
         {
           ticker: data[2].toUpperCase()
-        });
+        }
+      );
 
       return;
     }
@@ -62,7 +63,11 @@ export function setupAlert (bot: Telegraf<Context>) {
     if (data) {
       const symbol = data[1].toUpperCase();
 
-      await removePriceAlertAndSendMessage({ symbol, user, ctx });
+      try {
+        await removePriceAlertAndSendMessage({ symbol, user, ctx });
+      } catch (e) {
+        await ctx.replyWithHTML(ctx.i18n.t('alertRemoveError'));
+      }
 
       return;
     }
@@ -74,24 +79,15 @@ export function setupAlert (bot: Telegraf<Context>) {
   bot.command(['alert', 'add'], callback);
   bot.hears(i18n.t('ru', 'alert_button'), callback);
 
-  function removePriceAlertAndSendMessage ({ user, symbol, ctx }) {
-    return new Promise(async (rs, rj) => {
-      try {
-        const deletedCount = await removePriceAlert({ symbol, user });
+  async function removePriceAlertAndSendMessage ({ user, symbol, ctx }) {
+    const deletedCount = await removePriceAlert({ symbol, user });
 
-        if (deletedCount) {
-          ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', { symbol: symbol.toUpperCase() }));
-        } else {
-          ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbolNothingDeleted', { symbol: symbol.toUpperCase() }));
-        }
+    if (deletedCount) {
+      ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', { symbol: symbol.toUpperCase() }));
+    } else {
+      ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbolNothingDeleted', { symbol: symbol.toUpperCase() }));
+    }
 
-        log.info('Удалены алерты для', symbol, user);
-
-        rs();
-      } catch (e) {
-        await ctx.replyWithHTML(ctx.i18n.t('alertRemoveError'));
-        rj(e);
-      }
-    });
-  }
+    log.info('Удалены алерты для', symbol, user);
+  };
 }
