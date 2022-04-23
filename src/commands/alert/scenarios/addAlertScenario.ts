@@ -1,4 +1,4 @@
-
+import { i18n } from '../../../helpers/i18n';
 import { getInstrumentInfoByTicker } from '../../../models';
 import { COMMON_SCENES } from '../../../scenes/scenes.constants';
 import { ALERT_SCENES } from '../alert.constants';
@@ -34,7 +34,12 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       createdItemsList
     } = state;
 
-    // Спросим тикер, если его нет
+    /**
+     * Step 1
+     * - No ticker
+     *
+     * Ask user ticker and save it in context
+     */
     if (!ticker) {
       ctx.scene.enter(ALERT_SCENES.askTicker, {
         payload: {},
@@ -44,12 +49,31 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       return;
     }
 
-    // Подтянет список инструментов, если его не было
-    if (ticker && !instrumentsList) {
+    /**
+     * Step 2
+     * - Have ticker
+     * - No ticker data from db
+     *
+     * Find ticker in DB and save results in context
+     */
+    if (ticker && !instrumentsList?.length) {
       (async () => {
-        const instrumentsList = await getInstrumentInfoByTicker({ ticker });
+        try {
+          const instrumentsList = await getInstrumentInfoByTicker({ ticker });
 
-        nextStep({ instrumentsList });
+          if (!instrumentsList.length) {
+            await ctx.replyWithHTML(
+              i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol: ticker }),
+              { disable_web_page_preview: true }
+            );
+
+            return;
+          }
+
+          nextStep({ instrumentsList });
+        } catch (e) {
+          await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+        }
       })();
 
       return;
@@ -65,8 +89,10 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       return;
     }
 
-    // Спросим цену, если её нет
-    if (!prices && instrumentsList && ticker) {
+    /**
+     * Спросим цену, если её нет
+     */
+    if (!prices && instrumentsList.length === 1 && ticker) {
       ctx.scene.enter(ALERT_SCENES.askPrice, {
         payload: { instrumentsList },
         callback: nextStep
