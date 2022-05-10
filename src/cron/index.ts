@@ -1,13 +1,16 @@
 import { startCronJob } from '../helpers/startCronJob';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
+import { getCurrenciesList } from '../marketApi/currencyConverter/getList';
 import { EMarketDataSources } from '../marketApi/types';
-import { setupPriceUpdater } from '../modules';
+import { setupPriceUpdater, updateTickersList } from '../modules';
 import { copyAlerts } from './copyAlerts';
 import { instrumentsListUpdater } from './instrumentsListUpdater';
 import { setupPriceCheckerOld } from './priceChecker';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
+
+const isProduction = process.env.NODE_EVN === 'production';
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -33,8 +36,22 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз день в 3 часа
     period: '0 3 * * *',
-    // TODO: Не проставлять в dev окружении
-    executeBeforeInit: true
+    // eslint-disable-next-line no-unneeded-ternary
+    executeBeforeInit: !!isProduction
+  });
+
+  startCronJob({
+    name: 'Update Currencies List',
+    callback: updateTickersList({
+      getList: getCurrenciesList,
+      source: EMarketDataSources.yahoo,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в неделю или при деплое
+    period: '0 0 * * 0',
+    // eslint-disable-next-line no-unneeded-ternary
+    executeBeforeInit: isProduction ? true : true
   });
 
   // Дамп коллекции с алертами

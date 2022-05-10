@@ -2,6 +2,7 @@ import { getModelForClass, prop } from '@typegoose/typegoose';
 
 import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstruments';
 import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types';
+import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList';
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types';
 import { EMarketDataSources } from '../marketApi/types';
 
@@ -47,7 +48,11 @@ export class InstrumentsList {
   currency?: string;
 
   @prop({ required: true })
-  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData | BinanceSourceSpecificData;
+  sourceSpecificData:
+  ICoingecoSpecificBaseData |
+  ITinkoffSpecificBaseData |
+  BinanceSourceSpecificData |
+  CurrencyApiSpecificData;
 }
 
 export const InstrumentsListModel = getModelForClass(InstrumentsList, {

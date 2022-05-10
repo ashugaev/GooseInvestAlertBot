@@ -42,7 +42,7 @@ export const getBinancePrices = async (): Promise<TickerPrices> => {
       // @ts-expect-error Вообще типы корректные
       acc.push([ticker, price, tickerId]);
     } else {
-      log.error(logPrefix, 'Can\'t find ticker in database', ticker);
+      log.error(logPrefix, 'Can\'t find Binance ticker in database for price from API', ticker);
     }
 
     return acc;

@@ -4,7 +4,11 @@ import { ITinkoffSpecificBaseData } from './tinkoff/types';
 export enum EMarketDataSources {
   tinkoff = 'tinkoff',
   coingecko = 'coingecko',
-  binance = 'binance'
+  binance = 'binance',
+  /**
+   * https://www.currencyconverterapi.com/docs
+   */
+  yahoo = 'yahoo'
 }
 
 // TODO: Можно взять тиньковский тип, вроде там то же самое
