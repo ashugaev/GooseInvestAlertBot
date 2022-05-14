@@ -1,3 +1,5 @@
+import { log } from '@helpers';
+
 import { i18n } from '../../../helpers/i18n';
 import { getInstrumentInfoByTicker } from '../../../models';
 import { COMMON_SCENES } from '../../../scenes/scenes.constants';
@@ -5,6 +7,8 @@ import { ALERT_SCENES } from '../alert.constants';
 import { AddAlertPayload } from '../alert.types';
 import { attachMessageToAlert } from '../utils/attachMessageToAlert';
 import { createAlertInDb } from '../utils/createAlertInDb';
+
+const logPrefix = '[ADD ALERT SCENARIO]';
 
 /**
  * Ф-ция добавления алерта
@@ -74,7 +78,10 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
         } catch (e) {
           await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
         }
-      })();
+      })().catch(async (e) => {
+        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+        log.error(logPrefix, 'add alert scenario crash', e);
+      });
 
       return;
     }
@@ -103,6 +110,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
 
     // Как только собрали основные данные
     if (prices?.length && instrumentsList?.length === 1 && currentPrice && !alertCreated) {
+      // FIXME: need await?
       createAlertInDb({
         ctx,
         payload: { instrumentsList, prices, currentPrice },
@@ -110,6 +118,9 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
           state.alertCreated = true;
           nextStep(arg);
         }
+      }).catch(async (e) => {
+        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+        log.error(logPrefix, 'create alert in DB crash', e);
       });
 
       return;
@@ -132,6 +143,9 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       attachMessageToAlert(ctx, { message, _id }, (arg) => {
         state.messageAttached = true;
         nextStep(arg);
+      }).catch(async (e) => {
+        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+        log.error(logPrefix, 'attach message crash', e);
       });
     }
   })();
