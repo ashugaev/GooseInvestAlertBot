@@ -1,3 +1,5 @@
+import { retry } from '@helpers';
+
 import { startCronJob } from '../helpers/startCronJob';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
 import { EMarketDataSources } from '../marketApi/types';
@@ -9,6 +11,9 @@ import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
 
+const logPrefix = '[CRON]';
+
+// TODO: Перезапуск джобы гитлаба раз в день
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
   startCronJob({
@@ -48,17 +53,19 @@ export const setupCheckers = (bot) => {
   });
 
   // Мониторинг достижения уровней
-  setupPriceCheckerOld(bot);
+  retry(async () => await setupPriceCheckerOld(bot), 100000, 'setupPriceCheckerOld');
 
   /**
    * BINANCE prices updater
    */
-  setupPriceUpdater({
-    minTimeBetweenRequests: 10000,
-    getPrices: getBinancePrices,
-    source: EMarketDataSources.binance
-  });
+  retry(async () => (
+    await setupPriceUpdater({
+      minTimeBetweenRequests: 10000,
+      getPrices: getBinancePrices,
+      source: EMarketDataSources.binance
+    })
+  ), 100000, 'setupPriceUpdater'); ;
 
   // Мониторинг скорости
-  setupShiftsChecker(bot);
+  retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker');
 };

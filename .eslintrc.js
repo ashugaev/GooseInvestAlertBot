@@ -11,7 +11,8 @@ module.exports = {
   plugins: [
     '@typescript-eslint',
     'unused-imports',
-    'simple-import-sort'
+    'simple-import-sort',
+    "no-floating-promise"
   ],
   extends: ['standard-with-typescript'],
   rules: {
@@ -45,6 +46,7 @@ module.exports = {
     'no-eval': 0,
     'no-loop-func': 0,
     'no-param-reassign': 0,
+    "no-floating-promise/no-floating-promise": 2,
     'import/prefer-default-export': 0,
     'import/no-extraneous-dependencies': 0,
     'import/no-unresolved': 0,
@@ -53,7 +55,6 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/strict-boolean-expressions': 0,
-    '@typescript-eslint/no-floating-promises': 0,
     '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/no-misused-promises': 0,
   },

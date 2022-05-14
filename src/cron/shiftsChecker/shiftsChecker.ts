@@ -56,12 +56,6 @@ export const setupShiftsChecker = async (bot) => {
 
             const timeframeData = timeframesObj[shift.timeframe];
 
-            console.log(timeframeData, shift);
-
-            if (!timeframeData) {
-              debugger;
-            }
-
             const updatedCandle = await updateCandle({
               timeframeData,
               candle,

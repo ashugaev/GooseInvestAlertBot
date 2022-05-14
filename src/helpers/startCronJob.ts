@@ -1,3 +1,5 @@
+import { retry } from './retry';
+
 const { CronJob } = require('cron');
 const { log } = require('./log');
 
@@ -22,11 +24,13 @@ export const startCronJob = ({
   const onTickFunction = async () => {
     log.info('Start cron job:', name);
 
+    // retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker');
+
     try {
       callbackArgs
-      // eslint-disable-next-line prefer-spread
-        ? await callback.apply(null, callbackArgs)
-        : await callback();
+      // eslint-disable-next-line
+        ? retry(async () => await callback.apply(null, callbackArgs), 60000, 'cron job ' + name, 5)
+        : retry(async () => await callback(), 60000, 'cron job ' + name, 5);
     } catch (e) {
       log.error('Cron job error', e);
     }
