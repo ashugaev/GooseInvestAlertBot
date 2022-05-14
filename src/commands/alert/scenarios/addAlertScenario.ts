@@ -78,7 +78,10 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
         } catch (e) {
           await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
         }
-      })();
+      })().catch(async (e) => {
+        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+        log.error(logPrefix, 'add alert scenario crash', e);
+      });
 
       return;
     }

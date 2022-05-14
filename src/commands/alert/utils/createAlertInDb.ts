@@ -72,6 +72,6 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
     callback({ createdItemsList });
   } catch (e) {
     log.error('Ошибка добавления алерта', e);
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+    await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
   }
 };

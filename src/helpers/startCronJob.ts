@@ -24,8 +24,6 @@ export const startCronJob = ({
   const onTickFunction = async () => {
     log.info('Start cron job:', name);
 
-    // retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker');
-
     try {
       callbackArgs
       // eslint-disable-next-line
