@@ -23,6 +23,8 @@ build:
   image: node:15-alpine
   only:
     - master
+  except:
+    - schedules
   script:
     - npm ci
     - npm run build
@@ -40,6 +42,8 @@ release_bot:
   image: docker:latest
   only:
     - "master"
+  except:
+    - schedules
   services:
     - docker:dind
   before_script:
