@@ -71,9 +71,20 @@ export const setupCheckers = (bot) => {
    * BINANCE prices updater
    */
   setupPriceUpdater({
+    // 10s
     minTimeBetweenRequests: 10000,
     getPrices: getBinancePrices,
     source: EMarketDataSources.binance
+  });
+
+  /**
+   * YAHOO prices updater
+   */
+  setupPriceUpdater({
+    // 2min
+    minTimeBetweenRequests: 120000,
+    getPrices: getBinancePrices,
+    source: EMarketDataSources.yahoo
   });
 
   // Мониторинг скорости
