@@ -2,6 +2,7 @@ import { startCronJob } from '../helpers/startCronJob';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
 import { getCurrenciesList } from '../marketApi/currencyConverter/getList';
 import { EMarketDataSources } from '../marketApi/types';
+import { getYahooPrices } from '../marketApi/yahoo/getPrices';
 import { setupPriceUpdater, updateTickersList } from '../modules';
 import { copyAlerts } from './copyAlerts';
 import { instrumentsListUpdater } from './instrumentsListUpdater';
@@ -48,8 +49,8 @@ export const setupCheckers = (bot) => {
       minTickersCount: 1000
     }),
     callbackArgs: [bot],
-    // Раз в неделю или при деплое
-    period: '0 0 * * 0',
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
     // eslint-disable-next-line no-unneeded-ternary
     executeBeforeInit: isProduction ? true : true
   });
@@ -79,12 +80,16 @@ export const setupCheckers = (bot) => {
 
   /**
    * YAHOO prices updater
+   *
+   * update time for all prices ~ 6-7min
    */
   setupPriceUpdater({
-    // 2min
-    minTimeBetweenRequests: 120000,
-    getPrices: getBinancePrices,
-    source: EMarketDataSources.yahoo
+    // 1min
+    minTimeBetweenRequests: 60,
+    getPrices: getYahooPrices,
+    source: EMarketDataSources.yahoo,
+    // 10 tickers it's a max for yahoo api
+    maxTickersForRequest: 10
   });
 
   // Мониторинг скорости

@@ -33,8 +33,12 @@ export const updateTickersList = ({ getList, source, minTickersCount }: UpdateTi
     throw new Error(logPrefix + 'No items in array');
   }
 
+  if (!source) {
+    throw new Error(logPrefix + ' can\'t update tickers without source');
+  }
+
   await InstrumentsListModel.bulkWrite([
-    // Remove already unexisting
+    // Remove already unexisting (dead) tickers
     {
       deleteMany: {
         filter: {

@@ -90,10 +90,16 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
   return result;
 }
 
-export async function getInstrumentDataById (id) {
-  const result = await InstrumentsListModel.find({ id }).lean();
+export async function getInstrumentListDataByIds (ids: Array<Pick<InstrumentsList, 'id'>>) {
+  const params = {
+    id: {
+      $in: ids
+    }
+  };
 
-  return result[0];
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
+
+  return result;
 }
 
 export async function getInstrumentsBySource (source: EMarketDataSources) {

@@ -1,54 +1,52 @@
-import { getInstrumentsBySource } from '@models';
-import NodeCache from 'node-cache';
+/**
+ * Swagger
+ * https://www.yahoofinanceapi.com/
+ */
 
-import { EMarketDataSources } from '../types';
+import { log } from '@helpers';
+import { getInstrumentListDataByIds, InstrumentsList } from '@models';
+import axios from 'axios';
 
-const allYahooInstrumentsCache = new NodeCache({
-  stdTTL: 600 // sec
-});
+const logPrefix = '[GET YAHOO PRICES]';
 
-export const getYahooPrices = async () => {
-  let allInstruments = allYahooInstrumentsCache.get('null');
+export const getYahooPrices = async (tickerIds: Array<Pick<InstrumentsList, 'id'>>) => {
+  const coinsData = await getInstrumentListDataByIds(tickerIds);
 
-  if (!allInstruments) {
-    allInstruments = await getInstrumentsBySource(EMarketDataSources.binance);
+  const yahooRequestSymbols = coinsData.map(el => el.ticker + '=X').join(',');
 
-    if (!allInstruments?.length) {
-      throw new Error('Ошибка получения списка тикеров Yahoo');
+  // eslint-disable-next-line max-len
+  const {
+    data: {
+      quoteResponse: {
+        result,
+        error
+      }
     }
+  } = await axios(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${yahooRequestSymbols}`);
 
-    allYahooInstrumentsCache.set('null', allInstruments);
+  if (error) {
+    throw new Error(logPrefix.concat(error));
   }
 
-  const pricesByTicker = {};
+  const prices = result.reduce((acc, el) => {
+    const elTicker = el.symbol.replace('=X', '');
+    const coinData = coinsData.find(item => elTicker === item.ticker);
 
-  // Можно брать из API но не хочется делать доп запрос
-  const baseTicker = allInstruments.filter(el => el.ticker.endsWith('USD'));
+    if (!coinData) {
+      console.log('yahooRequestSymbols', yahooRequestSymbols);
+      log.error(logPrefix.concat('No coinData obj for ', elTicker));
+    } else {
+      acc.push([coinData.ticker, el.regularMarketPrice, coinData.id]);
+    }
 
-  /**
-   * Запросить базовые пары
-   * Зпросить популярное, либо приритетный список (то, чего не хватает)
-   * Рассчитать те пары, которых не хватает
-   * Собрать нужную структуру данных
-   */
-  // const pricesObj = await binance.prices();
-  //
-  // const pricesArr = Object.entries(pricesObj).map(([key, val]) => ([key, Number(val)]));
-  //
-  // log.info('Binance instruments', allBinanceInstruments.length);
-  //
-  // const pricesArrWithId: TickerPrices = pricesArr.reduce<TickerPrices>((acc, [ticker, price]) => {
-  //   const tickerId = allBinanceInstruments.find(el => el.ticker === ticker)?.id;
-  //
-  //   if (tickerId) {
-  //     // @ts-expect-error Вообще типы корректные
-  //     acc.push([ticker, price, tickerId]);
-  //   } else {
-  //     log.error(logPrefix, 'Can\'t find Binance ticker in database for price from API', ticker);
-  //   }
-  //
-  //   return acc;
-  // }, []);
+    return acc;
+  }, []);
 
-  // return pricesArrWithId;
+  if (tickerIds.length < prices.length) {
+    const uncheckedTickers = tickerIds.filter(el => !prices.find(item => item[0] === el));
+
+    log.error(logPrefix + 'Can\t get prices for:', uncheckedTickers.join(','));
+  }
+
+  return prices;
 };

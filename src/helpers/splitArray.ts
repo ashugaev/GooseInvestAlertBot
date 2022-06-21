@@ -1,7 +1,7 @@
 /**
  * Split array by chunks
  */
-export const splitArray = (arr, chunkLength) => {
+export const splitArray = (arr: any[], chunkLength: number) => {
   const chunksCount = Math.ceil(arr.length / chunkLength);
   const chunks = [];
 
