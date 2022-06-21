@@ -33,7 +33,6 @@ export const getYahooPrices = async (tickerIds: Array<Pick<InstrumentsList, 'id'
     const coinData = coinsData.find(item => elTicker === item.ticker);
 
     if (!coinData) {
-      console.log('yahooRequestSymbols', yahooRequestSymbols);
       log.error(logPrefix.concat('No coinData obj for ', elTicker));
     } else {
       acc.push([coinData.ticker, el.regularMarketPrice, coinData.id]);
