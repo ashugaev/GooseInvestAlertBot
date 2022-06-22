@@ -62,14 +62,6 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   }
 });
 
-export async function clearInstrumentsList () {
-  try {
-    await InstrumentsListModel.deleteMany({});
-  } catch (e) {
-    throw new Error(e);
-  }
-}
-
 export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
   await InstrumentsListModel.insertMany(items);
 }

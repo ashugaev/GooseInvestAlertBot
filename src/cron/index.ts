@@ -1,11 +1,13 @@
 import { startCronJob } from '../helpers/startCronJob';
+import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
+import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments';
 import { getCurrenciesList } from '../marketApi/currencyConverter/getList';
+import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments';
 import { EMarketDataSources } from '../marketApi/types';
 import { getYahooPrices } from '../marketApi/yahoo/getPrices';
 import { setupPriceUpdater, updateTickersList } from '../modules';
 import { copyAlerts } from './copyAlerts';
-import { instrumentsListUpdater } from './instrumentsListUpdater';
 import { setupPriceCheckerOld } from './priceChecker';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
@@ -32,16 +34,6 @@ export const setupCheckers = (bot) => {
   });
 
   startCronJob({
-    name: 'Update Instruments List',
-    callback: instrumentsListUpdater,
-    callbackArgs: [bot],
-    // раз день в 3 часа
-    period: '0 3 * * *',
-    // eslint-disable-next-line no-unneeded-ternary
-    executeBeforeInit: !!isProduction
-  });
-
-  startCronJob({
     name: 'Update Currencies List',
     callback: updateTickersList({
       getList: getCurrenciesList,
@@ -51,8 +43,55 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
-    // eslint-disable-next-line no-unneeded-ternary
-    executeBeforeInit: isProduction ? true : true
+    executeBeforeInit: isProduction
+  });
+
+  /**
+   * TINKOFF tickers list
+   */
+  startCronJob({
+    name: 'Update Tinkoff tickers list List',
+    callback: updateTickersList({
+      getList: tinkoffGetAllInstruments,
+      source: EMarketDataSources.tinkoff,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: isProduction
+  });
+
+  /**
+   * Update COINGECKO tickers list
+   */
+  startCronJob({
+    name: 'Update Coingecko tickers list List',
+    callback: updateTickersList({
+      getList: coingeckoGetAllInstruments,
+      source: EMarketDataSources.coingecko,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: isProduction
+  });
+
+  /**
+   * Update BINANCE tickers list
+   */
+  startCronJob({
+    name: 'Update Binance tickers list List',
+    callback: updateTickersList({
+      getList: binanceGetAllInstruments,
+      source: EMarketDataSources.binance,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: isProduction
   });
 
   // Дамп коллекции с алертами
