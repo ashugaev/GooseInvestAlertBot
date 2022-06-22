@@ -1,3 +1,5 @@
+import { retry } from '@helpers';
+
 import { startCronJob } from '../helpers/startCronJob';
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
@@ -13,6 +15,7 @@ import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
 
+const logPrefix = '[CRON]';
 const isProduction = process.env.NODE_EVN === 'production';
 
 export const setupCheckers = (bot) => {
@@ -105,32 +108,36 @@ export const setupCheckers = (bot) => {
   });
 
   // Мониторинг достижения уровней
-  setupPriceCheckerOld(bot);
+  retry(async () => await setupPriceCheckerOld(bot), 100000, 'setupPriceCheckerOld');
 
   /**
    * BINANCE prices updater
    */
-  setupPriceUpdater({
-    // 10s
-    minTimeBetweenRequests: 10000,
-    getPrices: getBinancePrices,
-    source: EMarketDataSources.binance
-  });
+  retry(async () => (
+    await setupPriceUpdater({
+      // 10s
+      minTimeBetweenRequests: 10000,
+      getPrices: getBinancePrices,
+      source: EMarketDataSources.binance
+    })
+  ), 100000, 'setupPriceUpdater for binance');
 
   /**
    * YAHOO prices updater
    *
    * update time for all prices ~ 6-7min
    */
-  setupPriceUpdater({
-    // 1min
-    minTimeBetweenRequests: 60,
-    getPrices: getYahooPrices,
-    source: EMarketDataSources.yahoo,
-    // 10 tickers it's a max for yahoo api
-    maxTickersForRequest: 10
-  });
+  retry(async () => {
+    await setupPriceUpdater({
+      // 1min
+      minTimeBetweenRequests: 60,
+      getPrices: getYahooPrices,
+      source: EMarketDataSources.yahoo,
+      // 10 tickers it's a max for yahoo api
+      maxTickersForRequest: 10
+    })
+  }, 100000, 'setupPriceUpdater for yahoo');
 
   // Мониторинг скорости
-  setupShiftsChecker(bot);
+  retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker');
 };

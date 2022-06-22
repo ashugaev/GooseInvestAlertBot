@@ -2,10 +2,11 @@ import 'module-alias/register';
 
 // Config dotenv
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 // Строка должна быть выше импорта файлов с переменными окружения
 // eslint-disable-next-line import/no-extraneous-dependencies
-dotenv.config({ path: `${__dirname}/../.env` });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 import * as Sentry from '@sentry/node';
 
@@ -73,3 +74,7 @@ setupId(bot);
 bot.startPolling();
 
 log.info('Bot is up and running');
+
+process.on('uncaughtException', function (err) {
+  log.error('[UNHANDLED]', err);
+});
