@@ -65,9 +65,6 @@ export const setupPriceUpdater = async ({
 
     const arrChunks = splitArray(sourceInstrumentsList, maxTickersForRequest);
 
-    log.info(logPrefix, 'Chunks len', arrChunks.length);
-
-    log.info(logPrefix + 'Chunks price check START ' + source);
     console.time(source);
 
     for (let i = 0; i < arrChunks.length; i++) {
@@ -121,11 +118,9 @@ export const setupPriceUpdater = async ({
         log.error(logPrefix, 'Cache update error');
         continue;
       }
-
-      log.info(logPrefix, 'Price cache successfully updated ' + source);
     }
 
-    log.info(logPrefix + 'Chunks price check END ' + source);
+    log.info(logPrefix + 'Price cache update END ' + source);
     console.timeEnd(source);
   }
 };

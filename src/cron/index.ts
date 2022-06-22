@@ -43,7 +43,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
-    executeBeforeInit: isProduction
+    executeBeforeInit: true
   });
 
   /**
@@ -59,7 +59,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
-    executeBeforeInit: isProduction
+    executeBeforeInit: true
   });
 
   /**
@@ -70,12 +70,12 @@ export const setupCheckers = (bot) => {
     callback: updateTickersList({
       getList: coingeckoGetAllInstruments,
       source: EMarketDataSources.coingecko,
-      minTickersCount: 1000
+      minTickersCount: 6000
     }),
     callbackArgs: [bot],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
-    executeBeforeInit: isProduction
+    executeBeforeInit: true
   });
 
   /**
@@ -91,7 +91,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
-    executeBeforeInit: isProduction
+    executeBeforeInit: true
   });
 
   // Дамп коллекции с алертами
