@@ -6,7 +6,7 @@ import { log } from '../helpers/log';
 import { splitArray } from '../helpers/splitArray';
 import { wait } from '../helpers/wait';
 import { EMarketDataSources } from '../marketApi/types';
-import {lastPriceCache} from "./lastPriceCache";
+import { lastPriceCache } from './lastPriceCache';
 
 const logPrefix = '[PRICE UPDATER]';
 const CRASH_WAIT_TIME = 30000;
@@ -38,7 +38,7 @@ export interface PriceUpdaterParams {
 export const setupPriceUpdater = async ({
   getPrices,
   maxTickersForRequest = 10000,
-  minTimeBetweenRequests,
+  minTimeBetweenRequests = 100,
   source
 }: PriceUpdaterParams) => {
   // TODO: Запуск только когда отработало обновление списка инструментов
@@ -65,7 +65,7 @@ export const setupPriceUpdater = async ({
 
     const arrChunks = splitArray(sourceInstrumentsList, maxTickersForRequest);
 
-    log.info(logPrefix, 'Chunks len', arrChunks.length);
+    console.time(source);
 
     for (let i = 0; i < arrChunks.length; i++) {
       const chunk = arrChunks[i];
@@ -118,8 +118,9 @@ export const setupPriceUpdater = async ({
         log.error(logPrefix, 'Cache update error');
         continue;
       }
-
-      log.info(logPrefix, 'Price cache successfully updated');
     }
+
+    log.info(logPrefix + 'Price cache update END ' + source);
+    console.timeEnd(source);
   }
 };

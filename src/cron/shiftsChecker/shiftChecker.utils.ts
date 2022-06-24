@@ -43,8 +43,6 @@ export const updateCandle = async ({
 
     // FIXME: Удалить после дебага
     log.debug('[Reset candle]',
-      'Prev Value', c,
-      'New Value', candle,
       'Creation time', new Date(localCandleCreatedTime),
       'New Candle time', new Date(actualCandleCreatedTime)
     );

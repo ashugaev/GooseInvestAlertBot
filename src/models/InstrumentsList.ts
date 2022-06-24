@@ -2,6 +2,7 @@ import { getModelForClass, prop } from '@typegoose/typegoose';
 
 import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstruments';
 import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types';
+import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList';
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types';
 import { EMarketDataSources } from '../marketApi/types';
 
@@ -47,7 +48,11 @@ export class InstrumentsList {
   currency?: string;
 
   @prop({ required: true })
-  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData | BinanceSourceSpecificData;
+  sourceSpecificData:
+  ICoingecoSpecificBaseData |
+  ITinkoffSpecificBaseData |
+  BinanceSourceSpecificData |
+  CurrencyApiSpecificData;
 }
 
 export const InstrumentsListModel = getModelForClass(InstrumentsList, {
@@ -56,14 +61,6 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
     customName: 'instrumentslist'
   }
 });
-
-export async function clearInstrumentsList () {
-  try {
-    await InstrumentsListModel.deleteMany({});
-  } catch (e) {
-    throw new Error(e);
-  }
-}
 
 export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
   await InstrumentsListModel.insertMany(items);
@@ -85,10 +82,16 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
   return result;
 }
 
-export async function getInstrumentDataById (id) {
-  const result = await InstrumentsListModel.find({ id }).lean();
+export async function getInstrumentListDataByIds (ids: Array<Pick<InstrumentsList, 'id'>>) {
+  const params = {
+    id: {
+      $in: ids
+    }
+  };
 
-  return result[0];
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
+
+  return result;
 }
 
 export async function getInstrumentsBySource (source: EMarketDataSources) {

@@ -8,7 +8,7 @@ import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
 import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi';
 import { EMarketDataSources } from '../marketApi/types';
 import { InstrumentsList, InstrumentsListModel } from '../models';
-import {getLastPriceFromCache} from "../modules";
+import { getLastPriceFromCache } from '../modules';
 
 const NodeCache = require('node-cache');
 const OpenAPI = require('@tinkoff/invest-openapi-js-sdk');
@@ -118,6 +118,8 @@ export const getLastPrice = async ({
     lastPrice = await coingeckoGetLastPrice({ instrumentData });
   } else if (instrumentData.source === EMarketDataSources.binance) {
     lastPrice = await getLastPriceFromCache(instrumentData.id);
+  } else if (instrumentData.source === EMarketDataSources.yahoo) {
+    lastPrice = await getLastPriceFromCache(instrumentData.id);
   } else {
     throw new Error('Инструмент без параметра source');
   }
@@ -141,6 +143,8 @@ export const getLastPriceById = async (id: string, source: EMarketDataSources) =
     } else if (source === EMarketDataSources.coingecko) {
       lastPrice = await coingeckoGetLastPriceById(id);
     } else if (source === EMarketDataSources.binance) {
+      lastPrice = await getLastPriceFromCache(id);
+    } else if (source === EMarketDataSources.yahoo) {
       lastPrice = await getLastPriceFromCache(id);
     } else {
       throw new Error('Инструмент без параметра source');

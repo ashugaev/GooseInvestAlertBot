@@ -1,19 +1,23 @@
 import { retry } from '@helpers';
 
 import { startCronJob } from '../helpers/startCronJob';
+import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
+import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments';
+import { getCurrenciesList } from '../marketApi/currencyConverter/getList';
+import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments';
 import { EMarketDataSources } from '../marketApi/types';
-import { setupPriceUpdater } from '../modules';
+import { getYahooPrices } from '../marketApi/yahoo/getPrices';
+import { setupPriceUpdater, updateTickersList } from '../modules';
 import { copyAlerts } from './copyAlerts';
-import { instrumentsListUpdater } from './instrumentsListUpdater';
 import { setupPriceCheckerOld } from './priceChecker';
 import { setupShiftsChecker } from './shiftsChecker';
 import { createShitEvents } from './statChecker';
 import { shiftSender } from './statSender';
 
 const logPrefix = '[CRON]';
+const isProduction = process.env.NODE_EVN === 'production';
 
-// TODO: Перезапуск джобы гитлаба раз в день
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
   startCronJob({
@@ -33,12 +37,63 @@ export const setupCheckers = (bot) => {
   });
 
   startCronJob({
-    name: 'Update Instruments List',
-    callback: instrumentsListUpdater,
+    name: 'Update Currencies List',
+    callback: updateTickersList({
+      getList: getCurrenciesList,
+      source: EMarketDataSources.yahoo,
+      minTickersCount: 1000
+    }),
     callbackArgs: [bot],
-    // раз день в 3 часа
-    period: '0 3 * * *',
-    // TODO: Не проставлять в dev окружении
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true
+  });
+
+  /**
+   * TINKOFF tickers list
+   */
+  startCronJob({
+    name: 'Update Tinkoff tickers list List',
+    callback: updateTickersList({
+      getList: tinkoffGetAllInstruments,
+      source: EMarketDataSources.tinkoff,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true
+  });
+
+  /**
+   * Update COINGECKO tickers list
+   */
+  startCronJob({
+    name: 'Update Coingecko tickers list List',
+    callback: updateTickersList({
+      getList: coingeckoGetAllInstruments,
+      source: EMarketDataSources.coingecko,
+      minTickersCount: 6000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true
+  });
+
+  /**
+   * Update BINANCE tickers list
+   */
+  startCronJob({
+    name: 'Update Binance tickers list List',
+    callback: updateTickersList({
+      getList: binanceGetAllInstruments,
+      source: EMarketDataSources.binance,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
     executeBeforeInit: true
   });
 
@@ -60,11 +115,28 @@ export const setupCheckers = (bot) => {
    */
   retry(async () => (
     await setupPriceUpdater({
+      // 10s
       minTimeBetweenRequests: 10000,
       getPrices: getBinancePrices,
       source: EMarketDataSources.binance
     })
-  ), 100000, 'setupPriceUpdater'); ;
+  ), 100000, 'setupPriceUpdater for binance');
+
+  /**
+   * YAHOO prices updater
+   *
+   * update time for all prices ~ 6-7min
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      // 1min
+      minTimeBetweenRequests: 60,
+      getPrices: getYahooPrices,
+      source: EMarketDataSources.yahoo,
+      // 10 tickers it's a max for yahoo api
+      maxTickersForRequest: 10
+    })
+  }, 100000, 'setupPriceUpdater for yahoo');
 
   // Мониторинг скорости
   retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker');

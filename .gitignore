@@ -4,3 +4,4 @@ dist
 *.log
 .idea
 logs/
+p2pExmapleTracshFile.js
