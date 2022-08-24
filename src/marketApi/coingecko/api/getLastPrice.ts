@@ -1,7 +1,11 @@
+import { log } from '@helpers';
+
 import { wait } from '../../../helpers/wait';
 import { CoinGeckoClient } from './getAllInstruments';
 
 const NodeCache = require('node-cache');
+
+const logPrefix = '[GET LAST PRICE]';
 
 const coinGeckoPriceCache = new NodeCache({
   stdTTL: 120
@@ -11,6 +15,8 @@ export async function coingeckoGetLastPrice ({ instrumentData }) {
   try {
     // FIXME: цену берем не по тикеру
     let currencyPrices = coinGeckoPriceCache.get(instrumentData.ticker);
+
+    log.info(logPrefix, 'Price from cache', currencyPrices);
 
     if (!currencyPrices) {
       try {
@@ -58,6 +64,6 @@ export async function coingeckoGetLastPrice ({ instrumentData }) {
     return price;
   } catch (e) {
     console.error('Error:', e, 'Instrument', instrumentData);
-    throw new Error(`Ошибка получения данных от CoinGecko, ${JSON.stringify(e)}`);
+    throw new Error(`Ошибка получения данных от CoinGecko 1, ${JSON.stringify(e)}`);
   }
 }

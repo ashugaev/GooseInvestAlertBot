@@ -50,7 +50,22 @@ export async function getInstrumentDataWithPrice ({
 
     for (let i = 0; i < instrumentsList.length; i++) {
       const instrumentData = instrumentsList[i];
-      const lastPrice = await getLastPrice({ id: instrumentData.id, instrumentData });
+      let lastPrice = null;
+
+      try {
+        log.info(logPrefix, 'Ciongecko. Trying get price.');
+        lastPrice = await getLastPrice({ id: instrumentData.id, instrumentData });
+        log.info(logPrefix, 'Ciongecko. Fetch SUCCESS');
+      } catch (e) {
+        log.error(logPrefix, 'Ciongecko. Fetch ERROR', e);
+
+        try {
+          lastPrice = await getLastPrice({ id: instrumentData.id, instrumentData });
+          log.info(logPrefix, 'Ciongecko. RETRY fetch SUCCESS', e);
+        } catch (e) {
+          log.error(logPrefix, 'Ciongecko. RETRY fetch ERROR', e);
+        }
+      }
 
       dataWithPrice.push({ instrumentData, price: lastPrice });
     }

@@ -34,6 +34,6 @@ export async function coingeckoGetLastPriceById (id: string) {
 
     return price
   } catch (e) {
-    throw new Error(`Ошибка получения данных от CoinGecko, ${JSON.stringify(e)}`)
+    throw new Error(`Ошибка получения данных от CoinGecko 2, ${JSON.stringify(e)}`)
   }
 }
