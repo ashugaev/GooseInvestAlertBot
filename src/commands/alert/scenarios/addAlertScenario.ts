@@ -76,6 +76,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
 
           nextStep({ instrumentsList });
         } catch (e) {
+          log.error(logPrefix, 'add alert scenario crash 1', e);
           await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
         }
       })().catch(async (e) => {
