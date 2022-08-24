@@ -1,9 +1,10 @@
+import { wait } from '../../../helpers/wait';
 import { CoinGeckoClient } from './getAllInstruments';
 
 const NodeCache = require('node-cache');
 
 const coinGeckoPriceCache = new NodeCache({
-  stdTTL: 60
+  stdTTL: 120
 });
 
 export async function coingeckoGetLastPrice ({ instrumentData }) {
@@ -12,10 +13,29 @@ export async function coingeckoGetLastPrice ({ instrumentData }) {
     let currencyPrices = coinGeckoPriceCache.get(instrumentData.ticker);
 
     if (!currencyPrices) {
-      currencyPrices = await CoinGeckoClient.simple.price({
-        ids: [instrumentData.id],
-        vs_currencies: ['eur', 'usd', 'rub']
-      });
+      try {
+        currencyPrices = await CoinGeckoClient.simple.price({
+          ids: [instrumentData.id],
+          vs_currencies: ['eur', 'usd', 'rub']
+        });
+      } catch (e) {
+        try {
+          console.error('Coingeko Retry');
+
+          await wait(300);
+
+          currencyPrices = await CoinGeckoClient.simple.price({
+            ids: [instrumentData.id],
+            vs_currencies: ['eur', 'usd', 'rub']
+          });
+
+          console.error('Coingeko Retry success');
+        } catch (e) {
+          console.error('Coingeko Retry fail');
+          console.error(e);
+          throw new Error('Coingeko request fails');
+        }
+      }
 
       if (!currencyPrices) {
         throw new Error('Невалидные данные от CoinGecko');
@@ -37,6 +57,7 @@ export async function coingeckoGetLastPrice ({ instrumentData }) {
 
     return price;
   } catch (e) {
-    throw new Error(`Ошибка получения данных от CoinGecko, ${JSON.stringify(e)}`)
+    console.error('Error:', e, 'Instrument', instrumentData);
+    throw new Error(`Ошибка получения данных от CoinGecko, ${JSON.stringify(e)}`);
   }
 }
