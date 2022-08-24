@@ -50,8 +50,10 @@ export const chb_m = ({
 
     if (isBotResponse) {
       chb.setAsTypeAgent();
+      log.info('Goose message:', message);
     } else {
       chb.setAsTypeUser();
+      log.info('User message:', message);
     }
 
     /* Chatbase is RIP
