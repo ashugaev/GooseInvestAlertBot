@@ -1,3 +1,5 @@
+import { log } from '@helpers';
+
 import { InstrumentsList } from '../../../models';
 import { EMarketDataSources, EMarketInstrumentTypes } from '../../types';
 const CoinGecko = require('coingecko-api');
@@ -22,6 +24,7 @@ export const coingeckoGetAllInstruments = async () => {
   const { data } = await CoinGeckoClient.coins.list();
 
   if (!data.length) {
+    log.error('Error:', data);
     throw new Error('Не пришли данные из CoinGeko');
   }
 
