@@ -58,13 +58,10 @@ export async function getInstrumentDataWithPrice ({
         log.info(logPrefix, 'Ciongecko. Fetch SUCCESS');
       } catch (e) {
         log.error(logPrefix, 'Ciongecko. Fetch ERROR', e);
+      }
 
-        try {
-          lastPrice = await getLastPrice({ id: instrumentData.id, instrumentData });
-          log.info(logPrefix, 'Ciongecko. RETRY fetch SUCCESS', e);
-        } catch (e) {
-          log.error(logPrefix, 'Ciongecko. RETRY fetch ERROR', e);
-        }
+      if (!lastPrice) {
+        continue;
       }
 
       dataWithPrice.push({ instrumentData, price: lastPrice });
