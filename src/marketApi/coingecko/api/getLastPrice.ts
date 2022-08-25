@@ -1,6 +1,5 @@
 import { log } from '@helpers';
 
-import { wait } from '../../../helpers/wait';
 import { CoinGeckoClient } from './getAllInstruments';
 
 const NodeCache = require('node-cache');
@@ -24,37 +23,18 @@ export async function coingeckoGetLastPrice ({ instrumentData }) {
           ids: [instrumentData.id],
           vs_currencies: ['eur', 'usd', 'rub']
         });
-
-        if (!currencyPrices.success) {
-          log.error(logPrefix, 'CoinGecko request error: ', currencyPrices);
-          throw new Error('CoinGecko request error');
-        }
       } catch (e) {
-        try {
-          console.error('Coingeko Retry');
-
-          await wait(300);
-
-          currencyPrices = await CoinGeckoClient.simple.price({
-            ids: [instrumentData.id],
-            vs_currencies: ['eur', 'usd', 'rub']
-          });
-
-          if (!currencyPrices.success) {
-            log.error(logPrefix, 'CoinGecko request failed: ', currencyPrices);
-            throw new Error('CoinGecko request failed');
-          }
-
-          console.error('Coingeko Retry success');
-        } catch (e) {
-          console.error('Coingeko Retry fail');
-          console.error(e);
-          throw new Error('Coingeko request fails');
-        }
+        log.error('CoinGecko request fals', e);
+        throw new Error('Coingeko request fails');
       }
 
       if (!currencyPrices) {
         throw new Error('Невалидные данные от CoinGecko');
+      }
+
+      if (!currencyPrices.success) {
+        log.error(logPrefix, 'CoinGecko request error: ', currencyPrices);
+        throw new Error('CoinGecko request error');
       }
 
       coinGeckoPriceCache.set(instrumentData.ticker, currencyPrices);
