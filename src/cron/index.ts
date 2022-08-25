@@ -4,6 +4,7 @@ import { startCronJob } from '../helpers/startCronJob';
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments';
 import { getBinancePrices } from '../marketApi/binance/api/getPrices';
 import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments';
+import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById';
 import { getCurrenciesList } from '../marketApi/currencyConverter/getList';
 import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments';
 import { EMarketDataSources } from '../marketApi/types';
@@ -135,8 +136,25 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.yahoo,
       // 10 tickers it's a max for yahoo api
       maxTickersForRequest: 10
-    })
+    });
   }, 100000, 'setupPriceUpdater for yahoo');
+
+  /**
+   * COINGECKO prices updater
+   *
+   * QUOTA: 50 calls/min
+   * TIME FOR UPDATE ALL TICKER: 12000 ticker / 500 per request/ 30 calls per min = ~1min
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      // 2sec
+      minTimeBetweenRequests: 2,
+      getPrices: coingeckoGetLastPriceById,
+      source: EMarketDataSources.coingecko,
+      // 500 items works fine
+      maxTickersForRequest: 500
+    });
+  }, 100000, 'setupPriceUpdater for COINGECKO');
 
   // Мониторинг скорости
   retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker');

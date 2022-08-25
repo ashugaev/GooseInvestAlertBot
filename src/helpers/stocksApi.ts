@@ -1,8 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 
-import { coingeckoGetLastPrice } from '../marketApi/coingecko/api/getLastPrice';
-import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById';
 import { TINKOFF_SENTRY_TAGS } from '../marketApi/constants';
 import { tinkoffGetLastPrice } from '../marketApi/tinkoff/api/getLastPrice';
 import { tinkoffGetLastPriceByFigi } from '../marketApi/tinkoff/api/getLastPriceByFigi';
@@ -115,7 +113,7 @@ export const getLastPrice = async ({
   if (!instrumentData.source || (instrumentData.source === EMarketDataSources.tinkoff)) {
     lastPrice = await tinkoffGetLastPrice({ instrumentData });
   } else if (instrumentData.source === EMarketDataSources.coingecko) {
-    lastPrice = await coingeckoGetLastPrice({ instrumentData });
+    lastPrice = await getLastPriceFromCache(instrumentData.id);
   } else if (instrumentData.source === EMarketDataSources.binance) {
     lastPrice = await getLastPriceFromCache(instrumentData.id);
   } else if (instrumentData.source === EMarketDataSources.yahoo) {
@@ -141,7 +139,7 @@ export const getLastPriceById = async (id: string, source: EMarketDataSources) =
     if (source === EMarketDataSources.tinkoff) {
       lastPrice = await tinkoffGetLastPriceByFigi(id);
     } else if (source === EMarketDataSources.coingecko) {
-      lastPrice = await coingeckoGetLastPriceById(id);
+      lastPrice = await getLastPriceFromCache(id);
     } else if (source === EMarketDataSources.binance) {
       lastPrice = await getLastPriceFromCache(id);
     } else if (source === EMarketDataSources.yahoo) {

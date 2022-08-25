@@ -1,39 +1,53 @@
-import { CoinGeckoClient } from './getAllInstruments'
+import { log } from '@helpers';
+import { InstrumentsList } from '@models';
+import { TickerPrices } from 'prices';
 
-const NodeCache = require('node-cache')
+import { CoinGeckoClient } from './getAllInstruments';
 
-const coinGeckoPriceCache = new NodeCache({
-  stdTTL: 60
-})
+const logPrefix = '[COINGECKO GET PRICES BY IDS]';
 
-export async function coingeckoGetLastPriceById (id: string) {
-  try {
-    let currencyPrices = coinGeckoPriceCache.get(id)
+export async function coingeckoGetLastPriceById (ids: Array<Pick<InstrumentsList, 'id'>>, tickersData): Promise<TickerPrices> {
+  const tickersDataObj = tickersData.reduce((acc, el) => {
+    acc[el.id] = el;
 
-    if (!currencyPrices) {
-      currencyPrices = await CoinGeckoClient.simple.price({
-        ids: [id],
-        vs_currencies: ['eur', 'usd', 'rub']
-      })
+    return acc;
+  }, {});
 
-      if (!currencyPrices) {
-        throw new Error('Невалидные данные от CoinGecko')
-      }
+  const currencyPrices = await CoinGeckoClient.simple.price({
+    ids: [ids],
+    vs_currencies: ['eur', 'usd', 'rub']
+  });
 
-      coinGeckoPriceCache.set(id, currencyPrices)
-    }
-
-    // FIXME: Это костыль который будет работать только до тех пор пока будем запрошивать по одной монете
-    const pricesForCurrencies = Object.entries(currencyPrices.data)[0][1] as {usd: string}
-
-    const price = pricesForCurrencies.usd
-
-    if (!price) {
-      throw new Error('Невалидные данные от CoinGecko')
-    }
-
-    return price
-  } catch (e) {
-    throw new Error(`Ошибка получения данных от CoinGecko 2, ${JSON.stringify(e)}`)
+  if (!currencyPrices.success) {
+    log.error('CoinGecko quota exceeded', currencyPrices);
+    throw new Error('CoinGecko quota exceeded');
   }
+
+  const { data } = currencyPrices;
+
+  const responseArray = Object.entries(data);
+
+  const prices = responseArray.reduce((acc, [key, val]) => {
+    const { usd } = val as {usd: number};
+
+    const tickerData = tickersDataObj[key];
+    const ticker = tickerData.ticker;
+    const price = usd;
+
+    if (ticker?.length && price) {
+      // ticker, price, tickerId
+      acc.push([ticker, usd, key]);
+    }
+
+    return acc;
+  }, []);
+
+  // TODO: Move this check to 'setupPriceUpdater'
+  if (ids.length > prices.length) {
+    const uncheckedTickers = ids.filter(el => !prices.find(item => item[2] === el));
+
+    log.error(logPrefix + ' Can\'t get prices for:', uncheckedTickers.join(','));
+  }
+
+  return prices;
 }
