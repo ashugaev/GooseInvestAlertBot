@@ -13,7 +13,8 @@ const logPrefix = '[CANDLES UPDATER]'
 
 /**
  * TODO
- * - Набрать большую пачку апдейтов и запушить одним запросом
+ * - Cвечи копим и отсылаем вконце обхода
+ * -
  */
 export const setupShiftsChecker = async (bot) => {
   log.info(logPrefix + ' Init')
@@ -77,6 +78,7 @@ export const setupShiftsChecker = async (bot) => {
 
             const timeframeData = timeframesObj[shift.timeframe]
 
+            // ~300ms
             const updatedCandle = await fnTimeAsync(async () => (
               await updateCandle({
                 timeframeData,
