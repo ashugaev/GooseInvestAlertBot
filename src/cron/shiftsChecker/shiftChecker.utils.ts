@@ -115,28 +115,41 @@ export const sendUserMessage = async ({
       return
     }
 
-    await bot.telegram.sendMessage(shift.user, i18n.t(
-      'ru', 'shift_alert',
-      {
-        name: tickerInfo.name,
-        percent: shift.percent,
-        isGrow,
-        time: timeframeData.name_ru_plur,
-        ticker,
-        link: getInstrumentLink({
-          type: tickerInfo.type,
-          source: tickerInfo.source,
-          ticker
-        })
+    try {
+      await bot.telegram.sendMessage(shift.user, i18n.t(
+        'ru', 'shift_alert',
+        {
+          name: tickerInfo.name,
+          percent: shift.percent,
+          isGrow,
+          time: timeframeData.name_ru_plur,
+          ticker,
+          link: getInstrumentLink({
+            type: tickerInfo.type,
+            source: tickerInfo.source,
+            ticker
+          })
+        }
+      ), {
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        disable_notification: muted,
+        reply_markup: {
+          inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+        }
+      })
+    } catch (e) {
+      console.error(e)
+
+      // If bot was blocked by user
+      if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
+        await TimeShiftModel.remove({ _id: shift._id })
+
+        log.info('Deleted shift because bot blocked by user')
+
+        return
       }
-    ), {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      disable_notification: muted,
-      reply_markup: {
-        inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
-      }
-    })
+    }
 
     const dataToUpdate = isGrow
       ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })
