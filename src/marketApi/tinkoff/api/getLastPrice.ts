@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node'
+
 import { stocksApi } from '../../../helpers/stocksApi'
 import { TINKOFF_SENTRY_TAGS } from '../../constants'
 
