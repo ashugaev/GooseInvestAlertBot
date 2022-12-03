@@ -1,23 +1,20 @@
-import { retry } from '@helpers';
+import { retry } from '@helpers'
 
-import { startCronJob } from '../helpers/startCronJob';
-import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments';
-import { getBinancePrices } from '../marketApi/binance/api/getPrices';
-import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments';
-import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById';
-import { getCurrenciesList } from '../marketApi/currencyConverter/getList';
-import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments';
-import { EMarketDataSources } from '../marketApi/types';
-import { getYahooPrices } from '../marketApi/yahoo/getPrices';
-import { setupPriceUpdater, updateTickersList } from '../modules';
-import { copyAlerts } from './copyAlerts';
-import { setupPriceCheckerOld } from './priceChecker';
-import { setupShiftsChecker } from './shiftsChecker';
-import { createShitEvents } from './statChecker';
-import { shiftSender } from './statSender';
-
-const logPrefix = '[CRON]';
-const isProduction = process.env.NODE_EVN === 'production';
+import { startCronJob } from '../helpers/startCronJob'
+import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
+import { getBinancePrices } from '../marketApi/binance/api/getPrices'
+import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments'
+import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
+import { getCurrenciesList } from '../marketApi/currencyConverter/getList'
+import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments'
+import { EMarketDataSources } from '../marketApi/types'
+import { getYahooPrices } from '../marketApi/yahoo/getPrices'
+import { setupPriceUpdater, updateTickersList } from '../modules'
+import { copyAlerts } from './copyAlerts'
+import { setupPriceCheckerOld } from './priceChecker'
+import { setupShiftsChecker } from './shiftsChecker'
+import { createShitEvents } from './statChecker'
+import { shiftSender } from './statSender'
 
 export const setupCheckers = (bot) => {
   // TODO: Не запускать не деве
@@ -27,7 +24,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз в день в 2 часа 0 минут
     period: '0 2 * * *'
-  });
+  })
 
   startCronJob({
     name: 'Send stat',
@@ -35,7 +32,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз в час
     period: '0 * * * *'
-  });
+  })
 
   startCronJob({
     name: 'Update Currencies List',
@@ -48,7 +45,7 @@ export const setupCheckers = (bot) => {
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
-  });
+  })
 
   /**
    * TINKOFF tickers list
@@ -64,7 +61,7 @@ export const setupCheckers = (bot) => {
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
-  });
+  })
 
   /**
    * Update COINGECKO tickers list
@@ -80,7 +77,7 @@ export const setupCheckers = (bot) => {
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
-  });
+  })
 
   /**
    * Update BINANCE tickers list
@@ -96,7 +93,7 @@ export const setupCheckers = (bot) => {
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
-  });
+  })
 
   // Дамп коллекции с алертами
   startCronJob({
@@ -106,10 +103,10 @@ export const setupCheckers = (bot) => {
     // В полночь и при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
-  });
+  })
 
   // Мониторинг достижения уровней
-  retry(async () => await setupPriceCheckerOld(bot), 100000, 'setupPriceCheckerOld');
+  retry(async () => await setupPriceCheckerOld(bot), 100000, 'setupPriceCheckerOld')
 
   /**
    * BINANCE prices updater
@@ -121,7 +118,7 @@ export const setupCheckers = (bot) => {
       getPrices: getBinancePrices,
       source: EMarketDataSources.binance
     })
-  ), 100000, 'setupPriceUpdater for binance');
+  ), 100000, 'setupPriceUpdater for binance')
 
   /**
    * YAHOO prices updater
@@ -130,14 +127,14 @@ export const setupCheckers = (bot) => {
    */
   retry(async () => {
     await setupPriceUpdater({
-      // 1min
-      minTimeBetweenRequests: 60,
+      // 1 min
+      minTimeBetweenRequests: 60000,
       getPrices: getYahooPrices,
       source: EMarketDataSources.yahoo,
       // 10 tickers it's a max for yahoo api
       maxTickersForRequest: 10
-    });
-  }, 100000, 'setupPriceUpdater for yahoo');
+    })
+  }, 100000, 'setupPriceUpdater for yahoo')
 
   /**
    * COINGECKO prices updater
@@ -148,14 +145,14 @@ export const setupCheckers = (bot) => {
   retry(async () => {
     await setupPriceUpdater({
       // 2sec
-      minTimeBetweenRequests: 2,
+      minTimeBetweenRequests: 2000,
       getPrices: coingeckoGetLastPriceById,
       source: EMarketDataSources.coingecko,
       // 500 items works fine
       maxTickersForRequest: 500
-    });
-  }, 100000, 'setupPriceUpdater for COINGECKO');
+    })
+  }, 100000, 'setupPriceUpdater for COINGECKO')
 
   // Мониторинг скорости
-  retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker');
-};
+  retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker')
+}

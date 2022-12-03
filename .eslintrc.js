@@ -41,7 +41,7 @@ module.exports = {
       'LabeledStatement',
       'WithStatement'
     ],
-    "@typescript-eslint/semi": ["error", "always"],
+    "@typescript-eslint/semi": ["error", "never"],
     'arrow-body-style': 0,
     'no-eval': 0,
     'no-loop-func': 0,
