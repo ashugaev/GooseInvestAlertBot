@@ -1,13 +1,14 @@
-import { listConfig } from '../../../config';
-import { Actions } from '../../../constants';
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk';
-import { log } from '../../../helpers/log';
-import { getLastPrice } from '../../../helpers/stocksApi';
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
-import { PriceAlertItem } from '../../../models';
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard';
-import { ListActionsDataKeys } from '../list.types';
-import {shortenerCreateShort} from "@helpers";
+import { shortenerCreateShort } from '@helpers'
+
+import { listConfig } from '../../../config'
+import { Actions } from '../../../constants'
+import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
+import { getLastPrice } from '../../../helpers/getLastPrice'
+import { log } from '../../../helpers/log'
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
+import { PriceAlertItem } from '../../../models'
+import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
+import { ListActionsDataKeys } from '../list.types'
 
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
@@ -19,8 +20,9 @@ interface IShowInstrumentPageParams {
 }
 
 export const getAlertNumberByPage = ({ i, page }) => {
-  return i + 1 + (page * listConfig.itemsPerPage);
-};
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+  return i + 1 + (page * listConfig.itemsPerPage)
+}
 
 export const showInstrumentPage = async ({
   page,
@@ -34,11 +36,11 @@ export const showInstrumentPage = async ({
   // FIXME: Вынести
   const itemsToShow = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
-    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage);
+    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
   const itemsList = itemsToShow
     .map(({ symbol, message, lowerThen, greaterThen, currency, name }, i) => {
-      const price = lowerThen ?? greaterThen;
+      const price = lowerThen ?? greaterThen
 
       return ctx.i18n.t('alertList_item', {
         // Номер элемента с учетом страницы
@@ -47,8 +49,8 @@ export const showInstrumentPage = async ({
         message,
         currency: symbolOrCurrency(currency),
         growth: Boolean(greaterThen)
-      });
-    }).join('\n');
+      })
+    }).join('\n')
 
   const {
     type: instrumentType,
@@ -58,14 +60,15 @@ export const showInstrumentPage = async ({
     tickerId,
     symbol,
     _id
-  } = instrumentItems[0];
+  } = instrumentItems[0]
 
-  let lastPrice;
+  let lastPrice
 
   try {
-    lastPrice = await getLastPrice({ id: tickerId });
+    // @ts-expect-error
+    lastPrice = await getLastPrice(tickerId)
   } catch (e) {
-    log.error('ошибка получения цены', e);
+    log.error('ошибка получения цены', e)
   }
 
   const message = ctx.i18n.t('alertList_page', {
@@ -76,7 +79,7 @@ export const showInstrumentPage = async ({
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
     showEditMessage: keyboardMode === EKeyboardModes.edit
-  });
+  })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
@@ -107,7 +110,7 @@ export const showInstrumentPage = async ({
           payloadCallback: (i) => {
             return {
               [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
-            };
+            }
           }
         },
         editButtonConfig: {
@@ -118,5 +121,5 @@ export const showInstrumentPage = async ({
         }
       })
     }
-  });
-};
+  })
+}

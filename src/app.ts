@@ -9,6 +9,7 @@ import * as path from 'path'
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 import * as Sentry from '@sentry/node'
+import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
 import { setupAlert } from './commands/alert/alert'
@@ -34,6 +35,12 @@ const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
 
 export const tinkoffApi = new TinkoffInvestApi({ token: process.env.STOCKS_API_TOKEN })
+
+const apiURL = 'https://api-invest.tinkoff.ru/openapi'
+const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
+const secretToken = process.env.STOCKS_API_TOKEN
+
+export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
 Sentry.init({
   dsn: process.env.SENTRY_URL,

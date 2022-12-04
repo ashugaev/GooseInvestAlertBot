@@ -1,8 +1,8 @@
 import { immediateStep, waitMessageStep } from '@scenes'
 import * as WizardScene from 'telegraf/scenes/wizard'
 
+import { getLastPrice } from '../../../helpers/getLastPrice'
 import { i18n } from '../../../helpers/i18n'
-import { getLastPrice } from '../../../helpers/stocksApi'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
 import { ALERT_SCENES } from '../alert.constants'
 import { validateAlertPrice } from '../validators'
