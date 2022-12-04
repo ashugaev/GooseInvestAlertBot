@@ -65,7 +65,6 @@ export const showInstrumentPage = async ({
   let lastPrice
 
   try {
-    // @ts-expect-error
     lastPrice = await getLastPrice(tickerId)
   } catch (e) {
     log.error('ошибка получения цены', e)

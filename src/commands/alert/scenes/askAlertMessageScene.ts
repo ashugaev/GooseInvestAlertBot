@@ -1,5 +1,5 @@
 import { waitMessageStep } from '@scenes';
-import * as WizardScene from 'telegraf/scenes/wizard';
+const WizardScene = require('telegraf/scenes/wizard');
 
 import { i18n } from '../../../helpers/i18n';
 import { sceneWrapper } from '../../../helpers/sceneWrapper';

@@ -1,5 +1,5 @@
 import { Markup as m } from 'telegraf';
-import * as WizardScene from 'telegraf/scenes/wizard';
+const WizardScene = require('telegraf/scenes/wizard');
 
 import { createActionString } from '../helpers/createActionString';
 import { i18n } from '../helpers/i18n';

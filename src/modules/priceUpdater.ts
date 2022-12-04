@@ -10,7 +10,7 @@ import { lastPriceCache } from './lastPriceCache'
 
 const logPrefix = '[PRICE UPDATER]'
 const CRASH_WAIT_TIME = 30000
-let lastUpdateTime = null
+const lastUpdateTime = {}
 
 export interface PriceUpdaterParams {
   /**
@@ -124,8 +124,9 @@ export const setupPriceUpdater = async ({
     log.info(logPrefix + 'Price cache update END ' + source)
 
     const currentTime = new Date().getTime()
-    lastUpdateTime && (log.info(logPrefix + 'Time betweed updates ' + ((currentTime - lastUpdateTime) / 1000).toString() + 's'))
-    lastUpdateTime = new Date().getTime()
+    // eslint-disable-next-line max-len
+    lastUpdateTime[source] && (log.info(logPrefix + 'Time betweed updates ' + ((currentTime - lastUpdateTime[source]) / 1000).toString() + 's'))
+    lastUpdateTime[source] = new Date().getTime()
 
     console.timeEnd(source)
   }

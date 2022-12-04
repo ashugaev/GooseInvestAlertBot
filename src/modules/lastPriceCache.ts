@@ -13,7 +13,7 @@ export const getLastPriceFromCache = async (id): Promise<string> => {
   const lastPrice = lastPriceCache.get(id)
 
   if (!lastPrice) {
-    throw new Error(`${logPrefix} Get price error`)
+    throw new Error(`${logPrefix} Get price error for ` + id)
   }
 
   return lastPrice

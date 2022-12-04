@@ -1,5 +1,5 @@
 import { immediateStep, waitMessageStep } from '@scenes'
-import * as WizardScene from 'telegraf/scenes/wizard'
+const WizardScene = require('telegraf/scenes/wizard')
 
 import { getLastPrice } from '../../../helpers/getLastPrice'
 import { i18n } from '../../../helpers/i18n'

@@ -139,7 +139,7 @@ export const sendUserMessage = async ({
         }
       })
     } catch (e) {
-      console.error(e)
+      log.error(e)
 
       // If bot was blocked by user
       if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
