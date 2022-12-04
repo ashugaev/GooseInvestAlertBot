@@ -6,7 +6,7 @@ import { CoinGeckoClient } from './getAllInstruments';
 
 const logPrefix = '[COINGECKO GET PRICES BY IDS]';
 
-export async function coingeckoGetLastPriceById (ids: Array<Pick<InstrumentsList, 'id'>>, tickersData): Promise<TickerPrices> {
+export async function coingeckoGetLastPriceById (ids: string[], tickersData): Promise<TickerPrices> {
   const tickersDataObj = tickersData.reduce((acc, el) => {
     acc[el.id] = el;
 

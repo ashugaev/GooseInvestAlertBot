@@ -1,15 +1,19 @@
-import { getModelForClass, prop } from '@typegoose/typegoose';
+// eslint-disable-next-line
+import {getModelForClass, prop} from '@typegoose/typegoose'
 
-import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstruments';
-import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types';
-import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList';
-import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types';
-import { EMarketDataSources } from '../marketApi/types';
+import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstruments'
+import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
+import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList'
+import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
+import { EMarketDataSources } from '../marketApi/types'
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
   Crypto = 'Crypto',
-  Currency = 'Currency'
+  Currency = 'Currency',
+  Etf = 'Etf',
+  // Опционы
+  Bond = 'Bond'
 }
 
 /**
@@ -26,33 +30,33 @@ export class InstrumentsList {
    * для бумаг это figi
    */
   @prop({ required: true, unique: true })
-  id: string;
+  id: string
 
   /**
    * Тикер не обязательный, потому что это иногда крашит бота
    * Может появиться монета без тикера
    */
   @prop({ required: false, unique: false })
-  ticker: string;
+  ticker: string
 
   @prop({ required: true })
-  name: string;
+  name: string
 
   @prop({ required: true })
-  source: EMarketDataSources;
+  source: EMarketDataSources
 
   @prop({ required: true })
-  type: EMarketInstrumentTypes;
+  type: EMarketInstrumentTypes
 
   @prop({ required: false })
-  currency?: string;
+  currency?: string
 
   @prop({ required: true })
   sourceSpecificData:
   ICoingecoSpecificBaseData |
   ITinkoffSpecificBaseData |
   BinanceSourceSpecificData |
-  CurrencyApiSpecificData;
+  CurrencyApiSpecificData
 }
 
 export const InstrumentsListModel = getModelForClass(InstrumentsList, {
@@ -60,44 +64,44 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   options: {
     customName: 'instrumentslist'
   }
-});
+})
 
 export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
-  await InstrumentsListModel.insertMany(items);
+  await InstrumentsListModel.insertMany(items)
 }
 
 export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<InstrumentsList[]> {
   if (!ticker?.length) {
-    throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker');
+    throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
   }
 
   const params = {
     ticker: {
       $in: [].concat(ticker).map(el => el.toUpperCase())
     }
-  };
+  }
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
 
-  return result;
+  return result
 }
 
-export async function getInstrumentListDataByIds (ids: Array<Pick<InstrumentsList, 'id'>>) {
+export async function getInstrumentListDataByIds (ids: string[]) {
   const params = {
     id: {
       $in: ids
     }
-  };
+  }
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
 
-  return result;
+  return result
 }
 
 export async function getInstrumentsBySource (source: EMarketDataSources) {
-  const params = { source };
+  const params = { source }
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean();
+  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
 
-  return result;
+  return result
 }

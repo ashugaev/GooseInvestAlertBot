@@ -20,7 +20,7 @@ export interface PriceUpdaterParams {
   /**
    * tickerIds length will be equal maxTickersForRequest
    */
-  getPrices: (tickerIds: Array<Pick<InstrumentsList, 'id'>>, tickersData: InstrumentsList[]) => Promise<TickerPrices>
+  getPrices: (tickerIds: string[], tickersData: InstrumentsList[]) => Promise<TickerPrices>
   /**
    * The maximum number that can be updated for one request of 'updateRequest' callback
    * null means all tickers for one request
@@ -81,7 +81,7 @@ export const setupPriceUpdater = async ({
 
       lastIterationStartTime = new Date().getTime()
 
-      const tickerIds: Array<Pick<InstrumentsList, 'id'>> = chunk.map(el => el.id)
+      const tickerIds: string[] = chunk.map(el => el.id)
 
       let prices = []
 
