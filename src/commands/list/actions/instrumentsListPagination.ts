@@ -3,6 +3,7 @@ import { Extra } from 'telegraf';
 
 import { log } from '../../../helpers/log';
 import { instrumentsListKeyboard } from '../keyboards/instrumentsListKeyboard';
+import {getSourceMark} from "../../../helpers/getSourceMark";
 
 export const instrumentsListPagination = async (ctx) => {
   try {

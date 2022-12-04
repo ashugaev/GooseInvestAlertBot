@@ -228,7 +228,7 @@ alert_choose_between_duplicates: |
 ### PRICE
 
 price: |  
-  Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} — <b>${price}${currency ? currency : ''}</b>
+  Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} — <b>${price}${currency ? currency : ''} ${source ? source : ''}</b>
 
 priceInvalidFormat: |
   ❌ Некорректный ввод!

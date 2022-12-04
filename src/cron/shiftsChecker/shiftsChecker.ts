@@ -28,7 +28,7 @@ export const setupShiftsChecker = async (bot) => {
 
     try {
       // Между итерациями задержка в 30 секунд, либо то время, которое проставили в последней итерации
-      await wait(customTimeForWait ?? 30000)
+      await wait(customTimeForWait ?? 10000)
 
       customTimeForWait = null
 
