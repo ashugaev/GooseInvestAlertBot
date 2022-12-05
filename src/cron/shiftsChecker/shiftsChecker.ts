@@ -69,8 +69,6 @@ export const setupShiftsChecker = async (bot) => {
 
             const { ticker, timeframe, tickerId } = shift
 
-            log.debug(logPrefix, 'Проверяю shift', shift)
-
             const price = await getLastPrice(tickerId)
 
             // FIXME: Почему то не подхватывается тип модели
