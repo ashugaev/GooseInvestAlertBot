@@ -53,7 +53,7 @@ export async function getInstrumentDataWithPrice ({
     }
 
     // Prioritizing binance
-    instrumentsList = instrumentsList.sort(el => el.kek === EMarketDataSources.binance ? -1 : 1)
+    instrumentsList = instrumentsList.sort(el => el.source === EMarketDataSources.binance ? -1 : 1)
 
     const dataWithPrice = []
 
