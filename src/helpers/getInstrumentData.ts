@@ -1,3 +1,4 @@
+import { EMarketDataSources } from '../marketApi/types'
 import { InstrumentsList, InstrumentsListModel } from '../models'
 import { getLastPrice } from './getLastPrice'
 import { log } from './log'
@@ -37,7 +38,12 @@ export async function getInstrumentDataWithPrice ({
     if (symbol && !id) {
       symbol = symbol.toUpperCase()
 
-      instrumentsList = await InstrumentsListModel.find({ ticker: symbol }).lean()
+      instrumentsList = await InstrumentsListModel.find({
+        ticker: {
+          // Adding USDT for binance
+          $in: [symbol, symbol + 'USDT']
+        }
+      }).lean()
     }
 
     if (!instrumentsList?.length) {
@@ -46,6 +52,9 @@ export async function getInstrumentDataWithPrice ({
       return []
     }
 
+    // Prioritizing binance
+    instrumentsList = instrumentsList.sort(el => el.kek === EMarketDataSources.binance ? -1 : 1)
+
     const dataWithPrice = []
 
     for (let i = 0; i < instrumentsList.length; i++) {
@@ -53,11 +62,9 @@ export async function getInstrumentDataWithPrice ({
       let lastPrice = null
 
       try {
-        log.info(logPrefix, 'Ciongecko. Trying get price.')
         lastPrice = await getLastPrice(instrumentData.id)
-        log.info(logPrefix, 'Ciongecko. Fetch SUCCESS')
       } catch (e) {
-        log.error(logPrefix, 'Ciongecko. Fetch ERROR', e)
+        log.error(logPrefix, 'Fetch ERROR', e)
       }
 
       if (!lastPrice) {
