@@ -6,6 +6,7 @@ import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
 import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList'
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources } from '../marketApi/types'
+import NodeCache from 'node-cache'
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
@@ -98,10 +99,26 @@ export async function getInstrumentListDataByIds (ids: string[]) {
   return result
 }
 
-export async function getInstrumentsBySource (source: EMarketDataSources) {
+/**
+ * Returns list of isntruments by source with cache
+ */
+const instrumentsBySourceCache = new NodeCache({
+  stdTTL: 3600 // sec
+})
+export async function getInstrumentsBySourceCache (source: EMarketDataSources): Promise<InstrumentsList[]> {
   const params = { source }
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
+  const allInstrumentsBySource: InstrumentsList[] = instrumentsBySourceCache.get(source)
 
-  return result
+  if (!allInstrumentsBySource) {
+    const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
+
+    instrumentsBySourceCache.set(source, result)
+  }
+
+  if (allInstrumentsBySource === null) {
+    throw new Error('getInstrumentsBySourceCache: Can\'t update instruments')
+  }
+
+  return allInstrumentsBySource
 }

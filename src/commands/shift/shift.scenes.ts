@@ -88,9 +88,11 @@ shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers
     ctx.wizard.state.shift.tickersInfo = tickersInfo
     ctx.wizard.state.shift.timeframes = timeframes
 
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'), {
-      reply_markup: getTimeframesKeyboard(timeframes)
-    })
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'),
+      {
+        reply_markup: getTimeframesKeyboard(timeframes)
+      }
+    )
 
     return ctx.wizard.next()
   } catch (e) {

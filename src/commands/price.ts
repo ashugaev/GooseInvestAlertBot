@@ -43,7 +43,7 @@ export function setupPrice (bot: Telegraf<Context>) {
         name,
         symbol: null,
         currency: null,
-        source: getSourceMark(source)
+        source: getSourceMark({source})
       }
 
       if (currency) {

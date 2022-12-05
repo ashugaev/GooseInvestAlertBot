@@ -84,7 +84,7 @@ export const setupCheckers = (bot) => {
    * Update BINANCE tickers list
    */
   startCronJob({
-    name: 'Update Binance tickers list List',
+    name: 'Update Binance tickers list',
     callback: updateTickersList({
       getList: binanceGetAllInstruments,
       source: EMarketDataSources.binance,

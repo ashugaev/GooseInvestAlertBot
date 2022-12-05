@@ -78,7 +78,8 @@ export const showInstrumentPage = async ({
     name: instrumentName,
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
-    showEditMessage: keyboardMode === EKeyboardModes.edit
+    showEditMessage: keyboardMode === EKeyboardModes.edit,
+    source: getSourceMark({ source })
   })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {

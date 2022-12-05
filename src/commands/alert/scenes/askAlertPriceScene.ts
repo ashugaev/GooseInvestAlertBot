@@ -1,11 +1,12 @@
 import { immediateStep, waitMessageStep } from '@scenes'
-const WizardScene = require('telegraf/scenes/wizard')
 
 import { getLastPrice } from '../../../helpers/getLastPrice'
+import { getSourceMark } from '../../../helpers/getSourceMark'
 import { i18n } from '../../../helpers/i18n'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
 import { ALERT_SCENES } from '../alert.constants'
 import { validateAlertPrice } from '../validators'
+const WizardScene = require('telegraf/scenes/wizard')
 
 /**
  * Запрашивает у юзера цену
@@ -20,7 +21,7 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
   const instrumentData = instrumentsList[0]
   const instrumentId = instrumentData.id
 
-  const { currency } = instrumentData
+  const { currency, ticker, source } = instrumentData
 
   const price = await getLastPrice(instrumentId)
 
@@ -28,7 +29,8 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
 
   await ctx.replyWithHTML(i18n.t('ru', 'alert_add_choosePrice', {
     price,
-    currency: symbolOrCurrency(currency)
+    currency: symbolOrCurrency(currency),
+    source: getSourceMark({ source, item: instrumentData })
   }))
 
   return ctx.wizard.next()

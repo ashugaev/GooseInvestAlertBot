@@ -36,7 +36,7 @@ export const instrumentsListKeyboard = async ({
 
     return ([
       Markup.callbackButton(
-        (name === symbol) ? name : `${name} (${symbol}) ${getSourceMark(source) ?? ''}`,
+        (name === symbol) ? name : `${name} (${symbol}) ${getSourceMark({ source }) ?? ''}`,
         createActionString(Actions.list_tickerPage, payload)
       )
     ])

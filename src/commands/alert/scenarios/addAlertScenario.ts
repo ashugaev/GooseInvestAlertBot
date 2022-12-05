@@ -1,14 +1,14 @@
-import { log } from '@helpers';
+import { log } from '@helpers'
 
-import { i18n } from '../../../helpers/i18n';
-import { getInstrumentInfoByTicker } from '../../../models';
-import { COMMON_SCENES } from '../../../scenes/scenes.constants';
-import { ALERT_SCENES } from '../alert.constants';
-import { AddAlertPayload } from '../alert.types';
-import { attachMessageToAlert } from '../utils/attachMessageToAlert';
-import { createAlertInDb } from '../utils/createAlertInDb';
+import { i18n } from '../../../helpers/i18n'
+import { getInstrumentInfoByTicker } from '../../../models'
+import { COMMON_SCENES } from '../../../scenes/scenes.constants'
+import { ALERT_SCENES } from '../alert.constants'
+import { AddAlertPayload } from '../alert.types'
+import { attachMessageToAlert } from '../utils/attachMessageToAlert'
+import { createAlertInDb } from '../utils/createAlertInDb'
 
-const logPrefix = '[ADD ALERT SCENARIO]';
+const logPrefix = '[ADD ALERT SCENARIO]'
 
 /**
  * Ф-ция добавления алерта
@@ -25,7 +25,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
   let state: AddAlertPayload = payload;
 
   (function nextStep (payloadUpdate) {
-    state = { ...state, ...payloadUpdate };
+    state = { ...state, ...payloadUpdate }
 
     const {
       prices,
@@ -36,7 +36,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       messageAttached,
       currentPrice,
       createdItemsList
-    } = state;
+    } = state
 
     /**
      * Step 1
@@ -48,9 +48,9 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       ctx.scene.enter(ALERT_SCENES.askTicker, {
         payload: {},
         callback: nextStep
-      });
+      })
 
-      return;
+      return
     }
 
     /**
@@ -63,28 +63,28 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
     if (ticker && !instrumentsList?.length) {
       (async () => {
         try {
-          const instrumentsList = await getInstrumentInfoByTicker({ ticker });
+          const instrumentsList = await getInstrumentInfoByTicker({ ticker })
 
           if (!instrumentsList.length) {
             await ctx.replyWithHTML(
               i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol: ticker }),
               { disable_web_page_preview: true }
-            );
+            )
 
-            return;
+            return
           }
 
-          nextStep({ instrumentsList });
+          nextStep({ instrumentsList })
         } catch (e) {
-          log.error(logPrefix, 'add alert scenario crash 1', e);
-          await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+          log.error(logPrefix, 'add alert scenario crash 1', e)
+          await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
         }
       })().catch(async (e) => {
-        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
-        log.error(logPrefix, 'add alert scenario crash', e);
-      });
+        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+        log.error(logPrefix, 'add alert scenario crash', e)
+      })
 
-      return;
+      return
     }
 
     // Предложим выбрать монету, если по этому тикеру их несколько
@@ -92,9 +92,9 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       ctx.scene.enter(COMMON_SCENES.tickerDuplicates, {
         payload: { instrumentsList },
         callback: nextStep
-      });
+      })
 
-      return;
+      return
     }
 
     /**
@@ -104,9 +104,9 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       ctx.scene.enter(ALERT_SCENES.askPrice, {
         payload: { instrumentsList },
         callback: nextStep
-      });
+      })
 
-      return;
+      return
     }
 
     // Как только собрали основные данные
@@ -116,15 +116,15 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
         ctx,
         payload: { instrumentsList, prices, currentPrice },
         callback: (arg) => {
-          state.alertCreated = true;
-          nextStep(arg);
+          state.alertCreated = true
+          nextStep(arg)
         }
       }).catch(async (e) => {
-        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
-        log.error(logPrefix, 'create alert in DB crash', e);
-      });
+        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+        log.error(logPrefix, 'create alert in DB crash', e)
+      })
 
-      return;
+      return
     }
 
     // Если нет сообщения от юзера
@@ -132,22 +132,22 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       ctx.scene.enter(ALERT_SCENES.askMessage, {
         payload: { createdItemsList },
         callback: nextStep
-      });
+      })
 
-      return;
+      return
     }
 
     // Если сообщение есть, но не отправлено в базу
     if (!messageAttached && message) {
-      const _id = createdItemsList[0]._id;
+      const _id = createdItemsList[0]._id
 
       attachMessageToAlert(ctx, { message, _id }, (arg) => {
-        state.messageAttached = true;
-        nextStep(arg);
+        state.messageAttached = true
+        nextStep(arg)
       }).catch(async (e) => {
-        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
-        log.error(logPrefix, 'attach message crash', e);
-      });
+        await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+        log.error(logPrefix, 'attach message crash', e)
+      })
     }
-  })();
+  })()
 };

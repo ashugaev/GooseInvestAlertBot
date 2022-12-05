@@ -1,5 +1,5 @@
 import { dropOutInvalidPrices } from '@helpers'
-import { getInstrumentsBySource, InstrumentsList } from '@models'
+import { getInstrumentsBySourceCache, InstrumentsList } from '@models'
 import { TickerPrices } from 'prices'
 
 import { log } from '../helpers/log'
@@ -51,7 +51,7 @@ export const setupPriceUpdater = async ({
 
     // Instruments fetch and error handling
     try {
-      sourceInstrumentsList = await getInstrumentsBySource(source)
+      sourceInstrumentsList = await getInstrumentsBySourceCache(source)
 
       if (!sourceInstrumentsList.length) {
         log.error(logPrefix, 'Нет инструментов в списке')

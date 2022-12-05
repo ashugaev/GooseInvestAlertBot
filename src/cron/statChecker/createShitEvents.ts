@@ -1,5 +1,5 @@
 import { log } from '../../helpers/log'
-import { getInstrumentsBySource} from '../../models'
+import { getInstrumentsBySourceCache} from '../../models'
 import { createShiftEvents, ShiftEventItem, ShiftEventsModel } from '../../models/ShiftEvents'
 import { getAllShifts } from '../../models/Shifts'
 import { getShiftsByPercent } from './utils'
@@ -22,7 +22,7 @@ export const createShitEvents = async (bot) => {
 
     try {
     // Зафетчили акции/облигации/фонды массивом из базы
-      instruments = await getInstrumentsBySource(EMarketDataSources.tinkoff )
+      instruments = await getInstrumentsBySourceCache(EMarketDataSources.tinkoff )
     } catch (e) {
       log.error('Ошибка получения списка инструментов из базы для шифтов', e)
 
