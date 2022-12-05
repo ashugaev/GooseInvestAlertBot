@@ -1,9 +1,9 @@
-import { log } from '@helpers';
-import { InstrumentsList, InstrumentsListModel } from '@models';
+import { log } from '@helpers'
+import { InstrumentsList, InstrumentsListModel } from '@models'
 
-import { EMarketDataSources } from '../marketApi/types';
+import { EMarketDataSources } from '../marketApi/types'
 
-const logPrefix = '[UPDATE TICKERS LIST]';
+const logPrefix = '[UPDATE TICKERS LIST]'
 
 interface UpdateTickersListParams {
   /**
@@ -27,14 +27,14 @@ interface UpdateTickersListParams {
  * Double function for make in more suitable for cron initialization
  */
 export const updateTickersList = ({ getList, source, minTickersCount }: UpdateTickersListParams) => async () => {
-  const list = await getList();
+  const list = await getList()
 
   if (list.length < minTickersCount) {
-    throw new Error(logPrefix + 'No items in array');
+    throw new Error(logPrefix + 'No items in array')
   }
 
   if (!source) {
-    throw new Error(logPrefix + ' can\'t update tickers without source');
+    throw new Error(logPrefix + ' can\'t update tickers without source')
   }
 
   await InstrumentsListModel.bulkWrite([
@@ -62,7 +62,7 @@ export const updateTickersList = ({ getList, source, minTickersCount }: UpdateTi
         update: el
       }
     }))
-  ]);
+  ])
 
-  log.info(logPrefix, 'Список доступных инструментов в базе для', source, 'был обновлен', list.length);
-};
+  log.info(logPrefix, 'Список доступных инструментов в базе для', source, 'был обновлен', list.length)
+}

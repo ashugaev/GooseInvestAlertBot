@@ -1,9 +1,9 @@
 
-import { log } from '../../../helpers/log';
-import { wait } from '../../../helpers/wait';
-import { EMarketInstrumentTypes, InstrumentsList } from '../../../models';
-import { EMarketDataSources } from '../../types';
-import { binance } from '../utils/binance';
+import { log } from '../../../helpers/log'
+import { wait } from '../../../helpers/wait'
+import { EMarketInstrumentTypes, InstrumentsList } from '../../../models'
+import { EMarketDataSources } from '../../types'
+import { binance } from '../utils/binance'
 
 export interface BinanceSourceSpecificData {
   status: string
@@ -21,7 +21,7 @@ export interface BinanceTicker extends BinanceSourceSpecificData {
 }
 
 const normalizeItem = (item: BinanceTicker): InstrumentsList => {
-  const { symbol, quoteAsset, ...specificData } = item;
+  const { symbol, quoteAsset, ...specificData } = item
 
   const result = {
     id: `binance_${symbol}`,
@@ -31,26 +31,26 @@ const normalizeItem = (item: BinanceTicker): InstrumentsList => {
     ticker: symbol,
     type: EMarketInstrumentTypes.Crypto,
     sourceSpecificData: specificData
-  };
+  }
 
-  return result;
-};
+  return result
+}
 
 export const binanceGetAllInstruments = async () => {
   try {
-    const data = await binance.exchangeInfo();
+    const data = await binance.exchangeInfo()
 
-    const symbols: BinanceTicker[] = data.symbols;
+    const symbols: BinanceTicker[] = data.symbols
 
-    const normalizedInstrumentsArray = symbols.map(normalizeItem);
+    const normalizedInstrumentsArray = symbols.map(normalizeItem)
 
-    return normalizedInstrumentsArray;
+    return normalizedInstrumentsArray
   } catch (e) {
-    log.error('Ошибка получения списка инструментов binance:', e);
+    log.error('Ошибка получения списка инструментов binance:', e)
 
-    await wait(30000);
+    await wait(30000)
 
     // Ретрай
-    return binanceGetAllInstruments();
+    return binanceGetAllInstruments()
   }
-};
+}

@@ -1,5 +1,5 @@
 import { dropOutInvalidPrices } from '@helpers'
-import { getInstrumentsBySource, InstrumentsList } from '@models'
+import { getInstrumentsBySourceCache, InstrumentsList } from '@models'
 import { TickerPrices } from 'prices'
 
 import { log } from '../helpers/log'
@@ -10,7 +10,7 @@ import { lastPriceCache } from './lastPriceCache'
 
 const logPrefix = '[PRICE UPDATER]'
 const CRASH_WAIT_TIME = 30000
-let lastUpdateTime = null
+const lastUpdateTime = {}
 
 export interface PriceUpdaterParams {
   /**
@@ -20,7 +20,7 @@ export interface PriceUpdaterParams {
   /**
    * tickerIds length will be equal maxTickersForRequest
    */
-  getPrices: (tickerIds: Array<Pick<InstrumentsList, 'id'>>, tickersData: InstrumentsList[]) => Promise<TickerPrices>
+  getPrices: (tickerIds: string[], tickersData: InstrumentsList[]) => Promise<TickerPrices>
   /**
    * The maximum number that can be updated for one request of 'updateRequest' callback
    * null means all tickers for one request
@@ -51,7 +51,7 @@ export const setupPriceUpdater = async ({
 
     // Instruments fetch and error handling
     try {
-      sourceInstrumentsList = await getInstrumentsBySource(source)
+      sourceInstrumentsList = await getInstrumentsBySourceCache(source)
 
       if (!sourceInstrumentsList.length) {
         log.error(logPrefix, 'Нет инструментов в списке')
@@ -81,7 +81,7 @@ export const setupPriceUpdater = async ({
 
       lastIterationStartTime = new Date().getTime()
 
-      const tickerIds: Array<Pick<InstrumentsList, 'id'>> = chunk.map(el => el.id)
+      const tickerIds: string[] = chunk.map(el => el.id)
 
       let prices = []
 
@@ -124,8 +124,9 @@ export const setupPriceUpdater = async ({
     log.info(logPrefix + 'Price cache update END ' + source)
 
     const currentTime = new Date().getTime()
-    lastUpdateTime && (log.info(logPrefix + 'Time betweed updates ' + ((currentTime - lastUpdateTime) / 1000).toString() + 's'))
-    lastUpdateTime = new Date().getTime()
+    // eslint-disable-next-line max-len
+    lastUpdateTime[source] && (log.info(logPrefix + 'Time betweed updates ' + ((currentTime - lastUpdateTime[source]) / 1000).toString() + 's'))
+    lastUpdateTime[source] = new Date().getTime()
 
     console.timeEnd(source)
   }

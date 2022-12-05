@@ -110,7 +110,7 @@ alertErrorUnexistedSymbol: |
   Валюты - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
 
 alertCreated: |
-  🦢 Когда цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} достигнет ${onePrice ? 'уровня' : 'каждого из уровней'} <b>${price}</b>, я тебе сообщу!
+  🦢 Когда цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} достигнет ${onePrice ? 'уровня' : 'каждого из уровней'} <b>${price}</b>, я тебе сообщу!
 
   ${invalid ? '❌ Не смог распознать уровни <b>' + invalid + '</b>' : ''}
 
@@ -141,7 +141,7 @@ alertList_titles: |
   🔔 Подписки на достижение ценовых уровней. Выбери тикер для просмотра списка оповещений
 
 alertList_page: |
-  🔔 Список оповещений для: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  🔔 Список оповещений для: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[график]</a>' : ''}
 
   ${list}
 
@@ -213,7 +213,7 @@ alert_add_chooseInstrument: |
   Например, <b>yndx</b> для Яндекса, а <b>lkoh</b> для Лукойла
 
 alert_add_choosePrice: |
-  💲 Текущая цена <b>${price}${currency ? currency : ''}</b>
+  💲 Текущая цена <b>${price}${currency ? currency : ''}</b> ${source}
 
   Отправь список цен через пробел в формате <b>РР.КК</b> (где РР — это целые числа, а КК — это десятичные)
 
@@ -228,7 +228,7 @@ alert_choose_between_duplicates: |
 ### PRICE
 
 price: |  
-  Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} — <b>${price}${currency ? currency : ''}</b>
+  Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} — <b>${price}${currency ? currency : ''} ${source ? source : ''}</b>
 
 priceInvalidFormat: |
   ❌ Некорректный ввод!

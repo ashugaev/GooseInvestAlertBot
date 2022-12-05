@@ -1,11 +1,12 @@
-import { immediateStep, waitMessageStep } from '@scenes';
-import * as WizardScene from 'telegraf/scenes/wizard';
+import { immediateStep, waitMessageStep } from '@scenes'
 
-import { i18n } from '../../../helpers/i18n';
-import { getLastPriceById } from '../../../helpers/stocksApi';
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
-import { ALERT_SCENES } from '../alert.constants';
-import { validateAlertPrice } from '../validators';
+import { getLastPrice } from '../../../helpers/getLastPrice'
+import { getSourceMark } from '../../../helpers/getSourceMark'
+import { i18n } from '../../../helpers/i18n'
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
+import { ALERT_SCENES } from '../alert.constants'
+import { validateAlertPrice } from '../validators'
+const WizardScene = require('telegraf/scenes/wizard')
 
 /**
  * Запрашивает у юзера цену
@@ -14,48 +15,49 @@ import { validateAlertPrice } from '../validators';
  * - instrumentId
  */
 const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
-  const { state } = ctx.wizard;
-  const { instrumentsList } = state.payload;
+  const { state } = ctx.wizard
+  const { instrumentsList } = state.payload
 
-  const instrumentData = instrumentsList[0];
-  const instrumentId = instrumentData.id;
+  const instrumentData = instrumentsList[0]
+  const instrumentId = instrumentData.id
 
-  const { source, currency } = instrumentData;
+  const { currency, ticker, source } = instrumentData
 
-  const price = await getLastPriceById(instrumentId, source);
+  const price = await getLastPrice(instrumentId)
 
-  state.price = price;
+  state.price = price
 
   await ctx.replyWithHTML(i18n.t('ru', 'alert_add_choosePrice', {
     price,
-    currency: symbolOrCurrency(currency)
-  }));
+    currency: symbolOrCurrency(currency),
+    source: getSourceMark({ source, item: instrumentData })
+  }))
 
-  return ctx.wizard.next();
-});
+  return ctx.wizard.next()
+})
 
 const validateAndSaveStep = waitMessageStep('ask-alert-price-validate-and-save', async (ctx, message, state) => {
   const {
     price: lastPrice,
     callback
-  } = state;
+  } = state
 
   const { normalized, isValid } = await validateAlertPrice({
     ctx,
     message,
     lastPrice
-  });
+  })
 
   if (!isValid) {
-    return ctx.wizard.selectStep(ctx.wizard.cursor);
+    return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
 
-  callback({ prices: normalized, currentPrice: lastPrice });
+  callback({ prices: normalized, currentPrice: lastPrice })
 
-  return ctx.scene.leave();
-});
+  return ctx.scene.leave()
+})
 
 export const askAlertPriceScene = new WizardScene(ALERT_SCENES.askPrice,
   requestStep,
   validateAndSaveStep
-);
+)

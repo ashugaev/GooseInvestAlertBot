@@ -1,12 +1,13 @@
-import { TelegrafContext } from 'telegraf/typings/context';
+import { TelegrafContext } from 'telegraf/typings/context'
 
-import { i18n } from '../../../helpers/i18n';
-import { log } from '../../../helpers/log';
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
-import { AddPriceAlertParams, addPriceAlerts } from '../../../models';
-import { AddAlertPayload } from '../alert.types';
+import { getSourceMark } from '../../../helpers/getSourceMark'
+import { i18n } from '../../../helpers/i18n'
+import { log } from '../../../helpers/log'
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
+import { AddPriceAlertParams, addPriceAlerts } from '../../../models'
+import { AddAlertPayload } from '../alert.types'
 
-type CreateAlertInDbPayload = Partial<AddAlertPayload>;
+type CreateAlertInDbPayload = Partial<AddAlertPayload>
 
 interface CreateAlertInDbParams {
   ctx: TelegrafContext
@@ -19,16 +20,16 @@ interface CreateAlertInDbParams {
  */
 export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInDbParams) => {
   try {
-    const { id: user } = ctx.from;
-    const { instrumentsList, prices, currentPrice } = payload;
+    const { id: user } = ctx.from
+    const { instrumentsList, prices, currentPrice } = payload
 
-    const instrumentData = instrumentsList[0];
+    const instrumentData = instrumentsList[0]
 
-    const newAlerts = [];
-    const addedPrices: number[] = [];
+    const newAlerts = []
+    const addedPrices: number[] = []
 
     for (let i = 0, l = prices.length; l > i; i++) {
-      const price = prices[i];
+      const price = prices[i]
 
       const params: AddPriceAlertParams = {
         user,
@@ -39,24 +40,24 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
         type: instrumentData.type,
         source: instrumentData.source,
         initialPrice: currentPrice
-      };
+      }
 
       currentPrice < price
         ? (params.greaterThen = price)
-        : (params.lowerThen = price);
+        : (params.lowerThen = price)
 
-      newAlerts.push(params);
-      addedPrices.push(price);
+      newAlerts.push(params)
+      addedPrices.push(price)
     }
 
-    const createdItemsList = await addPriceAlerts(newAlerts);
+    const createdItemsList = await addPriceAlerts(newAlerts)
 
     // Поидее невероятный сценарий и должен быть эксепшен
     if (!createdItemsList.length) {
-      await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'));
+      await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
 
       // Прерываем добавление
-      return;
+      return
     }
 
     const i18nParams = {
@@ -64,14 +65,15 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
       symbol: instrumentData.ticker,
       name: instrumentData.name,
       onePrice: createdItemsList.length === 1,
-      invalid: null
-    };
+      invalid: null,
+      source: getSourceMark({ source: instrumentData.source, item: instrumentData })
+    }
 
-    await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams));
+    await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams))
 
-    callback({ createdItemsList });
+    callback({ createdItemsList })
   } catch (e) {
-    log.error('Ошибка добавления алерта', e);
-    await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
+    log.error('Ошибка добавления алерта', e)
+    await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
   }
-};
+}

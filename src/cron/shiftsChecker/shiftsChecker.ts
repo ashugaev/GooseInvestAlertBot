@@ -2,8 +2,8 @@
  * Мониторит скорость изменения цены
  */
 import { fnTimeAsync } from '../../helpers/fnTime'
+import { getLastPrice } from '../../helpers/getLastPrice'
 import { log } from '../../helpers/log'
-import { getLastPrice } from '../../helpers/stocksApi'
 import { wait } from '../../helpers/wait'
 import { getShiftTimeframesObject, TimeShiftModel } from '../../models'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
@@ -28,7 +28,7 @@ export const setupShiftsChecker = async (bot) => {
 
     try {
       // Между итерациями задержка в 30 секунд, либо то время, которое проставили в последней итерации
-      await wait(customTimeForWait ?? 30000)
+      await wait(customTimeForWait ?? 10000)
 
       customTimeForWait = null
 
@@ -69,7 +69,7 @@ export const setupShiftsChecker = async (bot) => {
 
             const { ticker, timeframe, tickerId } = shift
 
-            const price = await getLastPrice({ id: tickerId })
+            const price = await getLastPrice(tickerId)
 
             // FIXME: Почему то не подхватывается тип модели
             const candle: any = candles.find(el => (

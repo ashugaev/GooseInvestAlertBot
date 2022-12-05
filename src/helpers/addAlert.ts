@@ -1,12 +1,13 @@
-import { Context as TelegrafContext } from 'telegraf';
+import { Context as TelegrafContext } from 'telegraf'
 
-import { Scenes } from '../constants';
-import { AddPriceAlertParams, addPriceAlerts } from '../models';
-import { getInstrumentDataWithPrice } from './getInstrumentData';
-import { getPricesFromString } from './getPricesFromString';
-import { i18n } from './i18n';
-import { log } from './log';
-import { symbolOrCurrency } from './symbolOrCurrency';
+import { Scenes } from '../constants'
+import { AddPriceAlertParams, addPriceAlerts } from '../models'
+import { getInstrumentDataWithPrice } from './getInstrumentData'
+import { getPricesFromString } from './getPricesFromString'
+import { getSourceMark } from './getSourceMark'
+import { i18n } from './i18n'
+import { log } from './log'
+import { symbolOrCurrency } from './symbolOrCurrency'
 
 interface AddAlertParams {
   data: {
@@ -22,50 +23,50 @@ export const addAlert = async ({
   ctx,
   startedFromScene
 }: AddAlertParams): Promise<{ _id: string, addedCount: number }> => {
-  const { price: targetPrice } = data;
-  let { symbol } = data;
+  const { price: targetPrice } = data
+  let { symbol } = data
 
-  const { id: user } = ctx.from;
+  const { id: user } = ctx.from
 
-  let instrumentData;
-  let lastPrice;
+  let instrumentData
+  let lastPrice
 
   try {
     if (!symbol) {
-      throw new Error('Не пришел символ при установке алерта');
+      throw new Error('Не пришел символ при установке алерта')
     }
 
-    const result = (await getInstrumentDataWithPrice({ symbol }))[0];
+    const result = (await getInstrumentDataWithPrice({ symbol }))[0]
     if (!result) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
         { disable_web_page_preview: true }
-      );
+      )
     };
 
-    instrumentData = result.instrumentData;
-    lastPrice = result.price;
+    instrumentData = result.instrumentData
+    lastPrice = result.price
 
     // Перепишем на случай если юзер писал пару с валютой
-    symbol = instrumentData.ticker;
+    symbol = instrumentData.ticker
   } catch (e) {
-    log.error('ошибка создания алерта', e);
+    log.error('ошибка создания алерта', e)
 
-    await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'));
+    await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
 
-    return;
+    return
   }
 
   const { prices, invalidValues } = getPricesFromString({
     string: targetPrice,
     lastPrice
-  });
+  })
 
-  const priceAlerts = [];
-  let _id = null;
+  const priceAlerts = []
+  let _id = null
 
   for (let i = 0, l = prices.length; l > i; i++) {
-    const price = prices[i];
+    const price = prices[i]
 
     try {
       const params: AddPriceAlertParams = {
@@ -77,58 +78,59 @@ export const addAlert = async ({
         type: instrumentData.type,
         source: instrumentData.source,
         initialPrice: lastPrice
-      };
+      }
 
       lastPrice < price
         ? (params.greaterThen = price)
-        : (params.lowerThen = price);
+        : (params.lowerThen = price)
 
       // Если крипта - добавим валюту в пару
       // if (instrumentData.type == EMarketInstrumentTypes.Crypto) {
       //   params.symbol = params.symbol + instrumentData.sourceSpecificData.currency.toUpperCase();
       // }
 
-      const createdItem = await addPriceAlerts([params]);
+      const createdItem = await addPriceAlerts([params])
 
       // Для добавления коммента
-      _id = createdItem[0]._id;
+      _id = createdItem[0]._id
 
-      priceAlerts.push(price);
+      priceAlerts.push(price)
     } catch (e) {
-      await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'));
-      log.error(e);
+      await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
+      log.error(e)
 
-      continue;
+      continue
     }
   }
 
   if (!priceAlerts.length) {
-    await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'));
-    throw new Error('Не добавлено ни одного оповещения');
+    await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
+    throw new Error('Не добавлено ни одного оповещения')
   }
 
-  const { name } = instrumentData;
-  const { currency } = instrumentData;
+  const { name } = instrumentData
+  const { currency } = instrumentData
 
   const i18nParams = {
     price: priceAlerts.map((el: string) => `${el}${symbolOrCurrency(currency) ?? ''}`).join(', '),
     symbol,
     name,
     invalid: null,
-    onePrice: priceAlerts.length === 1
-  };
-
-  if (invalidValues.length) {
-    i18nParams.invalid = invalidValues.join(', ');
+    onePrice: priceAlerts.length === 1,
+    source: getSourceMark({ source: instrumentData.source, item: instrumentData })
   }
 
-  await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams));
+  if (invalidValues.length) {
+    i18nParams.invalid = invalidValues.join(', ')
+  }
+
+  await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams))
 
   // Если только одна цена
   if (prices.length === 1 && !startedFromScene) {
     // @ts-expect-errors TODO: Разобраться
-    await ctx.scene.enter(Scenes.alertMessage, { _id });
+    await ctx.scene.enter(Scenes.alertMessage, { _id })
   }
 
-  return { _id, addedCount: priceAlerts.length };
-};
+  return { _id, addedCount: priceAlerts.length }
+}

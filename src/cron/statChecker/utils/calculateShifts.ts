@@ -1,14 +1,14 @@
-import { wait } from '../../../helpers/wait'
-import { stocksApi } from '../../../helpers/stocksApi'
+import { leagacyTinkoffApi } from '../../../app'
 import { getDatesBackFromToday } from '../../../helpers/getDatesBackFromToday'
 import { log } from '../../../helpers/log'
+import { wait } from '../../../helpers/wait'
 import { generateShiftsData } from './generateShiftsData'
 
 const daysBackToCheck = 30
 const maxRetries = 3
 
-export const calculateShifts = ({ instruments, shifts }) => (
-  new Promise<void>(async (rs) => {
+export const calculateShifts = async ({ instruments, shifts }) => (
+  await new Promise<void>(async (rs) => {
     let timesRetried = 0
 
     const { dateFrom, dateTo } = getDatesBackFromToday(daysBackToCheck)
@@ -21,7 +21,7 @@ export const calculateShifts = ({ instruments, shifts }) => (
       let candles = []
 
       try {
-        const data = await stocksApi.candlesGet({
+        const data = await leagacyTinkoffApi.candlesGet({
           from: dateFrom,
           to: dateTo,
           interval: 'day',

@@ -1,10 +1,9 @@
-import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain';
 
-import { log } from '../../../helpers/log';
-import { stocksApi } from '../../../helpers/stocksApi';
-import { wait } from '../../../helpers/wait';
-import { InstrumentsList } from '../../../models';
-import { EMarketDataSources } from '../../types';
+import { tinkoffApi } from '../../../app'
+import { log } from '../../../helpers/log'
+import { wait } from '../../../helpers/wait'
+import { EMarketInstrumentTypes, InstrumentsList } from '../../../models'
+import { EMarketDataSources } from '../../types'
 
 /**
  * Замены для зашкварных тикеров валют
@@ -12,10 +11,10 @@ import { EMarketDataSources } from '../../types';
 const tickerReplacements = {
   USD000UTSTOM: 'USDRUB',
   EUR_RUB__TOM: 'EURRUB'
-};
+}
 
 const normalizeTinkoffItem = (item): InstrumentsList => {
-  const { ticker, name, type, currency, ...specificData } = item;
+  const { ticker, name, type, currency, ...specificData } = item
 
   const result = {
     id: specificData.figi,
@@ -25,36 +24,45 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     type,
     currency,
     sourceSpecificData: specificData
-  };
+  }
 
   // Замена тикера по шаблону
-  result.ticker = tickerReplacements[ticker] ?? ticker;
+  result.ticker = tickerReplacements[ticker] ?? ticker
 
-  return result;
-};
+  return result
+}
 
-export const tinkoffGetAllInstruments = () => new Promise<any[]>(async (resolve) => {
+export const tinkoffGetAllInstruments = async () => {
   try {
-    const allInstrumentsPromises = [
-      stocksApi.stocks(),
-      stocksApi.etfs(),
-      stocksApi.bonds(),
-      stocksApi.currencies()
-    ];
+    const commonParams = {
+      instrumentStatus: 'INSTRUMENT_STATUS_UNSPECIFIED'
+    }
 
-    const allInstruments = await Promise.all(allInstrumentsPromises);
+    // @ts-expect-error
+    // eslint-disable-next-line max-len
+    const shares = (await tinkoffApi.instruments.shares(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Stock }))
+    // @ts-expect-error
+    // eslint-disable-next-line max-len
+    const etfs = (await tinkoffApi.instruments.etfs(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Etf }))
+    // @ts-expect-error
+    // eslint-disable-next-line max-len
+    const bonds = (await tinkoffApi.instruments.bonds(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Bond }))
+    // @ts-expect-error
+    // eslint-disable-next-line max-len
+    const currencies = (await tinkoffApi.instruments.currencies(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Currency }))
 
-    const instrumentsArray = allInstruments.reduce<MarketInstrument[]>((acc, el) => acc.concat(el.instruments), []);
+    const allInstruments = [...etfs, ...bonds, ...currencies, ...shares]
 
-    const normalizedInstrumentsArray = instrumentsArray.map(normalizeTinkoffItem);
+    const normalizedInstrumentsArray = allInstruments.map(normalizeTinkoffItem)
 
-    resolve(normalizedInstrumentsArray);
+    return normalizedInstrumentsArray
   } catch (e) {
-    log.error('Ошибка получения списка иструментов:', e);
+    log.error('Ошибка получения списка иструментов:', e)
 
-    await wait(30000);
+    await wait(30000)
 
     // Ретрай
-    resolve(await tinkoffGetAllInstruments());
+    // eslint-disable-next-line
+    return (await tinkoffGetAllInstruments())
   }
-});
+}

@@ -1,8 +1,9 @@
-import { InstrumentsList, InstrumentsListModel } from '../models';
-import { log } from './log';
-import { getLastPrice } from './stocksApi';
+import { EMarketDataSources } from '../marketApi/types'
+import { InstrumentsList, InstrumentsListModel } from '../models'
+import { getLastPrice } from './getLastPrice'
+import { log } from './log'
 
-const logPrefix = '[GET INSTRUMENT DATA WITH PRICE]';
+const logPrefix = '[GET INSTRUMENT DATA WITH PRICE]'
 
 interface GetInstrumentDataWithPrice {
   price: number
@@ -24,53 +25,59 @@ export async function getInstrumentDataWithPrice ({
 }: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice[]> {
   try {
     if (!id && !symbol) {
-      log.error(logPrefix, 'Ошибка входных данных');
-      return [];
+      log.error(logPrefix, 'Ошибка входных данных')
+      return []
     }
 
-    let instrumentsList = null;
+    let instrumentsList = null
 
     if (id && !symbol) {
-      instrumentsList = await InstrumentsListModel.find({ id }).lean();
+      instrumentsList = await InstrumentsListModel.find({ id }).lean()
     }
 
     if (symbol && !id) {
-      symbol = symbol.toUpperCase();
+      symbol = symbol.toUpperCase()
 
-      instrumentsList = await InstrumentsListModel.find({ ticker: symbol }).lean();
+      instrumentsList = await InstrumentsListModel.find({
+        ticker: {
+          // Adding USDT for binance
+          $in: [symbol, symbol + 'USDT']
+        }
+      }).lean()
     }
 
     if (!instrumentsList?.length) {
-      log.error(logPrefix, 'Ошибка получения данных для', symbol || id);
+      log.error(logPrefix, 'Ошибка получения данных для', symbol || id)
 
-      return [];
+      return []
     }
 
-    const dataWithPrice = [];
+    // Prioritizing binance
+    instrumentsList = instrumentsList.sort(el => el.kek === EMarketDataSources.binance ? -1 : 1)
+
+    const dataWithPrice = []
 
     for (let i = 0; i < instrumentsList.length; i++) {
-      const instrumentData = instrumentsList[i];
-      let lastPrice = null;
+      const instrumentData = instrumentsList[i]
+      let lastPrice = null
 
       try {
-        log.info(logPrefix, 'Ciongecko. Trying get price.');
-        lastPrice = await getLastPrice({ id: instrumentData.id, instrumentData });
-        log.info(logPrefix, 'Ciongecko. Fetch SUCCESS');
+        lastPrice = await getLastPrice(instrumentData.id)
       } catch (e) {
-        log.error(logPrefix, 'Ciongecko. Fetch ERROR', e);
+        log.error(logPrefix, 'Fetch ERROR', e)
       }
 
       if (!lastPrice) {
-        continue;
+        continue
       }
 
-      dataWithPrice.push({ instrumentData, price: lastPrice });
+      dataWithPrice.push({ instrumentData, price: lastPrice })
     }
 
-    return dataWithPrice;
+    return dataWithPrice
   } catch (e) {
-    log.error(logPrefix, 'Ошибка получения данных', e);
+    log.error(logPrefix, 'Ошибка получения данных', e)
 
-    return [];
+    return []
   }
 }

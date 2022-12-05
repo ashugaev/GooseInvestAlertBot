@@ -7,6 +7,7 @@ import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllIns
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
 import { getCurrenciesList } from '../marketApi/currencyConverter/getList'
 import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments'
+import { getTinkoffPrices } from '../marketApi/tinkoff/api/getPrices'
 import { EMarketDataSources } from '../marketApi/types'
 import { getYahooPrices } from '../marketApi/yahoo/getPrices'
 import { setupPriceUpdater, updateTickersList } from '../modules'
@@ -83,7 +84,7 @@ export const setupCheckers = (bot) => {
    * Update BINANCE tickers list
    */
   startCronJob({
-    name: 'Update Binance tickers list List',
+    name: 'Update Binance tickers list',
     callback: updateTickersList({
       getList: binanceGetAllInstruments,
       source: EMarketDataSources.binance,
@@ -152,6 +153,21 @@ export const setupCheckers = (bot) => {
       maxTickersForRequest: 500
     })
   }, 100000, 'setupPriceUpdater for COINGECKO')
+
+  /**
+   * TINKOFF prices updater
+   *
+   * QUOTA: ~150rec/min
+   * @link https://tinkoff.github.io/investAPI/limits/
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      // 1sec
+      minTimeBetweenRequests: 100,
+      getPrices: getTinkoffPrices,
+      source: EMarketDataSources.tinkoff
+    })
+  }, 100000, 'setupPriceUpdater for TINKOFF')
 
   // Мониторинг скорости
   retry(async () => await setupShiftsChecker(bot), 100000, 'setupShiftsChecker')

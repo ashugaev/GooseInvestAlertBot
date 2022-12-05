@@ -1,7 +1,10 @@
 export const symbols = {
   RUB: '₽',
+  rub: '₽',
   USD: '$',
-  EUR: '€'
-};
+  usd: '$',
+  EUR: '€',
+  eur: '€'
+}
 
-export const symbolOrCurrency = (currency: string): string => currency && (symbols[currency] || ' ' + currency);
+export const symbolOrCurrency = (currency: string): string => currency && (symbols[currency] || ' ' + currency)
