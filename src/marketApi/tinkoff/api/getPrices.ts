@@ -30,12 +30,9 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
     const normalizedNominal = nominal?.units + nominal?.nano / 1000000000
 
     // Different calculation for different instrument
-    if (item?.type === EMarketInstrumentTypes.Stock) {
-      // price * lot
-      priceNormalized = priceNormalized * lot
-    } else if (item?.type === EMarketInstrumentTypes.Currency) {
+    if (item?.type === EMarketInstrumentTypes.Currency) {
       // price * lot / nominal
-      priceNormalized = priceNormalized * lot / normalizedNominal
+      priceNormalized = priceNormalized / normalizedNominal
     } else if (item?.type === EMarketInstrumentTypes.Bond) {
       // price / 100 * nominal
       priceNormalized = priceNormalized / 100 * normalizedNominal
