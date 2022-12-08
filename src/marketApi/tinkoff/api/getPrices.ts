@@ -19,12 +19,12 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       return res
     }
 
-    const priceNormalized = price.units + Number('0.' + price.nano.toString())
+    const priceNormalized = price.units + price.nano / 1000000000
     const tickerId = figi
-    const ticker = tickersData.find(el => el.id === tickerId)
+    const item = tickersData.find(el => el.id === tickerId)
 
-    if (priceNormalized && tickerId && ticker) {
-      res.push([ticker, priceNormalized, tickerId])
+    if (priceNormalized && tickerId && item) {
+      res.push([item.ticker, priceNormalized, tickerId])
     } else {
       console.error(logPrefix + 'Can\'t generate price data from:', priceNormalized, tickerId, ticker)
     }
