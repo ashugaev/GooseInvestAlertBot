@@ -1,4 +1,14 @@
-import { getLastPriceFromCache } from '../modules'
+
+const NodeCache = require('node-cache')
+
+const logPrefix = '[LAST PRICE CACHE]'
+
+/**
+ * Cache with all prices by id
+ *
+ * No time limits for cache
+ */
+export const lastPriceCache = new NodeCache()
 
 /**
  * Вернет цену по id
@@ -8,10 +18,10 @@ export const getLastPrice = async (id: string) => {
     throw new Error('Необходимо предоставить id для получения последней цены')
   }
 
-  const lastPrice = await getLastPriceFromCache(id)
+  const lastPrice = lastPriceCache.get(id)
 
   if (!lastPrice) {
-    throw new Error('Не была получена последняя цена инструмента ' + id)
+    throw new Error(`${logPrefix} Get price error for ` + id)
   }
 
   return lastPrice

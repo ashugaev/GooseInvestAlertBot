@@ -14,7 +14,8 @@ export enum EMarketInstrumentTypes {
   Currency = 'Currency',
   Etf = 'Etf',
   // Опционы
-  Bond = 'Bond'
+  Bond = 'Bond',
+  Futures = 'Futures'
 }
 
 /**

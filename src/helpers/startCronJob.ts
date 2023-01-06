@@ -1,7 +1,10 @@
-import { retry } from './retry';
+import { InitializationItem } from '../cron'
+import { retry } from './retry'
+import { setJobKey } from './setJobKey'
+import { wait } from './wait'
 
-const { CronJob } = require('cron');
-const { log } = require('./log');
+const { CronJob } = require('cron')
+const { log } = require('./log')
 
 interface StartCronJobParams {
   name: string
@@ -12,6 +15,8 @@ interface StartCronJobParams {
      * Перед тем как делать задачу для крона выполнит callback
      */
   executeBeforeInit?: boolean
+  isReadyToStart?: () => boolean
+  jobKey?: InitializationItem
 }
 
 export const startCronJob = ({
@@ -19,34 +24,47 @@ export const startCronJob = ({
   period,
   callback,
   callbackArgs,
-  executeBeforeInit
+  executeBeforeInit,
+  isReadyToStart,
+  jobKey
 }: StartCronJobParams) => {
   const onTickFunction = async () => {
-    log.info('Start cron job:', name);
+    while (!isReadyToStart?.() ?? false) {
+      // Waiting untill all preparation for this job will be done
+      await wait(1000)
+    }
+
+    log.info('Start cron job:', name)
 
     try {
       callbackArgs
       // eslint-disable-next-line
-        ? retry(async () => await callback.apply(null, callbackArgs), 60000, 'cron job ' + name, 5)
-        : retry(async () => await callback(), 60000, 'cron job ' + name, 5);
+        ? retry(async () => {
+          await callback.apply(null, callbackArgs)
+          setJobKey(jobKey)
+        }, 60000, 'cron job ' + name, 5)
+        : retry(async () => {
+          await callback()
+          setJobKey(jobKey)
+        }, 60000, 'cron job ' + name, 5)
     } catch (e) {
-      log.error('Cron job error', e);
+      log.error('Cron job error', e)
     }
-  };
+  }
 
-  executeBeforeInit && (onTickFunction());
+  executeBeforeInit && (onTickFunction())
 
   const job = new CronJob(
     period,
     onTickFunction,
     () => {
-      log.info('Start cron job:', name);
+      log.info('Start cron job:', name)
     },
     false,
     'Europe/Moscow'
-  );
+  )
 
-  job.start();
+  job.start()
 
-  return job;
-};
+  return job
+}

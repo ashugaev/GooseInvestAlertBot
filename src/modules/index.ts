@@ -1,3 +1,2 @@
-export * from './lastPriceCache';
-export * from './priceUpdater';
-export * from './updateTickersList';
+export * from './priceUpdater'
+export * from './updateTickersList'

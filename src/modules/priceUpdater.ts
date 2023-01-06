@@ -2,11 +2,13 @@ import { dropOutInvalidPrices } from '@helpers'
 import { getInstrumentsBySourceCache, InstrumentsList } from '@models'
 import { TickerPrices } from 'prices'
 
+import { InitializationItem } from '../cron'
+import { lastPriceCache } from '../helpers/getLastPrice'
 import { log } from '../helpers/log'
+import { setJobKey } from '../helpers/setJobKey'
 import { splitArray } from '../helpers/splitArray'
 import { wait } from '../helpers/wait'
 import { EMarketDataSources } from '../marketApi/types'
-import { lastPriceCache } from './lastPriceCache'
 
 const logPrefix = '[PRICE UPDATER]'
 const CRASH_WAIT_TIME = 30000
@@ -31,6 +33,11 @@ export interface PriceUpdaterParams {
    * In ms
    */
   minTimeBetweenRequests: number
+  /**
+   * Check if this job ready to be started
+   */
+  isReadyToStart?: () => boolean
+  jobKey: InitializationItem
 }
 
 /**
@@ -40,9 +47,16 @@ export const setupPriceUpdater = async ({
   getPrices,
   maxTickersForRequest = 10000,
   minTimeBetweenRequests = 100,
-  source
+  source,
+  isReadyToStart,
+  jobKey
 }: PriceUpdaterParams) => {
-  // TODO: Запуск только когда отработало обновление списка инструментов
+  while (!isReadyToStart?.() ?? false) {
+    // Waiting untill all preparation for this job will be done
+    await wait(1000)
+  }
+
+  log.info(logPrefix, 'Started price updating for', source)
 
   let lastIterationStartTime = new Date().getTime()
 
@@ -127,6 +141,8 @@ export const setupPriceUpdater = async ({
     // eslint-disable-next-line max-len
     lastUpdateTime[source] && (log.info(logPrefix + 'Time betweed updates ' + ((currentTime - lastUpdateTime[source]) / 1000).toString() + 's'))
     lastUpdateTime[source] = new Date().getTime()
+
+    setJobKey(jobKey)
 
     console.timeEnd(source)
   }

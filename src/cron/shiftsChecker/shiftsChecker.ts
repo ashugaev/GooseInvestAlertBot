@@ -16,7 +16,12 @@ const logPrefix = '[CANDLES UPDATER]'
  * - Cвечи копим и отсылаем вконце обхода
  * -
  */
-export const setupShiftsChecker = async (bot) => {
+export const setupShiftsChecker = async (bot, isReadyToStart) => {
+  while (!isReadyToStart?.() ?? false) {
+    // Waiting untill all preparation for this job will be done
+    await wait(1000)
+  }
+
   log.info(logPrefix + ' Init')
 
   let customTimeForWait = null
