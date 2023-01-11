@@ -13,6 +13,7 @@ import { getYahooPrices } from '../marketApi/yahoo/getPrices'
 import { setupPriceUpdater, updateTickersList } from '../modules'
 import { copyAlerts } from './copyAlerts'
 import { setupPriceCheckerOld } from './priceChecker'
+import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
 import { createShitEvents } from './statChecker'
 import { shiftSender } from './statSender'
@@ -20,15 +21,15 @@ import { shiftSender } from './statSender'
 // Processed steps list
 export enum InitializationItem {
   // Tickers
-  TINKOFF_TICKERS = 1,
-  BINANCE_TICKERS = 2,
-  COINGECKO_TICKERS = 3,
-  YAHOO_TICKERS = 4,
+  TINKOFF_TICKERS = 'TINKOFF_TICKERS',
+  BINANCE_TICKERS = 'BINANCE_TICKERS',
+  COINGECKO_TICKERS = 'COINGECKO_TICKERS',
+  YAHOO_TICKERS = 'YAHOO_TICKERS',
   // Prices
-  TINKOFF_PRICES = 5,
-  BINANCE_PRICES = 6,
-  YAHOO_PRICES = 7,
-  COINGECKO_PRICES = 8,
+  TINKOFF_PRICES = 'TINKOFF_PRICES',
+  BINANCE_PRICES = 'BINANCE_PRICES',
+  YAHOO_PRICES = 'YAHOO_PRICES',
+  COINGECKO_PRICES = 'COINGECKO_PRICES',
 }
 
 // Array with all processed steps
@@ -52,6 +53,15 @@ const isAllPricesUpdated = () => {
 }
 
 export const setupCheckers = (bot) => {
+  startCronJob({
+    name: 'Update tinkoff futures margins',
+    callback: saveFuturesMargin,
+    callbackArgs: [],
+    // раз в день в 3 часа 0 минут
+    period: '0 3 * * *',
+    executeBeforeInit: true
+  })
+
   // TODO: Не запускать не деве
   startCronJob({
     name: 'Check stat',
@@ -88,7 +98,7 @@ export const setupCheckers = (bot) => {
    * TINKOFF tickers list
    */
   startCronJob({
-    name: 'Update Tinkoff tickers list List',
+    name: 'Update Tinkoff tickers list',
     callback: updateTickersList({
       getList: tinkoffGetAllInstruments,
       source: EMarketDataSources.tinkoff,
@@ -145,9 +155,6 @@ export const setupCheckers = (bot) => {
     executeBeforeInit: true
   })
 
-  // Мониторинг достижения уровней
-  retry(async () => await setupPriceCheckerOld(bot), 100000, 'setupPriceCheckerOld')
-
   /**
    * BINANCE prices updater
    */
@@ -157,7 +164,7 @@ export const setupCheckers = (bot) => {
       minTimeBetweenRequests: 10000,
       getPrices: getBinancePrices,
       source: EMarketDataSources.binance,
-      isReadyToStart: () => appInitStatuses.includes(InitializationItem.BINANCE_TICKERS),
+      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.BINANCE_TICKERS),
       jobKey: InitializationItem.BINANCE_PRICES
     })
   ), 100000, 'setupPriceUpdater for binance')
@@ -175,7 +182,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.yahoo,
       // 10 tickers it's a max for yahoo api
       maxTickersForRequest: 10,
-      isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
+      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
       jobKey: InitializationItem.YAHOO_PRICES
     })
   }, 100000, 'setupPriceUpdater for yahoo')
@@ -194,8 +201,8 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.coingecko,
       // 500 items works fine
       maxTickersForRequest: 500,
-      jobKey: InitializationItem.COINGECKO_PRICES,
-      isReadyToStart: () => appInitStatuses.includes(InitializationItem.COINGECKO_TICKERS)
+      jobKey: InitializationItem.COINGECKO_PRICES
+      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.COINGECKO_TICKERS)
     })
   }, 100000, 'setupPriceUpdater for COINGECKO')
 
@@ -211,11 +218,18 @@ export const setupCheckers = (bot) => {
       minTimeBetweenRequests: 100,
       getPrices: getTinkoffPrices,
       source: EMarketDataSources.tinkoff,
-      jobKey: InitializationItem.TINKOFF_PRICES,
-      isReadyToStart: () => appInitStatuses.includes(InitializationItem.TINKOFF_TICKERS)
+      jobKey: InitializationItem.TINKOFF_PRICES
+      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.TINKOFF_TICKERS)
     })
   }, 100000, 'setupPriceUpdater for TINKOFF')
 
-  // Мониторинг скорости
+  /**
+   * Мониторинг скорости
+   */
   retry(async () => await setupShiftsChecker(bot, isAllPricesUpdated), 100000, 'setupShiftsChecker')
+
+  /**
+   * Мониторинг достижения уровней
+   */
+  retry(async () => await setupPriceCheckerOld(bot, isAllPricesUpdated), 100000, 'setupPriceCheckerOld')
 }

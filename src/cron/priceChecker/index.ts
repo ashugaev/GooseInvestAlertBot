@@ -7,6 +7,7 @@ import { getInstrumentDataWithPrice } from '../../helpers/getInstrumentData'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
+import { retryUntilTrue } from '../../helpers/retryUntilTrue'
 import { symbolOrCurrency } from '../../helpers/symbolOrCurrency'
 import { wait } from '../../helpers/wait'
 import {
@@ -18,7 +19,9 @@ import {
 let lastApiErrorSentrySentTime = 0
 const logPrefix = '[PRICE CHECKER]'
 
-export const setupPriceCheckerOld = async (bot) => {
+export const setupPriceCheckerOld = async (bot, isAllPricesUpdated) => {
+  await retryUntilTrue(isAllPricesUpdated, 'setupPriceCheckerOld')
+
   // Ожидание преред запуском что бы не спамить на хотрелоаде
   // и успеть выполнить подготовительные ф-ции
   await wait(30000)

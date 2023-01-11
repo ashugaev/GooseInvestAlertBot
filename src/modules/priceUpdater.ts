@@ -5,6 +5,7 @@ import { TickerPrices } from 'prices'
 import { InitializationItem } from '../cron'
 import { lastPriceCache } from '../helpers/getLastPrice'
 import { log } from '../helpers/log'
+import { retryUntilTrue } from '../helpers/retryUntilTrue'
 import { setJobKey } from '../helpers/setJobKey'
 import { splitArray } from '../helpers/splitArray'
 import { wait } from '../helpers/wait'
@@ -51,12 +52,7 @@ export const setupPriceUpdater = async ({
   isReadyToStart,
   jobKey
 }: PriceUpdaterParams) => {
-  while (!isReadyToStart?.() ?? false) {
-    // Waiting untill all preparation for this job will be done
-    await wait(1000)
-  }
-
-  log.info(logPrefix, 'Started price updating for', source)
+  await retryUntilTrue(isReadyToStart, 'Price updater for: ' + source)
 
   let lastIterationStartTime = new Date().getTime()
 
@@ -73,7 +69,7 @@ export const setupPriceUpdater = async ({
         continue
       }
     } catch (e) {
-      log.error(logPrefix, 'Ошибки получения списка инструментов')
+      log.error(logPrefix, 'Ошибки получения списка инструментов', e)
       await wait(CRASH_WAIT_TIME)
       continue
     }
@@ -109,7 +105,7 @@ export const setupPriceUpdater = async ({
           continue
         }
       } catch (e) {
-        log.error(logPrefix, 'Get price error', e)
+        log.error(logPrefix, 'Update prices error', e)
         await wait(CRASH_WAIT_TIME)
         continue
       }

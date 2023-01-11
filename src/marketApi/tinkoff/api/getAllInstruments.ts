@@ -52,7 +52,7 @@ export const tinkoffGetAllInstruments = async () => {
     const currencies = (await tinkoffApi.instruments.currencies(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Currency }))
     // @ts-expect-error
     // eslint-disable-next-line max-len
-    const futures = (await tinkoffApi.instruments.futures(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Futures }))
+    const futures = (await tinkoffApi.instruments.futures(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Future }))
 
     const allInstruments = [...bonds, ...currencies, ...shares, ...etfs, ...futures]
 

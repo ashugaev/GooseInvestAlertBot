@@ -8,6 +8,7 @@ import { TickerPrices } from 'prices'
 import { GetLastPricesResponse } from 'tinkoff-invest-api/src/generated/marketdata'
 
 import { tinkoffApi } from '../../../app'
+import { getTinkoffInstrumentLink } from '../../../helpers/getInstrumentLInk'
 import { moneyObjToValue } from '../utils/moneyObj'
 
 const logPrefix = '[GET PRICES TINK]'
@@ -18,53 +19,71 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
   const pricesNormalizes = []
 
   for (let i = 0; i < lastPrices.lastPrices.length; i++) {
-    const { price, figi } = lastPrices.lastPrices[i]
+    try {
+      const piceObj = lastPrices.lastPrices[i]
+      const { price, figi } = piceObj
 
-    const item = tickersData.find(el => el.id === figi)
+      const item = tickersData.find(el => el.sourceSpecificData.figi === figi)
 
-    console.log(logPrefix, 'type', i, item.type)
+      if (!price) {
+        log.info(logPrefix, 'NO price for', item)
+        continue
+      }
 
-    if (!price) {
-      log.info(logPrefix, 'NO price for', item)
-      continue
-    }
+      const tickerId = figi
 
-    const tickerId = figi
+      let priceNormalized = moneyObjToValue(price)
 
-    let priceNormalized = moneyObjToValue(price)
+      const { lot, nominal } = item.sourceSpecificData
 
-    const { lot, nominal } = item.sourceSpecificData
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    const normalizedNominal = moneyObjToValue(nominal)
+      // FIXME: Not sure than 1 by default is Ok
+      const normalizedNominal = nominal ? moneyObjToValue(nominal) : 1
 
-    /**
+      /**
      * Different calculation for different instrument
      * @see https://tinkoff.github.io/investAPI/head-marketdata/#_4
      * @see https://tinkoff.github.io/investAPI/faq_marketdata/
      */
-    if (item?.type === EMarketInstrumentTypes.Currency) {
-      // price * lot / nominal
-      priceNormalized = priceNormalized / normalizedNominal
-    } else if (item?.type === EMarketInstrumentTypes.Bond) {
-      // price / 100 * nominal
-      priceNormalized = priceNormalized / 100 * normalizedNominal
-    } else if (item?.type === EMarketInstrumentTypes.Etf) {
-      // price * lot / nominal
-      priceNormalized = priceNormalized / normalizedNominal
-    } else if (item?.type === EMarketInstrumentTypes.Futures) {
+      if (item?.type === EMarketInstrumentTypes.Currency) {
+        priceNormalized = priceNormalized / normalizedNominal
+      } else if (item?.type === EMarketInstrumentTypes.Bond) {
+        priceNormalized = priceNormalized / 100 * normalizedNominal
+      } else if (item?.type === EMarketInstrumentTypes.Etf) {
+      // FIXME: Wrong price for lot === 100
+      // no changes
+      } else if (item?.type === EMarketInstrumentTypes.Future) {
       // Данные необходимые для рассчета цен на фьючерсы
-      const futuresMargin = (await tinkoffApi.instruments.getFuturesMargin({ figi }))
+        const futuresMargin = (await tinkoffApi.instruments.getFuturesMargin({ figi }))
 
-      // price / min_price_increment * min_price_increment_amount
-      priceNormalized = priceNormalized * moneyObjToValue(item.sourceSpecificData.minPriceIncrementAmount)
-      // TODO: Не хватает min_price_increment_amount
-      // Описано тут: https://tinkoff.github.io/investAPI/instruments/#getfuturesmargin
-    }
+        // price / min_price_increment * min_price_increment_amount
+        // eslint-disable-next-line max-len
+        const minPriceIncrementNumber = moneyObjToValue(item.sourceSpecificData.minPriceIncrement)
+        const minPriceIncrementAmountNumber = moneyObjToValue(futuresMargin.minPriceIncrementAmount)
+        const prevPriceNormalized = priceNormalized
 
-    if (priceNormalized && tickerId && item) {
-      pricesNormalizes.push([item.ticker, priceNormalized, tickerId])
-    } else {
-      log.error(logPrefix + 'Can\'t generate price data from:', priceNormalized, tickerId, item)
+        // В данном кейса priceNormalized это цена в пунктах
+        // В формуле соответственно переводим пункты в деньги
+        priceNormalized = priceNormalized / minPriceIncrementNumber * minPriceIncrementAmountNumber
+
+        console.log('priceNormalized', priceNormalized)
+        console.log(getTinkoffInstrumentLink({ ticker: item.ticker, type: item.type }))
+
+        debugger
+      }
+
+      if (priceNormalized && tickerId && item) {
+        log.info(
+          'check price link',
+          lot, item.ticker, item.type,
+          priceNormalized,
+          getTinkoffInstrumentLink({ ticker: item.ticker, type: item.type })
+        )
+        pricesNormalizes.push([item.ticker, Number((priceNormalized).toFixed(3)), tickerId])
+      } else {
+        log.error(logPrefix + 'Can\'t generate price data from:', priceNormalized, tickerId, item)
+      }
+    } catch (e) {
+      log.error(logPrefix, 'Error in getTinkoffPrices', e)
     }
   }
 

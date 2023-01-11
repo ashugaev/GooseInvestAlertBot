@@ -1,7 +1,7 @@
 import { InitializationItem } from '../cron'
 import { retry } from './retry'
+import { retryUntilTrue } from './retryUntilTrue'
 import { setJobKey } from './setJobKey'
-import { wait } from './wait'
 
 const { CronJob } = require('cron')
 const { log } = require('./log')
@@ -29,14 +29,9 @@ export const startCronJob = ({
   jobKey
 }: StartCronJobParams) => {
   const onTickFunction = async () => {
-    while (!isReadyToStart?.() ?? false) {
-      // Waiting untill all preparation for this job will be done
-      await wait(1000)
-    }
-
-    log.info('Start cron job:', name)
-
     try {
+      await retryUntilTrue(isReadyToStart, name)
+
       callbackArgs
       // eslint-disable-next-line
         ? retry(async () => {
