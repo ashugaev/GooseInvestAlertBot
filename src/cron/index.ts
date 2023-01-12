@@ -1,4 +1,4 @@
-import { retry } from '@helpers'
+import { log, retry } from '@helpers'
 
 import { startCronJob } from '../helpers/startCronJob'
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
@@ -52,6 +52,16 @@ const isAllPricesUpdated = () => {
   ].every((step) => appInitStatuses.includes(step))
 }
 
+const appInitTime = new Date().getTime()
+
+const isReadyToRunByTimeout = () => {
+  const isTimeOut = new Date().getTime() - appInitTime > 1000 * 60 * 10 // 10 min
+  if (isTimeOut) {
+    log.error('Start process by timeout')
+  }
+  return isTimeOut
+}
+
 export const setupCheckers = (bot) => {
   startCronJob({
     name: 'Update tinkoff futures margins',
@@ -68,7 +78,7 @@ export const setupCheckers = (bot) => {
     callbackArgs: [bot],
     // раз в день в 2 часа 0 минут
     period: '0 2 * * *',
-    isReadyToStart: isAllPricesUpdated
+    isReadyToStart: () => isAllPricesUpdated() || isReadyToRunByTimeout()
   })
 
   startCronJob({
@@ -163,7 +173,6 @@ export const setupCheckers = (bot) => {
       minTimeBetweenRequests: 10000,
       getPrices: getBinancePrices,
       source: EMarketDataSources.binance,
-      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.BINANCE_TICKERS),
       jobKey: InitializationItem.BINANCE_PRICES
     })
   ), 100000, 'setupPriceUpdater for binance')
@@ -171,12 +180,12 @@ export const setupCheckers = (bot) => {
   /**
    * YAHOO prices updater
    *
-   * update time for all prices ~ 6-7min
+   * Quota 2000 requests per hour
    */
   retry(async () => {
     await setupPriceUpdater({
-      // 1 min
-      minTimeBetweenRequests: 60000,
+      // hour in ms divided by quota
+      minTimeBetweenRequests: 3600000 / 2000,
       getPrices: getYahooPrices,
       source: EMarketDataSources.yahoo,
       // 10 tickers it's a max for yahoo api
@@ -201,7 +210,6 @@ export const setupCheckers = (bot) => {
       // 500 items works fine
       maxTickersForRequest: 500,
       jobKey: InitializationItem.COINGECKO_PRICES
-      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.COINGECKO_TICKERS)
     })
   }, 100000, 'setupPriceUpdater for COINGECKO')
 
@@ -218,17 +226,24 @@ export const setupCheckers = (bot) => {
       getPrices: getTinkoffPrices,
       source: EMarketDataSources.tinkoff,
       jobKey: InitializationItem.TINKOFF_PRICES
-      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.TINKOFF_TICKERS)
     })
   }, 100000, 'setupPriceUpdater for TINKOFF')
 
   /**
    * Мониторинг скорости
    */
-  retry(async () => await setupShiftsChecker(bot, isAllPricesUpdated), 100000, 'setupShiftsChecker')
+  retry(async () => await setupShiftsChecker(
+    bot,
+    () => isAllPricesUpdated() || isReadyToRunByTimeout()
+  ), 100000, 'setupShiftsChecker')
 
   /**
    * Мониторинг достижения уровней
    */
-  retry(async () => await setupPriceCheckerOld(bot, isAllPricesUpdated), 100000, 'setupPriceCheckerOld')
+  retry(async () => await setupPriceCheckerOld(
+    bot,
+    () => isAllPricesUpdated() || isReadyToRunByTimeout()
+  ),
+  100000,
+  'setupPriceCheckerOld')
 }

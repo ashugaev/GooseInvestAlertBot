@@ -33,7 +33,7 @@ export interface PriceUpdaterParams {
    * Mit timeout between requests
    * In ms
    */
-  minTimeBetweenRequests: number
+  minTimeBetweenRequests?: number
   /**
    * Check if this job ready to be started
    */
