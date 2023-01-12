@@ -1,5 +1,5 @@
-import { ICoingecoSpecificBaseData } from './coingecko/types';
-import { ITinkoffSpecificBaseData } from './tinkoff/types';
+import { ICoingecoSpecificBaseData } from './coingecko/types'
+import { ITinkoffSpecificBaseData } from './tinkoff/types'
 
 export enum EMarketDataSources {
   tinkoff = 'tinkoff',

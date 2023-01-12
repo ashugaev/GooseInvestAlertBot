@@ -2,11 +2,14 @@ import { dropOutInvalidPrices } from '@helpers'
 import { getInstrumentsBySourceCache, InstrumentsList } from '@models'
 import { TickerPrices } from 'prices'
 
+import { InitializationItem } from '../cron'
+import { lastPriceCache } from '../helpers/getLastPrice'
 import { log } from '../helpers/log'
+import { retryUntilTrue } from '../helpers/retryUntilTrue'
+import { setJobKey } from '../helpers/setJobKey'
 import { splitArray } from '../helpers/splitArray'
 import { wait } from '../helpers/wait'
 import { EMarketDataSources } from '../marketApi/types'
-import { lastPriceCache } from './lastPriceCache'
 
 const logPrefix = '[PRICE UPDATER]'
 const CRASH_WAIT_TIME = 30000
@@ -30,7 +33,12 @@ export interface PriceUpdaterParams {
    * Mit timeout between requests
    * In ms
    */
-  minTimeBetweenRequests: number
+  minTimeBetweenRequests?: number
+  /**
+   * Check if this job ready to be started
+   */
+  isReadyToStart?: () => boolean
+  jobKey: InitializationItem
 }
 
 /**
@@ -40,9 +48,11 @@ export const setupPriceUpdater = async ({
   getPrices,
   maxTickersForRequest = 10000,
   minTimeBetweenRequests = 100,
-  source
+  source,
+  isReadyToStart,
+  jobKey
 }: PriceUpdaterParams) => {
-  // TODO: Запуск только когда отработало обновление списка инструментов
+  await retryUntilTrue(isReadyToStart, 'Price updater for: ' + source)
 
   let lastIterationStartTime = new Date().getTime()
 
@@ -59,7 +69,7 @@ export const setupPriceUpdater = async ({
         continue
       }
     } catch (e) {
-      log.error(logPrefix, 'Ошибки получения списка инструментов')
+      log.error(logPrefix, 'Ошибки получения списка инструментов', e)
       await wait(CRASH_WAIT_TIME)
       continue
     }
@@ -95,7 +105,7 @@ export const setupPriceUpdater = async ({
           continue
         }
       } catch (e) {
-        log.error(logPrefix, 'Get price error', e)
+        log.error(logPrefix, 'Update prices error', e)
         await wait(CRASH_WAIT_TIME)
         continue
       }
@@ -127,6 +137,8 @@ export const setupPriceUpdater = async ({
     // eslint-disable-next-line max-len
     lastUpdateTime[source] && (log.info(logPrefix + 'Time betweed updates ' + ((currentTime - lastUpdateTime[source]) / 1000).toString() + 's'))
     lastUpdateTime[source] = new Date().getTime()
+
+    setJobKey(jobKey)
 
     console.timeEnd(source)
   }

@@ -1,3 +1,4 @@
+import { ExchangeInfo, OrderType_LT, Symbol } from 'binance-api-node'
 
 import { log } from '../../../helpers/log'
 import { wait } from '../../../helpers/wait'
@@ -5,22 +6,10 @@ import { EMarketInstrumentTypes, InstrumentsList } from '../../../models'
 import { EMarketDataSources } from '../../types'
 import { binance } from '../utils/binance'
 
-export interface BinanceSourceSpecificData {
-  status: string
-  baseAsset: string
-  quote: string
-  quotePrecision: number
-  quoteAssetPrecision: number
-  baseCommissionPrecision: 8
-  quoteCommissionPrecision: 8
-}
+export type BinanceTickerItem = Symbol<OrderType_LT>
+export type BinanceSourceSpecificData = Omit<BinanceTickerItem, 'quoteAsset' | 'symbol'>
 
-export interface BinanceTicker extends BinanceSourceSpecificData {
-  symbol: string
-  quoteAsset: string
-}
-
-const normalizeItem = (item: BinanceTicker): InstrumentsList => {
+const normalizeItem = (item: BinanceTickerItem): InstrumentsList => {
   const { symbol, quoteAsset, ...specificData } = item
 
   const result = {
@@ -38,9 +27,9 @@ const normalizeItem = (item: BinanceTicker): InstrumentsList => {
 
 export const binanceGetAllInstruments = async () => {
   try {
-    const data = await binance.exchangeInfo()
+    const data: ExchangeInfo = await binance.exchangeInfo()
 
-    const symbols: BinanceTicker[] = data.symbols
+    const symbols = data.symbols
 
     const normalizedInstrumentsArray = symbols.map(normalizeItem)
 

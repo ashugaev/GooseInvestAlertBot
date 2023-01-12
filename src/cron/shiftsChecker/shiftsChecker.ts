@@ -4,6 +4,7 @@
 import { fnTimeAsync } from '../../helpers/fnTime'
 import { getLastPrice } from '../../helpers/getLastPrice'
 import { log } from '../../helpers/log'
+import { retryUntilTrue } from '../../helpers/retryUntilTrue'
 import { wait } from '../../helpers/wait'
 import { getShiftTimeframesObject, TimeShiftModel } from '../../models'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
@@ -16,7 +17,9 @@ const logPrefix = '[CANDLES UPDATER]'
  * - Cвечи копим и отсылаем вконце обхода
  * -
  */
-export const setupShiftsChecker = async (bot) => {
+export const setupShiftsChecker = async (bot, isReadyToStart) => {
+  await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
+
   log.info(logPrefix + ' Init')
 
   let customTimeForWait = null

@@ -1,6 +1,7 @@
-const Binance = require('node-binance-api')
+import Binance from 'binance-api-node'
 
-export const binance = new Binance().options({
-  APIKEY: process.env.BINANCE_API_KEY,
-  APISECRET: process.env.BINANCE_SECRET_KEY
+// Authenticated client, can make signed calls
+export const binance = Binance({
+  apiKey: process.env.BINANCE_API_KEY,
+  apiSecret: process.env.BINANCE_SECRET_KEY
 })

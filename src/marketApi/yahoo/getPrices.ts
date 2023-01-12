@@ -4,14 +4,12 @@
  */
 
 import { log } from '@helpers'
-import { getInstrumentListDataByIds } from '@models'
+import { InstrumentsList } from '@models'
 import axios from 'axios'
 
 const logPrefix = '[GET YAHOO PRICES]'
 
-export const getYahooPrices = async (tickerIds: string[]) => {
-  const coinsData = await getInstrumentListDataByIds(tickerIds)
-
+export const getYahooPrices = async (tickerIds: string[], coinsData: InstrumentsList[]) => {
   const yahooRequestSymbols = coinsData.map(el => el.ticker + '=X').join(',')
 
   // eslint-disable-next-line max-len

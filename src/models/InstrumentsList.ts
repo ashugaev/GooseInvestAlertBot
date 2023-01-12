@@ -14,7 +14,8 @@ export enum EMarketInstrumentTypes {
   Currency = 'Currency',
   Etf = 'Etf',
   // Опционы
-  Bond = 'Bond'
+  Bond = 'Bond',
+  Future = 'Future'
 }
 
 /**
@@ -105,18 +106,21 @@ export async function getInstrumentListDataByIds (ids: string[]) {
 const instrumentsBySourceCache = new NodeCache({
   stdTTL: 3600 // sec
 })
+
 export async function getInstrumentsBySourceCache (source: EMarketDataSources): Promise<InstrumentsList[]> {
   const params = { source }
 
-  const allInstrumentsBySource: InstrumentsList[] = instrumentsBySourceCache.get(source)
+  let allInstrumentsBySource: InstrumentsList[] = instrumentsBySourceCache.get(source)
 
   if (!allInstrumentsBySource) {
     const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
 
     instrumentsBySourceCache.set(source, result)
+
+    allInstrumentsBySource = result
   }
 
-  if (allInstrumentsBySource === null) {
+  if (!allInstrumentsBySource) {
     throw new Error('getInstrumentsBySourceCache: Can\'t update instruments')
   }
 
