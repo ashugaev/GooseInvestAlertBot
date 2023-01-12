@@ -49,7 +49,7 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       } else if (item?.type === EMarketInstrumentTypes.Bond) {
         priceNormalized = priceNormalized / 100 * normalizedNominal
       } else if (item?.type === EMarketInstrumentTypes.Etf) {
-      // FIXME: Wrong price for lot === 100
+      // NOTE: Есть расхождения с сайтом на тикерах с лотом 100
       // no changes
       } else if (item?.type === EMarketInstrumentTypes.Future) {
         const futureMargin = await getFutureMarginByTickerId(tickerId)
@@ -67,7 +67,7 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       }
 
       if (priceNormalized && tickerId && item) {
-        pricesNormalizes.push([item.ticker, Number((priceNormalized).toFixed(3)), tickerId])
+        pricesNormalizes.push([item.ticker, Number((priceNormalized).toFixed(priceNormalized > 1 ? 5 : 3)), tickerId])
       } else {
         log.error(logPrefix + 'Can\'t generate price data from:', priceNormalized, tickerId, item)
       }
