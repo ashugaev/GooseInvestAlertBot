@@ -58,8 +58,7 @@ export const setupCheckers = (bot) => {
     callback: saveFuturesMargin,
     callbackArgs: [],
     // раз в день в 3 часа 0 минут
-    period: '0 3 * * *',
-    executeBeforeInit: true
+    period: '0 3 * * *'
   })
 
   // TODO: Не запускать не деве

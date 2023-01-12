@@ -23,16 +23,21 @@ export const saveFuturesMargin = async () => {
       const futureMargin = await tinkoffApi.instruments.getFuturesMargin({ figi })
 
       dataForBulkUpdate.push({
-        upsert: true,
-        filter: { tickerId: id },
-        update: {
-          tickerId: id,
-          minPriceIncrement: futureMargin.minPriceIncrement,
-          minPriceIncrementAmount: futureMargin.minPriceIncrementAmount
+        updateOne: {
+          upsert: true,
+          filter: { tickerId: id },
+          update: {
+            $set: {
+              minPriceIncrement: futureMargin.minPriceIncrement,
+              minPriceIncrementAmount: futureMargin.minPriceIncrementAmount
+            }
+          }
         }
       })
 
-      await wait(1000)
+      await wait(5000)
+
+      log.info('Margin update iteration', i, id)
     } catch (e) {
       log.error('Failed to collect futures margin data', e)
       await wait(5000)

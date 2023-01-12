@@ -67,8 +67,6 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
 
         console.log('priceNormalized', priceNormalized)
         console.log(getTinkoffInstrumentLink({ ticker: item.ticker, type: item.type }))
-
-        debugger
       }
 
       if (priceNormalized && tickerId && item) {
