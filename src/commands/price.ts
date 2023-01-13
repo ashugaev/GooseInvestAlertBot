@@ -9,7 +9,7 @@ import { symbolOrCurrency } from '../helpers/symbolOrCurrency'
 
 export function setupPrice (bot: Telegraf<Context>) {
   bot.command(['price'], commandWrapper(async ctx => {
-    const data: string[] = ctx.message.text.match(/price ([a-zA-Zа-яА-ЯёЁ0-9]+)$/)
+    const data: string[] = ctx.message.text.match(/price ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
 
     if (data) {
       const symbol = data[1]
@@ -43,7 +43,7 @@ export function setupPrice (bot: Telegraf<Context>) {
         name,
         symbol: null,
         currency: null,
-        source: getSourceMark({source})
+        source: getSourceMark({ source })
       }
 
       if (currency) {
