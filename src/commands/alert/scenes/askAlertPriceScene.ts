@@ -27,11 +27,14 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
 
   state.price = price
 
-  await ctx.replyWithHTML(i18n.t('ru', 'alert_add_choosePrice', {
-    price,
-    currency: symbolOrCurrency(currency),
-    source: getSourceMark({ source, item: instrumentData })
-  }))
+  await ctx.replyWithHTML(
+    i18n.t('ru', 'alert_add_choosePrice', {
+      price,
+      currency: symbolOrCurrency(currency),
+      source: getSourceMark({ source, item: instrumentData })
+    }),
+    { disable_web_page_preview: true }
+  )
 
   return ctx.wizard.next()
 })

@@ -26,7 +26,7 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       const item = tickersData.find(el => el.sourceSpecificData.figi === figi)
 
       if (!price) {
-        log.info(logPrefix, 'NO price for', item.source, item.id)
+        // Some futures don't have prices in API
         continue
       }
 
