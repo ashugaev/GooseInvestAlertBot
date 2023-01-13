@@ -69,7 +69,7 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
       source: getSourceMark({ source: instrumentData.source, item: instrumentData })
     }
 
-    await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams))
+    await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams), { disable_web_page_preview: true })
 
     callback({ createdItemsList })
   } catch (e) {
