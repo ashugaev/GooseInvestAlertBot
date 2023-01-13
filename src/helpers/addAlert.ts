@@ -124,7 +124,7 @@ export const addAlert = async ({
     i18nParams.invalid = invalidValues.join(', ')
   }
 
-  await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams))
+  await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams), { disable_web_page_preview: true })
 
   // Если только одна цена
   if (prices.length === 1 && !startedFromScene) {
