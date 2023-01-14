@@ -7,6 +7,8 @@ import { log } from '../../helpers/log'
 import { getAlertsCountForUser, removePriceAlert } from '../../models'
 import { addAlertScenario } from './scenarios/addAlertScenario'
 
+const logPrefix = '[ALERT COMMAND]'
+
 export function setupAlert (bot: Telegraf<Context>) {
   const callback = commandWrapper(async (ctx) => {
     const { text } = ctx.message
@@ -31,7 +33,11 @@ export function setupAlert (bot: Telegraf<Context>) {
     // Добавление одной командой
     data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/)
 
+    log.info(logPrefix, 'data', data)
+
     if (data) {
+      log.info(logPrefix, 'One command alert adding')
+
       // FIXME: Используется deprecated ф-ция, нужно поддержать для этого кейса addAlertScenario
       await addAlert({
         ctx,
