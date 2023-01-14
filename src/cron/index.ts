@@ -169,8 +169,7 @@ export const setupCheckers = (bot) => {
    */
   retry(async () => (
     await setupPriceUpdater({
-      // 10s
-      minTimeBetweenRequests: 10000,
+      minTimeBetweenRequests: 1000,
       getPrices: getBinancePrices,
       source: EMarketDataSources.binance,
       jobKey: InitializationItem.BINANCE_PRICES
@@ -222,7 +221,7 @@ export const setupCheckers = (bot) => {
   retry(async () => {
     await setupPriceUpdater({
       // 1sec
-      minTimeBetweenRequests: 100,
+      minTimeBetweenRequests: 1000,
       getPrices: getTinkoffPrices,
       source: EMarketDataSources.tinkoff,
       jobKey: InitializationItem.TINKOFF_PRICES

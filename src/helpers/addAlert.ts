@@ -9,6 +9,8 @@ import { i18n } from './i18n'
 import { log } from './log'
 import { symbolOrCurrency } from './symbolOrCurrency'
 
+const logPrefix = '[ADD ALERT]'
+
 interface AddAlertParams {
   data: {
     symbol: string
@@ -61,6 +63,9 @@ export const addAlert = async ({
     string: targetPrice,
     lastPrice
   })
+
+  console.log(logPrefix, 'prices', prices)
+  console.log(logPrefix, 'invalidValues', invalidValues)
 
   const priceAlerts = []
   let _id = null
