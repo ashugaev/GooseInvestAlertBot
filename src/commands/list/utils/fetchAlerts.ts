@@ -1,21 +1,22 @@
+import { set } from 'lodash'
+
+import { log } from '../../../helpers/log'
 import { getAlerts } from '../../../models'
 import { ITickerButtonItem } from '../index'
 
 interface IFetchAlertsParams {
-  forSymbol?: string
+  tickerId?: string
   ctx: any
   noContextUpdate?: boolean
 }
 
 /**
- *  Получение данных и запись их в контекст
+ *  Получение алертов юзера и запись их в контекст
  */
-export const fetchAlerts = async ({ ctx, forSymbol, noContextUpdate }: IFetchAlertsParams) => {
-  const alertsList = await getAlerts({ user: ctx.from.id, symbol: forSymbol })
+export const fetchAlerts = async ({ ctx, tickerId, noContextUpdate }: IFetchAlertsParams) => {
+  const alertsList = await getAlerts({ user: ctx.from.id, tickerId })
 
   if (!alertsList.length) {
-    await ctx.replyWithHTML(ctx.i18n.t('alertListEmpty'))
-
     return {
       alertsList: [],
       uniqTickersData: []
@@ -23,10 +24,16 @@ export const fetchAlerts = async ({ ctx, forSymbol, noContextUpdate }: IFetchAle
   }
 
   // Получаем уникальные тикеры из всех алертов
-  const uniqTickersData = Object.values(alertsList.reduce((acc, { name, symbol, currency }) => {
-    if (acc[symbol]) return acc
+  // Название уже не совсем корректное, потому что группируем по id а не по тикеру
+  const uniqTickersData = Object.values(alertsList.reduce((acc, el) => {
+    const { tickerId } = el
 
-    acc[symbol] = { name, symbol, currency }
+    if (!tickerId) {
+      log.error('Не могу получить tickerId у', el)
+      return acc
+    }
+
+    acc[tickerId] = el
 
     return acc
   }, {}))
@@ -35,10 +42,10 @@ export const fetchAlerts = async ({ ctx, forSymbol, noContextUpdate }: IFetchAle
   // TODO: Избавиться от хранения в контексте, что бы все работало после передеплоя
   if (!noContextUpdate) {
   // Подкидываем состояния в констекст, что бы не делать перезапрос по нажатию на кнопки
-    ctx.session.listCommand = {
+    set(ctx, 'session.listCommand.data', {
       alertsList,
       uniqTickersData
-    }
+    })
   }
 
   return { alertsList, uniqTickersData }

@@ -1,36 +1,46 @@
+import 'module-alias/register'
+
 // Config dotenv
 import * as dotenv from 'dotenv'
+import * as path from 'path'
 
 // Строка должна быть выше импорта файлов с переменными окружения
 // eslint-disable-next-line import/no-extraneous-dependencies
-dotenv.config({ path: `${__dirname}/../.env` })
+dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 import * as Sentry from '@sentry/node'
+import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
+import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
-import { bot } from './helpers/bot'
-import { log } from './helpers/log'
-import { setupI18N } from './helpers/i18n'
-
-import { checkTime } from './middlewares/checkTime'
-import { attachUser } from './middlewares/attachUser'
+import { setupAlert } from './commands/alert/alert'
+import { alertScenes } from './commands/alert/scenes'
 import { setupHelp } from './commands/help'
-import { setupStart } from './commands/start'
-import { setupAlert } from './commands/alert'
-import { setupStat, statScenes } from './commands/stat'
-import { setupShift, shiftScenes } from './commands/shift'
+import { setupId } from './commands/id'
 import { setupLanguage } from './commands/language'
 import { setupList } from './commands/list'
 import { setupPrice } from './commands/price'
-
-import { alertAddMessageScene } from './scenes/alertAddMessageScene'
-import { alertAddScene } from './scenes/alertAddScene'
-
-import { configureAnalytics } from './middlewares/configureAnalytics'
+import { setupShift, shiftScenes } from './commands/shift'
+import { setupStart } from './commands/start'
+import { setupStat, statScenes } from './commands/stat'
 import { setupCheckers } from './cron'
-import { setupId } from './commands/id'
+import { bot } from './helpers/bot'
+import { setupI18N } from './helpers/i18n'
+import { log } from './helpers/log'
+import { attachUser } from './middlewares/attachUser'
+import { checkTime } from './middlewares/checkTime'
+import { configureAnalytics } from './middlewares/configureAnalytics'
+import { commonScenes } from './scenes'
 
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
+
+export const tinkoffApi = new TinkoffInvestApi({ token: process.env.STOCKS_API_TOKEN })
+
+const apiURL = 'https://api-invest.tinkoff.ru/openapi'
+const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
+const secretToken = process.env.STOCKS_API_TOKEN
+
+export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
 Sentry.init({
   dsn: process.env.SENTRY_URL,
@@ -38,16 +48,16 @@ Sentry.init({
 })
 
 const stage = new Stage([
-  alertAddMessageScene,
-  alertAddScene,
   statScenes,
-  shiftScenes
+  shiftScenes,
+  ...commonScenes,
+  ...alertScenes
 ])
 
 bot.use(session())
 bot.use(stage.middleware())
 
-// Start checking stocks prices and alerting
+// Start all async tasks (cron and continuous)
 setupCheckers(bot)
 
 // Check time
@@ -74,3 +84,7 @@ setupId(bot)
 bot.startPolling()
 
 log.info('Bot is up and running')
+
+process.on('uncaughtException', function (err) {
+  log.error('[UNHANDLED]', err)
+})

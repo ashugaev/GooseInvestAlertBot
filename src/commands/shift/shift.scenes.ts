@@ -1,14 +1,15 @@
-import * as WizardScene from 'telegraf/scenes/wizard'
-import * as Composer from 'telegraf/composer'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { sceneWrapper } from '../../helpers/sceneWrapper'
-import { SHIFT_ACTIONS, SHIFT_MAX_PERCENT, SHIFT_SCENES } from './shift.constants'
-import { getInstrumentInfoByTicker, ShiftTimeframeModel } from '../../models'
-import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
+import { getInstrumentInfoByTicker, ShiftTimeframeModel } from '../../models'
 import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
+import { SHIFT_ACTIONS, SHIFT_MAX_PERCENT, SHIFT_SCENES } from './shift.constants'
+import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { IAdditionalShiftConfig } from './shift.types'
+
+const Composer = require('telegraf/composer')
+const WizardScene = require('telegraf/scenes/wizard')
 const { set, get } = require('lodash')
 
 const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => {
@@ -87,9 +88,11 @@ shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers
     ctx.wizard.state.shift.tickersInfo = tickersInfo
     ctx.wizard.state.shift.timeframes = timeframes
 
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'), {
-      reply_markup: getTimeframesKeyboard(timeframes)
-    })
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'),
+      {
+        reply_markup: getTimeframesKeyboard(timeframes)
+      }
+    )
 
     return ctx.wizard.next()
   } catch (e) {
@@ -164,6 +167,7 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
 
     const newShifts = tickers.map(ticker => ({
       percent: intPercent,
+      tickerId: tickersInfoObj[ticker].id,
       timeframe,
       ticker,
       user,
@@ -175,7 +179,6 @@ shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent
       const dbShifts = await TimeShiftModel.insertMany(newShifts)
 
       ctx.wizard.state.shift.percent = intPercent
-      // @ts-expect-error
       ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
 
       await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {

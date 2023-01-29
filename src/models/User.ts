@@ -10,7 +10,7 @@ export class UserLimits {
 
 export class User {
   @prop({ required: true, index: true, unique: true })
-  id: number
+  id: number | number
 
   @prop({ required: true, default: 'ru' })
   language: string
@@ -25,7 +25,7 @@ const UserModel = getModelForClass(User, {
 })
 
 // Get or create user
-export async function findUser (id: number) {
+export async function findUser (id: string | number) {
   let user = await UserModel.findOne({ id }).lean()
   if (!user) {
     try {

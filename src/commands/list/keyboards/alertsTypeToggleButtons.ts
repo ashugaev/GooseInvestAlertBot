@@ -1,7 +1,7 @@
 import { Markup } from 'telegraf'
-import { createActionString } from '../../../helpers/createActionString'
-import { Actions } from '../../../constants'
 
+import { Actions } from '../../../constants'
+import { createActionString } from '../../../helpers/createActionString'
 import { i18n } from '../../../helpers/i18n'
 import { EListTypes } from '../list.types'
 

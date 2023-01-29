@@ -11,10 +11,14 @@ module.exports = {
   plugins: [
     '@typescript-eslint',
     'unused-imports',
-    'simple-import-sort'
+    'simple-import-sort',
+    "no-floating-promise"
   ],
   extends: ['standard-with-typescript'],
   rules: {
+    'simple-import-sort/imports': 'warn',
+    'simple-import-sort/exports': 'warn',
+    'unused-imports/no-unused-imports': 'warn',
     'no-return-assign': 'off',
     'no-continue': 'off',
     'no-plusplus': 'off',
@@ -30,16 +34,19 @@ module.exports = {
     'no-unused-expressions': 0,
     'no-new': 0,
     'consistent-return': 0,
+    'node/no-callback-literal': 0,
     'no-restricted-syntax': [
       'error',
       'ForOfStatement',
       'LabeledStatement',
       'WithStatement'
     ],
+    "@typescript-eslint/semi": ["error", "never"],
     'arrow-body-style': 0,
     'no-eval': 0,
     'no-loop-func': 0,
     'no-param-reassign': 0,
+    "no-floating-promise/no-floating-promise": 2,
     'import/prefer-default-export': 0,
     'import/no-extraneous-dependencies': 0,
     'import/no-unresolved': 0,
@@ -48,7 +55,8 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/strict-boolean-expressions': 0,
-    '@typescript-eslint/no-floating-promises': 0,
+    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-misused-promises': 0,
   },
   overrides: [
     {

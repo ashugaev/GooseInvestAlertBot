@@ -1,10 +1,10 @@
 import { listConfig } from '../../../config'
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
-import { TimeShift } from '../../../models'
-import { getAlertNumberByPage } from './showInstrumentPage'
-import { EListTypes } from '../list.types'
 import { Actions } from '../../../constants'
+import { TimeShift } from '../../../models'
+import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
+import { EListTypes, ListActionsDataKeys } from '../list.types'
 import { getTimeframesObjFromStoreOrDB } from './getTimeframesObjFromStoreOrDB'
+import { getAlertNumberByPage } from './showInstrumentPage'
 
 interface IShowShiftsPageParams {
   keyboardMode?: EKeyboardModes
@@ -44,6 +44,7 @@ export const showShiftsPage = async ({
     }).join('\n')
 
   const message = ctx.i18n.t('alertsList_shifts_list', {
+    empty: !itemsList.length,
     list: itemsList,
     showEditMessage: keyboardMode === EKeyboardModes.edit
   })
@@ -68,16 +69,22 @@ export const showShiftsPage = async ({
           }
         },
         editButtonConfig: {
-          action: Actions.list_shiftsPage
+          action: Actions.list_shiftsPage,
+          payloadCallback: (i) => {
+            return {
+              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+            }
+          }
         },
         editNumberButtonsConfig: {
           action: Actions.list_shiftEditPage,
           payload: {
-            p: page,
-            kMode: EKeyboardModes.edit
+            p: page
           },
           payloadCallback: (i) => {
-            return { d: itemsToShow[i]._id }
+            return {
+              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+            }
           }
         }
       })

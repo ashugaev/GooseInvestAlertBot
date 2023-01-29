@@ -1,6 +1,7 @@
-import { prop, getModelForClass } from '@typegoose/typegoose'
-import { Modify } from 'Modify'
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
+import {getModelForClass, prop} from '@typegoose/typegoose'
+import { Modify } from 'Modify'
+
 import { RemoveOrGetAlertParams } from './PriceAlert'
 
 interface ShiftEventDataItem {
@@ -37,6 +38,7 @@ export class ShiftEvents {
   @prop({ required: false })
   forDay: number
 
+  // День за которые собраны данные
   // FIXME: Поле необязательно до тех пор пока есть уведомления без них
   @prop({ required: false })
   dayOfWeek: number
@@ -78,11 +80,12 @@ export interface ShiftEventItem {
   }
 }
 
-export function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
-  return new Promise(async (rs, rj) => {
+export async function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
+  return await new Promise(async (rs, rj) => {
     try {
       await ShiftEventsModel.create(items)
 
+      // @ts-expect-error
       rs()
     } catch (e) {
       rj(e)
@@ -110,8 +113,8 @@ export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>
   return shifts
 }
 
-export function removeShiftEvent ({ _id, user }: Partial<ShiftEventItem>): Promise<number> {
-  return new Promise(async (rs, rj) => {
+export async function removeShiftEvent ({ _id, user }: Partial<ShiftEventItem>): Promise<number> {
+  return await new Promise(async (rs, rj) => {
     try {
       const params: RemoveOrGetAlertParams = {}
 

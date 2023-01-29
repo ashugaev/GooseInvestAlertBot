@@ -1,7 +1,7 @@
 import { Scenes } from '../../constants'
 
-import * as WizardScene from 'telegraf/scenes/wizard'
-import * as Composer from 'telegraf/composer'
+const WizardScene = require('telegraf/scenes/wizard')
+const Composer = require('telegraf/composer')
 import { hoursToUtc } from '../../helpers/hoursToUtc'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'

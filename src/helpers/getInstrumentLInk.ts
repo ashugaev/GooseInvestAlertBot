@@ -1,6 +1,7 @@
-import { EMarketDataSources, EMarketInstrumentTypes } from '../marketApi/types'
+import { EMarketDataSources } from '../marketApi/types'
+import { EMarketInstrumentTypes } from '../models'
 
-const getTinkoffInstrumentLink = ({ type, ticker }) => {
+export const getTinkoffInstrumentLink = ({ type, ticker }) => {
   if (!type && !ticker) {
     return
   }
@@ -10,8 +11,12 @@ const getTinkoffInstrumentLink = ({ type, ticker }) => {
     return
   }
 
-  // Добавляет s потому что в урле нужно множественное число
-  type = type.toLowerCase() + 's'
+  if (type === EMarketInstrumentTypes.Currency) {
+    type = 'currencies'
+  } else {
+    // Добавляет s потому что в урле нужно множественное число
+    type = type.toLowerCase() + 's'
+  }
 
   return `https://www.tinkoff.ru/invest/${type}/${ticker}/`
 }

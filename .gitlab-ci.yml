@@ -20,27 +20,33 @@ stages:
 
 build:
   stage: build
-  image: node:10-alpine
+  image: node:15-alpine
   only:
     - master
+  except:
+    - schedules
   script:
-    - npm i
+    - npm ci
     - npm run build
+    # Пишет энвы на сервер
+    - chmod +x setup_env.sh
+    - ./setup_env.sh
+    - npm run db-migration:up
   artifacts:
     paths:
      - dist/
+     - .env
 
 release_bot:
   stage: release
   image: docker:latest
   only:
     - "master"
+  except:
+    - schedules
   services:
     - docker:dind
   before_script:
-    # Пишет энвы на сервер
-    - chmod +x setup_env.sh
-    - ./setup_env.sh
     - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
   script:
     - "docker build --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1 ."

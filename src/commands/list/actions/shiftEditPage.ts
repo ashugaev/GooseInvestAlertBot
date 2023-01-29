@@ -1,8 +1,9 @@
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { TimeShiftModel } from '../../../models'
-import { getTimeframesObjFromStoreOrDB } from '../utils/getTimeframesObjFromStoreOrDB'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
+import { ListActionsDataKeys } from '../list.types'
+import { getTimeframesObjFromStoreOrDB } from '../utils/getTimeframesObjFromStoreOrDB'
 
 /**
  * Страница редактирования шифта
@@ -11,7 +12,7 @@ export const shiftEditPage = async (ctx) => {
   try {
     const {
       // Данные достаточные для первичного вызова
-      d: _id,
+      [ListActionsDataKeys.selectedAlertId]: _id,
       p: page,
       // Данные, которые приходят уже после повторных вызовов
       m: muted,

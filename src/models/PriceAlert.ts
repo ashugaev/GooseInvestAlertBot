@@ -1,194 +1,200 @@
 // Dependencies
-import { prop, getModelForClass } from '@typegoose/typegoose'
 import { InstrumentType } from '@tinkoff/invest-openapi-js-sdk/build/domain'
+import { getModelForClass, prop } from '@typegoose/typegoose'
+import { TickerPrices } from 'prices'
+
 import { EMarketDataSources } from '../marketApi/types'
+import { EMarketInstrumentTypes } from './InstrumentsList'
 
 export interface AddPriceAlertParams {
-    user: number,
-    symbol: string,
-    lowerThen?: number,
-    greaterThen?: number,
-    name: string,
-    currency: string,
-    type: InstrumentType,
-    source: EMarketDataSources
-    initialPrice: number,
+  tickerId: string
+  user: number
+  symbol: string
+  lowerThen?: number
+  greaterThen?: number
+  name: string
+  currency: string
+  type: EMarketInstrumentTypes
+  source: EMarketDataSources
+  initialPrice: number
 }
 
 export interface RemoveOrGetAlertParams {
-    user?: number,
-    symbol?: string,
-    lowerThen?: number,
-    greaterThen?: number,
-    _id?: string
+  user?: number
+  symbol?: string
+  lowerThen?: number
+  greaterThen?: number
+  tickerId?: string
+  _id?: string
 }
 
 export class PriceAlert {
-    @prop({ required: true })
-    user: number
+  _id: string
 
-    @prop({ required: true })
-    symbol: string
+  /**
+   * Id по по которому ищем данные о цене (отвязываемся от названия тикера)
+   */
+  @prop({ required: true })
+  tickerId: string
 
-    @prop()
-    lowerThen: number
+  @prop({ required: true })
+  user: number
 
-    @prop()
-    greaterThen: number
+  @prop({ required: true })
+  symbol: string
 
-    @prop()
-    lastCheckedAt: Date
+  @prop()
+  lowerThen: number
 
-    @prop()
-    message: string
+  @prop()
+  greaterThen: number
 
-    @prop({ required: true })
-    name: string
+  @prop()
+  lastCheckedAt: Date
 
-    @prop({ required: true })
-    currency: string
+  @prop()
+  message: string
 
-    // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
-    @prop()
-    type: InstrumentType
+  @prop({ required: true })
+  name: string
 
-    // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
-    @prop()
-    source: EMarketDataSources
+  @prop({ required: false })
+  currency?: string
 
-    /**
+  // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
+  @prop()
+  type: InstrumentType
+
+  // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
+  @prop()
+  source: EMarketDataSources
+
+  /**
      * Цена на момент создания алерта
      */
-    @prop()
-    initialPrice: number
+  @prop()
+  initialPrice: number
 }
 
 export interface PriceAlertItem extends PriceAlert {
-    _id: string
-}
-
-interface ICheckAlertsParams {
-    symbol: string,
-    price: number,
+  _id: string
 }
 
 // Get PriceAlertModel model
-const PriceAlertModel = getModelForClass(PriceAlert, {
+export const PriceAlertModel = getModelForClass(PriceAlert, {
   schemaOptions: { timestamps: true },
   options: {
     customName: 'priceAlerts'
   }
 })
 
-// Get or create user
-export function addPriceAlert ({
-  user,
-  lowerThen,
-  symbol,
-  greaterThen,
-  name,
-  currency,
-  type,
-  source,
-  initialPrice
-}: AddPriceAlertParams): Promise<PriceAlertItem> {
-  return new Promise(async (rs, rj) => {
-    const lastCheckedAt = new Date()
+export const addPriceAlerts = (newAlerts: AddPriceAlertParams[]): Promise<PriceAlertItem[]> => {
+  const lastCheckedAt = new Date()
 
-    try {
-      const createdItem = await PriceAlertModel.create({
-        user,
-        lowerThen,
-        symbol: symbol.toUpperCase(),
-        greaterThen,
-        lastCheckedAt,
-        name,
-        currency,
-        type,
-        source,
-        initialPrice
-      } as PriceAlert)
+  const normalizedAlerts = newAlerts.map(alert => ({
+    ...alert,
+    symbol: alert.symbol.toUpperCase(),
+    lastCheckedAt
+  }))
 
-      rs(createdItem)
-    } catch (e) {
-      rj(e)
-    }
-  })
+  return PriceAlertModel.insertMany(normalizedAlerts)
 }
 
-export function getUniqSymbols (number: number): Promise<string[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      // Последнее время проверки должно быть не меньше этого
-      const secondsAgo = 30
-      const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000)
+/**
+ * Вернет из базы указанное кол-во уникальных id тикеров, которые давно не проверялись
+ *
+ * @param number - кол-во, которое нужно проверять. Вернется по факту после схлопывания меньше.
+ *
+ * 10000 - magic number. Just less logic with default value.
+ */
+export const getUniqOutdatedAlertsIds = async (source?: EMarketDataSources, number: number = 10000): Promise<string[]> => {
+  // Вернем тикеры, которые проверялись больше чем "secondsAgo" назад
+  const secondsAgo = 10
+  const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000)
 
-      const data = await PriceAlertModel
-        .find(
-          {
-            $or: [
-              { lastCheckedAt: null },
-              { lastCheckedAt: { $lte: dateToCheck } }
-            ]
-          },
-          { symbol: 1 })
-        .sort({ lastCheckedAt: 1 })
-        .limit(number)
-        .lean()
-      const allSymbols = data.map(elem => elem.symbol)
-      const uniqSymbols = Array.from(new Set(allSymbols))
+  const findParams = {
+    $or: [
+      { lastCheckedAt: null },
+      { lastCheckedAt: { $lte: dateToCheck } }
+    ],
+    tickerId: { $exists: true }
+  }
 
-      rs(uniqSymbols)
-    } catch (e) {
-      rj(e)
-    }
-  })
+  if (source) {
+    // @ts-expect-error
+    findParams.source = source
+  }
+
+  const data = await PriceAlertModel
+    .find(
+      findParams,
+      { tickerId: 1 })
+    .sort({ lastCheckedAt: 1 })
+  // 3 - magic number. Can't predict how many alerts with the same tickers.
+    .limit(number * 3)
+    .lean()
+  const allIds = data.map(elem => elem.tickerId)
+  const uniqIds = Array.from(new Set(allIds)).slice(0, number)
+
+  return uniqIds
 }
 
-// Вернет массив сработавших алертов
-export function checkAlerts ({ symbol, price }: ICheckAlertsParams): Promise<PriceAlertItem[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      if (!symbol || !price) {
-        throw new Error(`[checkAlerts] Не хватает входных данных ${symbol} ${price}`)
+/**
+ * Актуализируем timestamp о последней проверке
+ */
+export const setLastCheckedAt = async (tickerIds: string[]): Promise<void> => {
+  const $or = tickerIds.map(ticker => ({
+    tickerId: ticker
+  }))
+
+  await PriceAlertModel.updateMany({ $or }, { $set: { lastCheckedAt: new Date() } })
+}
+
+/**
+ * Вернет массив сработавших алертов
+ */
+export const checkAlerts = async (tickerPrices: TickerPrices): Promise<PriceAlertItem[]> => {
+  if (!tickerPrices.length) {
+    throw new Error('[checkAlerts] Не хватает входных данных')
+  }
+
+  const $or = tickerPrices.reduce((acc, [symbol, price, tickerId]) => {
+    acc.push(
+      {
+        tickerId,
+        // symbol,
+        lowerThen: { $gte: price }
+      },
+      {
+        tickerId,
+        // symbol,
+        greaterThen: { $lte: price }
       }
+    )
 
-      const triggeredAlerts = await PriceAlertModel.find({
-        symbol: symbol.toUpperCase(),
-        $or: [
-          { lowerThen: { $gte: price } },
-          { greaterThen: { $lte: price } }
-        ]
-      })
+    return acc
+  }, [])
 
-      // Актуализируем timestamp о последней проверке
-      await PriceAlertModel.updateMany({ symbol }, { $set: { lastCheckedAt: new Date() } })
+  const triggeredAlerts = await PriceAlertModel.find({ $or }).lean()
 
-      rs(triggeredAlerts)
-    } catch (e) {
-      rj(e)
-    }
-  })
+  await setLastCheckedAt(tickerPrices.map(([a, b, tickerId]) => tickerId))
+
+  return triggeredAlerts
 }
 
 // TODO: Сделать отдельные методы для получения алертов по разным параметрам.
 //  Что бы делать проверку на входные данные и случайно не вернуть лишнего.
-export function getAlerts ({ symbol, user, _id }: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> {
-  return new Promise(async (rs, rj) => {
-    try {
-      const params: RemoveOrGetAlertParams = {}
+export const getAlerts = async ({ symbol, user, _id, tickerId }: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> => {
+  const params: RemoveOrGetAlertParams = {}
 
-      symbol && (params.symbol = symbol.toUpperCase())
-      user && (params.user = user)
-      _id && (params._id = _id)
+  symbol && (params.symbol = symbol.toUpperCase())
+  tickerId && (params.tickerId = tickerId)
+  user && (params.user = user)
+  _id && (params._id = _id)
 
-      const alerts = await PriceAlertModel.find(params)
+  const alerts = await PriceAlertModel.find(params).lean()
 
-      rs(alerts)
-    } catch (e) {
-      rj(e)
-    }
-  })
+  return alerts
 }
 
 export async function getAllAlerts (): Promise<PriceAlertItem[]> {
@@ -238,7 +244,7 @@ export function updateAlert ({ _id, data }: { _id: string, data: { message: stri
 }
 
 interface GetAlertsCountForUserParams {
-    user: number
+  user: number
 }
 
 export const getAlertsCountForUser = (user: number) => new Promise(async (rs, rj) => {

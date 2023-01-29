@@ -1,8 +1,9 @@
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
-import { ShiftCandleModel } from '../../models/ShiftCandle'
-import { i18n } from '../../helpers/i18n'
-import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
+import { i18n } from '../../helpers/i18n'
+import { log } from '../../helpers/log'
+import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
+import { ShiftCandleModel } from '../../models/ShiftCandle'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
 
 /**
@@ -39,6 +40,12 @@ export const updateCandle = async ({
       createdAt: actualCandleCreatedTime,
       updatedAt: new Date().getTime()
     }
+
+    // FIXME: Удалить после дебага
+    log.debug('[Reset candle]',
+      'Creation time', new Date(localCandleCreatedTime),
+      'New Candle time', new Date(actualCandleCreatedTime)
+    )
 
     // FIXME: Вообще это можнро сделать одной командой
     //  Но почему-то upsert не работает в typegoose
@@ -108,28 +115,41 @@ export const sendUserMessage = async ({
       return
     }
 
-    await bot.telegram.sendMessage(shift.user, i18n.t(
-      'ru', 'shift_alert',
-      {
-        name: tickerInfo.name,
-        percent: shift.percent,
-        isGrow,
-        time: timeframeData.name_ru_plur,
-        ticker,
-        link: getInstrumentLink({
-          type: tickerInfo.type,
-          source: tickerInfo.source,
-          ticker
-        })
+    try {
+      await bot.telegram.sendMessage(shift.user, i18n.t(
+        'ru', 'shift_alert',
+        {
+          name: tickerInfo.name,
+          percent: shift.percent,
+          isGrow,
+          time: timeframeData.name_ru_plur,
+          ticker,
+          link: getInstrumentLink({
+            type: tickerInfo.type,
+            source: tickerInfo.source,
+            ticker
+          })
+        }
+      ), {
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        disable_notification: muted,
+        reply_markup: {
+          inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+        }
+      })
+    } catch (e) {
+      log.error(e)
+
+      // If bot was blocked by user
+      if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
+        await TimeShiftModel.remove({ _id: shift._id })
+
+        log.info('Deleted shift because bot blocked by user')
+
+        return
       }
-    ), {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      disable_notification: muted,
-      reply_markup: {
-        inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
-      }
-    })
+    }
 
     const dataToUpdate = isGrow
       ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })

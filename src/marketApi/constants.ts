@@ -1,5 +1,4 @@
-import { tinkoffGetAllInstruments } from './tinkoff/api/getAllInstruments'
-import { EMarketDataSources, IMarketDataSourcesConfig } from './types'
+import {EMarketDataSources, IMarketDataSourcesConfig} from './types'
 
 /**
  * Источники из которых получаем котировки

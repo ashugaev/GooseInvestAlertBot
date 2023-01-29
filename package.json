@@ -8,17 +8,28 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet",
+    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --max-warnings 0",
     "lint:fix": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "build": "npm run build:ts",
-    "start": "node dist/app.js > logs/logfile",
+    "start": "mkdir -p logs && node dist/app.js > logs/logfile",
     "dev:watch": "concurrently -k -i -p \"[{name}]\" -n \"Node,TypeScript\" -c \"yellow.bold,cyan.bold\" \"npm run watch:js\" \"npm run watch:ts\"",
-    "dev:static": "npm run build:ts && node dist/app.js",
-    "build:ts": "tsc --skipLibCheck",
+    "dev:static": "rimraf ./dist && npm run build:ts && node dist/app.js",
+    "dev:static:logfile": "rimraf ./dist && npm run build:ts && node dist/app.js > logs/logfile",
+    "build:ts": "rimraf ./dist && tsc --skipLibCheck",
     "watch:ts": "rimraf ./dist && tsc -w --skipLibCheck",
     "watch:js": "nodemon dist/app.js",
     "docker:up": "npm run build && docker-compose up -d --build --force-recreate",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "db-migration:up": "cd migrations && migrate-mongo up",
+    "db-migration:down": "cd migrations && migrate-mongo down"
+  },
+  "_moduleAliases": {
+    "@helpers": "dist/helpers/",
+    "@scenes": "dist/scenes/",
+    "@commands": "dist/commands/",
+    "@constants": "dist/constants/",
+    "@types": "dist/types/",
+    "@models": "dist/models/"
   },
   "husky": {
     "hooks": {
@@ -33,26 +44,30 @@
   "devDependencies": {
     "@typescript-eslint/parser": "^4.10.0",
     "concurrently": "^5.2.0",
+    "eslint-plugin-no-floating-promise": "^1.0.2",
     "eslint-plugin-react": "^7.21.5",
     "nodemon": "^2.0.4",
-    "typescript": "^4.0.3"
+    "typescript": "4.9.3"
   },
   "dependencies": {
     "@google/chatbase": "^1.1.2",
     "@sentry/node": "^5.29.2",
     "@sentry/tracing": "^5.29.2",
-    "@tinkoff/invest-openapi-js-sdk": "^1.2.16",
+    "@tinkoff/invest-openapi-js-sdk": "^1.5.0",
     "@typegoose/typegoose": "^7.3.0",
     "@types/dotenv": "^8.2.0",
     "@types/mongoose": "^5.7.32",
     "@types/node": "^14.0.23",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
+    "axios": "^0.27.2",
+    "binance-api-node": "0.12.2",
     "coingecko-api": "^1.0.10",
     "cron": "^1.8.2",
     "dotenv": "^8.2.0",
     "eslint": "^7.16.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-config-standard-with-typescript": "^20.0.0",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-unused-imports": "^1.1.2",
@@ -60,12 +75,14 @@
     "lint-staged": "^10.5.3",
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
-    "mongoose": "^5.9.25",
-    "node-binance-api": "^0.12.5",
+    "migrate-mongo": "^8.2.3",
+    "module-alias": "^2.2.2",
+    "mongoose": "5.13.15",
     "node-cache": "^5.1.2",
     "plural-ru": "^2.0.2",
     "rifraf": "^2.0.3",
     "telegraf": "^3.38.0",
-    "telegraf-i18n": "^6.6.0"
+    "telegraf-i18n": "^6.6.0",
+    "tinkoff-invest-api": "5.0.0"
   }
 }

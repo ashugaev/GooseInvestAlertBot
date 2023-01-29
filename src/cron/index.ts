@@ -1,20 +1,84 @@
-import { copyAlerts } from './copyAlerts'
-import { instrumentsListUpdater } from './instrumentsListUpdater'
-import { setupPriceChecker } from './priceChecker'
-import { createShitEvents } from './statChecker'
+import { log, retry } from '@helpers'
+
 import { startCronJob } from '../helpers/startCronJob'
-import { shiftSender } from './statSender'
+import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
+import { getBinancePrices } from '../marketApi/binance/api/getPrices'
+import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments'
+import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
+import { getCurrenciesList } from '../marketApi/currencyConverter/getList'
+import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments'
+import { getTinkoffPrices } from '../marketApi/tinkoff/api/getPrices'
+import { EMarketDataSources } from '../marketApi/types'
+import { getYahooPrices } from '../marketApi/yahoo/getPrices'
+import { setupPriceUpdater, updateTickersList } from '../modules'
+import { copyAlerts } from './copyAlerts'
+import { setupPriceCheckerOld } from './priceChecker'
+import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
-import { log } from '../helpers/log'
+import { createShitEvents } from './statChecker'
+import { shiftSender } from './statSender'
+
+// Processed steps list
+export enum InitializationItem {
+  // Tickers
+  TINKOFF_TICKERS = 'TINKOFF_TICKERS',
+  BINANCE_TICKERS = 'BINANCE_TICKERS',
+  COINGECKO_TICKERS = 'COINGECKO_TICKERS',
+  YAHOO_TICKERS = 'YAHOO_TICKERS',
+  // Prices
+  TINKOFF_PRICES = 'TINKOFF_PRICES',
+  BINANCE_PRICES = 'BINANCE_PRICES',
+  YAHOO_PRICES = 'YAHOO_PRICES',
+  COINGECKO_PRICES = 'COINGECKO_PRICES',
+}
+
+// Array with all processed steps
+export const appInitStatuses: InitializationItem[] = []
+
+const isInstrumentsListUpdated = () => {
+  return [
+    InitializationItem.TINKOFF_TICKERS,
+    InitializationItem.COINGECKO_TICKERS,
+    InitializationItem.BINANCE_TICKERS,
+    InitializationItem.YAHOO_TICKERS
+  ].every((step) => appInitStatuses.includes(step))
+}
+const isAllPricesUpdated = () => {
+  return [
+    InitializationItem.TINKOFF_PRICES,
+    InitializationItem.COINGECKO_PRICES,
+    InitializationItem.BINANCE_PRICES,
+    InitializationItem.YAHOO_PRICES
+  ].every((step) => appInitStatuses.includes(step))
+}
+
+const appInitTime = new Date().getTime()
+
+const isReadyToRunByTimeout = () => {
+  const isTimeOut = new Date().getTime() - appInitTime > 1000 * 60 * 10 // 10 min
+  if (isTimeOut) {
+    log.error('Start process by timeout')
+  }
+  return isTimeOut
+}
 
 export const setupCheckers = (bot) => {
+  startCronJob({
+    name: 'Update tinkoff futures margins',
+    callback: saveFuturesMargin,
+    callbackArgs: [],
+    // раз в день в 3 часа 0 минут
+    period: '0 3 * * *'
+  })
+
   // TODO: Не запускать не деве
   startCronJob({
     name: 'Check stat',
     callback: createShitEvents,
     callbackArgs: [bot],
     // раз в день в 2 часа 0 минут
-    period: '0 2 * * *'
+    period: '0 2 * * *',
+    isReadyToStart: () => isAllPricesUpdated() || isReadyToRunByTimeout()
   })
 
   startCronJob({
@@ -26,13 +90,68 @@ export const setupCheckers = (bot) => {
   })
 
   startCronJob({
-    name: 'Update Instruments List',
-    callback: instrumentsListUpdater,
+    name: 'Update Currencies List',
+    callback: updateTickersList({
+      getList: getCurrenciesList,
+      source: EMarketDataSources.yahoo,
+      minTickersCount: 1000
+    }),
     callbackArgs: [bot],
-    // раз день в 3 часа
-    period: '0 3 * * *'
-    // TODO: Не проставлять в dev окружении
-    // executeBeforeInit: true
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.YAHOO_TICKERS
+  })
+
+  /**
+   * TINKOFF tickers list
+   */
+  startCronJob({
+    name: 'Update Tinkoff tickers list',
+    callback: updateTickersList({
+      getList: tinkoffGetAllInstruments,
+      source: EMarketDataSources.tinkoff,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.TINKOFF_TICKERS
+  })
+
+  /**
+   * Update COINGECKO tickers list
+   */
+  startCronJob({
+    name: 'Update Coingecko tickers list',
+    callback: updateTickersList({
+      getList: coingeckoGetAllInstruments,
+      source: EMarketDataSources.coingecko,
+      minTickersCount: 6000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.COINGECKO_TICKERS
+  })
+
+  /**
+   * Update BINANCE tickers list
+   */
+  startCronJob({
+    name: 'Update Binance tickers list',
+    callback: updateTickersList({
+      getList: binanceGetAllInstruments,
+      source: EMarketDataSources.binance,
+      minTickersCount: 1000
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.BINANCE_TICKERS
   })
 
   // Дамп коллекции с алертами
@@ -40,18 +159,91 @@ export const setupCheckers = (bot) => {
     name: 'Copy alerts collection',
     callback: copyAlerts,
     callbackArgs: [bot],
-    // раз в час
-    period: '0 * * * *',
+    // В полночь и при деплое
+    period: '0 0 * * *',
     executeBeforeInit: true
   })
 
-  // Мониторинг достижения уровней
-  setupPriceChecker(bot)
+  /**
+   * BINANCE prices updater
+   */
+  retry(async () => (
+    await setupPriceUpdater({
+      minTimeBetweenRequests: 1000,
+      getPrices: getBinancePrices,
+      source: EMarketDataSources.binance,
+      jobKey: InitializationItem.BINANCE_PRICES
+    })
+  ), 100000, 'setupPriceUpdater for binance')
 
-  // Мониторинг скорости
-  try {
-    setupShiftsChecker(bot)
-  } catch (e) {
-    log.error('[Cron] Упал чекер скорости цены')
-  }
+  /**
+   * YAHOO prices updater
+   *
+   * Quota 2000 requests per hour
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      // hour in ms divided by quota
+      minTimeBetweenRequests: 3600000 / 2000,
+      getPrices: getYahooPrices,
+      source: EMarketDataSources.yahoo,
+      // 10 tickers it's a max for yahoo api
+      maxTickersForRequest: 10,
+      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
+      jobKey: InitializationItem.YAHOO_PRICES
+    })
+  }, 100000, 'setupPriceUpdater for yahoo')
+
+  /**
+   * COINGECKO prices updater
+   *
+   * QUOTA: 50 calls/min
+   * TIME FOR UPDATE ALL TICKER: 12000 ticker / 500 per request/ 30 calls per min = ~1min
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      // 2sec
+      minTimeBetweenRequests: 2000,
+      getPrices: coingeckoGetLastPriceById,
+      source: EMarketDataSources.coingecko,
+      // 500 items works fine
+      maxTickersForRequest: 500,
+      jobKey: InitializationItem.COINGECKO_PRICES
+    })
+  }, 100000, 'setupPriceUpdater for COINGECKO')
+
+  /**
+   * TINKOFF prices updater
+   *
+   * QUOTA: ~150rec/min
+   * @link https://tinkoff.github.io/investAPI/limits/
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      // 1sec
+      minTimeBetweenRequests: 1000,
+      getPrices: getTinkoffPrices,
+      source: EMarketDataSources.tinkoff,
+      jobKey: InitializationItem.TINKOFF_PRICES
+    })
+  }, 100000, 'setupPriceUpdater for TINKOFF')
+
+  /**
+   * Мониторинг скорости
+   */
+  retry(async () => await setupShiftsChecker(
+    bot,
+    () => isAllPricesUpdated() || isReadyToRunByTimeout()
+  ), 100000, 'setupShiftsChecker')
+
+  /**
+   * Мониторинг достижения уровней
+   */
+  retry(async () => await setupPriceCheckerOld(
+    bot,
+    // FIXME: Remove this line after price cache will be implemented
+    () => isAllPricesUpdated() || isReadyToRunByTimeout()
+  ),
+  100000,
+  'setupPriceCheckerOld')
 }

@@ -1,9 +1,10 @@
-import { Extra } from 'telegraf'
-import { commandWrapper } from '../helpers/commandWrapper'
+import { Extra } from 'telegraf';
+
+import { commandWrapper } from '../helpers/commandWrapper';
 
 export function setupStart (bot) {
-  bot.command(['start'], commandWrapper(ctx => {
-    const { first_name } = ctx.message.from
+  bot.command(['start'], commandWrapper(async ctx => {
+    const { first_name } = ctx.message.from;
 
     const params = Extra
       .HTML(true)
@@ -12,12 +13,12 @@ export function setupStart (bot) {
         // TODO: Доделать кнопки снизу
         //     m.callbackButton(ctx.i18n.t('alert_button'))
         //     m.callbackButton(ctx.i18n.t('help_button'))
-      ]))
+      ]));
 
     ctx.replyWithHTML(ctx.i18n.t('start', {
       first_name
     }),
     params
-    )
-  }))
+    );
+  }));
 }

@@ -1,36 +1,27 @@
+import { set } from 'lodash'
 import { Extra } from 'telegraf'
-import { instrumentsListKeyboard } from '../keyboards/instrumentsListKeyboard'
-import { EListTypes } from '../list.types'
-import { log } from '../../../helpers/log'
 
-/**
- * Экшен перехода на страницу списка инструментов
- *
- * Эта страница актуальная только для ценовых уровней
- */
+import { log } from '../../../helpers/log'
+import { instrumentsListKeyboard } from '../keyboards/instrumentsListKeyboard'
+
 export const instrumentsListPagination = async (ctx) => {
   try {
     const {
-      p: page = 0,
-      // type списка
+      p: page = 0
     } = JSON.parse(ctx.match[1])
+
+    set(ctx, 'session.listCommand.price.tickersPage', page)
 
     const { id: user } = ctx.from
 
-    const alertsList = ctx.session?.listCommand?.alertsList
-    const uniqTickersData = ctx.session?.listCommand?.uniqTickersData
+    const alertsList = ctx.session?.listCommand?.data?.alertsList
+    const uniqTickersData = ctx.session?.listCommand?.data?.uniqTickersData
 
-    if (!alertsList?.length) {
-      await ctx.editMessageText(ctx.i18n.t('unrecognizedError'))
-
-      return
-    }
-
-    await ctx.editMessageText(ctx.i18n.t('alertList_titles'),
+    await ctx.editMessageText(ctx.i18n.t('alertList_titles', { empty: !uniqTickersData.length }),
       Extra
         .HTML(true)
         .markup(await instrumentsListKeyboard({
-          page, uniqTickersData, user
+          page, uniqTickersData, user, ctx
         }))
     )
   } catch (e) {

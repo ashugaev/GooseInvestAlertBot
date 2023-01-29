@@ -1,80 +1,90 @@
 interface GetPriceFromStringParams {
-    string: string,
-    lastPrice: number,
+  string: string
+  lastPrice: number
 }
 
 interface IGetPriceFromString {
-    prices: number[],
-    invalidValues: string[]
+  prices: number[]
+  invalidValues: string[]
 }
 
 export function getPricesFromString ({ string, lastPrice }: GetPriceFromStringParams): IGetPriceFromString {
   // -10 +10
-  const relativeValueMinusRegExp = new RegExp(/^\-([\d\.]+)$/)
-  const relativeValuePlusRegExp = new RegExp(/^\+([\d\.]+)$/)
+  const relativeValueMinusRegExp = new RegExp(/^-([\d.]+)$/);
+  const relativeValuePlusRegExp = new RegExp(/^\+([\d.]+)$/);
 
   // 10% +10% -10%
-  const percentMinusRegExp = new RegExp(/^\-([\d\.]+)%$/)
-  const percentPlusRegExp = new RegExp(/^(\+)?([\d\.]+)%$/)
+  const percentMinusRegExp = new RegExp(/^-([\d.]+)%$/);
+  const percentPlusRegExp = new RegExp(/^(\+)?([\d.]+)%$/);
 
   // 10 30 59
-  const pureNumberRegExp = new RegExp(/^[\d\.]+$/)
+  const pureNumberRegExp = new RegExp(/^[\d.]+$/);
 
-  const invalidValues = []
+  const invalidValues = [];
 
   const prices: number[] = string.split(' ').reduce((acc: number[], el) => {
-    const stringVal = el.trim()
+    const stringVal = el.trim();
 
     if (!stringVal.length) {
-      return acc
+      return acc;
     }
 
-    const plusMatch = stringVal.match(relativeValuePlusRegExp)
-    const minusMatch = stringVal.match(relativeValueMinusRegExp)
-    const percentMinusMatch = stringVal.match(percentMinusRegExp)
-    const percentPlusMath = stringVal.match(percentPlusRegExp)
-    const pureNumberMatch = stringVal.match(pureNumberRegExp)
+    const plusMatch = stringVal.match(relativeValuePlusRegExp);
+    const minusMatch = stringVal.match(relativeValueMinusRegExp);
+    const percentMinusMatch = stringVal.match(percentMinusRegExp);
+    const percentPlusMath = stringVal.match(percentPlusRegExp);
+    const pureNumberMatch = stringVal.match(pureNumberRegExp);
 
-    let resultNumberVal
+    let resultNumberVal;
 
     // Ищем паттерн, которому соответствует запись цены
     if (plusMatch) {
-      resultNumberVal = lastPrice + parseFloat(plusMatch[1])
+      resultNumberVal = lastPrice + parseFloat(plusMatch[1]);
     } else if (minusMatch) {
-      resultNumberVal = lastPrice - parseFloat(minusMatch[1])
+      resultNumberVal = lastPrice - parseFloat(minusMatch[1]);
 
       if (resultNumberVal < 0) {
-        invalidValues.push(stringVal)
+        invalidValues.push(stringVal);
 
-        resultNumberVal = null
+        resultNumberVal = null;
       }
     } else if (percentMinusMatch) {
-      const percent = parseFloat(percentMinusMatch[1])
+      const percent = parseFloat(percentMinusMatch[1]);
 
       if (percent >= 100) {
-        invalidValues.push(stringVal)
+        invalidValues.push(stringVal);
 
-        resultNumberVal = null
+        resultNumberVal = null;
       } else {
-        resultNumberVal = lastPrice - ((lastPrice / 100) * percent)
+        resultNumberVal = lastPrice - ((lastPrice / 100) * percent);
       }
     } else if (percentPlusMath) {
-      const percent = parseFloat(percentPlusMath[2])
+      const percent = parseFloat(percentPlusMath[2]);
 
-      resultNumberVal = lastPrice + ((lastPrice / 100) * percent)
+      resultNumberVal = lastPrice + ((lastPrice / 100) * percent);
     } else if (pureNumberMatch) {
-      resultNumberVal = parseFloat(stringVal)
+      resultNumberVal = parseFloat(stringVal);
     } else {
-      invalidValues.push(stringVal)
+      invalidValues.push(stringVal);
     }
 
-    // TODO: toFixedValue можно посчитать из шага, который лежит в данных инструмента
-    const toFixedValue = lastPrice < 1 ? 5 : 2
+    if (!resultNumberVal) {
+      return acc
+    }
 
-    resultNumberVal && acc.push(+resultNumberVal.toFixed(toFixedValue))
+    // Limit decimal value length if user sen not fixed value
+    if (percentMinusMatch || percentPlusMath) {
+      const toFixedValue = lastPrice < 1 ? 6 : 2
 
-    return acc
-  }, [])
+      resultNumberVal = +resultNumberVal.toFixed(toFixedValue)
+    } else {
+      resultNumberVal = +resultNumberVal.toFixed(12)
+    }
 
-  return { prices, invalidValues }
+    resultNumberVal && acc.push(resultNumberVal)
+
+    return acc;
+  }, []);
+
+  return { prices, invalidValues };
 }

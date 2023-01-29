@@ -62,6 +62,6 @@ export const shiftSender = async (bot) => {
       await ShiftEventsModel.update({ _id: event._id }, { $set: { wasSent: true } })
     }
   } catch (e) {
-    log.error('[ShiftSender] Что-то сломалось', e)
+    log.error('[SUPER_CRASH] Сломалась рассылка статистики', e)
   }
 }

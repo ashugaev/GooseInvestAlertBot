@@ -2,10 +2,16 @@
  * Отслеживание скорости изменения цены
  */
 
-import { prop, getModelForClass } from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
 
 export class TimeShift {
   _id: string
+
+  /**
+   * Id по которому ищу данные тикера (отвязываемся от названия тикера)
+   */
+  @prop({ required: true })
+  tickerId: string
 
   @prop({ required: true })
   percent: number

@@ -1,19 +1,25 @@
-import { log } from './log'
-import { i18n } from './i18n'
-import { addAnalyticsToReply, chb_m } from './analytics'
-import { Middleware } from 'telegraf'
-import { TelegrafContext } from 'telegraf/typings/context'
+import { Middleware } from 'telegraf';
 
-export function sceneWrapper (intent: string, callback: (ctx) => void):Middleware<TelegrafContext> {
-  return (ctx) => {
+import { addAnalyticsToReply, chb_m } from './analytics';
+import { i18n } from './i18n';
+import { log } from './log';
+
+export function sceneWrapper (intent: string, callback: (ctx: any) => Promise<void>, leaveOnFail?: boolean): Middleware<any> {
+  return async (ctx) => {
     try {
-      addAnalyticsToReply(ctx)
-      chb_m({ ctx, intent })
+      addAnalyticsToReply(ctx);
+      chb_m({ ctx, intent });
 
-      callback(ctx)
+      await callback(ctx);
     } catch (e) {
-      ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-      log.error(e)
+      log.error('Scene fail:', intent, e);
+      await ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'));
+
+      if (leaveOnFail) {
+        return ctx.scene.leave();
+      } else {
+        return ctx.wizard.selectStep(ctx.wizard.cursor);
+      }
     }
-  }
+  };
 }

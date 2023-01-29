@@ -1,18 +1,19 @@
-import { Telegraf, Context, Extra } from 'telegraf'
-import { log } from '../../helpers/log'
+import { TimeShiftModel } from '@models'
+import { Context, Extra, Telegraf } from 'telegraf'
+
+import { Actions } from '../../constants'
 import { commandWrapper } from '../../helpers/commandWrapper'
-import { instrumentsListKeyboard } from './keyboards/instrumentsListKeyboard'
+import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
+import { alertDelete } from './actions/alertDelete'
+import { alertEdit } from './actions/alertEdit'
 import { alertsForInstrument } from './actions/alertsForInstrument'
 import { instrumentsListPagination } from './actions/instrumentsListPagination'
-import { showInstrumentPage } from './utils/showInstrumentPage'
-import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
-import { Actions } from '../../constants'
-import { alertEdit } from './actions/alertEdit'
-import { alertDelete } from './actions/alertDelete'
-import { fetchAlerts } from './utils/fetchAlerts'
-import { shiftsPage } from './actions/shiftsPage'
-import { shiftEditPage } from './actions/shiftEditPage'
 import { shiftDelete } from './actions/shiftDelete'
+import { shiftEditPage } from './actions/shiftEditPage'
+import { shiftsPage } from './actions/shiftsPage'
+import { instrumentsListKeyboard } from './keyboards/instrumentsListKeyboard'
+import { fetchAlerts } from './utils/fetchAlerts'
+import { showShiftsPage } from './utils/showShiftsPage'
 
 export interface ITickerButtonItem {
   name: string
@@ -32,34 +33,45 @@ export function setupList (bot: Telegraf<Context>) {
       return
     }
 
-    const forSymbol = data[1]
-    let alertsList
-    let uniqTickersData
-
-    try {
-      // Запишет алерты в том числе в конекст
-      const data = await fetchAlerts({ ctx, forSymbol })
-
-      alertsList = data.alertsList
-      uniqTickersData = data.uniqTickersData
-
-      if (!alertsList.length) {
-        return
+    // Дефолтные значения констекста для команды
+    ctx.session.listCommand = {
+      price: {
+        tickersPage: 0,
+        tickerAlertsPage: 0,
+        selectedTickerId: null,
+        selectedAlertId: null
+      },
+      shifts: {
+        page: 0
+      },
+      data: {
+        alertsList: [],
+        uniqTickersData: []
       }
-    } catch (e) {
-      log.error(e)
-      return
     }
 
-    if (forSymbol) {
-      showInstrumentPage({ page: 0, symbol: forSymbol, ctx, instrumentItems: alertsList, edit: false })
-    } else {
-      ctx.replyWithHTML(ctx.i18n.t('alertList_titles'),
+    // Вернет все алерты юзера и запишет в контекст
+    const { alertsList, uniqTickersData } = await fetchAlerts({ ctx })
+
+    // Если есть алерты
+    if (alertsList.length) {
+      // TODO: Создать ShowTickersList для этого reply
+      return ctx.replyWithHTML(ctx.i18n.t('alertList_titles', { empty: !uniqTickersData.length }),
         Extra
           .HTML(true)
-          .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData, user }))
+          .markup(await instrumentsListKeyboard({
+            page: 0,
+            uniqTickersData,
+            user,
+            ctx
+          }))
       )
     }
+
+    const shiftsList = await TimeShiftModel.find({ user })
+
+    // В любом случае показываем эту страницу, даже есои она пустая
+    return await showShiftsPage({ ctx, page: 0, edit: false, shiftsList })
   }))
 
   // Управление состоянием страницы одного инструмента

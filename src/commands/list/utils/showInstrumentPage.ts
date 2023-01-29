@@ -1,36 +1,47 @@
+import { shortenerCreateShort } from '@helpers'
+
 import { listConfig } from '../../../config'
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { getLastPrice } from '../../../helpers/stocksApi'
-import { log } from '../../../helpers/log'
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
-import { PriceAlertItem } from '../../../models'
 import { Actions } from '../../../constants'
+import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
+import { getLastPrice } from '../../../helpers/getLastPrice'
+import { getSourceMark } from '../../../helpers/getSourceMark'
+import { log } from '../../../helpers/log'
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
+import { PriceAlertItem } from '../../../models'
+import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
+import { ListActionsDataKeys } from '../list.types'
 
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
   page: number
   ctx: any
   instrumentItems: PriceAlertItem[]
-  symbol: string
   edit?: boolean
+  tickersPage?: number
 }
 
 export const getAlertNumberByPage = ({ i, page }) => {
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   return i + 1 + (page * listConfig.itemsPerPage)
 }
 
 export const showInstrumentPage = async ({
-  page, ctx, instrumentItems, symbol, edit, keyboardMode
+  page,
+  ctx,
+  instrumentItems,
+  edit,
+  keyboardMode,
+  tickersPage = 0
 }: IShowInstrumentPageParams) => {
+  // Получаем сортированный список инструментов для страницы
+  // FIXME: Вынести
   const itemsToShow = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
   const itemsList = itemsToShow
-  // Сортировка по цене
     .map(({ symbol, message, lowerThen, greaterThen, currency, name }, i) => {
-      const price = lowerThen || greaterThen
+      const price = lowerThen ?? greaterThen
 
       return ctx.i18n.t('alertList_item', {
         // Номер элемента с учетом страницы
@@ -42,12 +53,20 @@ export const showInstrumentPage = async ({
       })
     }).join('\n')
 
-  const { type: instrumentType, name: instrumentName, currency: instrumentCurrency, source } = instrumentItems[0]
+  const {
+    type: instrumentType,
+    name: instrumentName,
+    currency: instrumentCurrency,
+    source,
+    tickerId,
+    symbol,
+    _id
+  } = instrumentItems[0]
 
   let lastPrice
 
   try {
-    lastPrice = await getLastPrice({ ticker: symbol })
+    lastPrice = await getLastPrice(tickerId)
   } catch (e) {
     log.error('ошибка получения цены', e)
   }
@@ -59,7 +78,8 @@ export const showInstrumentPage = async ({
     name: instrumentName,
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
-    showEditMessage: keyboardMode === EKeyboardModes.edit
+    showEditMessage: keyboardMode === EKeyboardModes.edit,
+    source: getSourceMark({ source })
   })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
@@ -73,24 +93,31 @@ export const showInstrumentPage = async ({
         symbol,
         withoutBackButton: false,
         keyboardMode,
+        tickersPage,
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            s: symbol,
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx),
             p: page,
-            kMode: keyboardMode
+            kMode: keyboardMode,
+            tp: tickersPage
           }
         },
         editNumberButtonsConfig: {
           action: Actions.list_editAlert,
-          payload: {
-            s: symbol.toUpperCase()
+          // payload: {
+          //   [ListActionsDataKeys.selectedAlertId]: _id
+          // }
+          payloadCallback: (i) => {
+            return {
+              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+            }
           }
         },
         editButtonConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            s: symbol.toUpperCase()
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
           }
         }
       })
