@@ -1,10 +1,10 @@
-import { listConfig } from '../../../config';
-import { Actions } from '../../../constants';
-import { TimeShift } from '../../../models';
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard';
-import { EListTypes, ListActionsDataKeys } from '../list.types';
-import { getTimeframesObjFromStoreOrDB } from './getTimeframesObjFromStoreOrDB';
-import { getAlertNumberByPage } from './showInstrumentPage';
+import { listConfig } from '../../../config'
+import { Actions } from '../../../constants'
+import { TimeShift } from '../../../models'
+import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
+import { EListTypes, ListActionsDataKeys } from '../list.types'
+import { getTimeframesObjFromStoreOrDB } from './getTimeframesObjFromStoreOrDB'
+import { getAlertNumberByPage } from './showInstrumentPage'
 
 interface IShowShiftsPageParams {
   keyboardMode?: EKeyboardModes
@@ -24,9 +24,9 @@ export const showShiftsPage = async ({
   const itemsToShow = shiftsList
   // Сортировка по названию
     .sort((a, b) => a.name > b.name ? 1 : -1)
-    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage);
+    .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
-  const timeframesObj = await getTimeframesObjFromStoreOrDB(ctx);
+  const timeframesObj = await getTimeframesObjFromStoreOrDB(ctx)
 
   const itemsList = itemsToShow
     .map(({ ticker, percent, growAlerts, fallAlerts, timeframe, name }, i) => {
@@ -40,13 +40,14 @@ export const showShiftsPage = async ({
         change: fallAlerts && growAlerts,
         percent,
         time: timeframesObj[timeframe].name_ru_plur
-      });
-    }).join('\n');
+      })
+    }).join('\n')
 
   const message = ctx.i18n.t('alertsList_shifts_list', {
+    empty: !itemsList.length,
     list: itemsList,
     showEditMessage: keyboardMode === EKeyboardModes.edit
-  });
+  })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
@@ -72,7 +73,7 @@ export const showShiftsPage = async ({
           payloadCallback: (i) => {
             return {
               [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
-            };
+            }
           }
         },
         editNumberButtonsConfig: {
@@ -83,10 +84,10 @@ export const showShiftsPage = async ({
           payloadCallback: (i) => {
             return {
               [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
-            };
+            }
           }
         }
       })
     }
-  });
-};
+  })
+}

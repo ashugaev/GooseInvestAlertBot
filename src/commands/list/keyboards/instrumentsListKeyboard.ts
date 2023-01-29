@@ -55,9 +55,7 @@ export const instrumentsListKeyboard = async ({
 
   const userShiftsCount = user ? await getTimeShiftsCountForUser(user) : 0
 
-  if (userShiftsCount > 0) {
-    getTickerButtons.push(alertsTypeToggleButtons({ listType }))
-  }
+  getTickerButtons.push(alertsTypeToggleButtons({ listType }))
 
   return Markup.inlineKeyboard(getTickerButtons)
 }

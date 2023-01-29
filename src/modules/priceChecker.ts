@@ -1,25 +1,17 @@
-/**
- * FIXME: ДОДЕЛАТЬ УНИВЕРСАЛЬНУЮ И БОЛЕЕ БЫСТРУУ ВЕРСИЮ PRICE-CHECKER
- *
- * Требования
- * - От не должен быть сильно завязан на базу, что бы работал быстрее
- * - Ходить за данными инструмента лучше вначале запуска, а дальше просто по крону обновлять список
- */
-
-import { dropOutInvalidPrices, log } from '@helpers';
+import { dropOutInvalidPrices, log } from '@helpers'
 import {
   checkAlerts,
   getUniqOutdatedAlertsIds,
   InstrumentsList,
   setLastCheckedAt
-} from '@models';
-import { TickerPrices } from 'prices';
+} from '@models'
+import { TickerPrices } from 'prices'
 
-import { wait } from '../helpers/wait';
-import { EMarketDataSources } from '../marketApi/types';
+import { wait } from '../helpers/wait'
+import { EMarketDataSources } from '../marketApi/types'
 
-const logPrefix = '[PRICE CHECKER]';
-const CRASH_WAIT_TIME = 30000;
+const logPrefix = '[PRICE CHECKER]'
+const CRASH_WAIT_TIME = 30000
 
 /**
  * Every mitTimeBetweenRequests does request updatePrice, then check triggered alerts
@@ -62,87 +54,87 @@ export const setupPriceChecker = async ({
   waitTimeBeforeStart
 }: PriceCheckerParams) => {
   if (waitTimeBeforeStart) {
-    await wait(waitTimeBeforeStart);
+    await wait(waitTimeBeforeStart)
   }
 
-  let lastIterationStartTime = new Date().getTime();
+  let lastIterationStartTime = new Date().getTime()
 
   while (true) {
-    let tickerIds = [];
+    let tickerIds = []
 
     // Делаем время между итерациями более предсказуемым учитывая время запроса
-    const timeToWait = minTimeBetweenRequests - (new Date().getTime() - lastIterationStartTime);
+    const timeToWait = minTimeBetweenRequests - (new Date().getTime() - lastIterationStartTime)
 
     if (timeToWait > 0) {
-      console.log('waiting', timeToWait);
-      await wait(timeToWait);
+      console.log('waiting', timeToWait)
+      await wait(timeToWait)
     }
 
-    lastIterationStartTime = new Date().getTime();
+    lastIterationStartTime = new Date().getTime()
 
     // Get tickers to check
     try {
-      tickerIds = await getUniqOutdatedAlertsIds(source, maxTickersForRequest);
+      tickerIds = await getUniqOutdatedAlertsIds(source, maxTickersForRequest)
     } catch (e) {
-      log.error(logPrefix, 'Ошибка подключения к базе', e);
+      log.error(logPrefix, 'Ошибка подключения к базе', e)
 
-      await wait(CRASH_WAIT_TIME);
-      continue;
+      await wait(CRASH_WAIT_TIME)
+      continue
     }
 
     // If nothing to check
     if (!tickerIds?.length) {
-      log.info(logPrefix, 'Нет тикеров для проверки');
-      continue;
+      log.info(logPrefix, 'Нет тикеров для проверки')
+      continue
     } else {
-      log.debug(logPrefix, 'Checking tickerIds', tickerIds);
+      log.debug(logPrefix, 'Checking tickerIds', tickerIds)
     }
 
-    let prices = [];
+    let prices = []
 
     // Get prices for tickers
     try {
-      prices = await getPrices(tickerIds);
+      prices = await getPrices(tickerIds)
     } catch (e) {
-      log.error(logPrefix, 'Get price error', e);
-      await wait(CRASH_WAIT_TIME);
-      continue;
+      log.error(logPrefix, 'Get price error', e)
+      await wait(CRASH_WAIT_TIME)
+      continue
     } finally {
       // Ставим в любом случае что проверили цены.
       // Если вдруг накопятся непроверенные цены из-за мертвых тикеров,
       // то они могут начать ретраиться бесконечно
       // TODO: Сделать поле lastSuccessful check что бы можно было понять какие тикеры перестали проверяться
-      await setLastCheckedAt(tickerIds);
+      await setLastCheckedAt(tickerIds)
     }
 
     // No prices case
     if (!prices?.length) {
-      log.error(logPrefix, 'No prices found for tickers', tickerIds);
-      continue;
+      log.error(logPrefix, 'No prices found for tickers', tickerIds)
+      continue
     }
 
-    prices = dropOutInvalidPrices(prices);
+    prices = dropOutInvalidPrices(prices)
 
     // No prices case
     if (!prices.length) {
-      log.error(logPrefix, 'No prices after filtering');
-      continue;
+      log.error(logPrefix, 'No prices after filtering')
+      continue
     }
 
-    let triggeredAlerts = [];
+    let triggeredAlerts = []
 
     // Check triggered
     try {
-      triggeredAlerts = await checkAlerts(prices);
+      triggeredAlerts = await checkAlerts(prices)
     } catch (e) {
-      log.error(logPrefix, 'Ошибка проверки сработавших алертов');
+      log.error(logPrefix, 'Ошибка проверки сработавших алертов')
 
-      continue;
+      continue
     }
 
     if (triggeredAlerts.length) {
       // TODO: Добавить сюда цены тригернутых алертов
-      log.info(logPrefix, triggeredAlerts.length, 'Alerts triggered', triggeredAlerts.map(el => ([el.ticker, el.price])));
+      log.info(logPrefix, triggeredAlerts.length, 'Alerts triggered', triggeredAlerts.map(el => ([el.ticker, el.price])))
     }
   }
 
@@ -343,4 +335,4 @@ export const setupPriceChecker = async ({
       }
 
       */
-};
+}
