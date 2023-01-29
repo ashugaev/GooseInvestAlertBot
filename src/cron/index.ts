@@ -241,6 +241,7 @@ export const setupCheckers = (bot) => {
    */
   retry(async () => await setupPriceCheckerOld(
     bot,
+    // FIXME: Remove this line after price cache will be implemented
     () => isAllPricesUpdated() || isReadyToRunByTimeout()
   ),
   100000,

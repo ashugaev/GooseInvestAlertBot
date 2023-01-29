@@ -57,7 +57,7 @@ const stage = new Stage([
 bot.use(session())
 bot.use(stage.middleware())
 
-// Start checking stocks prices and alerting
+// Start all async tasks (cron and continuous)
 setupCheckers(bot)
 
 // Check time
