@@ -18,6 +18,7 @@ import { setupHelp } from './commands/help'
 import { setupId } from './commands/id'
 import { setupLanguage } from './commands/language'
 import { setupList } from './commands/list'
+import { setupPay } from './commands/pay/pay'
 import { setupPrice } from './commands/price'
 import { setupShift, shiftScenes } from './commands/shift'
 import { setupStart } from './commands/start'
@@ -79,6 +80,7 @@ setupStart(bot)
 setupShift(bot)
 setupStat(bot)
 setupId(bot)
+setupPay(bot)
 
 // Start bot
 bot.startPolling()
