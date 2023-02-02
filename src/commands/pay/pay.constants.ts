@@ -15,3 +15,7 @@ export const TARIFFS = [
     buttonText: '1000р - Навсегда'
   }
 ]
+
+export const PAY_ACTIONS = {
+  generatePaymentLink: 'k4kh'
+}

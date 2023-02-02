@@ -1,18 +1,34 @@
 const axios = require('axios')
 
-export const createCoinbaseInvoice = async (ctx) => {
-  const data = JSON.stringify({
+interface CreateCoinbaseInvoiceParams {
+  amount: number
+  currency?: string
+  customerId: number
+  customerName: string
+  paymentDescription: string
+  paymentName?: string
+}
+
+export const createCoinbaseInvoice = async ({
+  currency = 'rub',
+  customerName,
+  customerId,
+  amount,
+  paymentDescription,
+  paymentName = 'Безграничный доступ к функционалу бота @GooseInvestAlert'
+}: CreateCoinbaseInvoiceParams) => {
+  const requestData = JSON.stringify({
     local_price: {
-      currency: 'usd',
-      amount: 10
+      currency: currency,
+      amount: amount
     },
     metadata: {
-      customer_id: '111111',
-      customer_name: 'jjjjj'
+      customer_id: customerId,
+      customer_name: customerName
     },
     pricing_type: 'fixed_price',
-    name: 'GooseInvestAler Subcription',
-    description: 'Helllloooll'
+    name: paymentName,
+    description: paymentDescription
   })
 
   const config = {
@@ -24,14 +40,10 @@ export const createCoinbaseInvoice = async (ctx) => {
       'X-CC-Api-Key': process.env.COINBASE_TOKEN,
       'X-CC-Version': '2018-03-22'
     },
-    data: data
+    data: requestData
   }
 
-  axios(config)
-    .then((response) => {
-      console.log(JSON.stringify(response.data))
-    })
-    .catch((error) => {
-      console.log(error)
-    })
+  const res = await axios(config)
+
+  return res.data.data
 }
