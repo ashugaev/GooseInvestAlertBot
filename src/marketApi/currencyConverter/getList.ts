@@ -1,7 +1,8 @@
-import { InstrumentsList } from '@models'
 import axios from 'axios'
 
-import { EMarketDataSources, EMarketInstrumentTypes } from '../types'
+import { EMarketInstrumentTypes, InstrumentsList } from '@/models'
+
+import { EMarketDataSources } from '../types'
 import { responseCache } from './currenciesListResponseCache'
 
 const NodeCache = require('node-cache')
@@ -87,6 +88,7 @@ export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
 
       acc.push({
         id: `currency_${ticker}`,
+        priceScale: null,
         source: EMarketDataSources.yahoo,
         name: base.name,
         ticker: ticker,
@@ -102,6 +104,7 @@ export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
       ticker = quote.code + base.code
 
       acc.push({
+        priceScale: null,
         id: `currency_${ticker}`,
         source: EMarketDataSources.yahoo,
         name: quote.name,

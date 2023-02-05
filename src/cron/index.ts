@@ -1,8 +1,9 @@
-import { log, retry } from '@helpers'
+import { log, retry } from '@/helpers'
 
 import { startCronJob } from '../helpers/startCronJob'
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
 import { getBinancePrices } from '../marketApi/binance/api/getPrices'
+import { bybitGetAllInstruments } from '../marketApi/bybit/getInstruments'
 import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments'
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
 import { getCurrenciesList } from '../marketApi/currencyConverter/getList'
@@ -25,6 +26,7 @@ export enum InitializationItem {
   BINANCE_TICKERS = 'BINANCE_TICKERS',
   COINGECKO_TICKERS = 'COINGECKO_TICKERS',
   YAHOO_TICKERS = 'YAHOO_TICKERS',
+  BYBIT_TICKERS = 'BYBIT_TICKERS',
   // Prices
   TINKOFF_PRICES = 'TINKOFF_PRICES',
   BINANCE_PRICES = 'BINANCE_PRICES',
@@ -40,7 +42,8 @@ const isInstrumentsListUpdated = () => {
     InitializationItem.TINKOFF_TICKERS,
     InitializationItem.COINGECKO_TICKERS,
     InitializationItem.BINANCE_TICKERS,
-    InitializationItem.YAHOO_TICKERS
+    InitializationItem.YAHOO_TICKERS,
+    InitializationItem.BYBIT_TICKERS
   ].every((step) => appInitStatuses.includes(step))
 }
 const isAllPricesUpdated = () => {
@@ -135,6 +138,23 @@ export const setupCheckers = (bot) => {
     period: '0 0 * * *',
     executeBeforeInit: true,
     jobKey: InitializationItem.COINGECKO_TICKERS
+  })
+
+  /**
+   * Update BYBIT tickers list
+   */
+  startCronJob({
+    name: 'Update BYBIT tickers list',
+    callback: updateTickersList({
+      getList: bybitGetAllInstruments,
+      source: EMarketDataSources.bybit,
+      minTickersCount: 70
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.BYBIT_TICKERS
   })
 
   /**

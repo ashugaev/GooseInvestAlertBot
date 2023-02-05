@@ -7,14 +7,14 @@ import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList'
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources } from '../marketApi/types'
 import NodeCache from 'node-cache'
+import { SymbolInfo } from 'bybit-api'
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
   Crypto = 'Crypto',
   Currency = 'Currency',
   Etf = 'Etf',
-  // Опционы
-  Bond = 'Bond',
+  Bond = 'Bond', // Опционы
   Future = 'Future'
 }
 
@@ -58,7 +58,15 @@ export class InstrumentsList {
   ICoingecoSpecificBaseData |
   ITinkoffSpecificBaseData |
   BinanceSourceSpecificData |
-  CurrencyApiSpecificData
+  CurrencyApiSpecificData |
+  SymbolInfo // Bybit
+
+  /**
+   * Разрядность цены
+   * TODO: Убрать 'null' со временем
+   */
+  @prop({ required: true, default: null })
+  priceScale: number | null
 }
 
 export const InstrumentsListModel = getModelForClass(InstrumentsList, {

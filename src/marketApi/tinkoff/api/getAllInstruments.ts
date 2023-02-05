@@ -23,7 +23,8 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     ticker,
     type,
     currency,
-    sourceSpecificData: specificData
+    sourceSpecificData: specificData,
+    priceScale: null
   }
 
   // Замена тикера по шаблону

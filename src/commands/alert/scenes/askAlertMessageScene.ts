@@ -1,4 +1,4 @@
-import { waitMessageStep } from '@scenes';
+import { waitMessageStep } from '@/scenes';
 const WizardScene = require('telegraf/scenes/wizard');
 
 import { i18n } from '../../../helpers/i18n';

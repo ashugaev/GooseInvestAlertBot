@@ -1,5 +1,5 @@
-import { dropOutInvalidPrices } from '@helpers'
-import { getInstrumentsBySourceCache, InstrumentsList } from '@models'
+import { dropOutInvalidPrices } from '@/helpers'
+import { getInstrumentsBySourceCache, InstrumentsList } from '@/models'
 import { TickerPrices } from 'prices'
 
 import { InitializationItem } from '../cron'

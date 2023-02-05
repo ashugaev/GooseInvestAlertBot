@@ -3,8 +3,8 @@
  * https://www.yahoofinanceapi.com/
  */
 
-import { log } from '@helpers'
-import { InstrumentsList } from '@models'
+import { log } from '@/helpers'
+import { InstrumentsList } from '@/models'
 import axios from 'axios'
 
 const logPrefix = '[GET YAHOO PRICES]'

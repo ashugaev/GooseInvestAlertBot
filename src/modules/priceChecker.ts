@@ -1,10 +1,10 @@
-import { dropOutInvalidPrices, log } from '@helpers'
+import { dropOutInvalidPrices, log } from '@/helpers'
 import {
   checkAlerts,
   getUniqOutdatedAlertsIds,
   InstrumentsList,
   setLastCheckedAt
-} from '@models'
+} from '@/models'
 import { TickerPrices } from 'prices'
 
 import { wait } from '../helpers/wait'

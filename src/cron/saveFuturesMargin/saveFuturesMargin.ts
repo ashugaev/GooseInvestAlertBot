@@ -1,5 +1,5 @@
-import { log } from '@helpers'
-import { EMarketInstrumentTypes, InstrumentsListModel } from '@models'
+import { log } from '@/helpers'
+import { EMarketInstrumentTypes, InstrumentsListModel } from '@/models'
 
 import { tinkoffApi } from '../../app'
 import { wait } from '../../helpers/wait'

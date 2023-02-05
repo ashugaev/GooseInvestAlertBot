@@ -1,4 +1,4 @@
-import { log } from '@helpers'
+import { log } from '@/helpers'
 import { Context } from 'telegraf'
 
 import { createCoinbaseInvoice } from '../../paymentApi/coinbase/createInvoice'
@@ -9,7 +9,7 @@ const LOG_PREFIX = '[PAY ACTION]'
 export const generatePaymentLinkAction = async (ctx: Context) => {
   try {
     const {
-      i, useId
+      i
     } = JSON.parse(ctx.match[1])
 
     const paymentData = TARIFFS[i]

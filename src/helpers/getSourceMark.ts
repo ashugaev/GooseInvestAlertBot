@@ -1,4 +1,4 @@
-import { InstrumentsList } from '@models'
+import { InstrumentsList } from '@/models'
 
 import { EMarketDataSources } from '../marketApi/types'
 import { getTinkoffInstrumentLink } from './getInstrumentLInk'
@@ -7,7 +7,8 @@ const SORTENED_SOURCES: Record<EMarketDataSources, string> = {
   tinkoff: 'TNKF',
   coingecko: 'COINGECKO',
   yahoo: 'YH',
-  binance: 'BINANCE'
+  binance: 'BINANCE',
+  bybit: 'BYBIT'
 }
 
 // @ts-expect-error

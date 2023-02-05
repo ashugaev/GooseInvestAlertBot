@@ -1,4 +1,4 @@
-import { immediateStep, waitMessageStep } from '@scenes'
+import { immediateStep, waitMessageStep } from '@/scenes'
 
 import { i18n } from '../../../helpers/i18n'
 import { getInstrumentInfoByTicker } from '../../../models'
