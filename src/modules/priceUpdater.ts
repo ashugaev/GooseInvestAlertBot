@@ -65,12 +65,12 @@ export const setupPriceUpdater = async ({
       sourceInstrumentsList = await getInstrumentsBySourceCache(source)
 
       if (!sourceInstrumentsList.length) {
-        log.error(logPrefix, 'Нет инструментов в списке')
+        log.error(logPrefix, source, 'Нет инструментов в списке')
         await wait(CRASH_WAIT_TIME)
         continue
       }
     } catch (e) {
-      log.error(logPrefix, 'Ошибки получения списка инструментов', e)
+      log.error(logPrefix, source, 'Ошибки получения списка инструментов', e)
       await wait(CRASH_WAIT_TIME)
       continue
     }
@@ -86,7 +86,7 @@ export const setupPriceUpdater = async ({
       const timeToWait = minTimeBetweenRequests - (new Date().getTime() - lastIterationStartTime)
 
       if (timeToWait > 0) {
-        log.info(logPrefix, 'waiting', timeToWait)
+        log.info(logPrefix, source, 'waiting', timeToWait)
         await wait(timeToWait)
       }
 
@@ -102,11 +102,11 @@ export const setupPriceUpdater = async ({
 
         // No prices case
         if (!prices?.length) {
-          log.error(logPrefix, 'No prices found for tickers', tickerIds)
+          log.error(logPrefix, source, 'No prices found for tickers', tickerIds)
           continue
         }
       } catch (e) {
-        log.error(logPrefix, 'Update prices error', e)
+        log.error(logPrefix, source, 'Update prices error', e)
         await wait(CRASH_WAIT_TIME)
         continue
       }
@@ -115,7 +115,7 @@ export const setupPriceUpdater = async ({
 
       // No prices case
       if (!prices.length) {
-        log.error(logPrefix, 'No prices after filtering')
+        log.error(logPrefix, source, 'No prices after filtering')
         continue
       }
 
@@ -127,7 +127,7 @@ export const setupPriceUpdater = async ({
       const success = lastPriceCache.mset(cacheData)
 
       if (!success) {
-        log.error(logPrefix, 'Cache update error')
+        log.error(logPrefix, source, 'Cache update error')
         continue
       }
     }
@@ -135,8 +135,13 @@ export const setupPriceUpdater = async ({
     log.info(logPrefix + 'Price cache update END ' + source)
 
     const currentTime = new Date().getTime()
-    // eslint-disable-next-line max-len
-    lastUpdateTime[source] && (log.info(logPrefix + 'Time betweed updates ' + ((currentTime - lastUpdateTime[source]) / 1000).toString() + 's'))
+    lastUpdateTime[source] && (
+      log.info(
+        logPrefix,
+        source,
+        'Time betweed updates ' + ((currentTime - lastUpdateTime[source]) / 1000).toString() + 's'
+      )
+    )
     lastUpdateTime[source] = new Date().getTime()
 
     setJobKey(jobKey)
