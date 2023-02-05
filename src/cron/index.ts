@@ -1,4 +1,5 @@
 import { log, retry } from '@/helpers'
+import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 
 import { startCronJob } from '../helpers/startCronJob'
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
@@ -32,6 +33,7 @@ export enum InitializationItem {
   BINANCE_PRICES = 'BINANCE_PRICES',
   YAHOO_PRICES = 'YAHOO_PRICES',
   COINGECKO_PRICES = 'COINGECKO_PRICES',
+  BYBIT_PRICES = 'BYBIT_PRICES',
 }
 
 // Array with all processed steps
@@ -51,7 +53,8 @@ const isAllPricesUpdated = () => {
     InitializationItem.TINKOFF_PRICES,
     InitializationItem.COINGECKO_PRICES,
     InitializationItem.BINANCE_PRICES,
-    InitializationItem.YAHOO_PRICES
+    InitializationItem.YAHOO_PRICES,
+    InitializationItem.BYBIT_PRICES
   ].every((step) => appInitStatuses.includes(step))
 }
 
@@ -231,6 +234,21 @@ export const setupCheckers = (bot) => {
       jobKey: InitializationItem.COINGECKO_PRICES
     })
   }, 100000, 'setupPriceUpdater for COINGECKO')
+
+  /**
+   * BYBIT prices updater
+   *
+   * QUOTA: ~50 requests per second
+   * @link https://bybit-exchange.github.io/docs/inverse/#t-limits
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      minTimeBetweenRequests: 0,
+      getPrices: bybitGetPrices,
+      source: EMarketDataSources.bybit,
+      jobKey: InitializationItem.BYBIT_PRICES
+    })
+  }, 30000, 'setupPriceUpdater for BYBIT')
 
   /**
    * TINKOFF prices updater
