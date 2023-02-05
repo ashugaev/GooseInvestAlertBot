@@ -1,4 +1,8 @@
 /**
  * Стандартный интерфейс массива с ценами
  */
-export type TickerPrices = Array<[ticker: string, price: number, tickerId: string]>
+import { InstrumentsList } from '@/models'
+
+// TODO: Переделать на объект
+// TODO: Сделать 'data' обязательным
+export type TickerPrices = Array<[ticker: string, price: number, tickerId: string, data?: InstrumentsList]>

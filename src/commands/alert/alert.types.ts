@@ -1,6 +1,5 @@
-import { ValidatorResult } from '@types';
-
-import { InstrumentsList, PriceAlertItem } from '@models';
+import { InstrumentsList, PriceAlertItem } from '@/models'
+import { ValidatorResult } from '@/types'
 
 export interface UserInputData {
   [key: string]: ValidatorResult

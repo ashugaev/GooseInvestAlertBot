@@ -1,3 +1,5 @@
+import { EMarketInstrumentTypes } from '@/models'
+
 import { ICoingecoSpecificBaseData } from './coingecko/types'
 import { ITinkoffSpecificBaseData } from './tinkoff/types'
 
@@ -8,14 +10,8 @@ export enum EMarketDataSources {
   /**
    * https://www.currencyconverterapi.com/docs
    */
-  yahoo = 'yahoo'
-}
-
-// TODO: Можно взять тиньковский тип, вроде там то же самое
-export enum EMarketInstrumentTypes {
-  Stock = 'Stock',
-  Crypto = 'Crypto',
-  Currency = 'Currency'
+  yahoo = 'yahoo',
+  bybit = 'bybit'
 }
 
 /**

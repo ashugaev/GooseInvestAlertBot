@@ -1,6 +1,7 @@
-import { dropOutInvalidPrices } from '@helpers'
-import { getInstrumentsBySourceCache, InstrumentsList } from '@models'
 import { TickerPrices } from 'prices'
+
+import { dropOutInvalidPrices } from '@/helpers'
+import { getInstrumentsBySourceCache, InstrumentsList } from '@/models'
 
 import { InitializationItem } from '../cron'
 import { lastPriceCache } from '../helpers/getLastPrice'

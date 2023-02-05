@@ -1,4 +1,4 @@
-import { shortenerCreateShort } from '@helpers'
+import { shortenerCreateShort } from '@/helpers'
 
 import { listConfig } from '../../../config'
 import { Actions } from '../../../constants'
@@ -60,7 +60,6 @@ export const showInstrumentPage = async ({
     source,
     tickerId,
     symbol,
-    _id
   } = instrumentItems[0]
 
   let lastPrice

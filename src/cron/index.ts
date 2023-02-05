@@ -1,8 +1,10 @@
-import { log, retry } from '@helpers'
+import { log, retry } from '@/helpers'
+import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 
 import { startCronJob } from '../helpers/startCronJob'
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
 import { getBinancePrices } from '../marketApi/binance/api/getPrices'
+import { bybitGetAllInstruments } from '../marketApi/bybit/getInstruments'
 import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments'
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
 import { getCurrenciesList } from '../marketApi/currencyConverter/getList'
@@ -25,11 +27,13 @@ export enum InitializationItem {
   BINANCE_TICKERS = 'BINANCE_TICKERS',
   COINGECKO_TICKERS = 'COINGECKO_TICKERS',
   YAHOO_TICKERS = 'YAHOO_TICKERS',
+  BYBIT_TICKERS = 'BYBIT_TICKERS',
   // Prices
   TINKOFF_PRICES = 'TINKOFF_PRICES',
   BINANCE_PRICES = 'BINANCE_PRICES',
   YAHOO_PRICES = 'YAHOO_PRICES',
   COINGECKO_PRICES = 'COINGECKO_PRICES',
+  BYBIT_PRICES = 'BYBIT_PRICES',
 }
 
 // Array with all processed steps
@@ -40,7 +44,8 @@ const isInstrumentsListUpdated = () => {
     InitializationItem.TINKOFF_TICKERS,
     InitializationItem.COINGECKO_TICKERS,
     InitializationItem.BINANCE_TICKERS,
-    InitializationItem.YAHOO_TICKERS
+    InitializationItem.YAHOO_TICKERS,
+    InitializationItem.BYBIT_TICKERS
   ].every((step) => appInitStatuses.includes(step))
 }
 const isAllPricesUpdated = () => {
@@ -48,7 +53,8 @@ const isAllPricesUpdated = () => {
     InitializationItem.TINKOFF_PRICES,
     InitializationItem.COINGECKO_PRICES,
     InitializationItem.BINANCE_PRICES,
-    InitializationItem.YAHOO_PRICES
+    InitializationItem.YAHOO_PRICES,
+    InitializationItem.BYBIT_PRICES
   ].every((step) => appInitStatuses.includes(step))
 }
 
@@ -138,6 +144,23 @@ export const setupCheckers = (bot) => {
   })
 
   /**
+   * Update BYBIT tickers list
+   */
+  startCronJob({
+    name: 'Update BYBIT tickers list',
+    callback: updateTickersList({
+      getList: bybitGetAllInstruments,
+      source: EMarketDataSources.bybit,
+      minTickersCount: 70
+    }),
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.BYBIT_TICKERS
+  })
+
+  /**
    * Update BINANCE tickers list
    */
   startCronJob({
@@ -211,6 +234,21 @@ export const setupCheckers = (bot) => {
       jobKey: InitializationItem.COINGECKO_PRICES
     })
   }, 100000, 'setupPriceUpdater for COINGECKO')
+
+  /**
+   * BYBIT prices updater
+   *
+   * QUOTA: ~50 requests per second
+   * @link https://bybit-exchange.github.io/docs/inverse/#t-limits
+   */
+  retry(async () => {
+    await setupPriceUpdater({
+      minTimeBetweenRequests: 0,
+      getPrices: bybitGetPrices,
+      source: EMarketDataSources.bybit,
+      jobKey: InitializationItem.BYBIT_PRICES
+    })
+  }, 30000, 'setupPriceUpdater for BYBIT')
 
   /**
    * TINKOFF prices updater

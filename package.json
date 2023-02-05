@@ -24,12 +24,7 @@
     "db-migration:down": "cd migrations && migrate-mongo down"
   },
   "_moduleAliases": {
-    "@helpers": "dist/helpers/",
-    "@scenes": "dist/scenes/",
-    "@commands": "dist/commands/",
-    "@constants": "dist/constants/",
-    "@types": "dist/types/",
-    "@models": "dist/models/"
+    "@": "dist/"
   },
   "husky": {
     "hooks": {
@@ -61,6 +56,7 @@
     "@typescript-eslint/eslint-plugin": "^4.10.0",
     "axios": "^0.27.2",
     "binance-api-node": "0.12.2",
+    "bybit-api": "3.3.10",
     "coingecko-api": "^1.0.10",
     "cron": "^1.8.2",
     "dotenv": "^8.2.0",

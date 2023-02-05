@@ -1,4 +1,4 @@
-import { immediateStep, waitMessageStep } from '@scenes'
+import { immediateStep, waitMessageStep } from '@/scenes'
 
 import { getLastPrice } from '../../../helpers/getLastPrice'
 import { getSourceMark } from '../../../helpers/getSourceMark'
@@ -21,7 +21,7 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
   const instrumentData = instrumentsList[0]
   const instrumentId = instrumentData.id
 
-  const { currency, ticker, source } = instrumentData
+  const { currency, source } = instrumentData
 
   const price = await getLastPrice(instrumentId)
 

@@ -19,7 +19,8 @@ const normalizeItem = (item: BinanceTickerItem): InstrumentsList => {
     name: symbol,
     ticker: symbol,
     type: EMarketInstrumentTypes.Crypto,
-    sourceSpecificData: specificData
+    sourceSpecificData: specificData,
+    priceScale: null
   }
 
   return result

@@ -2,10 +2,11 @@
  * Returns prices list for by id's
  */
 
-import { log } from '@helpers'
-import { EMarketInstrumentTypes } from '@models'
 import { TickerPrices } from 'prices'
 import { GetLastPricesResponse } from 'tinkoff-invest-api/src/generated/marketdata'
+
+import { log } from '@/helpers'
+import { EMarketInstrumentTypes } from '@/models'
 
 import { tinkoffApi } from '../../../app'
 import { getFutureMarginByTickerId } from '../utils/getFutereMarginByTickerId'
@@ -34,7 +35,7 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
 
       let priceNormalized = moneyObjToValue(price)
 
-      const { lot, nominal } = item.sourceSpecificData
+      const { nominal } = item.sourceSpecificData
 
       // FIXME: Not sure than 1 by default is Ok
       const normalizedNominal = nominal ? moneyObjToValue(nominal) : 1
@@ -67,7 +68,8 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       }
 
       if (priceNormalized && tickerId && item) {
-        pricesNormalizes.push([item.ticker, Number((priceNormalized).toFixed(priceNormalized > 1 ? 5 : 3)), tickerId])
+        const priceScale = item.priceScale || (priceNormalized > 1 ? 3 : 9)
+        pricesNormalizes.push([item.ticker, Number((priceNormalized).toFixed(priceScale)), tickerId])
       } else {
         log.error(logPrefix + 'Can\'t generate price data from:', priceNormalized, tickerId, item)
       }

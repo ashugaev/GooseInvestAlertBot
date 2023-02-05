@@ -1,7 +1,7 @@
 /**
  * Типы списков (алертов), поддерживаемые в list
  */
-import { PriceAlert } from '@models';
+import { PriceAlert } from '@/models';
 
 export enum EListTypes {
   shifts = 'shifts',

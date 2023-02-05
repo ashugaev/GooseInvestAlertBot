@@ -1,4 +1,4 @@
-import { TimeShiftModel } from '@models'
+import { TimeShiftModel } from '@/models'
 import { Context, Extra, Telegraf } from 'telegraf'
 
 import { Actions } from '../../constants'

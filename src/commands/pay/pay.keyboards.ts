@@ -1,4 +1,4 @@
-import { createActionString } from '@helpers'
+import { createActionString } from '@/helpers'
 import { Markup } from 'telegraf'
 
 import { PAY_ACTIONS, TARIFFS } from './pay.constants'

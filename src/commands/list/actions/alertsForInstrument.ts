@@ -1,4 +1,4 @@
-import { shortenerGetFull } from '@helpers';
+import { shortenerGetFull } from '@/helpers';
 import { set } from 'lodash';
 
 import { log } from '../../../helpers/log';

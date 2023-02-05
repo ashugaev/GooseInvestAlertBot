@@ -1,4 +1,4 @@
-import { log } from '@helpers'
+import { log } from '@/helpers'
 import { TickerPrices } from 'prices'
 
 import { CoinGeckoClient } from './getAllInstruments'

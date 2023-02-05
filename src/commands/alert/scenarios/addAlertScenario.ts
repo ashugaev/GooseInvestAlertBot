@@ -1,4 +1,4 @@
-import { log } from '@helpers'
+import { log } from '@/helpers'
 
 import { i18n } from '../../../helpers/i18n'
 import { getInstrumentInfoByTicker } from '../../../models'

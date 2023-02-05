@@ -2,7 +2,7 @@
  * Returns all tickers prices list
  */
 
-import { InstrumentsList } from '@models'
+import { InstrumentsList } from '@/models'
 import { TickerPrices } from 'prices'
 
 import { log } from '../../../helpers/log'

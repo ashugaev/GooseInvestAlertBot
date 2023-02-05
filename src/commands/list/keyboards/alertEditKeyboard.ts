@@ -6,7 +6,7 @@ import { i18n } from '../../../helpers/i18n';
 import { backButton } from '../../../keyboards/backButton';
 import { ListActionsDataKeys } from '../list.types';
 import { EKeyboardModes } from './instrumentPageKeyboard';
-import {shortenerCreateShort} from "@helpers";
+import {shortenerCreateShort} from "@/helpers";
 
 export const alertEditKeyboard = ({ tickerId, ctx }) => {
   const keys = [];
