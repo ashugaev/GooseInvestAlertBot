@@ -14,7 +14,7 @@ const normalizeItem = (item: SymbolInfo): InstrumentsList => {
 
   const result = {
     id: `bybit_${alias}`,
-    source: EMarketDataSources.binance,
+    source: EMarketDataSources.bybit,
     currency: quoteCurrency,
     name,
     ticker: alias,
