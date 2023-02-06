@@ -23,7 +23,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     // Сценарий добавления
-    let data = text.match(/^\/(alert|add)$/)
+    let data = text.match(/^\/(alert|add|a)$/)
 
     if (data) {
       addAlertScenario(ctx, {})
@@ -31,7 +31,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     // Добавление одной командой
-    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/)
+    data = text.match(/^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/)
 
     log.info(logPrefix, 'data', data)
 
@@ -51,7 +51,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     // Добавление неполной командой
-    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
+    data = text.match(/^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
 
     if (data) {
       addAlertScenario(ctx,
@@ -82,7 +82,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     ctx.replyWithHTML(ctx.i18n.t('alertErrorInvalidFormat'))
   })
 
-  bot.command(['alert', 'add'], callback)
+  bot.command(['alert', 'add', 'a'], callback)
   bot.hears(i18n.t('ru', 'alert_button'), callback)
 
   async function removePriceAlertAndSendMessage ({ user, symbol, ctx }) {
