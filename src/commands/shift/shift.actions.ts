@@ -1,10 +1,9 @@
-import { log } from '../../helpers/log'
-import { i18n } from '../../helpers/i18n'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
+import { i18n } from '../../helpers/i18n'
+import { log } from '../../helpers/log'
 import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
-import { getTimeframesObjFromStoreOrDB } from '../list/utils/getTimeframesObjFromStoreOrDB'
+import { SHIFT_ACTIONS, SHIFT_TIMEFRAMES } from './shift.constants'
 import { getShiftConfigKeyboard } from './shift.keyboards'
-import { SHIFT_ACTIONS } from './shift.constants'
 
 /**
  * Редактирование пришедшего алерта
@@ -29,7 +28,7 @@ export const shiftAlertSettings = async (ctx) => {
 
     const tickerInfo = (await getInstrumentInfoByTicker({ ticker: shiftData.ticker }))[0]
 
-    const timeframesObj = await getTimeframesObjFromStoreOrDB(ctx)
+    const timeframesObj = SHIFT_TIMEFRAMES
 
     const shiftConfig = {
       muted: typeof muted === 'number' ? Boolean(muted) : shiftData.muted,

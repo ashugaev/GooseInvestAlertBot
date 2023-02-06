@@ -1,9 +1,10 @@
+import { SHIFT_TIMEFRAMES } from '@/commands/shift'
+
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { TimeShiftModel } from '../../../models'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
-import { getTimeframesObjFromStoreOrDB } from '../utils/getTimeframesObjFromStoreOrDB'
 
 /**
  * Страница редактирования шифта
@@ -46,7 +47,7 @@ export const shiftEditPage = async (ctx) => {
       })
     }
 
-    const timeframesObj = await getTimeframesObjFromStoreOrDB(ctx)
+    const timeframesObj = SHIFT_TIMEFRAMES
 
     const message = i18n.t('ru', 'alertsList_shifts_editOne', {
       name: shiftDataCopy.name,
