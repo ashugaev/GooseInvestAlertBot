@@ -82,7 +82,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     ctx.replyWithHTML(ctx.i18n.t('alertErrorInvalidFormat'))
   })
 
-  bot.command(['alert', 'add'], callback)
+  bot.command(['alert', 'add', 'a'], callback)
   bot.hears(i18n.t('ru', 'alert_button'), callback)
 
   async function removePriceAlertAndSendMessage ({ user, symbol, ctx }) {
