@@ -1,13 +1,13 @@
 import { Scenes } from '../../constants'
-
-const WizardScene = require('telegraf/scenes/wizard')
-const Composer = require('telegraf/composer')
 import { hoursToUtc } from '../../helpers/hoursToUtc'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
+import { plur } from '../../helpers/plural'
 import { sceneWrapper } from '../../helpers/sceneWrapper'
 import { createShift } from '../../models/Shifts'
-import { plur } from '../../helpers/plural'
+
+const WizardScene = require('telegraf/scenes/wizard')
+const Composer = require('telegraf/composer')
 
 // TODO: Спрашивать время когда присылать объявление вконце
 

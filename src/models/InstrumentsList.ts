@@ -80,7 +80,8 @@ export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
   await InstrumentsListModel.insertMany(items)
 }
 
-export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | string[]}): Promise<InstrumentsList[]> {
+// eslint-disable-next-line max-len
+export async function getInstrumentInfoByTicker ({ ticker, source }: {ticker: string | string[], source?: string}): Promise<InstrumentsList[]> {
   if (!ticker?.length) {
     throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
   }
@@ -89,6 +90,11 @@ export async function getInstrumentInfoByTicker ({ ticker }: {ticker: string | s
     ticker: {
       $in: [].concat(ticker).map(el => el.toUpperCase())
     }
+  }
+
+  if (source) {
+    // @ts-expect-error
+    params.source = source
   }
 
   const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()

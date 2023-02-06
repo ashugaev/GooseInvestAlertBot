@@ -1,4 +1,5 @@
-import { getShiftTimeframesObject } from '../../../models'
+import { SHIFT_TIMEFRAMES } from '@/commands/shift'
+
 const { set } = require('lodash')
 
 /**
@@ -8,7 +9,7 @@ export const getTimeframesObjFromStoreOrDB = async (ctx) => {
   let timeframesObj = ctx.wizard?.state?.shiftsList?.timeframesObj
 
   if (!timeframesObj) {
-    timeframesObj = await getShiftTimeframesObject()
+    timeframesObj = SHIFT_TIMEFRAMES
 
     set(ctx, 'wizard.state.shiftsList.timeframesObj', timeframesObj)
   }

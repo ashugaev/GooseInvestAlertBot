@@ -1,12 +1,14 @@
 /**
  * Мониторит скорость изменения цены
  */
+import { SHIFT_TIMEFRAMES } from '@/commands/shift'
+
 import { fnTimeAsync } from '../../helpers/fnTime'
 import { getLastPrice } from '../../helpers/getLastPrice'
 import { log } from '../../helpers/log'
 import { retryUntilTrue } from '../../helpers/retryUntilTrue'
 import { wait } from '../../helpers/wait'
-import { getShiftTimeframesObject, TimeShiftModel } from '../../models'
+import { TimeShiftModel } from '../../models'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
 import { sendUserMessage, updateCandle } from './shiftChecker.utils'
 
@@ -50,7 +52,7 @@ export const setupShiftsChecker = async (bot, isReadyToStart) => {
         }
 
         // Нормализуем таймфреймы в объект для удобства
-        const timeframesObj = await getShiftTimeframesObject()
+        const timeframesObj = SHIFT_TIMEFRAMES
 
         if (!shifts.length) {
           customTimeForWait = 60000

@@ -1,3 +1,4 @@
+
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 import { i18n } from '../../helpers/i18n'

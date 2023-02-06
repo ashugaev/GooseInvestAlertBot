@@ -1,233 +1,233 @@
+
+import { SOURCE_CONFIG } from '@/constants/sourceConfig'
+import { chooseSourceKeyboard } from '@/keyboards/chooseSource'
+import { immediateStep, waitButtonClickStep, waitMessageStep } from '@/scenes/wrappers'
+
 import { i18n } from '../../helpers/i18n'
-import { log } from '../../helpers/log'
-import { sceneWrapper } from '../../helpers/sceneWrapper'
-import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
-import { getInstrumentInfoByTicker, ShiftTimeframeModel } from '../../models'
+import { getInstrumentInfoByTicker } from '../../models'
 import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
-import { SHIFT_ACTIONS, SHIFT_MAX_PERCENT, SHIFT_SCENES } from './shift.constants'
+import {
+  SHIFT_ACTIONS,
+  SHIFT_MAX_PERCENT,
+  SHIFT_SCENES,
+  SHIFT_TIMEFRAMES_ARRAY, SHIFT_TIMEFRAMES_BY_SOURCE_CONFIG
+} from './shift.constants'
 import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { IAdditionalShiftConfig } from './shift.types'
 
-const Composer = require('telegraf/composer')
 const WizardScene = require('telegraf/scenes/wizard')
-const { set, get } = require('lodash')
+const { set } = require('lodash')
 
-const startShiftAddScene = sceneWrapper('shift_add_start-scene', async (ctx) => {
-  try {
-    const { id: user } = ctx.from
+/**
+ * Handle: -
+ * Ask: Биржа
+ * */
+const startShiftAddScene = immediateStep('shift_add_start-scene', async (ctx) => {
+  const { id: user } = ctx.from
 
-    const userShiftsCount = await getTimeShiftsCountForUser(user)
+  // Добавлено уже у юзера
+  const userShiftsCount = await getTimeShiftsCountForUser(user)
+  // Лимиты для этого юзера
+  const shiftsLimitForUser = ctx.userLimits.shifts
 
-    const shiftsLimitForUser = ctx.userLimits.shifts
+  // Закинем в состояние для следующих шагов
+  set(ctx, 'wizard.state.shift.limit', shiftsLimitForUser)
+  set(ctx, 'wizard.state.shift.userShiftsCount', userShiftsCount)
 
-    // Закинем в состояние для следующих шагов
-    set(ctx, 'wizard.state.shift.limit', shiftsLimitForUser)
+  // Проверка на выход за лимиты
+  if (userShiftsCount >= shiftsLimitForUser) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit', {
+      limit: shiftsLimitForUser
+    }))
 
-    // Проверка на выход за лимиты
-    if (userShiftsCount >= shiftsLimitForUser) {
-      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit', {
-        limit: shiftsLimitForUser
-      }))
-
-      return ctx.scene.leave()
-    }
-
-    ctx.wizard.state.shift = ctx.wizard.state.shift || {}
-    ctx.wizard.state.shift.userShiftsCount = userShiftsCount
-
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_startScene'))
-
-    return ctx.wizard.next()
-  } catch (e) {
-    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-    log.error('[Shift] Add error', e)
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
+    return ctx.scene.leave()
   }
+
+  // Спрашиваем биржу
+  await ctx.replyWithHTML(i18n.t('ru', 'shift_add_askSource'), {
+    reply_markup: {
+      ...chooseSourceKeyboard()
+    }
+  })
+
+  return ctx.wizard.next()
 })
 
-const shiftAddChooseTickers = new Composer()
+/**
+ * Handle: Результат выбора биржи
+ * Ask: Список тикеров
+ */
+const shiftAddHandleChooseSource = waitButtonClickStep(
+  SHIFT_ACTIONS.chooseSource,
+  'shift_add_choose-source',
+  async (ctx, actionsPayload, state) => {
+    // Сохраним биржу в стейт
+    set(state, 'shift.source', actionsPayload.source)
 
-// Не нечинается с /
-shiftAddChooseTickers.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-tickers', async (ctx) => {
-  const { text: tickers } = ctx.message
-
-  const tickersArr = tickers.trim().toUpperCase().split(' ')
-
-  const { userShiftsCount } = ctx.wizard.state.shift
-
-  try {
-    const shiftsLimitForUser = get(ctx, 'wizard.state.shift.limit')
-
-    const tickersInfo = await getInstrumentInfoByTicker({ ticker: tickersArr })
-
-    if (!tickersInfo.length) {
-      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_noTickers'))
-
-      return ctx.wizard.selectStep(ctx.wizard.cursor)
-    }
-
-    if ((userShiftsCount + tickersInfo.length) > shiftsLimitForUser) {
-      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit-less-tickers', {
-        availableCount: shiftsLimitForUser - userShiftsCount,
-        limit: shiftsLimitForUser
-      }))
-
-      return ctx.wizard.selectStep(ctx.wizard.cursor)
-    }
-
-    if (tickersInfo.length < tickersArr.length) {
-      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_wrongTicker', {
-        tickers: tickersInfo.map(el => el.ticker).join(' ,')
-      }))
-    }
-
-    const timeframes = await ShiftTimeframeModel.find().lean()
-
-    ctx.wizard.state.shift = ctx.wizard.state.shift || {}
-    ctx.wizard.state.shift.tickers = tickersInfo.map(el => el.ticker)
-    ctx.wizard.state.shift.tickersInfo = tickersInfo
-    ctx.wizard.state.shift.timeframes = timeframes
-
+    // Спросим таймфрейм
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'),
       {
-        reply_markup: getTimeframesKeyboard(timeframes)
+        reply_markup: getTimeframesKeyboard(SHIFT_TIMEFRAMES_BY_SOURCE_CONFIG[actionsPayload.source])
       }
     )
 
     return ctx.wizard.next()
-  } catch (e) {
-    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-    log.error('[Shift] Add error', e)
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
-  }
-}))
+  })
 
-// Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddChooseTickers.on('message', (ctx, next) => {
-  next()
-  return ctx.scene.leave()
-})
+/**
+ * Handle: Результат выбора таймфрейма
+ * Ask: Список тикров
+ */
+const shiftHandleChooseTimeframes = waitButtonClickStep(
+  SHIFT_ACTIONS.chooseTimeframe,
+  'shift_add_choose-timeframe',
+  async (ctx, actionPayload, state) => {
+    const { timeframe } = actionPayload
 
-const shiftAddChooseTimeframes = new Composer()
+    // Сохраним таймфрейм
+    set(state, 'shift.timeframe', timeframe)
 
-shiftAddChooseTimeframes.action(triggerActionRegexp(SHIFT_ACTIONS.chooseTimeframe), sceneWrapper('shift_add_choose-timeframe', async (ctx) => {
-  try {
-    const { timeframe } = JSON.parse(ctx.match[1])
-
-    ctx.wizard.state.shift.timeframe = timeframe
-
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_choosePercent'))
+    // Спросим тикеры
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTickers'))
 
     return ctx.wizard.next()
-  } catch (e) {
-    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-    log.error('[Shift] Add error', e)
+  }
+)
+
+/**
+ * Handle: Список тикеров
+ * Ask: Процент
+ */
+const shiftAddChooseTickers = waitMessageStep('shift_add_choose-tickers', async (ctx) => {
+  const { text: tickers } = ctx.message
+  const { userShiftsCount, source, limit: shiftsLimitForUser } = ctx.wizard.state.shift
+
+  const tickersArr = tickers.trim().toUpperCase().split(' ')
+
+  const tickersInfo = await getInstrumentInfoByTicker({ ticker: tickersArr, source })
+
+  // Если нет таких тикеров в базе по бирже
+  if (!tickersInfo.length) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_noTickers', { source: SOURCE_CONFIG[source].fullName }))
+
     return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
-}))
 
-// Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddChooseTimeframes.on('message', (ctx, next) => {
-  next()
-  return ctx.scene.leave()
-})
-
-const shiftAddChoosePercent = new Composer()
-
-// Не нечинается с '/'
-shiftAddChoosePercent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent', async (ctx) => {
-  try {
-    const { text: percent } = ctx.message
-
-    const intPercent = parseFloat(percent)
-
-    if (!intPercent || percent > SHIFT_MAX_PERCENT) {
-      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent', {
-        maxPercent: SHIFT_MAX_PERCENT
-      }))
-
-      return ctx.wizard.selectStep(ctx.wizard.cursor)
-    }
-
-    const { tickers, timeframe, timeframes, tickersInfo } = ctx.wizard.state.shift
-    const { id: user } = ctx.from
-
-    const tickersInfoObj = tickersInfo.reduce((acc, el) => {
-      acc[el.ticker] = el
-
-      return acc
-    }, {})
-
-    // Дефолтные доп настройки для шифта, которые ставятся после создания
-    const additionalShiftConfig: IAdditionalShiftConfig = {
-      muted: true,
-      growAlerts: true,
-      fallAlerts: true
-    }
-
-    const newShifts = tickers.map(ticker => ({
-      percent: intPercent,
-      tickerId: tickersInfoObj[ticker].id,
-      timeframe,
-      ticker,
-      user,
-      name: tickersInfoObj[ticker].name,
-      ...additionalShiftConfig
+  // Если юзер выходит за лимиты
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+  if ((userShiftsCount + tickersInfo.length) > shiftsLimitForUser) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_overlimit-less-tickers', {
+      availableCount: shiftsLimitForUser - userShiftsCount,
+      limit: shiftsLimitForUser
     }))
 
-    try {
-      const dbShifts = await TimeShiftModel.insertMany(newShifts)
-
-      ctx.wizard.state.shift.percent = intPercent
-      ctx.wizard.state.shift.newShiftsId = dbShifts.map(el => el._id)
-
-      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
-        time: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
-        percent: intPercent,
-        tickers: tickers.join(' ,')
-      }), {
-        reply_markup: getShiftConfigKeyboard(additionalShiftConfig, SHIFT_ACTIONS.additionalConfiguration)
-      })
-    } catch (e) {
-      ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-      log.error('[Shift] Update addtional config error', e)
-    }
-
-    return ctx.wizard.next()
-  } catch (e) {
-    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-    log.error('[Shift] Add error', e)
     return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
-}))
 
-// Если сообщение не то, что ожидаем - покидаем сцену
-shiftAddChoosePercent.on('message', (ctx, next) => {
-  next()
-  return ctx.scene.leave()
+  // Если нашли только часть тикеров на бирже
+  if (tickersInfo.length < tickersArr.length) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_wrongTicker', {
+      tickers: tickersInfo.map(el => el.ticker).join(' ,'),
+      source: SOURCE_CONFIG[source].fullName
+    }))
+  }
+
+  set(ctx, 'wizard.state.shift.tickers', tickersInfo.map(el => el.ticker))
+  set(ctx, 'wizard.state.shift.tickersInfo', tickersInfo)
+  set(ctx, 'wizard.state.shift.timeframes', SHIFT_TIMEFRAMES_ARRAY)
+
+  // Спросим процент изменения для отслеживания
+  await ctx.replyWithHTML(i18n.t('ru', 'shift_add_choosePercent'))
+
+  return ctx.wizard.next()
 })
 
 /**
- * Допнастройка шифта после его создания
+ * Handle: Percent
+ * Ask: -
  */
-const shiftAddAdditionalConfiguration = new Composer()
+const shiftAddChoosePercent = waitMessageStep('shift_add_choose-percent', async (ctx) => {
+  const { text: percent } = ctx.message
 
-shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additionalConfiguration), sceneWrapper('shift_add_additional-configuration', async (ctx) => {
-  const {
-    f,
-    g,
-    m
-  } = JSON.parse(ctx.match[1])
+  const intPercent = parseFloat(percent)
 
-  const config = {
-    fallAlerts: Boolean(f),
-    growAlerts: Boolean(g),
-    muted: Boolean(m)
+  // Невалидное значение
+  if (!intPercent || percent > SHIFT_MAX_PERCENT) {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_error_maxPercent', {
+      maxPercent: SHIFT_MAX_PERCENT
+    }))
+
+    return ctx.wizard.selectStep(ctx.wizard.cursor)
   }
 
-  const { tickers, timeframe, percent, newShiftsId, timeframes } = ctx.wizard.state.shift
+  const { tickers, timeframe, timeframes, tickersInfo } = ctx.wizard.state.shift
+  const { id: user } = ctx.from
 
-  try {
+  const tickersInfoObj = tickersInfo.reduce((acc, el) => {
+    acc[el.ticker] = el
+
+    return acc
+  }, {})
+
+  // Дефолтные доп настройки для шифта, которые ставятся после создания
+  const additionalShiftConfig: IAdditionalShiftConfig = {
+    muted: true,
+    growAlerts: true,
+    fallAlerts: true
+  }
+
+  const newShifts = tickers.map(ticker => ({
+    percent: intPercent,
+    tickerId: tickersInfoObj[ticker].id,
+    timeframe,
+    ticker,
+    user,
+    name: tickersInfoObj[ticker].name,
+    ...additionalShiftConfig
+  }))
+
+  const dbShifts = await TimeShiftModel.insertMany(newShifts)
+
+  set(ctx, 'wizard.state.shift.percent', intPercent)
+  set(ctx, 'wizard.state.shift.newShiftsId', dbShifts.map(el => el._id))
+
+  // Успешное добавление
+  await ctx.replyWithHTML(i18n.t('ru', 'shift_add_success', {
+    time: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
+    percent: intPercent,
+    tickers: tickers.join(' ,')
+  }), {
+    reply_markup: getShiftConfigKeyboard(additionalShiftConfig, SHIFT_ACTIONS.additionalConfiguration)
+  })
+
+  return ctx.wizard.next()
+})
+
+/**
+ * Доп настройка шифта после его создания
+ *
+ * WARN: Тут не выхожу из сцены, что бы она работала в истории сообщений.
+ * Потенциально это может случить местом для утечки памяти.
+ * Но хз сколько должно висеть сцен, что бы это произошло.
+ */
+const shiftAddAdditionalConfiguration = waitButtonClickStep(
+  SHIFT_ACTIONS.additionalConfiguration,
+  'shift_add_additional-configuration',
+  async (ctx, actionPayload, state) => {
+    const {
+      f,
+      g,
+      m
+    } = actionPayload
+
+    const config = {
+      fallAlerts: Boolean(f),
+      growAlerts: Boolean(g),
+      muted: Boolean(m)
+    }
+
+    const { tickers, timeframe, percent, newShiftsId, timeframes } = ctx.wizard.state.shift
+
     await ctx.editMessageText(i18n.t('ru', 'shift_add_success', {
       time: timeframes.find(el => el.timeframe === timeframe).name_ru_plur,
       percent,
@@ -243,20 +243,13 @@ shiftAddAdditionalConfiguration.action(triggerActionRegexp(SHIFT_ACTIONS.additio
         $in: newShiftsId
       }
     }, { $set: config })
-  } catch (e) {
-    ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-    log.error('[Shift] Update addtional config error', e)
-  }
-}))
-
-// WARN: Тут не выхожу из сцены, что бы она работала в истории сообщений.
-//  Потенциально это может случить местом для утечки памяти.
-//  Но хз сколько должно висеть сцен, что бы это произошло.
+  })
 
 export const shiftScenes = new WizardScene(SHIFT_SCENES.add,
   startShiftAddScene,
+  shiftAddHandleChooseSource,
+  shiftHandleChooseTimeframes,
   shiftAddChooseTickers,
-  shiftAddChooseTimeframes,
   shiftAddChoosePercent,
   shiftAddAdditionalConfiguration
 )

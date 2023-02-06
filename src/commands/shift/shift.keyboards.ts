@@ -1,17 +1,35 @@
 import { Markup as m } from 'telegraf'
-import { SHIFT_ACTIONS } from './shift.constants'
+
 import { createActionString } from '../../helpers/createActionString'
 import { i18n } from '../../helpers/i18n'
+import { SHIFT_ACTIONS, ShiftTimeframe } from './shift.constants'
 import { IAdditionalShiftConfig } from './shift.types'
-import { ShiftTimeframe } from '../../models'
 
 export const getTimeframesKeyboard = (timeframes: ShiftTimeframe[]) => {
-  const buttons = timeframes
-    .sort((a, b) => a.lifetime - b.lifetime)
-    .map(timeframe => [m.callbackButton(
-      timeframe.name_ru,
-      createActionString(SHIFT_ACTIONS.chooseTimeframe, { timeframe: timeframe.timeframe })
-    )])
+  const list = [...timeframes.sort((a, b) => a.lifetime - b.lifetime)]
+  const buttons = []
+
+  while (list.length) {
+    const row = []
+
+    const firstEl = list.shift()
+    const secondEl = list.shift()
+
+    if (firstEl) {
+      row.push(m.callbackButton(
+        firstEl.name_ru,
+        createActionString(SHIFT_ACTIONS.chooseTimeframe, { timeframe: firstEl.timeframe })
+      ))
+    }
+    if (secondEl) {
+      row.push(m.callbackButton(
+        secondEl.name_ru,
+        createActionString(SHIFT_ACTIONS.chooseTimeframe, { timeframe: secondEl.timeframe })
+      ))
+    }
+
+    buttons.push(row)
+  }
 
   return m.inlineKeyboard(buttons)
 }
@@ -65,9 +83,9 @@ export const getShiftConfigKeyboard = (payload: IAdditionalShiftConfig, action: 
     [
       payload.muted
         ? m.callbackButton(
-            unmuteMessage,
-            muteData
-          )
+          unmuteMessage,
+          muteData
+        )
         : m.callbackButton(
           muteMessage,
           unmuteData

@@ -23,7 +23,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     // Сценарий добавления
-    let data = text.match(/^\/(alert|add)$/)
+    let data = text.match(/^\/(alert|add|a)$/)
 
     if (data) {
       addAlertScenario(ctx, {})
@@ -31,7 +31,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     // Добавление одной командой
-    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/)
+    data = text.match(/^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/)
 
     log.info(logPrefix, 'data', data)
 
@@ -51,7 +51,7 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     // Добавление неполной командой
-    data = text.match(/^\/(alert|add) ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
+    data = text.match(/^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
 
     if (data) {
       addAlertScenario(ctx,
