@@ -23,9 +23,9 @@ export interface ShiftTimeframe {
 
 export enum ESfhitTimeframes {
   // '1MIN' = '1MIN',
-  // '5MIN' = '5MIN',
-  '15MIN' = '15MIN',
-  '30MIN' = '30MIN',
+  // '5M' = '5M',
+  '15M' = '15M',
+  '30M' = '30M',
   '1H' = '1H',
   '6H' = '6H',
   '1D' = '1D',
@@ -44,19 +44,19 @@ export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
   //   lifetime: 60000,
   //   name_ru_plur: '1 минуту'
   // },
-  // '5MIN': {
-  //   timeframe: '5MIN',
+  // '5M': {
+  //   timeframe: '5M',
   //   name_ru: '5 минут',
   //   lifetime: 300000,
   //   name_ru_plur: '5 минут'
   // },
-  '15MIN': {
+  '15M': {
     timeframe: '15M',
     name_ru: '15 минут',
     lifetime: 900000,
     name_ru_plur: '15 минут'
   },
-  '30MIN': {
+  '30M': {
     timeframe: '30MIN',
     name_ru: '30 минут',
     lifetime: 1800000,
