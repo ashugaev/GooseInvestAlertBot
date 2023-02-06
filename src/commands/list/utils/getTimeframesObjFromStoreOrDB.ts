@@ -5,6 +5,7 @@ const { set } = require('lodash')
 /**
  * Нормализованные таймфреймы с оптимизацией без походу а базу
  */
+// FIXME: DELETE
 export const getTimeframesObjFromStoreOrDB = async (ctx) => {
   let timeframesObj = ctx.wizard?.state?.shiftsList?.timeframesObj
 
