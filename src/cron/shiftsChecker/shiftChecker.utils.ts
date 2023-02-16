@@ -1,26 +1,33 @@
 
+import { ShiftTimeframe } from '@/commands/shift'
+
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
-import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
-import { ShiftCandleModel } from '../../models/ShiftCandle'
+import { getInstrumentInfoByTicker, ShiftCandle, TimeShift, TimeShiftModel } from '../../models'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
 
+interface GetUpdatedCandleParams {
+  shift: TimeShift
+  candle: ShiftCandle
+  price: number
+  timeframeData: ShiftTimeframe
+}
+
 /**
- * Обновит свечу в базе и вернет новую свечу
+ * Вернет обновленную свечу
  */
-export const updateCandle = async ({
+export const updateCandle = ({
   shift,
-  candle: c,
+  candle,
   price,
   timeframeData
-}) => {
-  let candle = c
+}: GetUpdatedCandleParams): ShiftCandle => {
+  let updatedCandle = candle
 
   // Время создания последней актуальной свечи
   const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
-
   // Время создания последней сохраненной свечи
   const localCandleCreatedTime = candle?.createdAt
 
@@ -32,7 +39,7 @@ export const updateCandle = async ({
   if (actualCandleCreatedTime !== localCandleCreatedTime) {
     // создать новую свечу и записать
 
-    candle = {
+    updatedCandle = {
       ticker: shift.ticker,
       timeframe: shift.timeframe,
       o: price,
@@ -41,24 +48,10 @@ export const updateCandle = async ({
       createdAt: actualCandleCreatedTime,
       updatedAt: new Date().getTime()
     }
-
-    // FIXME: Удалить после дебага
-    log.debug('[Reset candle]',
-      'Creation time', new Date(localCandleCreatedTime),
-      'New Candle time', new Date(actualCandleCreatedTime)
-    )
-
-    // FIXME: Вообще это можнро сделать одной командой
-    //  Но почему-то upsert не работает в typegoose
-    // Грохаем старую свечу (если была)
-    await ShiftCandleModel.deleteOne({ timeframe: shift.timeframe, ticker: shift.ticker })
-    // Делаем новую свечу
-    await ShiftCandleModel.insertMany(candle)
   } else {
     if (price > candle.h) {
       // апдейт верха старой и запись
-
-      candle = {
+      updatedCandle = {
         ...candle,
         h: price,
         updatedAt: new Date().getTime()
@@ -67,27 +60,21 @@ export const updateCandle = async ({
 
     if (price < candle.l) {
       // апдейт низа старой и запись
-
-      candle = {
+      updatedCandle = {
         ...candle,
         l: price,
         updatedAt: new Date().getTime()
       }
     }
-
-    // Пишем свечу в базу, если был апдейт объекта
-    if (c !== candle) {
-      await ShiftCandleModel.update({ _id: candle._id }, { $set: candle })
-    }
   }
 
-  return candle
+  return updatedCandle
 }
 
 /**
- * Отправит юзеру сообщение, если свеча стриггерила его алерт
+ * Проверит стриггерился ли алерт и вернет сообщение для Юзера если да
  */
-export const sendUserMessage = async ({
+export const getShiftTriggeredUserMessage = async ({
   candle,
   bot,
   shift,

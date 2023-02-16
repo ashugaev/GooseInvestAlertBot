@@ -13,7 +13,7 @@ export const lastPriceCache = new NodeCache()
 /**
  * Вернет цену по id
  */
-export const getLastPrice = async (id: string) => {
+export const getLastPrice = (id: string) => {
   if (!id) {
     throw new Error('Необходимо предоставить id для получения последней цены')
   }
