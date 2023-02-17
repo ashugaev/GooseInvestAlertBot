@@ -5,7 +5,12 @@ import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
 import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
-import { getInstrumentInfoByTicker, ShiftCandle, TimeShift, TimeShiftModel } from '../../models'
+import {
+  getInstrumentByIdFromCache,
+  ShiftCandle,
+  TimeShift,
+  TimeShiftModel
+} from '../../models'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
 
 interface GetUpdatedCandleParams {
@@ -40,7 +45,7 @@ export const updateCandle = ({
     // создать новую свечу и записать
 
     updatedCandle = {
-      ticker: shift.ticker,
+      tickerId: shift.tickerId,
       timeframe: shift.timeframe,
       o: price,
       h: price,
@@ -74,7 +79,7 @@ export const updateCandle = ({
 /**
  * Проверит стриггерился ли алерт и вернет сообщение для Юзера если да
  */
-export const getShiftTriggeredUserMessage = async ({
+export const checkTriggeredShiftsAndSendMessage = async ({
   candle,
   bot,
   shift,
@@ -85,8 +90,18 @@ export const getShiftTriggeredUserMessage = async ({
 
   const { ticker, muted, _id } = shift
 
-  const sendMessage = async (isGrow) => {
-    const tickerInfo = (await getInstrumentInfoByTicker({ ticker }))[0]
+  // Если случился движение вниз на указанный процент
+  if (fallPercent >= shift.percent && shift.fallAlerts) {
+    await sendMessage(false)
+  }
+
+  // Если движение вверх на указанный процент
+  if (growPercent >= shift.percent && shift.growAlerts) {
+    await sendMessage(true)
+  }
+
+  async function sendMessage (isGrow) {
+    const tickerInfo = await getInstrumentByIdFromCache(shift.tickerId)
 
     const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
 
@@ -103,59 +118,48 @@ export const getShiftTriggeredUserMessage = async ({
       return
     }
 
-    try {
-      await bot.telegram.sendMessage(shift.user, i18n.t(
-        'ru', 'shift_alert',
-        {
-          name: tickerInfo.name,
-          percent: shift.percent,
-          isGrow,
-          time: timeframeData.name_ru_plur,
-          ticker,
-          link: getInstrumentLink({
-            type: tickerInfo.type,
-            source: tickerInfo.source,
-            ticker
-          })
-        }
-      ), {
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
-        disable_notification: muted,
-        reply_markup: {
-          inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+    // No 'await' for not block iterator
+    bot.telegram.sendMessage(shift.user, i18n.t(
+      'ru', 'shift_alert',
+      {
+        name: tickerInfo.name,
+        percent: shift.percent,
+        isGrow,
+        time: timeframeData.name_ru_plur,
+        ticker,
+        link: getInstrumentLink({
+          type: tickerInfo.type,
+          source: tickerInfo.source,
+          ticker
+        })
+      }
+    ), {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      disable_notification: muted,
+      reply_markup: {
+        inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+      }
+    })
+      .then(async () => {
+        const dataToUpdate = isGrow
+          ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })
+          : ({ lastMessageCandleFallTime: actualCandleCreatedTime })
+
+        // Апдейт признака о том, что сообщение отправлено
+        await TimeShiftModel.updateOne({ _id: shift._id }, {
+          $set: dataToUpdate
+        })
+      })
+      .catch(async (e) => {
+        log.error(e)
+
+        // If bot was blocked by user
+        if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
+          await TimeShiftModel.remove({ _id: shift._id })
+
+          log.info('Deleted shift because bot blocked by user')
         }
       })
-    } catch (e) {
-      log.error(e)
-
-      // If bot was blocked by user
-      if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
-        await TimeShiftModel.remove({ _id: shift._id })
-
-        log.info('Deleted shift because bot blocked by user')
-
-        return
-      }
-    }
-
-    const dataToUpdate = isGrow
-      ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })
-      : ({ lastMessageCandleFallTime: actualCandleCreatedTime })
-
-    // Апдейт признака о том, что сообщение отправлено
-    await TimeShiftModel.updateOne({ _id: shift._id }, {
-      $set: dataToUpdate
-    })
-  }
-
-  // Если случился движение вниз на указанный процент
-  if (fallPercent >= shift.percent && shift.fallAlerts) {
-    await sendMessage(false)
-  }
-
-  // Если движение вверх на указанный процент
-  if (growPercent >= shift.percent && shift.growAlerts) {
-    await sendMessage(true)
   }
 }

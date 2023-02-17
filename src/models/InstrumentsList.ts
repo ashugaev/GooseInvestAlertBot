@@ -18,6 +18,10 @@ export enum EMarketInstrumentTypes {
   Future = 'Future'
 }
 
+const instrumentsByIdCache = new NodeCache()
+const instrumentsByTickerCache = new NodeCache()
+const instrumentsBySourceCache = new NodeCache()
+
 /**
  * Нормализованный элемент бумаги/монеты
  *
@@ -76,6 +80,24 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   }
 })
 
+(async function updateInstrumentsListCache {
+  const items = await InstrumentsListModel.find().lean()
+
+  const cacheItemsById = items.map((item) => ({
+    key: item.id,
+    val: item
+  }))
+  instrumentsByIdCache.mset(cacheItemsById)
+
+  const cacheItemsByTicker = items.map((item) => ({
+    key: item.ticker,
+    val: item
+  }))
+  instrumentsByTickerCache.mset(cacheItemsById)
+
+  setInterval(updateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
+})()
+
 export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
   await InstrumentsListModel.insertMany(items)
 }
@@ -117,9 +139,6 @@ export async function getInstrumentListDataByIds (ids: string[]) {
 /**
  * Returns list of isntruments by source with cache
  */
-const instrumentsBySourceCache = new NodeCache({
-  stdTTL: 3600 // sec
-})
 
 export async function getInstrumentsBySourceCache (source: EMarketDataSources): Promise<InstrumentsList[]> {
   const params = { source }
@@ -139,4 +158,18 @@ export async function getInstrumentsBySourceCache (source: EMarketDataSources): 
   }
 
   return allInstrumentsBySource
+}
+
+export const getInstrumentByIdFromCache = async (id: string): Promise<InstrumentsList> => {
+ let res = instrumentsByIdCache.get(id) as InstrumentsList | null
+
+  if(!res) {
+    res = (await InstrumentsListModel.find({ id }).lean())[0]
+  }
+
+  if(!res) {
+    throw new Error(`Can't find instrument by id ${id}`)
+  }
+
+  return res
 }

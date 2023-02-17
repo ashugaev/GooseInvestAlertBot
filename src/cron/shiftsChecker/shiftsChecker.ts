@@ -12,7 +12,7 @@ import { retryUntilTrue } from '../../helpers/retryUntilTrue'
 import { wait } from '../../helpers/wait'
 import { ShiftCandle, TimeShift, TimeShiftModel } from '../../models'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
-import { getShiftTriggeredUserMessage, updateCandle } from './shiftChecker.utils'
+import { checkTriggeredShiftsAndSendMessage, updateCandle } from './shiftChecker.utils'
 
 const logPrefix = '[CANDLES UPDATER]'
 
@@ -197,16 +197,12 @@ export const setupShiftsChecker = async (bot, isReadyToStart) => {
 
             await candles.updateCandle(updatedCandle)
 
-            const userMessage = await getShiftTriggeredUserMessage({
+            await checkTriggeredShiftsAndSendMessage({
               candle: updatedCandle,
               shift,
               bot,
               timeframeData
             })
-
-            if (userMessage) {
-              await queue.add(userMessage)
-            }
           } catch (e) {
             log.error('[ShiftsChecker] Crash', e)
             customTimeForWait = 5000
