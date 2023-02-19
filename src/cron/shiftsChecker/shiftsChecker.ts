@@ -40,6 +40,9 @@ class ShiftCandlesUpdater {
 
   candlesObj: ShiftCandlesNormalized = {}
 
+  // Mongo config for update candles
+  candlesUpdateConfig = []
+
   isReady = false
 
   init = async () => {
@@ -56,7 +59,7 @@ class ShiftCandlesUpdater {
     }, {} as ShiftCandlesNormalized)
     this.candlesObj = obj
     this.isReady = true
-    // this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /**
@@ -66,13 +69,13 @@ class ShiftCandlesUpdater {
     while (true) {
       if (this.needToPushCandlesToDB) {
         try {
-          await this.updateToDB(Object.keys(this.candlesObj))
+          await this.updateToDB()
           this.needToPushCandlesToDB = false
         } catch (e) {
           log.error(logPrefix, 'Candles update crashed', e)
-        } finally {
-          await wait(60000) // FIXME: 10 min
         }
+      } else {
+        await wait(300000) // 5 min
       }
     }
   }
@@ -83,15 +86,22 @@ class ShiftCandlesUpdater {
 
     // Update only if candle was changed
     if (!currentCandle || currentCandle.updatedAt !== newCandle.updatedAt) {
+      this.candlesUpdateConfig.push({
+        updateOne: {
+          upsert: true,
+          filter: { tickerId: newCandle.tickerId },
+          update: newCandle
+        }
+      })
       this.candlesObj[getCandleKey(newCandle.tickerId, newCandle.timeframe)] = newCandle
       this.needToPushCandlesToDB = true
     }
   }
 
-  updateToDB = async (newCandles) => {
+  updateToDB = async () => {
     try {
-      await ShiftCandleModel.deleteMany()
-      await ShiftCandleModel.insertMany(newCandles)
+      await ShiftCandleModel.bulkWrite(this.candlesUpdateConfig)
+      this.candlesUpdateConfig = []
     } catch (err) {
       log.error(logPrefix, 'Candles update crashed', err)
     }
@@ -106,8 +116,6 @@ class ShiftCandlesUpdater {
   }
 }
 
-// FIXME: Вамжно для периодов меньше минуты (напирмер) хранить в кэше историю цен,
-//  что бы минимазировать потери на итерациях в шифтах
 class ShiftsUpdater {
   constructor () {
     this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -129,10 +137,11 @@ class ShiftsUpdater {
    * Updates shifts list every 'waitTime' ms
    */
   setupUpdater = async () => {
-    const waitTime = 60000 // 1 min
+    const waitTime = 300000 // 5 min
     let timerId: NodeJS.Timeout
 
     while (true) {
+      // skip iterations untill needToBeUpdated is true
       if (!this.needToBeUpdated) {
         await wait(1000) // 1 sec
         continue
