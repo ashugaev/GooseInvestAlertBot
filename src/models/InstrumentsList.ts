@@ -88,7 +88,6 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
 (async function autoUpdateInstrumentsListCache () {
   const items = await retryForever(async () => await InstrumentsListModel.find().lean())
 
-  // @ts-expect-error
   const cacheItemsById = items.map((item) => ({
     key: item.id,
     val: item

@@ -39,7 +39,6 @@ class ShiftCandlesUpdater {
 
   init = async () => {
     const data = await retryForever(async () => await ShiftCandleModel.find().lean())
-    // @ts-expect-error FIXME: Fix types
     const obj: ShiftCandlesNormalized = data.reduce((acc, item) => {
       if (!item.tickerId || !item.timeframe) {
         log.error(logPrefix, 'Candle without tickerId or timeframe', item.tickerId)

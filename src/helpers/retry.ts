@@ -25,28 +25,14 @@ export const retry = async (func: () => Promise<any>, delay: number, funcName: s
 }
 
 // Function that endlessly recalls itself on exception and returns promise
-export const retryForever = async (func: () => Promise<any>) => {
-  return await new Promise((resolve, reject) => {
-    func().then(
-      (data) => {
-        resolve(data)
-      }
-    ).catch(
-      (err) => {
-        log.error(logPrefix, 'Async function crash', err)
-        wait(5000)
-          .then(() => {
-            retryForever(func).then(
-              (data) => {
-                resolve(data)
-              }
-            ).catch(
-              (err) => {
-                reject(err)
-              }
-            )
-          })
-      }
-    )
-  })
+export const retryForever = async (callback: () => Promise<any>) => {
+  while (true) {
+    try {
+      const result = await callback()
+      return result
+    } catch (error) {
+      log.error(logPrefix, 'Async function crash', error)
+      await wait(10000)
+    }
+  }
 }
