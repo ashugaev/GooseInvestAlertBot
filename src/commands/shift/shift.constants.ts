@@ -59,7 +59,7 @@ export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
     name_ru_plur: '30 секунд'
   },
   '1M': {
-    timeframe: '1MIN',
+    timeframe: '1M',
     name_ru: '1 минута',
     lifetime: 60000,
     name_ru_plur: '1 минуту'
@@ -77,7 +77,7 @@ export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
     name_ru_plur: '15 минут'
   },
   '30M': {
-    timeframe: '30MIN',
+    timeframe: '30M',
     name_ru: '30 минут',
     lifetime: 1800000,
     name_ru_plur: '30 минут'
@@ -110,7 +110,7 @@ export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
 
 const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
   [EMarketDataSources.binance]: {
-    minTimeframeTime: 10000
+    minTimeframeTime: 5000
   },
   [EMarketDataSources.bybit]: {
     minTimeframeTime: 5000
@@ -119,7 +119,7 @@ const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
     minTimeframeTime: 3600000
   },
   [EMarketDataSources.tinkoff]: {
-    minTimeframeTime: 10000
+    minTimeframeTime: 30000
   },
   [EMarketDataSources.yahoo]: {
     minTimeframeTime: 3600000

@@ -261,7 +261,7 @@ export const setupCheckers = (bot) => {
   retry(async () => {
     await setupPriceUpdater({
       // 1sec
-      minTimeBetweenRequests: 1000,
+      minTimeBetweenRequests: 0,
       getPrices: getTinkoffPrices,
       source: EMarketDataSources.tinkoff,
       jobKey: InitializationItem.TINKOFF_PRICES

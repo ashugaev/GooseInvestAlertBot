@@ -8,11 +8,13 @@ export const getSourceLink = (item: InstrumentsList) => {
     type: item.type,
     source: item.source,
     ticker: item.ticker
-  })
+  }, item)
 
-  const source = '[' + SOURCE_CONFIG[item.source].shortName + ']'
+  let res = '[' + SOURCE_CONFIG[item.source].shortName + ']'
 
   if (link) {
-    return `<a href="${link}" >${source}</a>`
+    res = `<a href="${link}" >${res}</a>`
   }
+
+  return res
 }

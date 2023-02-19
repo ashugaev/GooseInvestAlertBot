@@ -121,9 +121,6 @@ export const checkTriggeredShiftsAndSendMessage = async ({
     const growMessageAlreadyWasSent = lastMessageCandleGrowTime === actualCandleCreatedTime
     const fallMessageAlreadyWasSent = lastMessageCandleGrowTime === actualCandleCreatedTime
 
-    // !!! Update cache before send message for make it faster and not create message duplicate
-    triggeredShiftsCache.set(shift._id, { lastMessageCandleGrowTime: actualCandleCreatedTime })
-
     // Если уже отравили алерт на рост
     if (growMessageAlreadyWasSent && isGrow) {
       return
@@ -134,6 +131,10 @@ export const checkTriggeredShiftsAndSendMessage = async ({
       return
     }
 
+    const sourceLink = getSourceLink(tickerInfo)
+
+    // !!! Update cache before send message for make it faster and not create message duplicate
+    triggeredShiftsCache.set(shift._id, { lastMessageCandleGrowTime: actualCandleCreatedTime })
     // !!! No 'await' for not block iterator
     bot.telegram.sendMessage(shift.user, i18n.t(
       'ru', 'shift_alert',
@@ -143,7 +144,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
         isGrow,
         time: timeframeData.name_ru_plur,
         ticker,
-        source: getSourceLink(tickerInfo)
+        source: sourceLink
       }
     ), {
       parse_mode: 'HTML',

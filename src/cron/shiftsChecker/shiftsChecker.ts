@@ -48,7 +48,7 @@ class ShiftCandlesUpdater {
     // @ts-expect-error FIXME: Fix types
     const obj: ShiftCandlesNormalized = data.reduce((acc, item) => {
       if (!item.tickerId || !item.timeframe) {
-        log.error(logPrefix, 'Candle without tickerId or timeframe', item)
+        log.error(logPrefix, 'Candle without tickerId or timeframe', item.tickerId)
         return acc
       }
       acc[getCandleKey(item.tickerId, item.timeframe)] = item
@@ -56,7 +56,7 @@ class ShiftCandlesUpdater {
     }, {} as ShiftCandlesNormalized)
     this.candlesObj = obj
     this.isReady = true
-    this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
+    // this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /**
@@ -172,6 +172,8 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
         let noPriceCount = 0
 
+        const checkStart = new Date().getTime()
+
         // ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
         // TODO: Перейти с созданию и поддержания всех таймфреймов для всех бирж
         for (let i = 0; i < shifts.get.length; i++) {
@@ -197,7 +199,7 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
               shift
             })
 
-            const candleIsChanged = updatedCandle.updatedAt !== candle.updatedAt
+            const candleIsChanged = updatedCandle.updatedAt !== candle?.updatedAt
 
             if (candleIsChanged) {
               await candles.updateCandle(updatedCandle)
@@ -216,12 +218,24 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
         if (noPriceCount > 0) {
           log.error(logPrefix, 'Np price errors', noPriceCount)
+          if (noPriceCount === shifts.get.length) { // If not prices yet
+            await wait(1000)
+          }
           noPriceCount = 0
+        }
+
+        const checkEnd = new Date().getTime()
+        const checkTime = checkEnd - checkStart
+        const minTime = 1000 // min iteration time
+
+        // If too fast - wait a litte
+        if (checkTime < minTime) {
+          await wait(minTime - checkTime)
         }
       } catch (e) {
         log.error(logPrefix, ' SUPER_CRASH, Падает мониторинг скорости', e)
       }
     }, logPrefix + ' ShiftsChecker iteration')
-    await wait(1)
+    await wait(1) // looks like it helps not to block other tasks in stasck, but not sure
   }
 }
