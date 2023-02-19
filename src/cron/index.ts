@@ -1,5 +1,3 @@
-// @ts-expect-error
-
 import { log, retry } from '@/helpers'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 

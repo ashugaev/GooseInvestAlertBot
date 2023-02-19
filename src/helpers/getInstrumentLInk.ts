@@ -1,3 +1,5 @@
+import { BinanceSourceSpecificData } from '@/marketApi/binance/api/getAllInstruments'
+
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes, InstrumentsList } from '../models'
 
@@ -29,7 +31,7 @@ export const getInstrumentLink = ({ type, ticker, source }: any, instrumentInfo?
   }
 
   if (source === EMarketDataSources.binance && instrumentInfo) {
-    const base = instrumentInfo.sourceSpecificData.baseAsset
+    const base = (instrumentInfo.sourceSpecificData as BinanceSourceSpecificData).baseAsset
     const sec = instrumentInfo.ticker.replace(base, '')
     if (base?.length && sec?.length) {
       link = `https://www.binance.com/en/trade/${base}_${sec}`
