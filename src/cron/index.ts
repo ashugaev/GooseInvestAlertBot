@@ -1,3 +1,5 @@
+// @ts-expect-error
+
 import { log, retry } from '@/helpers'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 
@@ -19,6 +21,8 @@ import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
 import { createShitEvents } from './statChecker'
 import { shiftSender } from './statSender'
+
+const isDevMode = process.env.NODE_EVN === 'development'
 
 // Processed steps list
 export enum InitializationItem {
@@ -197,7 +201,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.binance,
       jobKey: InitializationItem.BINANCE_PRICES
     })
-  ), 100000, 'setupPriceUpdater for binance')
+  ), 10000, 'setupPriceUpdater for binance')
 
   /**
    * YAHOO prices updater
@@ -215,7 +219,7 @@ export const setupCheckers = (bot) => {
       // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
       jobKey: InitializationItem.YAHOO_PRICES
     })
-  }, 100000, 'setupPriceUpdater for yahoo')
+  }, 10000, 'setupPriceUpdater for yahoo')
 
   /**
    * COINGECKO prices updater
@@ -233,7 +237,7 @@ export const setupCheckers = (bot) => {
       maxTickersForRequest: 500,
       jobKey: InitializationItem.COINGECKO_PRICES
     })
-  }, 100000, 'setupPriceUpdater for COINGECKO')
+  }, 10000, 'setupPriceUpdater for COINGECKO')
 
   /**
    * BYBIT prices updater
@@ -248,7 +252,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.bybit,
       jobKey: InitializationItem.BYBIT_PRICES
     })
-  }, 30000, 'setupPriceUpdater for BYBIT')
+  }, 10000, 'setupPriceUpdater for BYBIT')
 
   /**
    * TINKOFF prices updater
@@ -264,15 +268,14 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.tinkoff,
       jobKey: InitializationItem.TINKOFF_PRICES
     })
-  }, 100000, 'setupPriceUpdater for TINKOFF')
+  }, 10000, 'setupPriceUpdater for TINKOFF')
 
   /**
    * Мониторинг скорости
    */
   retry(async () => await setupShiftsChecker(
-    bot,
-    () => isAllPricesUpdated() || isReadyToRunByTimeout()
-  ), 100000, 'setupShiftsChecker')
+    bot
+  ), 10000, 'setupShiftsChecker')
 
   /**
    * Мониторинг достижения уровней
@@ -282,6 +285,6 @@ export const setupCheckers = (bot) => {
     // FIXME: Remove this line after price cache will be implemented
     () => isAllPricesUpdated() || isReadyToRunByTimeout()
   ),
-  100000,
+  10000,
   'setupPriceCheckerOld')
 }

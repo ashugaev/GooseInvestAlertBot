@@ -1,7 +1,11 @@
 const mongoose = require('mongoose')
 
 // Connect to mongoose
-mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  connectTimeoutMS: 100000
+})
 
 mongoose.set('useCreateIndex', true)
 

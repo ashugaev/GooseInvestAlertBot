@@ -55,6 +55,8 @@ export const updateCandle = ({
     }
   } else {
     if (price > candle.h) {
+      log.info('Updated candle h', shift.tickerId, price)
+
       // апдейт верха старой и запись
       updatedCandle = {
         ...candle,
@@ -64,6 +66,8 @@ export const updateCandle = ({
     }
 
     if (price < candle.l) {
+      log.info('Updated candle l', shift.tickerId, price)
+
       // апдейт низа старой и запись
       updatedCandle = {
         ...candle,

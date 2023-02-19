@@ -16,19 +16,6 @@ import { checkTriggeredShiftsAndSendMessage, updateCandle } from './shiftChecker
 
 const logPrefix = '[CANDLES UPDATER]'
 
-/**
- * TODO
- * - Класти алерты в асинхронную очередь
- * - Метрики
- * -
- */
-
-/**
- * New algorithm:
-   * Start
-    * Get all shifts
- */
-
 interface ShiftCandlesNormalized {
   [key: string]: ShiftCandle
 }
@@ -42,15 +29,13 @@ const getCandleKey = (tickerId: string, timeframe: string) => {
  * Раз в какой-то время кэш асинхронно обновляется улетает в базу
  *
  * TODO: Update only changed items, no delete and create all
+ * TODO: Сохранять историю цен за 5 мин
  */
-class ShiftCandles {
+class ShiftCandlesUpdater {
   constructor () {
     this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  /**
-   * Means cache was updated ufter last db update
-   */
   needToPushCandlesToDB = false
 
   candlesObj: ShiftCandlesNormalized = {}
@@ -59,8 +44,13 @@ class ShiftCandles {
 
   init = async () => {
     // FIXME: Remove limit !!!
-    const data = await retryForever(async () => await ShiftCandleModel.find().limit(10).lean())
+    const data = await retryForever(async () => await ShiftCandleModel.find().lean())
+    // @ts-expect-error FIXME: Fix types
     const obj: ShiftCandlesNormalized = data.reduce((acc, item) => {
+      if (!item.tickerId || !item.timeframe) {
+        log.error(logPrefix, 'Candle without tickerId or timeframe', item)
+        return acc
+      }
       acc[getCandleKey(item.tickerId, item.timeframe)] = item
       return acc
     }, {} as ShiftCandlesNormalized)
@@ -77,11 +67,12 @@ class ShiftCandles {
       if (this.needToPushCandlesToDB) {
         try {
           await this.updateToDB(Object.keys(this.candlesObj))
+          this.needToPushCandlesToDB = false
         } catch (e) {
           log.error(logPrefix, 'Candles update crashed', e)
+        } finally {
+          await wait(60000) // FIXME: 10 min
         }
-        this.needToPushCandlesToDB = false
-        await wait(600000) // 10 min
       }
     }
   }
@@ -117,18 +108,18 @@ class ShiftCandles {
 
 // FIXME: Вамжно для периодов меньше минуты (напирмер) хранить в кэше историю цен,
 //  что бы минимазировать потери на итерациях в шифтах
-class Shifts {
-  shifts = []
-  isReady = false
-
+class ShiftsUpdater {
   constructor () {
     this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
+  shifts = []
+  isReady = false
+
   init = async () => {
     // FIXME: REmove limit
-    const data = await retryForever(async () => await TimeShiftModel.find().limit(10).lean())
-    this.shifts = data as unknown as TimeShift[]
+    const data = await retryForever(async () => await TimeShiftModel.find().lean())
+    this.shifts = data as TimeShift[]
     this.isReady = true
     this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
   }
@@ -138,9 +129,9 @@ class Shifts {
    */
   setupUpdater = async () => {
     while (true) {
-      await wait(300000) // 5 min
+      await wait(60000) // 5 min
       try {
-        const data = await TimeShiftModel.find().limit(10).lean()
+        const data = await TimeShiftModel.find().lean()
         this.shifts = data as unknown as TimeShift[]
       } catch (e) {
         log.error(logPrefix, 'Shifts update crashed', e)
@@ -155,17 +146,18 @@ class Shifts {
 
 // TODO: Мониторить кол-во сообщений в очереди через promotheus
 // TODO: В очереди сообщение будет обработка кодов ошибок от телеги и отмена подписок на сообщения
-export const setupShiftsChecker = async (bot, isReadyToStart) => {
-  await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
+// TODO: Сделать проверку свеч до 5 минут другим алгоритмом
+export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) => {
+  if (isReadyToStart) {
+    await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
+  }
 
   log.info(logPrefix + ' Init')
 
-  const candles = new ShiftCandles()
-  const shifts = new Shifts()
+  const candles = new ShiftCandlesUpdater()
+  const shifts = new ShiftsUpdater()
 
-  await retryUntilTrue(() => candles.isReady && shifts.isReady)
-
-  let customTimeForWait = null
+  await retryUntilTrue(() => candles.isReady && shifts.isReady, 'Shift checker init')
 
   while (true) {
     await fnTimeAsync(async () => {
@@ -176,15 +168,25 @@ export const setupShiftsChecker = async (bot, isReadyToStart) => {
           return // skip iteration
         }
 
+        log.info(logPrefix, 'checking', shifts.get.length)
+
+        let noPriceCount = 0
+
         // ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
         // TODO: Перейти с созданию и поддержания всех таймфреймов для всех бирж
         for (let i = 0; i < shifts.get.length; i++) {
           try {
-            const shift = shifts[i]
+            const shift = shifts.get[i]
 
-            const { ticker, timeframe, tickerId } = shift
+            const { timeframe, tickerId } = shift
 
-            const price = getLastPrice(tickerId)
+            const price = getLastPrice(tickerId, true)
+
+            if (!price) {
+              noPriceCount++
+              continue
+            }
+
             const candle: any = candles.getOne(tickerId, timeframe)
             const timeframeData = SHIFT_TIMEFRAMES[shift.timeframe]
 
@@ -205,13 +207,17 @@ export const setupShiftsChecker = async (bot, isReadyToStart) => {
             })
           } catch (e) {
             log.error('[ShiftsChecker] Crash', e)
-            customTimeForWait = 5000
           }
+        }
+
+        if (noPriceCount > 0) {
+          log.error(logPrefix, 'Np price errors', noPriceCount)
+          noPriceCount = 0
         }
       } catch (e) {
         log.error(logPrefix, ' SUPER_CRASH, Падает мониторинг скорости', e)
-        await wait(10000)
       }
     }, logPrefix + ' ShiftsChecker iteration')
+    await wait(1)
   }
 }

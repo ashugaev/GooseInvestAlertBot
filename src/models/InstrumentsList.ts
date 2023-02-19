@@ -8,6 +8,7 @@ import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources } from '../marketApi/types'
 import NodeCache from 'node-cache'
 import { SymbolInfo } from 'bybit-api'
+import { log, retryForever } from '@/helpers'
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
@@ -78,29 +79,34 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   options: {
     customName: 'instrumentslist'
   }
-})
+});
 
-(async function updateInstrumentsListCache {
-  const items = await InstrumentsListModel.find().lean()
+/**
+ * Auto apdate all data structures for instruments list
+ */
+// eslint-disable-next-line
+(async function autoUpdateInstrumentsListCache () {
+  // FIXME: remove limit
+  const items = await retryForever(async () => await InstrumentsListModel.find().lean())
 
+  // @ts-expect-error
   const cacheItemsById = items.map((item) => ({
     key: item.id,
     val: item
   }))
   instrumentsByIdCache.mset(cacheItemsById)
 
+  // @ts-expect-error
   const cacheItemsByTicker = items.map((item) => ({
     key: item.ticker,
     val: item
   }))
-  instrumentsByTickerCache.mset(cacheItemsById)
+  instrumentsByTickerCache.mset(cacheItemsByTicker)
 
-  setInterval(updateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
+  log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
+
+  setInterval(autoUpdateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
 })()
-
-export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
-  await InstrumentsListModel.insertMany(items)
-}
 
 // eslint-disable-next-line max-len
 export async function getInstrumentInfoByTicker ({ ticker, source }: {ticker: string | string[], source?: string}): Promise<InstrumentsList[]> {
@@ -161,15 +167,15 @@ export async function getInstrumentsBySourceCache (source: EMarketDataSources): 
 }
 
 export const getInstrumentByIdFromCache = async (id: string): Promise<InstrumentsList> => {
- let res = instrumentsByIdCache.get(id) as InstrumentsList | null
+  let res = instrumentsByIdCache.get(id)
 
-  if(!res) {
+  if (!res) {
     res = (await InstrumentsListModel.find({ id }).lean())[0]
   }
 
-  if(!res) {
+  if (!res) {
     throw new Error(`Can't find instrument by id ${id}`)
   }
 
-  return res
+  return res as InstrumentsList
 }
