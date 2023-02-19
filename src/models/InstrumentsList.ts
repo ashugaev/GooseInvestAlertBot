@@ -86,7 +86,6 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
  */
 // eslint-disable-next-line
 (async function autoUpdateInstrumentsListCache () {
-  // FIXME: remove limit
   const items = await retryForever(async () => await InstrumentsListModel.find().lean())
 
   // @ts-expect-error
@@ -98,7 +97,7 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
 
   log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
 
-  setInterval(autoUpdateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
+  setTimeout(autoUpdateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
 })()
 
 // eslint-disable-next-line max-len
