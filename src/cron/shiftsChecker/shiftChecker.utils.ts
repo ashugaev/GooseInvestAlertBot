@@ -100,7 +100,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
   const { ticker, muted, _id } = shift
 
   // Если случился движение вниз на указанный процент
-  if (fallPercent >= shift.percent && shift.fallAlerts) {
+  if (Math.abs(fallPercent) >= shift.percent && shift.fallAlerts) {
     await sendMessage(false)
   }
 

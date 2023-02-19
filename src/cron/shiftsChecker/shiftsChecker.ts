@@ -226,7 +226,7 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
         const checkEnd = new Date().getTime()
         const checkTime = checkEnd - checkStart
-        const minTime = 1000 // min iteration time
+        const minTime = 500 // min iteration time
 
         // If too fast - wait a litte
         if (checkTime < minTime) {

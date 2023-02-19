@@ -415,7 +415,7 @@ shift_add_button_unmute: Mute
 # Shift alert (speed of price change)
 
 shift_alert: |
-  ⚡️ Price <b>${name}</b> (${ticker}) ${isGrow ? '↗️ <b>increased</b>' : '↘️ <b>fell</b>'} more than <b>${percent}%</b> in <b>${time}</b > ${link ? '<a href="' + link + '">[graph]</a>' : ''}
+  ⚡️ Price <b>${name}</b> (${ticker}) ${source} ${isGrow ? '↗️ <b>increased</b>' : '↘️ <b>fell</b>'} more than <b>${percent}%</b> in <b>${time}</b >
 
 shift_alert_buttons_settings: |
   Tune

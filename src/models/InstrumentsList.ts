@@ -96,13 +96,6 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   }))
   instrumentsByIdCache.mset(cacheItemsById)
 
-  // @ts-expect-error
-  const cacheItemsByTicker = items.map((item) => ({
-    key: item.ticker,
-    val: item
-  }))
-  instrumentsByTickerCache.mset(cacheItemsByTicker)
-
   log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
 
   setInterval(autoUpdateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
