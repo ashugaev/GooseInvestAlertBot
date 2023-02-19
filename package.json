@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@google/chatbase": "^1.1.2",
-    "@sentry/node": "^5.29.2",
+    "@sentry/node": "5.0.3",
     "@sentry/tracing": "^5.29.2",
     "@tinkoff/invest-openapi-js-sdk": "^1.5.0",
     "@typegoose/typegoose": "^7.3.0",
