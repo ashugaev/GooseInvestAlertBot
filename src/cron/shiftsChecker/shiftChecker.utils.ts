@@ -1,8 +1,8 @@
 
 import { ShiftTimeframe } from '@/commands/shift'
+import { getSourceLink } from '@/helpers/getSourceLInk'
 
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
-import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import {
@@ -12,6 +12,8 @@ import {
   TimeShiftModel
 } from '../../models'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
+
+const logPrefix = '[SHIFT CHECKER]'
 
 interface GetUpdatedCandleParams {
   shift: TimeShift
@@ -41,9 +43,7 @@ export const updateCandle = ({
      * Это значит, что появилась новая свеча и текущая деактуализировалась
      * Либо свечи не существовало ранее
      */
-  if (actualCandleCreatedTime !== localCandleCreatedTime) {
-    // создать новую свечу и записать
-
+  if (actualCandleCreatedTime !== localCandleCreatedTime) { // создать новую свечу
     updatedCandle = {
       tickerId: shift.tickerId,
       timeframe: shift.timeframe,
@@ -54,8 +54,8 @@ export const updateCandle = ({
       updatedAt: new Date().getTime()
     }
   } else {
-    if (price > candle.h) {
-      log.info('Updated candle h', shift.tickerId, price)
+    if (price > candle.h) { // Побили самую высокую цену
+      log.info(logPrefix, 'Updated candle h', shift.tickerId, price)
 
       // апдейт верха старой и запись
       updatedCandle = {
@@ -65,8 +65,8 @@ export const updateCandle = ({
       }
     }
 
-    if (price < candle.l) {
-      log.info('Updated candle l', shift.tickerId, price)
+    if (price < candle.l) { // Побили самую низкую цену
+      log.info(logPrefix, 'Updated candle l', shift.tickerId, price)
 
       // апдейт низа старой и запись
       updatedCandle = {
@@ -81,7 +81,7 @@ export const updateCandle = ({
 }
 
 /**
- * Проверит стриггерился ли алерт и вернет сообщение для Юзера если да
+ * Проверит стриггерился ли алерт и отправит сообщение юзеру если да
  */
 export const checkTriggeredShiftsAndSendMessage = async ({
   candle,
@@ -122,7 +122,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
       return
     }
 
-    // No 'await' for not block iterator
+    // !!! No 'await' for not block iterator
     bot.telegram.sendMessage(shift.user, i18n.t(
       'ru', 'shift_alert',
       {
@@ -131,11 +131,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
         isGrow,
         time: timeframeData.name_ru_plur,
         ticker,
-        link: getInstrumentLink({
-          type: tickerInfo.type,
-          source: tickerInfo.source,
-          ticker
-        })
+        source: getSourceLink(tickerInfo)
       }
     ), {
       parse_mode: 'HTML',
@@ -156,13 +152,13 @@ export const checkTriggeredShiftsAndSendMessage = async ({
         })
       })
       .catch(async (e) => {
-        log.error(e)
+        log.error(logPrefix, e)
 
         // If bot was blocked by user
         if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
           await TimeShiftModel.remove({ _id: shift._id })
 
-          log.info('Deleted shift because bot blocked by user')
+          log.info(logPrefix, 'Deleted shift because bot blocked by user')
         }
       })
   }

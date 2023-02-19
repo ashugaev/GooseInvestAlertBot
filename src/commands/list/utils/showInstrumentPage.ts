@@ -7,7 +7,7 @@ import { getLastPrice } from '../../../helpers/getLastPrice'
 import { getSourceMark } from '../../../helpers/getSourceMark'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { PriceAlertItem } from '../../../models'
+import { InstrumentsList, PriceAlertItem } from '../../../models'
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
@@ -53,14 +53,16 @@ export const showInstrumentPage = async ({
       })
     }).join('\n')
 
+  const instrumentInfo = instrumentItems[0] as unknown as InstrumentsList
+
   const {
     type: instrumentType,
     name: instrumentName,
     currency: instrumentCurrency,
     source,
     tickerId,
-    symbol,
-  } = instrumentItems[0]
+    symbol
+  } = instrumentInfo
 
   let lastPrice
 
@@ -71,7 +73,7 @@ export const showInstrumentPage = async ({
   }
 
   const message = ctx.i18n.t('alertList_page', {
-    link: instrumentType && getInstrumentLink({ type: instrumentType, ticker: symbol, source }),
+    link: instrumentType && getInstrumentLink({ type: instrumentType, ticker: symbol, source }, instrumentInfo),
     symbol,
     list: itemsList,
     name: instrumentName,

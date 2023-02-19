@@ -197,14 +197,18 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
               shift
             })
 
-            await candles.updateCandle(updatedCandle)
+            const candleIsChanged = updatedCandle.updatedAt !== candle.updatedAt
 
-            await checkTriggeredShiftsAndSendMessage({
-              candle: updatedCandle,
-              shift,
-              bot,
-              timeframeData
-            })
+            if (candleIsChanged) {
+              await candles.updateCandle(updatedCandle)
+
+              await checkTriggeredShiftsAndSendMessage({
+                candle: updatedCandle,
+                shift,
+                bot,
+                timeframeData
+              })
+            }
           } catch (e) {
             log.error('[ShiftsChecker] Crash', e)
           }

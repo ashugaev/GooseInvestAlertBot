@@ -7,7 +7,7 @@ import { EMarketDataSources } from '../../types'
 import { binance } from '../utils/binance'
 
 export type BinanceTickerItem = Symbol<OrderType_LT>
-export type BinanceSourceSpecificData = Omit<BinanceTickerItem, 'quoteAsset' | 'symbol'>
+export type BinanceSourceSpecificData = Omit<BinanceTickerItem, 'quoteAsset' | 'symbol' | 'baseAsset'>
 
 const normalizeItem = (item: BinanceTickerItem): InstrumentsList => {
   const { symbol, quoteAsset, ...specificData } = item
