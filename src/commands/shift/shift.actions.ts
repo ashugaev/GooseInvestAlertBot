@@ -5,6 +5,7 @@ import { log } from '../../helpers/log'
 import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
 import { SHIFT_ACTIONS, SHIFT_TIMEFRAMES } from './shift.constants'
 import { getShiftConfigKeyboard } from './shift.keyboards'
+import {shiftsCache} from "@/cron/shiftsChecker";
 
 /**
  * Редактирование пришедшего алерта
@@ -68,6 +69,7 @@ export const shiftAlertSettings = async (ctx) => {
         growAlerts: shiftConfig.growAlerts
       }
     })
+    shiftsCache.update()
   } catch (e) {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)

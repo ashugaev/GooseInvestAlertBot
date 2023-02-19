@@ -14,6 +14,7 @@ import {
 } from './shift.constants'
 import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { IAdditionalShiftConfig } from './shift.types'
+import {shiftsCache} from "@/cron/shiftsChecker";
 
 const WizardScene = require('telegraf/scenes/wizard')
 const { set } = require('lodash')
@@ -187,6 +188,7 @@ const shiftAddChoosePercent = waitMessageStep('shift_add_choose-percent', async 
   }))
 
   const dbShifts = await TimeShiftModel.insertMany(newShifts)
+  shiftsCache.update()
 
   set(ctx, 'wizard.state.shift.percent', intPercent)
   set(ctx, 'wizard.state.shift.newShiftsId', dbShifts.map(el => el._id))

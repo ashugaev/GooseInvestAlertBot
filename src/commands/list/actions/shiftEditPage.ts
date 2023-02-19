@@ -5,6 +5,7 @@ import { log } from '../../../helpers/log'
 import { TimeShiftModel } from '../../../models'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
+import {shiftsCache} from "@/cron/shiftsChecker";
 
 /**
  * Страница редактирования шифта
@@ -45,6 +46,7 @@ export const shiftEditPage = async (ctx) => {
           growAlerts: shiftDataCopy.growAlerts
         }
       })
+      shiftsCache.update()
     }
 
     const timeframesObj = SHIFT_TIMEFRAMES

@@ -115,26 +115,41 @@ class ShiftsUpdater {
 
   shifts = []
   isReady = false
+  needToBeUpdated = true // allows to enforce update
+
+  update () {
+    this.needToBeUpdated = true
+  }
 
   init = async () => {
-    // FIXME: REmove limit
-    const data = await retryForever(async () => await TimeShiftModel.find().lean())
-    this.shifts = data as TimeShift[]
-    this.isReady = true
     this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /**
-   * Updates shifts list every 5 min
+   * Updates shifts list every 'waitTime' ms
    */
   setupUpdater = async () => {
+    const waitTime = 60000 // 1 min
+    let timerId: NodeJS.Timeout
+
     while (true) {
-      await wait(60000) // 5 min
+      if (!this.needToBeUpdated) {
+        await wait(1000) // 1 sec
+        continue
+      }
+
       try {
         const data = await TimeShiftModel.find().lean()
         this.shifts = data as unknown as TimeShift[]
+        this.needToBeUpdated = false
+        this.isReady = true
       } catch (e) {
         log.error(logPrefix, 'Shifts update crashed', e)
+      } finally {
+        clearTimeout(timerId)
+        timerId = setTimeout(() => {
+          this.needToBeUpdated = true
+        }, waitTime)
       }
     }
   }
@@ -143,6 +158,9 @@ class ShiftsUpdater {
     return this.shifts
   }
 }
+
+export const candlesCache = new ShiftCandlesUpdater()
+export const shiftsCache = new ShiftsUpdater()
 
 // TODO: Мониторить кол-во сообщений в очереди через promotheus
 // TODO: В очереди сообщение будет обработка кодов ошибок от телеги и отмена подписок на сообщения
@@ -154,21 +172,18 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
   log.info(logPrefix + ' Init')
 
-  const candles = new ShiftCandlesUpdater()
-  const shifts = new ShiftsUpdater()
-
-  await retryUntilTrue(() => candles.isReady && shifts.isReady, 'Shift checker init')
+  await retryUntilTrue(() => candlesCache.isReady && shiftsCache.isReady, 'Shift checker init')
 
   while (true) {
     await fnTimeAsync(async () => {
       try {
-        if (!shifts.get.length) {
+        if (!shiftsCache.get.length) {
           log.error(logPrefix, 'No shifts found. Doing retry')
           await wait(5000)
           return // skip iteration
         }
 
-        log.info(logPrefix, 'checking', shifts.get.length)
+        log.info(logPrefix, 'checking', shiftsCache.get.length)
 
         let noPriceCount = 0
 
@@ -176,9 +191,9 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
         // ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
         // TODO: Перейти с созданию и поддержания всех таймфреймов для всех бирж
-        for (let i = 0; i < shifts.get.length; i++) {
+        for (let i = 0; i < shiftsCache.get.length; i++) {
           try {
-            const shift = shifts.get[i]
+            const shift = shiftsCache.get[i]
 
             const { timeframe, tickerId } = shift
 
@@ -189,7 +204,7 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
               continue
             }
 
-            const candle: any = candles.getOne(tickerId, timeframe)
+            const candle: any = candlesCache.getOne(tickerId, timeframe)
             const timeframeData = SHIFT_TIMEFRAMES[shift.timeframe]
 
             const updatedCandle = updateCandle({
@@ -202,7 +217,7 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
             const candleIsChanged = updatedCandle.updatedAt !== candle?.updatedAt
 
             if (candleIsChanged) {
-              await candles.updateCandle(updatedCandle)
+              await candlesCache.updateCandle(updatedCandle)
 
               await checkTriggeredShiftsAndSendMessage({
                 candle: updatedCandle,
@@ -218,7 +233,7 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
         if (noPriceCount > 0) {
           log.error(logPrefix, 'Np price errors', noPriceCount)
-          if (noPriceCount === shifts.get.length) { // If not prices yet
+          if (noPriceCount === shiftsCache.get.length) { // If not prices yet
             await wait(1000)
           }
           noPriceCount = 0

@@ -1,5 +1,6 @@
 
 import { ShiftTimeframe } from '@/commands/shift'
+import { shiftsCache } from '@/cron/shiftsChecker/shiftsChecker'
 import { getSourceLink } from '@/helpers/getSourceLInk'
 
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
@@ -172,6 +173,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
         // TODO: Create middleware for this
         if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
           await TimeShiftModel.remove({ _id: shift._id })
+          shiftsCache.update()
 
           log.info(logPrefix, 'Deleted shift because bot blocked by user')
         }

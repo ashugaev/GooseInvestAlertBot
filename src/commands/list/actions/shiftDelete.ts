@@ -1,7 +1,9 @@
-import { TimeShiftModel } from '../../../models'
+import { shiftsCache } from '@/cron/shiftsChecker'
+
 import { log } from '../../../helpers/log'
-import { showShiftsPage } from '../utils/showShiftsPage'
+import { TimeShiftModel } from '../../../models'
 import { EKeyboardModes } from '../keyboards/instrumentPageKeyboard'
+import { showShiftsPage } from '../utils/showShiftsPage'
 
 export const shiftDelete = async (ctx) => {
   try {
@@ -11,6 +13,7 @@ export const shiftDelete = async (ctx) => {
     } = JSON.parse(ctx.match[1])
 
     await TimeShiftModel.remove({ _id })
+    shiftsCache.update()
 
     const { id: user } = ctx.from
 
