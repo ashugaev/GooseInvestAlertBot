@@ -81,6 +81,11 @@ export const updateCandle = ({
 }
 
 /**
+ * Cache for shifts for save sent alerts time
+ */
+const triggeredShiftsCache = new Map<string, {lastMessageCandleGrowTime: number}>()
+
+/**
  * Проверит стриггерился ли алерт и отправит сообщение юзеру если да
  */
 export const checkTriggeredShiftsAndSendMessage = async ({
@@ -109,8 +114,15 @@ export const checkTriggeredShiftsAndSendMessage = async ({
 
     const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
 
-    const growMessageAlreadyWasSent = shift.lastMessageCandleGrowTime === actualCandleCreatedTime
-    const fallMessageAlreadyWasSent = shift.lastMessageCandleFallTime === actualCandleCreatedTime
+    const shiftCache = triggeredShiftsCache.get(shift._id)
+    // If we have something in cache it means that and data more fresh than in DB
+    const lastMessageCandleGrowTime = shiftCache?.lastMessageCandleGrowTime ?? shift.lastMessageCandleGrowTime
+
+    const growMessageAlreadyWasSent = lastMessageCandleGrowTime === actualCandleCreatedTime
+    const fallMessageAlreadyWasSent = lastMessageCandleGrowTime === actualCandleCreatedTime
+
+    // !!! Update cache before send message for make it faster and not create message duplicate
+    triggeredShiftsCache.set(shift._id, { lastMessageCandleGrowTime: actualCandleCreatedTime })
 
     // Если уже отравили алерт на рост
     if (growMessageAlreadyWasSent && isGrow) {
@@ -142,6 +154,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
       }
     })
       .then(async () => {
+        // Update last message candle time
         const dataToUpdate = isGrow
           ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })
           : ({ lastMessageCandleFallTime: actualCandleCreatedTime })
