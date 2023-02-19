@@ -143,7 +143,7 @@ alertList_page: |
 
   ${list}
 
-  ${showEditMessage ? 'Выбери номер для редактирования' : ''}
+  ${showEditMessage ? 'Выбери номер для редактирования 👇' : ''}
 
 alertList_item: |
   ${number}. ${growth ? '↗️ <b>Рост</b>' : '↘️ <b>Падение</b>' } до <b>${price}${currency ? currency : ''}</b>
@@ -186,7 +186,7 @@ alertsList_shifts_list: |
 
   ${!empty ? list : ''}
 
-  ${(showEditMessage && !empty) ? 'Выбери номер для редактирования' : ''}
+  ${(showEditMessage && !empty) ? 'Выбери номер для редактирования 👇' : ''}
 
 alertsList_shifts_listItem: |
   ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
