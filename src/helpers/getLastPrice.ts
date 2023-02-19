@@ -13,14 +13,14 @@ export const lastPriceCache = new NodeCache()
 /**
  * Вернет цену по id
  */
-export const getLastPrice = async (id: string) => {
+export const getLastPrice = (id: string, noTrowIfNotFound?: boolean) => {
   if (!id) {
     throw new Error('Необходимо предоставить id для получения последней цены')
   }
 
   const lastPrice = lastPriceCache.get(id)
 
-  if (!lastPrice) {
+  if (!lastPrice && !noTrowIfNotFound) {
     throw new Error(`${logPrefix} Get price error for ` + id)
   }
 

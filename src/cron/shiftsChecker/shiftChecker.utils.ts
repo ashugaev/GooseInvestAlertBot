@@ -1,26 +1,41 @@
 
+import { ShiftTimeframe } from '@/commands/shift'
+import { shiftsCache } from '@/cron/shiftsChecker/shiftsChecker'
+import { getSourceLink } from '@/helpers/getSourceLInk'
+
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
-import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
-import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
-import { ShiftCandleModel } from '../../models/ShiftCandle'
+import {
+  getInstrumentByIdFromCache,
+  ShiftCandle,
+  TimeShift,
+  TimeShiftModel
+} from '../../models'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
 
+const logPrefix = '[SHIFT CHECKER]'
+
+interface GetUpdatedCandleParams {
+  shift: TimeShift
+  candle: ShiftCandle
+  price: number
+  timeframeData: ShiftTimeframe
+}
+
 /**
- * Обновит свечу в базе и вернет новую свечу
+ * Вернет обновленную свечу
  */
-export const updateCandle = async ({
+export const updateCandle = ({
   shift,
-  candle: c,
+  candle,
   price,
   timeframeData
-}) => {
-  let candle = c
+}: GetUpdatedCandleParams): ShiftCandle => {
+  let updatedCandle = candle
 
   // Время создания последней актуальной свечи
   const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
-
   // Время создания последней сохраненной свечи
   const localCandleCreatedTime = candle?.createdAt
 
@@ -29,11 +44,9 @@ export const updateCandle = async ({
      * Это значит, что появилась новая свеча и текущая деактуализировалась
      * Либо свечи не существовало ранее
      */
-  if (actualCandleCreatedTime !== localCandleCreatedTime) {
-    // создать новую свечу и записать
-
-    candle = {
-      ticker: shift.ticker,
+  if (actualCandleCreatedTime !== localCandleCreatedTime) { // создать новую свечу
+    updatedCandle = {
+      tickerId: shift.tickerId,
       timeframe: shift.timeframe,
       o: price,
       h: price,
@@ -41,53 +54,42 @@ export const updateCandle = async ({
       createdAt: actualCandleCreatedTime,
       updatedAt: new Date().getTime()
     }
-
-    // FIXME: Удалить после дебага
-    log.debug('[Reset candle]',
-      'Creation time', new Date(localCandleCreatedTime),
-      'New Candle time', new Date(actualCandleCreatedTime)
-    )
-
-    // FIXME: Вообще это можнро сделать одной командой
-    //  Но почему-то upsert не работает в typegoose
-    // Грохаем старую свечу (если была)
-    await ShiftCandleModel.deleteOne({ timeframe: shift.timeframe, ticker: shift.ticker })
-    // Делаем новую свечу
-    await ShiftCandleModel.insertMany(candle)
   } else {
-    if (price > candle.h) {
-      // апдейт верха старой и запись
+    if (price > candle.h) { // Побили самую высокую цену
+      log.info(logPrefix, 'Updated candle h', shift.tickerId, price)
 
-      candle = {
+      // апдейт верха старой и запись
+      updatedCandle = {
         ...candle,
         h: price,
         updatedAt: new Date().getTime()
       }
     }
 
-    if (price < candle.l) {
-      // апдейт низа старой и запись
+    if (price < candle.l) { // Побили самую низкую цену
+      log.info(logPrefix, 'Updated candle l', shift.tickerId, price)
 
-      candle = {
+      // апдейт низа старой и запись
+      updatedCandle = {
         ...candle,
         l: price,
         updatedAt: new Date().getTime()
       }
     }
-
-    // Пишем свечу в базу, если был апдейт объекта
-    if (c !== candle) {
-      await ShiftCandleModel.update({ _id: candle._id }, { $set: candle })
-    }
   }
 
-  return candle
+  return updatedCandle
 }
 
 /**
- * Отправит юзеру сообщение, если свеча стриггерила его алерт
+ * Cache for shifts for save sent alerts time
  */
-export const sendUserMessage = async ({
+const triggeredShiftsCache = new Map<string, {lastMessageCandleGrowTime: number}>()
+
+/**
+ * Проверит стриггерился ли алерт и отправит сообщение юзеру если да
+ */
+export const checkTriggeredShiftsAndSendMessage = async ({
   candle,
   bot,
   shift,
@@ -98,13 +100,27 @@ export const sendUserMessage = async ({
 
   const { ticker, muted, _id } = shift
 
-  const sendMessage = async (isGrow) => {
-    const tickerInfo = (await getInstrumentInfoByTicker({ ticker }))[0]
+  // Если случился движение вниз на указанный процент
+  if (Math.abs(fallPercent) >= shift.percent && shift.fallAlerts) {
+    await sendMessage(false)
+  }
+
+  // Если движение вверх на указанный процент
+  if (growPercent >= shift.percent && shift.growAlerts) {
+    await sendMessage(true)
+  }
+
+  async function sendMessage (isGrow) {
+    const tickerInfo = await getInstrumentByIdFromCache(shift.tickerId)
 
     const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
 
-    const growMessageAlreadyWasSent = shift.lastMessageCandleGrowTime === actualCandleCreatedTime
-    const fallMessageAlreadyWasSent = shift.lastMessageCandleFallTime === actualCandleCreatedTime
+    const shiftCache = triggeredShiftsCache.get(shift._id)
+    // If we have something in cache it means that and data more fresh than in DB
+    const lastMessageCandleGrowTime = shiftCache?.lastMessageCandleGrowTime ?? shift.lastMessageCandleGrowTime
+
+    const growMessageAlreadyWasSent = lastMessageCandleGrowTime === actualCandleCreatedTime
+    const fallMessageAlreadyWasSent = lastMessageCandleGrowTime === actualCandleCreatedTime
 
     // Если уже отравили алерт на рост
     if (growMessageAlreadyWasSent && isGrow) {
@@ -116,59 +132,51 @@ export const sendUserMessage = async ({
       return
     }
 
-    try {
-      await bot.telegram.sendMessage(shift.user, i18n.t(
-        'ru', 'shift_alert',
-        {
-          name: tickerInfo.name,
-          percent: shift.percent,
-          isGrow,
-          time: timeframeData.name_ru_plur,
-          ticker,
-          link: getInstrumentLink({
-            type: tickerInfo.type,
-            source: tickerInfo.source,
-            ticker
-          })
-        }
-      ), {
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
-        disable_notification: muted,
-        reply_markup: {
-          inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+    const sourceLink = getSourceLink(tickerInfo)
+
+    // !!! Update cache before send message for make it faster and not create message duplicate
+    triggeredShiftsCache.set(shift._id, { lastMessageCandleGrowTime: actualCandleCreatedTime })
+    // !!! No 'await' for not block iterator
+    bot.telegram.sendMessage(shift.user, i18n.t(
+      'ru', 'shift_alert',
+      {
+        name: tickerInfo.name,
+        percent: shift.percent,
+        isGrow,
+        time: timeframeData.name_ru_plur,
+        ticker,
+        source: sourceLink
+      }
+    ), {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      disable_notification: muted,
+      reply_markup: {
+        inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+      }
+    })
+      .then(async () => {
+        // Update last message candle time
+        const dataToUpdate = isGrow
+          ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })
+          : ({ lastMessageCandleFallTime: actualCandleCreatedTime })
+
+        // Апдейт признака о том, что сообщение отправлено
+        await TimeShiftModel.updateOne({ _id: shift._id }, {
+          $set: dataToUpdate
+        })
+      })
+      .catch(async (e) => {
+        log.error(logPrefix, e)
+
+        // If bot was blocked by user
+        // TODO: Create middleware for this
+        if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
+          await TimeShiftModel.remove({ _id: shift._id })
+          shiftsCache.update()
+
+          log.info(logPrefix, 'Deleted shift because bot blocked by user')
         }
       })
-    } catch (e) {
-      log.error(e)
-
-      // If bot was blocked by user
-      if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
-        await TimeShiftModel.remove({ _id: shift._id })
-
-        log.info('Deleted shift because bot blocked by user')
-
-        return
-      }
-    }
-
-    const dataToUpdate = isGrow
-      ? ({ lastMessageCandleGrowTime: actualCandleCreatedTime })
-      : ({ lastMessageCandleFallTime: actualCandleCreatedTime })
-
-    // Апдейт признака о том, что сообщение отправлено
-    await TimeShiftModel.updateOne({ _id: shift._id }, {
-      $set: dataToUpdate
-    })
-  }
-
-  // Если случился движение вниз на указанный процент
-  if (fallPercent >= shift.percent && shift.fallAlerts) {
-    await sendMessage(false)
-  }
-
-  // Если движение вверх на указанный процент
-  if (growPercent >= shift.percent && shift.growAlerts) {
-    await sendMessage(true)
   }
 }

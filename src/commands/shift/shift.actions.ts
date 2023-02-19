@@ -1,9 +1,11 @@
-import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
+import { getSourceLink } from '@/helpers/getSourceLInk'
+
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
 import { SHIFT_ACTIONS, SHIFT_TIMEFRAMES } from './shift.constants'
 import { getShiftConfigKeyboard } from './shift.keyboards'
+import {shiftsCache} from "@/cron/shiftsChecker";
 
 /**
  * Редактирование пришедшего алерта
@@ -49,11 +51,7 @@ export const shiftAlertSettings = async (ctx) => {
         isGrow: Boolean(isGrow),
         time: timeframesObj[shiftData.timeframe].name_ru_plur,
         ticker: shiftData.ticker,
-        link: getInstrumentLink({
-          type: tickerInfo.type,
-          source: tickerInfo.source,
-          ticker: shiftData.ticker
-        })
+        source: getSourceLink(tickerInfo)
       }
     ), {
       parse_mode: 'HTML',
@@ -71,6 +69,7 @@ export const shiftAlertSettings = async (ctx) => {
         growAlerts: shiftConfig.growAlerts
       }
     })
+    shiftsCache.update()
   } catch (e) {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)

@@ -1,5 +1,7 @@
+import { BinanceSourceSpecificData } from '@/marketApi/binance/api/getAllInstruments'
+
 import { EMarketDataSources } from '../marketApi/types'
-import { EMarketInstrumentTypes } from '../models'
+import { EMarketInstrumentTypes, InstrumentsList } from '../models'
 
 export const getTinkoffInstrumentLink = ({ type, ticker }) => {
   if (!type && !ticker) {
@@ -21,19 +23,19 @@ export const getTinkoffInstrumentLink = ({ type, ticker }) => {
   return `https://www.tinkoff.ru/invest/${type}/${ticker}/`
 }
 
-export const getInstrumentLink = ({ type, ticker, source }) => {
+export const getInstrumentLink = ({ type, ticker, source }: any, instrumentInfo?: InstrumentsList): string | undefined => {
   let link
 
-  // TODO: Выпилить эту проверку через пару месяцев. Он нужен только для того, что бы показывать ссылку для алертов без source
-  if (source) {
-    if (source === EMarketDataSources.tinkoff) {
-      link = getTinkoffInstrumentLink({ ticker, type })
-    }
-
-    // TODO: Сделать ссылки для CoinGecko
-  } else {
-    // TODO Убрать с проверкой на source через пару месяцев
+  if (source === EMarketDataSources.tinkoff) {
     link = getTinkoffInstrumentLink({ ticker, type })
+  }
+
+  if (source === EMarketDataSources.binance && instrumentInfo) {
+    const base = (instrumentInfo.sourceSpecificData as BinanceSourceSpecificData).baseAsset
+    const sec = instrumentInfo.ticker.replace(base, '')
+    if (base?.length && sec?.length) {
+      link = `https://www.binance.com/en/trade/${base}_${sec}`
+    }
   }
 
   return link

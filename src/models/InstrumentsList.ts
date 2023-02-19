@@ -8,6 +8,7 @@ import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources } from '../marketApi/types'
 import NodeCache from 'node-cache'
 import { SymbolInfo } from 'bybit-api'
+import { log, retryForever } from '@/helpers'
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
@@ -17,6 +18,10 @@ export enum EMarketInstrumentTypes {
   Bond = 'Bond', // Опционы
   Future = 'Future'
 }
+
+const instrumentsByIdCache = new NodeCache()
+const instrumentsByTickerCache = new NodeCache()
+const instrumentsBySourceCache = new NodeCache()
 
 /**
  * Нормализованный элемент бумаги/монеты
@@ -74,11 +79,25 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   options: {
     customName: 'instrumentslist'
   }
-})
+});
 
-export async function putItemsToInstrumentsList (items: InstrumentsList[]) {
-  await InstrumentsListModel.insertMany(items)
-}
+/**
+ * Auto apdate all data structures for instruments list
+ */
+// eslint-disable-next-line
+(async function autoUpdateInstrumentsListCache () {
+  const items = await retryForever(async () => await InstrumentsListModel.find().lean())
+
+  const cacheItemsById = items.map((item) => ({
+    key: item.id,
+    val: item
+  }))
+  instrumentsByIdCache.mset(cacheItemsById)
+
+  log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
+
+  setTimeout(autoUpdateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
+})()
 
 // eslint-disable-next-line max-len
 export async function getInstrumentInfoByTicker ({ ticker, source }: {ticker: string | string[], source?: string}): Promise<InstrumentsList[]> {
@@ -117,9 +136,6 @@ export async function getInstrumentListDataByIds (ids: string[]) {
 /**
  * Returns list of isntruments by source with cache
  */
-const instrumentsBySourceCache = new NodeCache({
-  stdTTL: 3600 // sec
-})
 
 export async function getInstrumentsBySourceCache (source: EMarketDataSources): Promise<InstrumentsList[]> {
   const params = { source }
@@ -139,4 +155,18 @@ export async function getInstrumentsBySourceCache (source: EMarketDataSources): 
   }
 
   return allInstrumentsBySource
+}
+
+export const getInstrumentByIdFromCache = async (id: string): Promise<InstrumentsList> => {
+  let res = instrumentsByIdCache.get(id)
+
+  if (!res) {
+    res = (await InstrumentsListModel.find({ id }).lean())[0]
+  }
+
+  if (!res) {
+    throw new Error(`Can't find instrument by id ${id}`)
+  }
+
+  return res as InstrumentsList
 }

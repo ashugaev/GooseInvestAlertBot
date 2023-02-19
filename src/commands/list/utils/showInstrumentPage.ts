@@ -59,7 +59,7 @@ export const showInstrumentPage = async ({
     currency: instrumentCurrency,
     source,
     tickerId,
-    symbol,
+    symbol
   } = instrumentItems[0]
 
   let lastPrice

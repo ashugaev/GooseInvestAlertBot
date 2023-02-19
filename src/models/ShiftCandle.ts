@@ -24,7 +24,7 @@ export class ShiftCandle {
   l: number
 
   @prop({ required: true })
-  ticker: string
+  tickerId: string
 
   @prop({ required: true })
   timeframe: string

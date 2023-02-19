@@ -3,6 +3,9 @@ import { InstrumentsList } from '@/models'
 import { EMarketDataSources } from '../marketApi/types'
 import { getTinkoffInstrumentLink } from './getInstrumentLInk'
 
+/**
+ * @deprecated Use SOURCE_CONFIG
+ */
 const SORTENED_SOURCES: Record<EMarketDataSources, string> = {
   tinkoff: 'TNKF',
   coingecko: 'COINGECKO',

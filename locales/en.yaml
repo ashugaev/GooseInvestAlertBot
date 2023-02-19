@@ -1,1 +1,447 @@
 name: English
+help: |
+  To add an alert, send the command /alert
+  
+  The price is always set in the format PP.KK (where PP are integers and KK are decimals).
+  
+  <b>Basic commands</b>
+  
+  /alert, /a - Price level achievement monitor
+  /shift, /s - Price speed monitoring
+  /stat - Subscribe to statistics for yesterday
+  /list - List of all monitors
+  /price YNDX - I'll tell you the current price by ticker
+  /help - Goose will send this message again
+  
+  <b>Add monitoring with one command</b>
+  
+  /alert YNDX 73.80 - Add an alert in one command (YNDX - ticker, 73.80 - price at which the notification will come)
+  /alert YNDX 73.80 90.3 34.2 - You can set several prices at once
+  /alert YNDX +100 -12 - You can set an alert regarding the current price (-12 is 12 units below the current price)
+  /alert YNDX +10% -25% - You can set an alert regarding the current price by a certain percentage
+  
+  <b>Specify currency for cryptocurrency</b>
+  
+  If you want to monitor the price in a specific currency, then indicate it in tandem with the crypto ticker. By default, <b>USD</b> or <b>USDT</b> will be used.
+  
+  /alert DOGE 1.5 - Add an alert for the price <b>1.5$</b>
+  /alert DOGERUB 70 - Add price alert <b>70₽</b>
+  /alert DOGEEUR 1.1 - Add an alert for the price <b>1.1€</b>
+  
+  <b>Monitoring currencies</b>
+  
+  Just enter any pair and most likely it will be in the bot.
+  Example: /alert EURUSD 1.2
+  
+  <b>The /list command</b>
+  
+  In the command menu, you can view, edit and delete any monitoring.
+  
+  <b>Statistics collection</b>
+  
+  Statistics are collected in the evening after the trading day for stocks and funds only.
+  The notification will come the next day at the time you choose when subscribing to statistics.
+  
+  To unsubscribe from statistics, send the /stat command again
+  
+  <b>Quote sources</b>
+  
+  Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
+  Cryptocurrencies - <a href="https://www.coingecko.com/en">CoinGecko</a>, <a href="https://www.binance.com/en/markets">Binance</a >
+  Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
+  
+  All questions and wishes can be written to Goose's chat: @GooseInvestAlertChat 🦢️️
+  
+  Order bot development: @ashugaev 🧙‍♂️
+
+start: |
+  🦢 Nice to see you ${first_name}!
+  
+  🔔 Add your first alert with /alert or /add
+  
+  Use /help to see a list of all commands
+  
+  <b>Support tools</b>
+  
+  Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
+  Cryptocurrencies - <a href="https://www.coingecko.com/en">CoinGecko</a>, <a href="https://www.binance.com/en/markets">Binance</a >
+  Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
+  
+  The delay can be 1-3 minutes
+  
+  All questions and wishes can be written to Goose's chat: @GooseInvestAlertChat 🦢️️
+
+alertErrorInvalidFormat: |
+  ❌ Incorrect input!
+  
+  🦢 To add alerts, send a command in the format:
+  
+  /alert YNDX 73.80 (<b>YNDX</b> — ticker, <b>73.80</b> — price at which the notification will be sent)
+  
+  To see the full list of commands and get more information, send the command /help
+
+alertRemovedBySymbol: |
+  🦢 Removed all alerts for <b>${symbol}</b>
+
+alertRemovedBySymbolNothingDeleted: |
+  🛑 You don't have any alerts for <b>${symbol}</b>
+
+alertRemovedBySymbolWithAlias: |
+  🦢 Removed all alerts for <b>${aliasName}</b> ${(symbol && symbol !== name) ? " (" + symbol + ")" : ''}
+
+alertRemoveError: |
+  ❌ Alert deletion error!
+
+alertAddErrorLowerThenZero: |
+  ❌ Error! Price below zero will not be set!
+
+alertAddError: |
+  ❌ Error adding alert!
+
+alertErrorUnexistedSymbol: |
+  ❌ Can't find ticker <b>${symbol}</b>
+  
+  <b>Supported tools</b>
+  
+  Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
+  Cryptocurrencies - <a href="https://www.coingecko.com/en">CoinGecko</a>, <a href="https://www.binance.com/en/markets">Binance</a >
+  Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
+
+alertCreated: |
+  🦢 When is the price <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} will reach ${onePrice ? 'level' : 'each level'} <b>${price}</b>, I\'ll let you know!
+  
+  ${invalid ? '❌ Couldn\'t recognize <b> levels' + invalid + '</b>' : ''}
+
+alertCreatedAddMessage: |
+  💬 If you want to add a comment to the alert, send it in the following message
+
+alertMessageUpdated: |
+  💬 Added this message to the alert
+
+alertMessageUpdateError: |
+  ❌ Error! Message not saved.
+
+language: Please select a language.
+
+language_selected: <b>Bot</b> now speaks Russian.
+
+priceCheckerErrorCantFind: |
+  ❌ Notification error for <b>${symbol}</b> for price <b>${price}</b>. Tool not found. I delete it.
+
+priceChecker_triggeredAlert: |
+  🔔 Price <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${greaterThen ? '↗️ <b>increase</b>' : '↘️ <b>fall</b>'} to target <b>${price}${currency ? currency : ''}</b> ${link ? '<a href="' + link + '">[graph]</a>' : ''}
+  
+  ${message ? '💬 <b>Your comment:</b>\n<i>' + message + '</i>' : ''}
+
+# List
+
+alertList_titles: |
+  🔔 Subscriptions to achieve price levels. Select a ticker to view the list of alerts ${empty ? '\n\n<b>🧹No active followers</b>' : ''}${empty ? '\n\nUse /add to add' : ''}
+
+alertList_page: |
+  🔔 Alert list for: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[graph]</a>' : ''}
+  
+  ${list}
+  
+  ${showEditMessage ? 'Select number to edit' : ''}
+
+alertList_item: |
+  ${number}. ${growth ? '↗️ <b>Rise</b>' : '↘️ <b>Fall</b>' } to <b>${price}${currency ? currency : ''}</b>
+  ${message ? '\n<b>Comment:</b>\n<i>' + message + '</i>' : ''}
+
+alertListDeleteButton: Delete
+
+alertListItemRemoved: |
+  Removed notification <b>${symbol}</b> - <b>${price}</b>
+
+alertListItemDeleteError: |
+  ❌ Notification deletion error
+
+alertListErrorInvalidFormat: |
+  ❌ Incorrect input!
+  
+  🦢 To view the list of notifications, send a command in the format:
+  
+  /list - Show a list of all alerts
+  /list YNDX - Show a list of all alerts for YNDX
+  
+  To see the full list of commands and get more information, send the command /help
+
+alertsList_editOne: |
+  <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${growth ? '↗️ <b>rising</b>' : '↘️ <b>falling</b>' } to <b>${price}${currency ? currency : ''}</b> ${link ? '<a href="' + link + '">[graph]</a>' : ''}
+  
+  ${message ? '\n<b>Comment:</b>\n<i>' + message + '</i>' : ''}
+
+alertList_deleted: |
+  Removed alert!
+
+alertsList_button_levels-list: |
+  ${active ? '◉' : '○'} Price levels
+
+alertsList_button_shifts-list: |
+  ${active ? '◉' : '○'} Price speed
+
+alertsList_shifts_list: |
+  ⚡ Price rate change subscriptions ${empty ? '\n\n<b>🧹No active followers</b>' : ''}${empty ? '\n\nUse /shift to add' : ''}
+  
+  ${!empty ? list : ''}
+  
+  ${(showEditMessage && !empty) ? 'Select number to edit' : ''}
+
+alertsList_shifts_listItem: |
+  ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} - ${growthOnly ? '↗️ <b>growth</b>' : ''}${fallOnly ? '↘️ <b>fall</b>' : ''}${change ? '↕️ <b>change</b>' : ''} by <b>${percent}%</b> in <b>${time}</b>
+
+alertsList_shifts_editOne: |
+  <b>${name}</b> (${ticker}) - ${growthOnly ? '↗️ <b>growth</b>' : ''}${fallOnly ? '↘️ <b>fall</b>' : ''}${change ? '↕️ <b>change</b>' : ''} by <b>${percent}%</b> in <b>${time}</b>
+
+# Alert add
+
+alert_add_chooseInstrument: |
+  💹 Submit the ticker of the instrument you want to track
+  
+  For example, <b>yndx</b> for Yandex, and <b>lkoh</b> for Lukoil
+
+alert_add_choosePrice: |
+  💲 Current price <b>${price}${currency ? currency : ''}</b> ${source}
+  
+  Send a list of prices separated by a space in the format <b>PP.KK</b> (where PP are integers and KK are decimals)
+
+alert_add_choosePrice_invalid: |
+  ❌ Can\'t set price levels ${invalid ? '<b>' + invalid + '</b>' : ''}
+  
+  Try again
+
+alert_choose_between_duplicates: |
+  👇 Select the ticker for which you want to put a notification
+
+### PRICE
+
+price: |
+  Price <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - <b>${price}${currency ? currency : ''} ${source ? source : ''}</b>
+
+priceInvalidFormat: |
+  ❌ Incorrect input!
+  
+  🦢 To find out the current price of an instrument, send a command in the following format:
+  
+  /price YNDX (<b>YNDX</b> - ticker)
+  
+  To see the full list of commands and get more information, send the command /help
+
+priceCheckError: |
+  ❌ Price check error for <b>${symbol}</b>!
+
+#Common
+
+unrecognizedError: |
+  ❌ Unknown error!
+
+#Buttons
+
+help_button: |
+  Teams
+
+alert_button: |
+  Add Alert
+
+button_edit: |
+  Edit
+
+button_delete: |
+  Delete
+
+# Days of week (first digit is day number, second case)
+
+days_1_1: Monday
+days_1_2: Monday
+days_2_1: Tuesday
+days_2_2: Tuesday
+days_3_1: Wednesday
+days_3_2: Wednesday
+days_4_1: Thursday
+days_4_2: Thursday
+days_5_1: Friday
+days_5_2: Friday
+days_6_1: Saturday
+days_6_2: Saturday
+days_0_1: Sunday
+days_0_2: Sunday
+
+#Limits
+
+alerts_overlimit: |
+  🛑 You have reached the limit of ${limit} alerts
+  
+  Delete unnecessary monitors via the /list command
+  
+  If this does not fit and you need more, write to @ashugaev 🧙‍♂️
+
+# Shift
+
+stat_add_startScene: |
+  🦢 Create a daily stock and fund price change alert.
+  
+  📋 I will send you a list of securities, the price of which has changed by the value you specified.
+  
+  % Enter the percentage of price change at which the security will be included in the list.
+
+shift_add_setPercentError: |
+  ❌ Incorrect input. Try again.
+  
+  Send an integer greater than 0
+
+shift_add_setDays: |
+  Send the number of days for which the change will be tracked (from 1 to 30)
+
+shift_add_setDays_error: |
+  ❌ Incorrect input. Try again.
+  
+  Send a number from 1 to 30
+
+shift_add_setTime: |
+  🕒 Send in 24-hour format (0-23) with one digit the hour I will send the alert
+
+shift_add_setTimeError: |
+  ❌ Incorrect input. Try again.
+  
+  🕒 Send in 24-hour format (0-23) with one digit the hour I will send the alert
+
+shift_add_created: |
+  🦢 Done! Created daily alerts for price changes for <b>${days}</b> by <b>${percent}%</b> and more, which will be sent to you at <b>${time}</b> .
+
+shift_invalidFormat: |
+  ❌ Incorrect input!
+  
+  🦢 To control the receipt of statistics, send the /stat command
+
+shift_overlimit: |
+  🛑 You have reached the limit of ${limit} for this type of monitoring
+  
+   If this does not fit and you need more, write to @ashugaev 🧙‍♂️
+
+# shift show
+
+shift_show: |
+  🔝 You have set up daily alerts for price changes for <b>${days}</b> by <b>${percent}%</b> and more, which will be sent to you at <b>${time}< /b>.
+
+# Shift alert
+
+shift_alert_message: |
+  ${dayOfWeek ? "📊 Statistics for <b>" + dayOfWeek + "</b>" : ''}
+  
+  🔝 <b>TOP-${itemsPerCategory}</b> securities by trading volume that changed their price by more than <b>${percent}%</b> for <b>${days}</b>
+
+shift_alert_message_stock: |
+  <b>Promotions</b>
+  
+  ${list}
+
+shift_alert_message_etf: |
+  <b>Funds</b>
+  
+  ${list}
+
+shift_alert_message_bond: |
+  <b>Bonds</b>
+  
+  ${list}
+
+shift_alert_message_item: |
+  - ${name} (${ticker}) - ${action} per ${percent} <a href="${link}">[chart]</a>
+
+# Individual words
+
+fall: fall
+grow: growth
+
+# Shift add (price change rate)
+
+shift_add_askSource: |
+  <b>⚡️ Price change rate tracking</b>
+  
+  📈 Choose the data source to monitor 👇
+
+shift_add_chooseTickers: |
+  <b>⚡️ Price change rate tracking</b>
+  
+  💁 Send a list of tickers separated by a space
+  
+  For example: <b>yndx lkoh btc</b>
+
+shift_add_noTickers: |
+  ❌ Can\'t find tickers on exchange <b>${source}</b>
+  
+  Check the list and send it again
+
+shift_add_wrongTicker: |
+  😱 Some tickers not found on exchange: <b>${source}</b>.
+  
+  Alerts will only be added for <b>${tickers}</b>
+
+shift_add_chooseTimeframe: |
+  <b>⚡️ Price change rate tracking</b>
+  
+  🕒 Choose the time for which the speed will be tracked 👇
+
+shift_add_choosePercent: |
+  <b>⚡️ Price change rate tracking</b>
+  
+  <b>%</b> Send me the price change percentage at which I will send you a notification.
+
+shift_add_error_maxPercent: |
+  ❌ It must be an integer, not greater than <b>${maxPercent}</b>
+
+shift_add_success: |
+  <b>⚡️ Price change rate tracking</b>
+  
+  ✅ Created notifications when the price changes by more than <b>${percent}%</b> for <b>${time}</b> for <b>${tickers}</b>
+  
+  ⚙️ More settings 👇
+
+shift_add_overlimit-less-tickers: |
+  The maximum number of monitors of this type is <b>${limit}</b>. You can create no more than <b>${availableCount}</b>
+
+shift_add_overlimit: |
+  ❌ You have reached the limit for this type of monitoring in <b>${limit}pcs</b>
+
+shift_add_button_growAlert: Track growth
+
+shift_add_button_fallAlert: Detect falls
+
+shift_add_button_mute: With sound
+
+shift_add_button_unmute: Mute
+
+# Shift alert (speed of price change)
+
+shift_alert: |
+  ⚡️ Price <b>${name}</b> (${ticker}) ${source} ${isGrow ? '↗️ <b>increased</b>' : '↘️ <b>fell</b>'} more than <b>${percent}%</b> in <b>${time}</b >
+
+shift_alert_buttons_settings: |
+  Tune
+
+#Pay
+
+pay: |
+  👋 Since you saw this message, then apparently you have reached the limits that are set in the bot for free use. This means that you are no longer just a novice trader, but a serious player who wants to get the most out of the bot 🚀
+  
+  🤖 Goose regularly helps thousands of users earn money, allowing them not to miss profitable deals for more than 2 years, but Goose also sometimes needs support
+  
+  🏆 After payment you will receive:
+    - Unlimited number of alerts for price levels
+    - Unlimited Price Speed Tracking
+    - More exchanges to choose from
+    - Volume monitoring (⏳ coming soon)
+    - Price speed monitoring on small timeframes (⏳ coming soon)
+    - Custom Market Report Builder (⏳ coming soon)
+    - Receive reports several times a day and for an arbitrary period (⏳ coming soon)
+  
+  There are no automatic deductions, so you can pay for a longer period, or take a lifetime subscription right away
+  
+  Payment so far only in cryptocurrency, to pay with a card <a href="https://t.me/ashugaev">write me a PM</a> (lifetime subscription only)
+
+pay_link: |
+  Follow the link for payment
+
+pay_link_button: |
+  Pay

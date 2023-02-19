@@ -1,21 +1,15 @@
-import { appInitStatuses } from '../cron'
 import { log } from './log'
 import { wait } from './wait'
 
 const logPrefix = '[RETRY UNTIL TRUE]'
 
 /**
- * Retries callback every second
+ * Retries callback every second untill isReady will return true
  */
-export const retryUntilTrue = async (callback, callbackName) => {
+export const retryUntilTrue = async (isReady: () => boolean, callbackName?: string) => {
   log.info(logPrefix, 'Waiting to start:', callbackName)
-  log.info('init statuses array', appInitStatuses)
 
-  while (callback ? !callback() : false) {
-    // Waiting untill all preparation for this job will be done
-    log.info(logPrefix, 'Retry:', callbackName)
-    log.info('init statuses array', appInitStatuses)
-
+  while (isReady ? !isReady() : false) {
     await wait(1000)
   }
 

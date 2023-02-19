@@ -1,121 +1,256 @@
-/**
- * Мониторит скорость изменения цены
- */
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
+import { retryForever } from '@/helpers'
 
 import { fnTimeAsync } from '../../helpers/fnTime'
 import { getLastPrice } from '../../helpers/getLastPrice'
 import { log } from '../../helpers/log'
 import { retryUntilTrue } from '../../helpers/retryUntilTrue'
 import { wait } from '../../helpers/wait'
-import { TimeShiftModel } from '../../models'
+import { ShiftCandle, TimeShift, TimeShiftModel } from '../../models'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
-import { sendUserMessage, updateCandle } from './shiftChecker.utils'
+import { checkTriggeredShiftsAndSendMessage, updateCandle } from './shiftChecker.utils'
 
 const logPrefix = '[CANDLES UPDATER]'
 
+interface ShiftCandlesNormalized {
+  [key: string]: ShiftCandle
+}
+
+const getCandleKey = (tickerId: string, timeframe: string) => {
+  return `${tickerId}__${timeframe}`
+}
+
 /**
- * TODO
- * - Cвечи копим и отсылаем вконце обхода
- * -
+ * Модуль управления кэшом свечей
  */
-export const setupShiftsChecker = async (bot, isReadyToStart) => {
-  await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
+class ShiftCandlesUpdater {
+  constructor () {
+    this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  needToPushCandlesToDB = false
+
+  candlesObj: ShiftCandlesNormalized = {}
+
+  // Mongo config for update candles
+  candlesUpdateConfig = []
+
+  isReady = false
+
+  init = async () => {
+    const data = await retryForever(async () => await ShiftCandleModel.find().lean())
+    const obj: ShiftCandlesNormalized = data.reduce((acc, item) => {
+      if (!item.tickerId || !item.timeframe) {
+        log.error(logPrefix, 'Candle without tickerId or timeframe', item.tickerId)
+        return acc
+      }
+      acc[getCandleKey(item.tickerId, item.timeframe)] = item
+      return acc
+    }, {} as ShiftCandlesNormalized)
+    this.candlesObj = obj
+    this.isReady = true
+    this.setupUpdater()
+  }
+
+  /**
+   * Updates candles from cache
+   */
+  setupUpdater = async () => {
+    while (true) {
+      if (this.needToPushCandlesToDB) {
+        try {
+          await this.updateToDB()
+          this.needToPushCandlesToDB = false
+        } catch (e) {
+          log.error(logPrefix, 'Candles update crashed', e)
+        }
+      } else {
+        await wait(300000) // 5 min
+      }
+    }
+  }
+
+  updateCandle = (newCandle: ShiftCandle) => {
+    const key = getCandleKey(newCandle.tickerId, newCandle.timeframe)
+    const currentCandle = this.candlesObj[key]
+
+    // Update only if candle was changed
+    if (!currentCandle || currentCandle.updatedAt !== newCandle.updatedAt) {
+      this.candlesUpdateConfig.push({
+        updateOne: {
+          upsert: true,
+          filter: { tickerId: newCandle.tickerId },
+          update: newCandle
+        }
+      })
+      this.candlesObj[getCandleKey(newCandle.tickerId, newCandle.timeframe)] = newCandle
+      this.needToPushCandlesToDB = true
+    }
+  }
+
+  updateToDB = async () => {
+    try {
+      await ShiftCandleModel.bulkWrite(this.candlesUpdateConfig)
+      this.candlesUpdateConfig = []
+    } catch (err) {
+      log.error(logPrefix, 'Candles update crashed', err)
+    }
+  }
+
+  get get () {
+    return this.candlesObj
+  }
+
+  getOne (tickerId: string, timeframe: string): ShiftCandle | undefined {
+    return this.candlesObj[getCandleKey(tickerId, timeframe)]
+  }
+}
+
+/**
+ * Модуль управления кэшом шифтов
+ */
+class ShiftsUpdater {
+  constructor () {
+    this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
+  }
+
+  shifts = []
+  isReady = false
+  needToBeUpdated = true // allows to enforce update
+
+  update () {
+    this.needToBeUpdated = true
+  }
+
+  init = async () => {
+    this.setupUpdater()
+  }
+
+  /**
+   * Updates shifts list every 'waitTime' ms
+   */
+  setupUpdater = async () => {
+    const waitTime = 300000 // 5 min
+    let timerId: NodeJS.Timeout
+
+    while (true) {
+      // skip iterations untill needToBeUpdated is true
+      if (!this.needToBeUpdated) {
+        await wait(1000) // 1 sec
+        continue
+      }
+
+      try {
+        const data = await TimeShiftModel.find().lean()
+        this.shifts = data as unknown as TimeShift[]
+        this.needToBeUpdated = false
+        this.isReady = true
+      } catch (e) {
+        log.error(logPrefix, 'Shifts update crashed', e)
+      } finally {
+        clearTimeout(timerId)
+        timerId = setTimeout(() => {
+          this.needToBeUpdated = true
+        }, waitTime)
+      }
+    }
+  }
+
+  get get () {
+    return this.shifts
+  }
+}
+
+export const candlesCache = new ShiftCandlesUpdater()
+export const shiftsCache = new ShiftsUpdater()
+
+// TODO: Мониторить кол-во сообщений в минуту или всего через promotheus
+export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) => {
+  if (isReadyToStart) {
+    await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
+  }
 
   log.info(logPrefix + ' Init')
 
-  let customTimeForWait = null
+  await retryUntilTrue(() => candlesCache.isReady && shiftsCache.isReady, 'Shift checker init')
 
   while (true) {
-    const iterationStartTime = new Date().getTime()
-    let shifts = null
-    let lastShiftsUpdate = null
-
-    try {
-      // Между итерациями задержка в 30 секунд, либо то время, которое проставили в последней итерации
-      await wait(customTimeForWait ?? 10000)
-
-      customTimeForWait = null
-
-      const candles = await fnTimeAsync(async () => (
-        await ShiftCandleModel.find().lean())
-      , logPrefix + ' Fetch CANDLES from db')
-
+    await fnTimeAsync(async () => {
       try {
-        // Update only first time or every 15min
-        if (!shifts || (lastShiftsUpdate && ((new Date().getTime() - lastShiftsUpdate) > 900000))) {
-          shifts = await fnTimeAsync(async () => (
-            await TimeShiftModel.find({ tickerId: { $exists: true } }).lean()
-          ), logPrefix + ' Fetch shifts from db')
-
-          lastShiftsUpdate = new Date().getTime()
+        if (!shiftsCache.get.length) {
+          log.error(logPrefix, 'No shifts found. Doing retry')
+          await wait(5000)
+          return // skip iteration
         }
 
-        // Нормализуем таймфреймы в объект для удобства
-        const timeframesObj = SHIFT_TIMEFRAMES
+        log.info(logPrefix, 'checking', shiftsCache.get.length)
 
-        if (!shifts.length) {
-          customTimeForWait = 60000
-          continue
-        }
+        let noPriceCount = 0
 
-        log.info(logPrefix + ' Проверяю тикеры', shifts.map(el => el.ticker))
+        const checkStart = new Date().getTime()
 
-        let customCandleUpdateTimeForWait = null
-
-        // ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
-        for (let i = 0; i < shifts.length; i++) {
-          await wait(customCandleUpdateTimeForWait ?? 0)
-
-          customCandleUpdateTimeForWait = null
-
+        // !!! ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
+        // TODO: Перейти с созданию и поддержания всех таймфреймов для всех бирж
+        for (let i = 0; i < shiftsCache.get.length; i++) {
           try {
-            const shift = shifts[i]
+            const shift = shiftsCache.get[i]
 
-            const { ticker, timeframe, tickerId } = shift
+            const { timeframe, tickerId } = shift
 
-            const price = await getLastPrice(tickerId)
+            const price = getLastPrice(tickerId, true)
 
-            // FIXME: Почему то не подхватывается тип модели
-            const candle: any = candles.find(el => (
-              el.timeframe === timeframe && el.ticker === ticker
-            ))
+            if (!price) {
+              noPriceCount++
+              continue
+            }
 
-            const timeframeData = timeframesObj[shift.timeframe]
+            const candle: any = candlesCache.getOne(tickerId, timeframe)
+            const timeframeData = SHIFT_TIMEFRAMES[shift.timeframe]
 
-            // ~300ms
-            const updatedCandle = await fnTimeAsync(async () => (
-              await updateCandle({
-                timeframeData,
-                candle,
-                price,
-                shift
-              })
-            ), logPrefix + ' updatedCandle')
+            const updatedCandle = updateCandle({
+              timeframeData,
+              candle,
+              price,
+              shift
+            })
 
-            // Check candle and send alert if it nessesary
-            await fnTimeAsync(async () => (
-              await sendUserMessage({
+            const candleIsChanged = updatedCandle.updatedAt !== candle?.updatedAt
+
+            if (candleIsChanged) {
+              await candlesCache.updateCandle(updatedCandle)
+
+              await checkTriggeredShiftsAndSendMessage({
                 candle: updatedCandle,
                 shift,
                 bot,
                 timeframeData
               })
-            ), logPrefix + ' sendUserMessage')
+            }
           } catch (e) {
-            log.error(logPrefix, ' Candle update crash', e)
-            customCandleUpdateTimeForWait = 500
+            log.error('[ShiftsChecker] Crash', e)
           }
         }
-      } catch (e) {
-        log.error('[ShiftsChecker] Crash', e)
-        customTimeForWait = 30000
-      }
-    } catch (e) {
-      log.error(logPrefix, ' SUPER_CRASH, Падает мониторинг скорости', e)
-      await wait(10000)
-    }
 
-    log.info(logPrefix + ' Iteration time ' + ((new Date().getTime() - iterationStartTime) / 1000).toString() + 's')
+        if (noPriceCount > 0) {
+          log.error(logPrefix, 'Np price errors', noPriceCount)
+          if (noPriceCount === shiftsCache.get.length) { // If not prices yet
+            await wait(1000)
+          }
+          noPriceCount = 0
+        }
+
+        const checkEnd = new Date().getTime()
+        const checkTime = checkEnd - checkStart
+        const minTime = 500 // min iteration time
+
+        // If too fast - wait a litte
+        if (checkTime < minTime) {
+          await wait(minTime - checkTime)
+        }
+      } catch (e) {
+        log.error(logPrefix, ' SUPER_CRASH, Падает мониторинг скорости', e)
+      }
+    }, logPrefix + ' ShiftsChecker iteration')
+    await wait(1) // looks like it helps not to block other tasks in stasck, but not sure
   }
 }

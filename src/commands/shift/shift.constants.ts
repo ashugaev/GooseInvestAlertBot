@@ -22,8 +22,11 @@ export interface ShiftTimeframe {
 }
 
 export enum ESfhitTimeframes {
-  // '1MIN' = '1MIN',
-  // '5M' = '5M',
+  '10S' = '10S',
+  '15S' = '15S',
+  '30S' = '30S',
+  '1M' = '1M',
+  '5M' = '5M',
   '15M' = '15M',
   '30M' = '30M',
   '1H' = '1H',
@@ -37,19 +40,36 @@ export interface ShiftTimeframeConfig {
 }
 
 export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
-  // FIXME: Вернуть после опти
-  // '1MIN': {
-  //   timeframe: '1MIN',
-  //   name_ru: '1 минута',
-  //   lifetime: 60000,
-  //   name_ru_plur: '1 минуту'
-  // },
-  // '5M': {
-  //   timeframe: '5M',
-  //   name_ru: '5 минут',
-  //   lifetime: 300000,
-  //   name_ru_plur: '5 минут'
-  // },
+  '10S': {
+    timeframe: '10S',
+    name_ru: '10 секунд',
+    lifetime: 10000,
+    name_ru_plur: '10 секунд'
+  },
+  '15S': {
+    timeframe: '15S',
+    name_ru: '15 секунд',
+    lifetime: 15000,
+    name_ru_plur: '15 секунд'
+  },
+  '30S': {
+    timeframe: '30S',
+    name_ru: '30 секунд',
+    lifetime: 30000,
+    name_ru_plur: '30 секунд'
+  },
+  '1M': {
+    timeframe: '1M',
+    name_ru: '1 минута',
+    lifetime: 60000,
+    name_ru_plur: '1 минуту'
+  },
+  '5M': {
+    timeframe: '5M',
+    name_ru: '5 минут',
+    lifetime: 300000,
+    name_ru_plur: '5 минут'
+  },
   '15M': {
     timeframe: '15M',
     name_ru: '15 минут',
@@ -57,7 +77,7 @@ export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
     name_ru_plur: '15 минут'
   },
   '30M': {
-    timeframe: '30MIN',
+    timeframe: '30M',
     name_ru: '30 минут',
     lifetime: 1800000,
     name_ru_plur: '30 минут'
@@ -90,7 +110,7 @@ export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
 
 const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
   [EMarketDataSources.binance]: {
-    minTimeframeTime: 10000
+    minTimeframeTime: 5000
   },
   [EMarketDataSources.bybit]: {
     minTimeframeTime: 5000
@@ -99,7 +119,7 @@ const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
     minTimeframeTime: 3600000
   },
   [EMarketDataSources.tinkoff]: {
-    minTimeframeTime: 10000
+    minTimeframeTime: 30000
   },
   [EMarketDataSources.yahoo]: {
     minTimeframeTime: 3600000
