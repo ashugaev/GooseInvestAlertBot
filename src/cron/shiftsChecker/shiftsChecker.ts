@@ -1,7 +1,3 @@
-/**
- * Мониторит скорость изменения цены
- */
-
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
 import { retryForever } from '@/helpers'
 
@@ -25,11 +21,7 @@ const getCandleKey = (tickerId: string, timeframe: string) => {
 }
 
 /**
- * Все лежит в кэше о обновляется максимально быстро.
- * Раз в какой-то время кэш асинхронно обновляется улетает в базу
- *
- * TODO: Update only changed items, no delete and create all
- * TODO: Сохранять историю цен за 5 мин
+ * Модуль управления кэшом свечей
  */
 class ShiftCandlesUpdater {
   constructor () {
@@ -46,7 +38,6 @@ class ShiftCandlesUpdater {
   isReady = false
 
   init = async () => {
-    // FIXME: Remove limit !!!
     const data = await retryForever(async () => await ShiftCandleModel.find().lean())
     // @ts-expect-error FIXME: Fix types
     const obj: ShiftCandlesNormalized = data.reduce((acc, item) => {
@@ -59,11 +50,11 @@ class ShiftCandlesUpdater {
     }, {} as ShiftCandlesNormalized)
     this.candlesObj = obj
     this.isReady = true
-    this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.setupUpdater()
   }
 
   /**
-   * Updates candles from cache to db every 10 min
+   * Updates candles from cache
    */
   setupUpdater = async () => {
     while (true) {
@@ -116,6 +107,9 @@ class ShiftCandlesUpdater {
   }
 }
 
+/**
+ * Модуль управления кэшом шифтов
+ */
 class ShiftsUpdater {
   constructor () {
     this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -130,7 +124,7 @@ class ShiftsUpdater {
   }
 
   init = async () => {
-    this.setupUpdater() // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.setupUpdater()
   }
 
   /**
@@ -171,9 +165,7 @@ class ShiftsUpdater {
 export const candlesCache = new ShiftCandlesUpdater()
 export const shiftsCache = new ShiftsUpdater()
 
-// TODO: Мониторить кол-во сообщений в очереди через promotheus
-// TODO: В очереди сообщение будет обработка кодов ошибок от телеги и отмена подписок на сообщения
-// TODO: Сделать проверку свеч до 5 минут другим алгоритмом
+// TODO: Мониторить кол-во сообщений в минуту или всего через promotheus
 export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) => {
   if (isReadyToStart) {
     await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
@@ -198,7 +190,7 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
         const checkStart = new Date().getTime()
 
-        // ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
+        // !!! ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
         // TODO: Перейти с созданию и поддержания всех таймфреймов для всех бирж
         for (let i = 0; i < shiftsCache.get.length; i++) {
           try {
