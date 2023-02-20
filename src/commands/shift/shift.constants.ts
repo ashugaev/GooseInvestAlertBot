@@ -6,10 +6,10 @@ export const SHIFT_SCENES = {
 
 // Рандомные симолы в экшене, что бы не выходить за лимит длины
 export const SHIFT_ACTIONS = {
-  chooseTimeframe: 'chooseTimeframe',
-  chooseSource: 'chooseSource',
+  chooseTimeframe: '4k',
+  chooseSource: '88',
   additionalConfiguration: 'l4y5',
-  alertSettings: 'lakje'
+  alertSettings: 'lje'
 }
 
 export const SHIFT_MAX_PERCENT = 200
