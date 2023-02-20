@@ -1,4 +1,6 @@
 import 'module-alias/register'
+// Importing @sentry/tracing patches the global hub for tracing to work.
+import '@sentry/tracing'
 
 // Config dotenv
 import * as dotenv from 'dotenv'
@@ -44,7 +46,13 @@ export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
 Sentry.init({
   dsn: process.env.SENTRY_URL,
-  tracesSampleRate: 1.0
+  // Процент транзакций, которые будут отправлены в Sentry
+  tracesSampleRate: 1.0,
+  // To set a uniform sample rate
+  // tracesSampleRate: 0.2,
+
+  // Alternatively, to control sampling dynamically
+  tracesSampler: samplingContext => { ... }
 })
 
 const stage = new Stage([
