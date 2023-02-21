@@ -28,7 +28,7 @@ export const instrumentsListKeyboard = async ({
   // Генерит инлайн кнопки по тикерам
   const getTickerButtons = pageTickers.map(({ name, symbol, tickerId, source }) => {
     const payload = {
-      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx),
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId),
       p: 0,
       tp: page,
       kMode: EKeyboardModes.edit

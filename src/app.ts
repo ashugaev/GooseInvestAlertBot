@@ -47,12 +47,7 @@ export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 Sentry.init({
   dsn: process.env.SENTRY_URL,
   // Процент транзакций, которые будут отправлены в Sentry
-  tracesSampleRate: 1.0,
-  // To set a uniform sample rate
-  // tracesSampleRate: 0.2,
-
-  // Alternatively, to control sampling dynamically
-  tracesSampler: samplingContext => { ... }
+  tracesSampleRate: 1.0
 })
 
 const stage = new Stage([

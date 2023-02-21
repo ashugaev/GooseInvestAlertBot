@@ -1,5 +1,7 @@
 import { Markup } from 'telegraf'
 
+import { shortenerCreateShort } from '@/helpers'
+
 import { Actions } from '../../../constants'
 import { createActionString } from '../../../helpers/createActionString'
 import { i18n } from '../../../helpers/i18n'
@@ -18,7 +20,7 @@ export const shiftEditKeyboard = ({ page, shiftData }) => {
     muted: shiftData.muted,
     growAlerts: shiftData.growAlerts,
     fallAlerts: shiftData.fallAlerts,
-    [ListActionsDataKeys.selectedAlertId]: shiftData._id,
+    [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(shiftData._id), // FIXME: BUG HERE
     p: page
   }
 
