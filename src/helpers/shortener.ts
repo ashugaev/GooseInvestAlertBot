@@ -1,33 +1,27 @@
-import { get, set } from 'lodash';
-
-const COMMON_SHORT_STRINGS_PATH = 'session.commonData.shortStrings';
+const SHORTENER_STORE: any[] = []
 
 /**
- * Save short version of string in session storage
+ * Save short version of string
  */
-export const shortenerCreateShort = (fullString, ctx) => {
-  const shortStrings = get(ctx, COMMON_SHORT_STRINGS_PATH) ?? [];
-
-  let index = shortStrings.findIndex(el => el === fullString);
+export const shortenerCreateShort = (fullString: string) => {
+  let index = SHORTENER_STORE.indexOf(fullString)
 
   if (index === -1) {
-    index = shortStrings.push(fullString) - 1;
-
-    set(ctx, COMMON_SHORT_STRINGS_PATH, shortStrings);
-  } else {
-    shortStrings[index] = fullString;
+    index = SHORTENER_STORE.push(fullString) - 1
   }
 
-  return index.toString();
-};
+  return index.toString()
+}
 
 /**
  * Returns full version of string by short
  */
-export const shortenerGetFull = (shortString, ctx) => {
-  const shortStrings = get(ctx, COMMON_SHORT_STRINGS_PATH);
+export const shortenerGetFull = (shortString) => {
+  const full = SHORTENER_STORE[shortString]
 
-  const fullString = shortStrings[shortString];
+  if (!full) {
+    throw new Error('Can\'t find full string by short')
+  }
 
-  return (fullString === undefined) ? null : fullString;
-};
+  return full
+}

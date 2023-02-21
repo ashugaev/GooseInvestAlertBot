@@ -1,5 +1,5 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
-import { log } from '@/helpers'
+import {log, shortenerCreateShort} from '@/helpers'
 
 import { listConfig } from '../../../config'
 import { Actions } from '../../../constants'
@@ -74,7 +74,7 @@ export const showShiftsPage = async ({
           action: Actions.list_shiftsPage,
           payloadCallback: (i) => {
             return {
-              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(itemsToShow[i]._id)
             }
           }
         },
@@ -85,7 +85,7 @@ export const showShiftsPage = async ({
           },
           payloadCallback: (i) => {
             return {
-              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(itemsToShow[i]._id)
             }
           }
         }

@@ -1,11 +1,12 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
+import { shiftsCache } from '@/cron/shiftsChecker'
+import { shortenerGetFull } from '@/helpers'
 
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { TimeShiftModel } from '../../../models'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
-import {shiftsCache} from "@/cron/shiftsChecker";
 
 /**
  * Страница редактирования шифта
@@ -14,13 +15,16 @@ export const shiftEditPage = async (ctx) => {
   try {
     const {
       // Данные достаточные для первичного вызова
-      [ListActionsDataKeys.selectedAlertId]: _id,
+      [ListActionsDataKeys.selectedAlertId]: _idShort,
       p: page,
       // Данные, которые приходят уже после повторных вызовов
       m: muted,
       g: growAlerts,
       f: fallAlerts
     } = JSON.parse(ctx.match[1])
+
+    const _id = shortenerGetFull(_idShort)
+
     const { id: user } = ctx.from
 
     const shiftData = (await TimeShiftModel.find({ _id, user }).lean())[0]

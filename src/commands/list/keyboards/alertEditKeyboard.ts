@@ -14,7 +14,7 @@ export const alertEditKeyboard = ({ tickerId, ctx }) => {
   const deleteButton = Markup.callbackButton(
     i18n.t('ru', 'button_delete'),
     createActionString(Actions.list_deleteAlert, {
-      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId)
     })
   );
 
@@ -29,7 +29,7 @@ export const alertEditKeyboard = ({ tickerId, ctx }) => {
       p: page,
       kMode: EKeyboardModes.edit,
       tp: tickersPage,
-      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId)
     })
   })]);
 

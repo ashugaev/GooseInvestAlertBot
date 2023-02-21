@@ -96,7 +96,7 @@ export const showInstrumentPage = async ({
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx),
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId),
             p: page,
             kMode: keyboardMode,
             tp: tickersPage
@@ -109,14 +109,14 @@ export const showInstrumentPage = async ({
           // }
           payloadCallback: (i) => {
             return {
-              [ListActionsDataKeys.selectedAlertId]: itemsToShow[i]._id
+              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(itemsToShow[i]._id.toString())
             }
           }
         },
         editButtonConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId, ctx)
+            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId)
           }
         }
       })

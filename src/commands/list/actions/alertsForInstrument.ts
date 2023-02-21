@@ -1,10 +1,11 @@
-import { shortenerGetFull } from '@/helpers';
-import { set } from 'lodash';
+import { set } from 'lodash'
 
-import { log } from '../../../helpers/log';
-import { ListActionsDataKeys } from '../list.types';
-import { fetchAlerts } from '../utils/fetchAlerts';
-import { showInstrumentPage } from '../utils/showInstrumentPage';
+import { shortenerGetFull } from '@/helpers'
+
+import { log } from '../../../helpers/log'
+import { ListActionsDataKeys } from '../list.types'
+import { fetchAlerts } from '../utils/fetchAlerts'
+import { showInstrumentPage } from '../utils/showInstrumentPage'
 
 /**
  * Экшен перехода на страницу списка инструментов
@@ -18,13 +19,13 @@ export const alertsForInstrument = async (ctx) => {
       p: page,
       kMode: keyboardMode,
       tp: tickersPage
-    } = JSON.parse(ctx.match[1]);
+    } = JSON.parse(ctx.match[1])
 
-    const selectedTickerId = shortenerGetFull(selectedTickerIdShortened, ctx);
+    const selectedTickerId = shortenerGetFull(selectedTickerIdShortened)
 
-    set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId);
+    set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId)
 
-    const { alertsList } = await fetchAlerts({ tickerId: selectedTickerId, ctx, noContextUpdate: true });
+    const { alertsList } = await fetchAlerts({ tickerId: selectedTickerId, ctx, noContextUpdate: true })
 
     await showInstrumentPage({
       page,
@@ -33,9 +34,9 @@ export const alertsForInstrument = async (ctx) => {
       edit: true,
       keyboardMode,
       tickersPage
-    });
+    })
   } catch (e) {
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
-    log.error(e);
+    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+    log.error(e)
   }
-};
+}

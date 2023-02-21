@@ -65,7 +65,7 @@ class ShiftCandlesUpdater {
           log.error(logPrefix, 'Candles update crashed', e)
         }
       } else {
-        await wait(300000) // 5 min
+        await wait(30000) // 30 sec
       }
     }
   }

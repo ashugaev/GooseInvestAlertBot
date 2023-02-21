@@ -1,13 +1,15 @@
-import { get, set } from 'lodash';
+import { get, set } from 'lodash'
 
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk';
-import { i18n } from '../../../helpers/i18n';
-import { log } from '../../../helpers/log';
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency';
-import { alertEditKeyboard } from '../keyboards/alertEditKeyboard';
-import { ListActionsDataKeys } from '../list.types';
+import { shortenerGetFull } from '@/helpers'
 
-const logPrefix = '[ALERT EDIT]';
+import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
+import { i18n } from '../../../helpers/i18n'
+import { log } from '../../../helpers/log'
+import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
+import { alertEditKeyboard } from '../keyboards/alertEditKeyboard'
+import { ListActionsDataKeys } from '../list.types'
+
+const logPrefix = '[ALERT EDIT]'
 
 /**
  * Экшен перехода на страницу списка инструментов
@@ -15,24 +17,26 @@ const logPrefix = '[ALERT EDIT]';
 export const alertEdit = async (ctx) => {
   try {
     const {
-      [ListActionsDataKeys.selectedAlertId]: selectedAlertId
+      [ListActionsDataKeys.selectedAlertId]: selectedAlertIdShort
       // Индекс алерта на текущей странице
       // i,
       // p: page,
       // tp: tickersPage
-    } = JSON.parse(ctx.match[1]);
+    } = JSON.parse(ctx.match[1])
 
-    const alertsList = get(ctx, 'session.listCommand.data.alertsList');
+    const selectedAlertId = shortenerGetFull(selectedAlertIdShort)
+
+    const alertsList = get(ctx, 'session.listCommand.data.alertsList')
 
     const alert = alertsList
-      .find(item => item._id.toString() === selectedAlertId);
+      .find(item => item._id.toString() === selectedAlertId)
 
     if (!alert) {
-      throw new Error(logPrefix + 'Алерт не найдет');
+      throw new Error(logPrefix + 'Алерт не найдет')
     }
 
     // Проставяем id алерта для которого открыли редактирование
-    set(ctx, 'session.listCommand.price.selectedAlertId', alert._id);
+    set(ctx, 'session.listCommand.price.selectedAlertId', alert._id)
 
     const message = i18n.t('ru', 'alertsList_editOne', {
       name: alert.name,
@@ -42,14 +46,14 @@ export const alertEdit = async (ctx) => {
       currency: symbolOrCurrency(alert.currency),
       link: alert.type && getInstrumentLink({ type: alert.type, ticker: alert.symbol, source: alert.source }),
       message: alert.message
-    });
+    })
 
     const keyboard = alertEditKeyboard({
       // page,
       // tickersPage,
       tickerId: alert.tickerId,
       ctx
-    });
+    })
 
     await ctx.editMessageText(message, {
       parse_mode: 'HTML',
@@ -58,9 +62,9 @@ export const alertEdit = async (ctx) => {
         inline_keyboard: keyboard
       }
     }
-    );
+    )
   } catch (e) {
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'));
-    log.error(e);
+    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+    log.error(e)
   }
-};
+}
