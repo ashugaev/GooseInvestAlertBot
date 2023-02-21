@@ -20,7 +20,7 @@ export const shiftEditKeyboard = ({ page, shiftData }) => {
     muted: shiftData.muted,
     growAlerts: shiftData.growAlerts,
     fallAlerts: shiftData.fallAlerts,
-    [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(shiftData._id), // FIXME: BUG HERE
+    [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(shiftData._id),
     p: page
   }
 
