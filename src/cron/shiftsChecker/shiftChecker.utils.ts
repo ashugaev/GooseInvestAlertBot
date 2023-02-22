@@ -167,7 +167,13 @@ export const checkTriggeredShiftsAndSendMessage = async ({
 
         // If bot was blocked by user
         // TODO: Create middleware for this
-        if (e.code === 403 && e.description === 'Forbidden: bot was blocked by the user') {
+        if (
+          e.code === 403 &&
+            (
+              e.description === 'Forbidden: bot was blocked by the user' ||
+              e.description === 'Forbidden: user is deactivated'
+            )
+        ) {
           await TimeShiftModel.remove({ _id: shift._id })
           shiftsCache.update()
 
