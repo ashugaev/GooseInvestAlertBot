@@ -63,7 +63,7 @@ class ShiftCandlesUpdater {
           log.error(logPrefix, 'Candles update crashed', e)
         }
       } else {
-        await wait(10000) // 30 sec
+        await wait(10000) // 10 sec
       }
     }
   }
@@ -77,7 +77,10 @@ class ShiftCandlesUpdater {
       this.candlesUpdateConfig.push({
         updateOne: {
           upsert: true,
-          filter: { tickerId: newCandle.tickerId },
+          filter: {
+            tickerId: newCandle.tickerId,
+            timeframe: newCandle.timeframe
+          },
           update: newCandle
         }
       })
@@ -171,9 +174,15 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
           return // skip iteration
         }
 
-        log.info(logPrefix, 'checking', shiftsCache.get.length)
+        log.info(logPrefix, 'checking shifts', shiftsCache.get.length)
+        const candlesToCheck = shiftsCache.get.reduce((acc, el) => {
+          acc[getCandleKey(el.tickerId, el.timeframe)] = true
+          return acc
+        }, {})
+        log.info(logPrefix, 'candles to check', Object.keys(candlesToCheck).length)
 
         let noPriceCount = 0
+        let candlesChecked = 0
 
         const checkStart = new Date().getTime()
 
@@ -214,10 +223,14 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
               bot,
               timeframeData
             })
+
+            candlesChecked++
           } catch (e) {
             log.error('[ShiftsChecker] Crash', e)
           }
         }
+
+        log.info(logPrefix, 'Checked shifts', candlesChecked, '/', shiftsCache.get.length)
 
         if (noPriceCount > 0) {
           if (noPriceCount > 100) {
@@ -227,7 +240,6 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
           if (noPriceCount === shiftsCache.get.length) { // If not prices yet
             await wait(1000)
           }
-          noPriceCount = 0
         }
 
         const checkEnd = new Date().getTime()
