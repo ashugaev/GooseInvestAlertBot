@@ -41,23 +41,24 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       const normalizedNominal = nominal ? moneyObjToValue(nominal) : 1
 
       /**
-     * Different calculation for different instrument
-     * @see https://tinkoff.github.io/investAPI/head-marketdata/#_4
-     * @see https://tinkoff.github.io/investAPI/faq_marketdata/
-     */
+             * Different calculation for different instrument
+             * @see https://tinkoff.github.io/investAPI/head-marketdata/#_4
+             * @see https://tinkoff.github.io/investAPI/faq_marketdata/
+             */
       if (item?.type === EMarketInstrumentTypes.Currency) {
         priceNormalized = priceNormalized / normalizedNominal
       } else if (item?.type === EMarketInstrumentTypes.Bond) {
         priceNormalized = priceNormalized / 100 * normalizedNominal
       } else if (item?.type === EMarketInstrumentTypes.Etf) {
-      // NOTE: Есть расхождения с сайтом на тикерах с лотом 100
-      // no changes
+        // NOTE: Есть расхождения с сайтом на тикерах с лотом 100
+        // no changes
       } else if (item?.type === EMarketInstrumentTypes.Future) {
         const futureMargin = await getFutureMarginByTickerId(tickerId)
         const minPriceIncrementNumber = moneyObjToValue(item.sourceSpecificData.minPriceIncrement)
         const minPriceIncrementAmountNumber = moneyObjToValue(futureMargin?.minPriceIncrementAmount)
 
         if (!minPriceIncrementNumber || !minPriceIncrementAmountNumber) {
+          // FIXME: Не бросать эту ошибку в итераторе
           log.error(logPrefix, 'No minPriceIncrementNumber or minPriceIncrementAmountNumber for', item.id)
           continue
         }

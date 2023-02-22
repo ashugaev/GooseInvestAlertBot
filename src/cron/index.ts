@@ -1,3 +1,4 @@
+import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { log, retry } from '@/helpers'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 
@@ -185,6 +186,18 @@ export const setupCheckers = (bot) => {
     callback: copyAlerts,
     callbackArgs: [bot],
     // В полночь и при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true
+  })
+
+  /**
+   * Clear old candles
+   */
+  startCronJob({
+    name: 'Clear old candles',
+    callback: clearOldCandles,
+    callbackArgs: [bot],
+    // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
   })
