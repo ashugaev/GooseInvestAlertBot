@@ -28,8 +28,6 @@ class ShiftCandlesUpdater {
     this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  needToPushCandlesToDB = false
-
   candlesObj: ShiftCandlesNormalized = {}
 
   // Mongo config for update candles
@@ -53,19 +51,19 @@ class ShiftCandlesUpdater {
   }
 
   /**
-   * Updates candles from cache
+   * Updates candles from cache to DB every n sec
    */
   setupUpdater = async () => {
     while (true) {
-      if (this.needToPushCandlesToDB) {
+      if (this.candlesUpdateConfig.length) {
         try {
-          await this.updateToDB()
-          this.needToPushCandlesToDB = false
+          await ShiftCandleModel.bulkWrite(this.candlesUpdateConfig)
+          this.candlesUpdateConfig = []
         } catch (e) {
           log.error(logPrefix, 'Candles update crashed', e)
         }
       } else {
-        await wait(30000) // 30 sec
+        await wait(10000) // 30 sec
       }
     }
   }
@@ -84,16 +82,6 @@ class ShiftCandlesUpdater {
         }
       })
       this.candlesObj[getCandleKey(newCandle.tickerId, newCandle.timeframe)] = newCandle
-      this.needToPushCandlesToDB = true
-    }
-  }
-
-  updateToDB = async () => {
-    try {
-      await ShiftCandleModel.bulkWrite(this.candlesUpdateConfig)
-      this.candlesUpdateConfig = []
-    } catch (err) {
-      log.error(logPrefix, 'Candles update crashed', err)
     }
   }
 
@@ -218,21 +206,24 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
 
             if (candleIsChanged) {
               await candlesCache.updateCandle(updatedCandle)
-
-              await checkTriggeredShiftsAndSendMessage({
-                candle: updatedCandle,
-                shift,
-                bot,
-                timeframeData
-              })
             }
+
+            await checkTriggeredShiftsAndSendMessage({
+              candle: updatedCandle,
+              shift,
+              bot,
+              timeframeData
+            })
           } catch (e) {
             log.error('[ShiftsChecker] Crash', e)
           }
         }
 
         if (noPriceCount > 0) {
-          log.error(logPrefix, 'Np price errors', noPriceCount)
+          if (noPriceCount > 100) {
+            log.error(logPrefix, 'No price errors', noPriceCount)
+          }
+
           if (noPriceCount === shiftsCache.get.length) { // If not prices yet
             await wait(1000)
           }
