@@ -19,6 +19,9 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
 
   const pricesNormalizes = []
 
+  // Cache for logs
+  const noMinPriceIncrementNumber = []
+
   for (let i = 0; i < lastPrices.lastPrices.length; i++) {
     try {
       const piceObj = lastPrices.lastPrices[i]
@@ -58,8 +61,7 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
         const minPriceIncrementAmountNumber = moneyObjToValue(futureMargin?.minPriceIncrementAmount)
 
         if (!minPriceIncrementNumber || !minPriceIncrementAmountNumber) {
-          // FIXME: Не бросать эту ошибку в итераторе
-          log.error(logPrefix, 'No minPriceIncrementNumber or minPriceIncrementAmountNumber for', item.id)
+          noMinPriceIncrementNumber.push(item.id)
           continue
         }
 
@@ -77,6 +79,10 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
     } catch (e) {
       log.error(logPrefix, 'Error in getTinkoffPrices', e)
     }
+  }
+
+  if (noMinPriceIncrementNumber.length > 100) {
+    log.error(logPrefix, 'No minPriceIncrementNumber or minPriceIncrementAmountNumber for', noMinPriceIncrementNumber)
   }
 
   return pricesNormalizes
