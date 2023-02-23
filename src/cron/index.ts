@@ -236,12 +236,12 @@ export const setupCheckers = (bot) => {
    * COINGECKO prices updater
    *
    * QUOTA: 50 calls/min
-   * TIME FOR UPDATE ALL TICKER: 12000 ticker / 500 per request/ 30 calls per min = ~1min
+   * @see https://www.coingecko.com/en/api/documentation
    */
   retry(async () => {
     await setupPriceUpdater({
       // 2sec
-      minTimeBetweenRequests: 2000,
+      minTimeBetweenRequests: 3000,
       getPrices: coingeckoGetLastPriceById,
       source: EMarketDataSources.coingecko,
       // 500 items works fine

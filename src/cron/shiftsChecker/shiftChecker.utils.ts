@@ -80,7 +80,7 @@ export const updateCandle = ({
 /**
  * Cache for shifts for save sent alerts time
  */
-const triggeredShiftsCache = new Map<string, {lastMessageCandleGrowTime: number}>()
+const triggeredShiftsCache = {}
 
 /**
  * Проверит стриггерился ли алерт и отправит сообщение юзеру если да
@@ -111,7 +111,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
 
     const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
 
-    const shiftCache = triggeredShiftsCache.get(shift._id)
+    const shiftCache = triggeredShiftsCache[shift._id]
     // If we have something in cache it means that and data more fresh than in DB
     const lastMessageCandleGrowTime = shiftCache?.lastMessageCandleGrowTime ?? shift.lastMessageCandleGrowTime
 
@@ -131,7 +131,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
     const sourceLink = getSourceLink(tickerInfo)
 
     // !!! Update cache before send message for make it faster and not create message duplicate
-    triggeredShiftsCache.set(shift._id, { lastMessageCandleGrowTime: actualCandleCreatedTime })
+    triggeredShiftsCache[shift._id] = { lastMessageCandleGrowTime: actualCandleCreatedTime }
     // !!! No 'await' for not block iterator
     bot.telegram.sendMessage(shift.user, i18n.t(
       'ru', 'shift_alert',
