@@ -80,7 +80,7 @@ export const updateCandle = ({
 /**
  * Cache for shifts for save sent alerts time
  */
-const triggeredShiftsCache = {}
+const triggeredShiftsCache: Record<string, {lastMessageCandleGrowTime: number}> = {}
 
 /**
  * Проверит стриггерился ли алерт и отправит сообщение юзеру если да
