@@ -1,4 +1,4 @@
-import { getModelForClass, prop } from '@typegoose/typegoose';
+import { getModelForClass, prop } from '@typegoose/typegoose'; // eslint-disable-line unused-imports/no-unused-imports
 
 /**
  * Статистика

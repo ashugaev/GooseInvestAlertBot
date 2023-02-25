@@ -1,4 +1,3 @@
-// Dependencies
 import { DocumentType } from '@typegoose/typegoose';
 import { Middleware } from 'telegraf';
 import { TelegrafContext } from 'telegraf/typings/context';

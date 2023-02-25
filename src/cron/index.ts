@@ -1,4 +1,5 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
+import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
 import { log, retry } from '@/helpers'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 
@@ -15,7 +16,6 @@ import { EMarketDataSources } from '../marketApi/types'
 import { getYahooPrices } from '../marketApi/yahoo/getPrices'
 import { setupPriceUpdater, updateTickersList } from '../modules'
 import { copyAlerts } from './copyAlerts'
-import { setupPriceCheckerOld } from './priceChecker'
 import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
 import { createShitEvents } from './statChecker'
@@ -291,11 +291,9 @@ export const setupCheckers = (bot) => {
   /**
    * Мониторинг достижения уровней
    */
-  retry(async () => await setupPriceCheckerOld(
-    bot,
-    // FIXME: Remove this line after price cache will be implemented
-    () => isAllPricesUpdated() || isReadyToRunByTimeout()
+  retry(async () => await setupPriceChecker(
+    bot
   ),
   10000,
-  'setupPriceCheckerOld')
+  'setupPriceChecker')
 }

@@ -2,7 +2,7 @@
  * Отслеживание скорости изменения цены
  */
 
-import { getModelForClass, prop } from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
 
 export class TimeShift {
   _id: string

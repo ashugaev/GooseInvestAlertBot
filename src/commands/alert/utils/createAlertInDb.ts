@@ -1,6 +1,7 @@
 import { TelegrafContext } from 'telegraf/typings/context'
 
-import { getSourceMark } from '../../../helpers/getSourceMark'
+import { getSourceLink } from '@/helpers/getSourceLInk'
+
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
@@ -66,7 +67,7 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
       name: instrumentData.name,
       onePrice: createdItemsList.length === 1,
       invalid: null,
-      source: getSourceMark({ source: instrumentData.source, item: instrumentData })
+      source: getSourceLink(instrumentData)
     }
 
     await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams), { disable_web_page_preview: true })
