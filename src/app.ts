@@ -14,6 +14,9 @@ import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
+import { setupRemove } from '@/commands/remove/remove'
+import { removeScenes } from '@/commands/remove/remove.scenes'
+
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
 import { setupHelp } from './commands/help'
@@ -53,6 +56,7 @@ Sentry.init({
 const stage = new Stage([
   statScenes,
   shiftScenes,
+  removeScenes,
   ...commonScenes,
   ...alertScenes
 ])
@@ -83,6 +87,7 @@ setupShift(bot)
 setupStat(bot)
 setupId(bot)
 setupPay(bot)
+setupRemove(bot)
 
 // Start bot
 bot.startPolling()
