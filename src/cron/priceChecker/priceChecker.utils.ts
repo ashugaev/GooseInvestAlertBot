@@ -1,10 +1,10 @@
 import Telegraf, { Context } from 'telegraf'
 
 import { log } from '@/helpers'
-import { getSourceLink } from '@/helpers/getSourceLInk'
 import { i18n } from '@/helpers/i18n'
 import { symbolOrCurrency } from '@/helpers/symbolOrCurrency'
 import { InstrumentsList, PriceAlert, priceAlertCache, removePriceAlert } from '@/models'
+import {getSourceMark} from "@/helpers/getSourceMark";
 
 export const checkAlertTriggered = (alert: PriceAlert, price: number) => {
   const { lowerThen, greaterThen } = alert
@@ -29,7 +29,7 @@ export const sendTriggeredAlert = async (bot: Telegraf<Context>, alert: PriceAle
       greaterThen,
       price: alertPrice,
       message,
-      link: getSourceLink(instrumentData)
+      link: getSourceMark(instrumentData)
     }),
     {
       parse_mode: 'HTML',

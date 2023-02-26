@@ -35,7 +35,7 @@ export const showInstrumentPage = async ({
 }: IShowInstrumentPageParams) => {
   // Получаем сортированный список инструментов для страницы
   // FIXME: Вынести
-  const itemsToShow = instrumentItems
+  const itemsToShow: PriceAlertItem[] = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 

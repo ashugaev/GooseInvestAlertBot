@@ -26,7 +26,8 @@ const requestStep = immediateStep('check-ticker-duplicates-send-message', async 
   }
 
   const keyboard = m.inlineKeyboard(instrumentsList.map(item => [m.callbackButton(
-    `${item.name} (${item.ticker}) ${getSourceMark({ source: item.source })}`,
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    `${item.name} (${item.ticker}) ${getSourceMark(item)}`,
     createActionString(COMMON_ACTIONS.chooseTickerId, {
       id: item.id
     })

@@ -1,4 +1,3 @@
-import { InstrumentType } from '@tinkoff/invest-openapi-js-sdk/build/domain'
 import { getModelForClass, prop } from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
 
 import { log } from '@/helpers'
@@ -69,7 +68,7 @@ export class PriceAlert {
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
-  type: InstrumentType
+  type: EMarketInstrumentTypes
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()

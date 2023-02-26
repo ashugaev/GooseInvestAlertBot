@@ -31,7 +31,7 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
     i18n.t('ru', 'alert_add_choosePrice', {
       price,
       currency: symbolOrCurrency(currency),
-      source: getSourceMark({ source, item: instrumentData })
+      source: getSourceMark(instrumentData)
     }),
     { disable_web_page_preview: true }
   )

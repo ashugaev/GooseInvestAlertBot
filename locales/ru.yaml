@@ -189,10 +189,10 @@ alertsList_shifts_list: |
   ${(showEditMessage && !empty) ? 'Выбери номер для редактирования 👇' : ''}
 
 alertsList_shifts_listItem: |
-  ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
+  ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} ${link} — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
 
 alertsList_shifts_editOne: |
-  <b>${name}</b> (${ticker}) — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
+  <b>${name}</b> (${ticker}) ${link} — ${growthOnly ? '↗️ <b>рост</b>' : ''}${fallOnly ? '↘️ <b>падение</b>' : ''}${change ? '↕️ <b>изменение</b>' : ''} на <b>${percent}%</b> за <b>${time}</b>
 
 # Alert add
 
@@ -347,7 +347,7 @@ shift_alert_message_bond: |
   ${list}
 
 shift_alert_message_item: |
-  - ${name} (${ticker}) - ${action} на ${percent} <a href="${link}">[график]</a>
+  - ${name} (${ticker}) ${link} - ${action} на ${percent}
 
 # Отдельные слова
 
