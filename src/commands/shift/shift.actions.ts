@@ -1,11 +1,10 @@
-import { getSourceLink } from '@/helpers/getSourceLInk'
-
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
 import { SHIFT_ACTIONS, SHIFT_TIMEFRAMES } from './shift.constants'
 import { getShiftConfigKeyboard } from './shift.keyboards'
 import {shiftsCache} from "@/cron/shiftsChecker";
+import {getSourceMark} from "@/helpers/getSourceMark";
 
 /**
  * Редактирование пришедшего алерта
@@ -51,7 +50,7 @@ export const shiftAlertSettings = async (ctx) => {
         isGrow: Boolean(isGrow),
         time: timeframesObj[shiftData.timeframe].name_ru_plur,
         ticker: shiftData.ticker,
-        source: getSourceLink(tickerInfo)
+        source: getSourceMark(tickerInfo)
       }
     ), {
       parse_mode: 'HTML',

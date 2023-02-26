@@ -1,4 +1,3 @@
-// Dependencies
 import { Telegraf, Context } from 'telegraf'
 import { commandWrapper } from '../helpers/commandWrapper'
 

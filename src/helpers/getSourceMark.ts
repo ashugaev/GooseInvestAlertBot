@@ -1,32 +1,21 @@
+import { SOURCE_CONFIG } from '@/constants/sourceConfig'
 import { InstrumentsList } from '@/models'
 
-import { EMarketDataSources } from '../marketApi/types'
-import { getTinkoffInstrumentLink } from './getInstrumentLInk'
+import { getInstrumentLink } from './getInstrumentLInk'
 
-/**
- * @deprecated Use SOURCE_CONFIG
- */
-const SORTENED_SOURCES: Record<EMarketDataSources, string> = {
-  tinkoff: 'TNKF',
-  coingecko: 'COINGECKO',
-  yahoo: 'YH',
-  binance: 'BINANCE',
-  bybit: 'BYBIT'
-}
+// Returns string or html link. Format: [SHOUT_NAME]
+// Minimal params: { source: EMarketDataSources }
+export const getSourceMark = (instrumentData: Partial<InstrumentsList>) => {
+  const { source } = instrumentData
 
-// @ts-expect-error
-const links: Record<EMarketDataSources, (item: InstrumentsList) => string> = {
-  binance: ({ ticker }) => `https:// www.binance.com/en/trade/${ticker}`,
-  tinkoff: ({ type, ticker }) => getTinkoffInstrumentLink({ type, ticker })
-}
-
-export const getSourceMark = ({ source, item }: {item?: InstrumentsList, source: EMarketDataSources}) => {
   if (!source) return null
 
-  let res = '[' + (SORTENED_SOURCES[source] ?? source.toUpperCase()) + ']'
+  let res = '[' + SOURCE_CONFIG[instrumentData.source].shortName + ']'
 
-  if (item && links[source]?.(item)) {
-    res = `<a href='${links[source](item)}'>${res}</a>`
+  const link = getInstrumentLink(instrumentData)
+
+  if (link) {
+    res = `<a href="${link}" >${res}</a>`
   }
 
   return res

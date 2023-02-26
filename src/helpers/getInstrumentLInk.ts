@@ -3,7 +3,9 @@ import { BinanceSourceSpecificData } from '@/marketApi/binance/api/getAllInstrum
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes, InstrumentsList } from '../models'
 
-export const getTinkoffInstrumentLink = ({ type, ticker }) => {
+export const getTinkoffInstrumentLink = ({ type, ticker }: Partial<InstrumentsList>) => {
+  let typeForLink: EMarketInstrumentTypes | string = type
+
   if (!type && !ticker) {
     return
   }
@@ -14,28 +16,38 @@ export const getTinkoffInstrumentLink = ({ type, ticker }) => {
   }
 
   if (type === EMarketInstrumentTypes.Currency) {
-    type = 'currencies'
+    typeForLink = 'currencies'
   } else {
     // Добавляет s потому что в урле нужно множественное число
-    type = type.toLowerCase() + 's'
+    typeForLink = type.toLowerCase() + 's'
   }
 
-  return `https://www.tinkoff.ru/invest/${type}/${ticker}/`
+  return `https://www.tinkoff.ru/invest/${typeForLink}/${ticker}/`
 }
 
-export const getInstrumentLink = ({ type, ticker, source }: any, instrumentInfo?: InstrumentsList): string | undefined => {
+export const getInstrumentLink = ({
+  type,
+  ticker,
+  source,
+  sourceSpecificData,
+  currency
+}: Partial<InstrumentsList>): string | undefined => {
   let link
 
-  if (source === EMarketDataSources.tinkoff) {
+  if (source === EMarketDataSources.tinkoff && (ticker && type)) {
     link = getTinkoffInstrumentLink({ ticker, type })
   }
 
-  if (source === EMarketDataSources.binance && instrumentInfo) {
-    const base = (instrumentInfo.sourceSpecificData as BinanceSourceSpecificData).baseAsset
-    const sec = instrumentInfo.ticker.replace(base, '')
+  if (source === EMarketDataSources.binance && (sourceSpecificData && ticker)) {
+    const base = (sourceSpecificData as BinanceSourceSpecificData).baseAsset
+    const sec = ticker.replace(base, '')
     if (base?.length && sec?.length) {
       link = `https://www.binance.com/en/trade/${base}_${sec}`
     }
+  }
+
+  if (source === EMarketDataSources.bybit && (currency && ticker)) {
+    link = `https://www.bybit.com/trade/${currency.toLowerCase()}/${ticker.toUpperCase()}`
   }
 
   return link

@@ -6,7 +6,7 @@ import { wait } from './wait'
 
 const logPrefix = '[RETRY]'
 
-export const retry = async (func: () => Promise<any>, delay: number, funcName: string, retryTimes?: number) => {
+export const retry = async (func: () => Promise<any>, delay: number, funcName?: string, retryTimes?: number) => {
   func().catch(
     (err) => {
       log.error(logPrefix, 'Async function crash', funcName, err)

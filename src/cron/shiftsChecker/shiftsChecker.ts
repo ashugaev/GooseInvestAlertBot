@@ -25,7 +25,7 @@ const getCandleKey = (tickerId: string, timeframe: string) => {
  */
 class ShiftCandlesUpdater {
   constructor () {
-    this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.init()
   }
 
   candlesObj: ShiftCandlesNormalized = {}
@@ -102,7 +102,7 @@ class ShiftCandlesUpdater {
  */
 class ShiftsUpdater {
   constructor () {
-    this.init() // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.init()
   }
 
   shifts = []

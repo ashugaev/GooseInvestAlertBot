@@ -1,10 +1,11 @@
 import { Context as TelegrafContext } from 'telegraf'
 
+import { getSourceMark } from '@/helpers/getSourceMark'
+
 import { Scenes } from '../constants'
 import { AddPriceAlertParams, addPriceAlerts } from '../models'
 import { getInstrumentDataWithPrice } from './getInstrumentData'
 import { getPricesFromString } from './getPricesFromString'
-import { getSourceMark } from './getSourceMark'
 import { i18n } from './i18n'
 import { log } from './log'
 import { symbolOrCurrency } from './symbolOrCurrency'
@@ -122,7 +123,7 @@ export const addAlert = async ({
     name,
     invalid: null,
     onePrice: priceAlerts.length === 1,
-    source: getSourceMark({ source: instrumentData.source, item: instrumentData })
+    source: getSourceMark(instrumentData)
   }
 
   if (invalidValues.length) {

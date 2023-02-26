@@ -1,7 +1,6 @@
 
 import { ShiftTimeframe } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker/shiftsChecker'
-import { getSourceLink } from '@/helpers/getSourceLInk'
 
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
 import { i18n } from '../../helpers/i18n'
@@ -13,6 +12,7 @@ import {
   TimeShiftModel
 } from '../../models'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
+import {getSourceMark} from "@/helpers/getSourceMark";
 
 const logPrefix = '[SHIFT CHECKER]'
 
@@ -128,7 +128,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
       return
     }
 
-    const sourceLink = getSourceLink(tickerInfo)
+    const sourceLink = getSourceMark(tickerInfo)
 
     // !!! Update cache before send message for make it faster and not create message duplicate
     triggeredShiftsCache[shift._id] = { lastMessageCandleGrowTime: actualCandleCreatedTime }

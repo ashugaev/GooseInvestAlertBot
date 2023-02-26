@@ -1,10 +1,12 @@
-// Dependencies
-import { InstrumentType } from '@tinkoff/invest-openapi-js-sdk/build/domain'
-import { getModelForClass, prop } from '@typegoose/typegoose'
-import { TickerPrices } from 'prices'
+import { getModelForClass, prop } from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
+
+import { log } from '@/helpers'
+import { wait } from '@/helpers/wait'
 
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes } from './InstrumentsList'
+
+const logPrefix = '[PRICE UPDATER]'
 
 export interface AddPriceAlertParams {
   tickerId: string
@@ -49,6 +51,9 @@ export class PriceAlert {
   @prop()
   greaterThen: number
 
+  /**
+   * @deprecated Unused after alerts refactor
+   */
   @prop()
   lastCheckedAt: Date
 
@@ -63,7 +68,7 @@ export class PriceAlert {
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
-  type: InstrumentType
+  type: EMarketInstrumentTypes
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
@@ -88,7 +93,68 @@ export const PriceAlertModel = getModelForClass(PriceAlert, {
   }
 })
 
-export const addPriceAlerts = (newAlerts: AddPriceAlertParams[]): Promise<PriceAlertItem[]> => {
+/**
+ * Class for hancle price alerts cache
+ */
+class PriceAlertCache {
+  constructor () {
+    this.init()
+  }
+
+  items = []
+  isReady = false
+  needToBeUpdated = true // allows to enforce update
+
+  update () {
+    this.needToBeUpdated = true
+  }
+
+  init = async () => {
+    this.setupUpdater()
+  }
+
+  /**
+   * Updates items list every 'waitTime' ms
+   */
+  setupUpdater = async () => {
+    const waitTime = 180000 // 3 min
+    let timerId: NodeJS.Timeout
+
+    while (true) {
+      // skip iterations untill needToBeUpdated is true
+      if (!this.needToBeUpdated) {
+        await wait(1000) // 1 sec
+        continue
+      }
+
+      try {
+        const items = await PriceAlertModel.find().lean()
+        this.items = items as unknown as PriceAlert[]
+        this.needToBeUpdated = false
+        this.isReady = true
+      } catch (e) {
+        log.error(logPrefix, 'Items update crashed', e)
+      } finally {
+        clearTimeout(timerId)
+        timerId = setTimeout(() => {
+          this.needToBeUpdated = true
+        }, waitTime)
+      }
+    }
+  }
+
+  get get () {
+    return this.items
+  }
+
+  removeItemFromCache = (_id: string) => {
+    this.items = this.items.filter(item => item._id !== _id)
+  }
+}
+
+export const priceAlertCache = new PriceAlertCache()
+
+export const addPriceAlerts = async (newAlerts: AddPriceAlertParams[]): Promise<PriceAlertItem[]> => {
   const lastCheckedAt = new Date()
 
   const normalizedAlerts = newAlerts.map(alert => ({
@@ -97,7 +163,10 @@ export const addPriceAlerts = (newAlerts: AddPriceAlertParams[]): Promise<PriceA
     lastCheckedAt
   }))
 
-  return PriceAlertModel.insertMany(normalizedAlerts)
+  const items = await PriceAlertModel.insertMany(normalizedAlerts)
+  priceAlertCache.update()
+
+  return items
 }
 
 /**
@@ -148,38 +217,7 @@ export const setLastCheckedAt = async (tickerIds: string[]): Promise<void> => {
   }))
 
   await PriceAlertModel.updateMany({ $or }, { $set: { lastCheckedAt: new Date() } })
-}
-
-/**
- * Вернет массив сработавших алертов
- */
-export const checkAlerts = async (tickerPrices: TickerPrices): Promise<PriceAlertItem[]> => {
-  if (!tickerPrices.length) {
-    throw new Error('[checkAlerts] Не хватает входных данных')
-  }
-
-  const $or = tickerPrices.reduce((acc, [symbol, price, tickerId]) => {
-    acc.push(
-      {
-        tickerId,
-        // symbol,
-        lowerThen: { $gte: price }
-      },
-      {
-        tickerId,
-        // symbol,
-        greaterThen: { $lte: price }
-      }
-    )
-
-    return acc
-  }, [])
-
-  const triggeredAlerts = await PriceAlertModel.find({ $or }).lean()
-
-  await setLastCheckedAt(tickerPrices.map(([a, b, tickerId]) => tickerId))
-
-  return triggeredAlerts
+  priceAlertCache.update()
 }
 
 // TODO: Сделать отдельные методы для получения алертов по разным параметрам.
@@ -207,8 +245,9 @@ export async function getAllAlerts (): Promise<PriceAlertItem[]> {
   }
 }
 
-export function removePriceAlert ({ symbol, _id, user }: RemoveOrGetAlertParams): Promise<number> {
-  return new Promise(async (rs, rj) => {
+export async function removePriceAlert ({ symbol, _id, user }: RemoveOrGetAlertParams): Promise<number> {
+  // eslint-disable-next-line no-async-promise-executor
+  return await new Promise(async (resolve, reject) => {
     try {
       const params: RemoveOrGetAlertParams = {}
 
@@ -217,24 +256,27 @@ export function removePriceAlert ({ symbol, _id, user }: RemoveOrGetAlertParams)
       _id && (params._id = _id)
 
       if (!Object.keys(params).length) {
-        rj('Не указанны параметры')
+        reject('Не указанны параметры')
         return
       }
 
       const { deletedCount } = await PriceAlertModel.deleteMany(params)
+      priceAlertCache.update()
 
-      rs(deletedCount)
+      resolve(deletedCount)
     } catch (e) {
-      rj(e)
+      reject(e)
     }
   })
 }
 
 // Вернет массив сработавших алертов
-export function updateAlert ({ _id, data }: { _id: string, data: { message: string } }): Promise<any> {
-  return new Promise(async (rs, rj) => {
+export async function updateAlert ({ _id, data }: { _id: string, data: { message: string } }): Promise<any> {
+  // eslint-disable-next-line
+  return await new Promise(async (rs, rj) => {
     try {
       const result = await PriceAlertModel.update({ _id }, { $set: data })
+      priceAlertCache.update()
 
       rs(result)
     } catch (e) {
@@ -247,7 +289,8 @@ interface GetAlertsCountForUserParams {
   user: number
 }
 
-export const getAlertsCountForUser = (user: number) => new Promise(async (rs, rj) => {
+// eslint-disable-next-line
+export const getAlertsCountForUser = async (user: number) => await new Promise(async (rs, rj) => {
   try {
     const params: GetAlertsCountForUserParams = { user }
     const alertsCount = await PriceAlertModel.find(params).count()

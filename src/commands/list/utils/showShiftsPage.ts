@@ -1,9 +1,10 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
-import {log, shortenerCreateShort} from '@/helpers'
+import { shortenerCreateShort } from '@/helpers'
+import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { listConfig } from '../../../config'
 import { Actions } from '../../../constants'
-import { TimeShift } from '../../../models'
+import { getInstrumentByIdFromCache, TimeShift } from '../../../models'
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { EListTypes, ListActionsDataKeys } from '../list.types'
 import { getAlertNumberByPage } from './showInstrumentPage'
@@ -28,22 +29,29 @@ export const showShiftsPage = async ({
     .sort((a, b) => a.name > b.name ? 1 : -1)
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
-  const itemsList = itemsToShow
-    .map(({ ticker, percent, growAlerts, fallAlerts, timeframe, name }, i) => {
-      log.info('timeframe', timeframe)
+  let itemsList = ''
 
-      return ctx.i18n.t('alertsList_shifts_listItem', {
-        // Номер элемента с учетом страницы
-        number: getAlertNumberByPage({ i, page }),
-        name,
-        ticker,
-        growthOnly: growAlerts && !fallAlerts,
-        fallOnly: fallAlerts && !growAlerts,
-        change: fallAlerts && growAlerts,
-        percent,
-        time: SHIFT_TIMEFRAMES[timeframe].name_ru_plur
-      })
-    }).join('\n')
+  for (let i = 0; i < itemsToShow.length; i++) {
+    const { ticker, percent, growAlerts, fallAlerts, timeframe, name, tickerId } = itemsToShow[i]
+
+    const instrumentInfo = await getInstrumentByIdFromCache(tickerId)
+
+    const item = ctx.i18n.t('alertsList_shifts_listItem', {
+      // Номер элемента с учетом страницы
+      number: getAlertNumberByPage({ i, page }),
+      name,
+      ticker,
+      growthOnly: growAlerts && !fallAlerts,
+      fallOnly: fallAlerts && !growAlerts,
+      change: fallAlerts && growAlerts,
+      percent,
+      time: SHIFT_TIMEFRAMES[timeframe].name_ru_plur,
+      link: getSourceMark(instrumentInfo)
+    })
+
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    itemsList = itemsList.concat('\n' + item)
+  }
 
   const message = ctx.i18n.t('alertsList_shifts_list', {
     empty: !itemsList.length,

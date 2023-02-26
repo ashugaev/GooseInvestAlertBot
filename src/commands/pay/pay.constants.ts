@@ -1,18 +1,18 @@
 export const TARIFFS = [
   {
-    price: 200,
+    price: 7,
     text: 'Месячная оплата',
-    buttonText: '200р - 1 месяц'
+    buttonText: '7$ - 1 месяц'
   },
   {
-    price: 400,
+    price: 15,
     text: 'Квартальная оплата',
-    buttonText: '400р - 3 месяца'
+    buttonText: '15$ - 3 месяца'
   },
   {
-    price: 1000,
-    text: 'Пожизненная подписка',
-    buttonText: '1000р - Навсегда'
+    price: 35,
+    text: 'Годовая оплата',
+    buttonText: '45$ - 1 год'
   }
 ]
 

@@ -1,6 +1,7 @@
+import { getSourceMark } from '@/helpers/getSourceMark'
+
 import { i18n } from '../../helpers/i18n'
 import { plur } from '../../helpers/plural'
-import { getInstrumentLink } from '../../helpers/getInstrumentLInk'
 
 export const getItemText = (data) => {
   const isFall = data.fallPercent > data.growPercent
@@ -17,7 +18,7 @@ export const getItemText = (data) => {
     name: data.instrument.name,
     ticker: data.instrument.ticker,
     percent: plur.percent(percent),
-    link: getInstrumentLink({ type, ticker, source }),
+    link: getSourceMark(data.instrument),
     action
   })
 

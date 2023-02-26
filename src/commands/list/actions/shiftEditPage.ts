@@ -1,10 +1,11 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { shortenerGetFull } from '@/helpers'
+import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
-import { TimeShiftModel } from '../../../models'
+import { getInstrumentByIdFromCache, TimeShiftModel } from '../../../models'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
@@ -28,6 +29,7 @@ export const shiftEditPage = async (ctx) => {
     const { id: user } = ctx.from
 
     const shiftData = (await TimeShiftModel.find({ _id, user }).lean())[0]
+    const instrumentData = await getInstrumentByIdFromCache(shiftData.tickerId)
 
     if (!shiftData) {
       throw new Error('Не могу получить шифт по id')
@@ -62,7 +64,8 @@ export const shiftEditPage = async (ctx) => {
       fallOnly: shiftDataCopy.fallAlerts && !shiftDataCopy.growAlerts,
       change: shiftDataCopy.fallAlerts && shiftDataCopy.growAlerts,
       percent: shiftDataCopy.percent,
-      time: timeframesObj[shiftDataCopy.timeframe].name_ru_plur
+      time: timeframesObj[shiftDataCopy.timeframe].name_ru_plur,
+      link: getSourceMark(instrumentData)
     })
 
     const keyboard = shiftEditKeyboard({
