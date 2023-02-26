@@ -129,7 +129,7 @@ priceCheckerErrorCantFind: |
   ❌ Ошибка оповещения для <b>${symbol}</b> на цену <b>${price}</b>. Инструмент не найден. Удаляю его.
 
 priceChecker_triggeredAlert: |
-  🔔 Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${link ? link : ''} ${greaterThen ? '↗️ <b>выросла</b>' : '↘️ <b>упала</b>'} до целевого значения <b>${price}${currency ? currency : ''}</b>
+  🔔 Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${link} ${greaterThen ? '↗️ <b>выросла</b>' : '↘️ <b>упала</b>'} до целевого значения <b>${price}${currency ? currency : ''}</b>
 
   ${message ? '💬 <b>Твой комментарий:</b>\n<i>' + message + '</i>' : ''}
 
