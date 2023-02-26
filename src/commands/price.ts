@@ -54,7 +54,9 @@ export function setupPrice (bot: Telegraf<Context>) {
         templateData.symbol = ticker
       }
 
-      ctx.replyWithHTML(ctx.i18n.t('price', templateData))
+      ctx.replyWithHTML(ctx.i18n.t('price', templateData),
+        { disable_web_page_preview: true }
+      )
 
       return
     }
