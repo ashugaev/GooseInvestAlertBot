@@ -4,6 +4,8 @@ import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes, InstrumentsList } from '../models'
 
 export const getTinkoffInstrumentLink = ({ type, ticker }: Partial<InstrumentsList>) => {
+  let typeForLink: EMarketInstrumentTypes | string = type
+
   if (!type && !ticker) {
     return
   }
@@ -14,13 +16,13 @@ export const getTinkoffInstrumentLink = ({ type, ticker }: Partial<InstrumentsLi
   }
 
   if (type === EMarketInstrumentTypes.Currency) {
-    type = 'currencies'
+    typeForLink = 'currencies'
   } else {
     // Добавляет s потому что в урле нужно множественное число
-    type = type.toLowerCase() + 's'
+    typeForLink = type.toLowerCase() + 's'
   }
 
-  return `https://www.tinkoff.ru/invest/${type}/${ticker}/`
+  return `https://www.tinkoff.ru/invest/${typeForLink}/${ticker}/`
 }
 
 export const getInstrumentLink = ({
