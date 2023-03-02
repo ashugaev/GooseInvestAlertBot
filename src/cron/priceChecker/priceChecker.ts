@@ -74,7 +74,8 @@ export const setupPriceChecker = async (bot) => {
           log.info(logPrefix, 'Triggered alerts', alertsTriggeredList)
         }
 
-        if (alertsFailedToCheckList.length) {
+        // FIXME: Уменьшить количество, что бы поддерживать минимум мертвых алертов
+        if (alertsFailedToCheckList.length > 100) {
           log.error(
             logPrefix,
             'Failed to check alerts',
