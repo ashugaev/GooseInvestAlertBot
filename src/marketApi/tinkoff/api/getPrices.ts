@@ -81,8 +81,8 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
     }
   }
 
-  if (noMinPriceIncrementNumber.length > 100) {
-    log.error(logPrefix, 'No minPriceIncrementNumber or minPriceIncrementAmountNumber for', noMinPriceIncrementNumber)
+  if (noMinPriceIncrementNumber.length > 150) {
+    log.error(logPrefix, 'No minPriceIncrementNumber or minPriceIncrementAmountNumber for', noMinPriceIncrementNumber.length)
   }
 
   return pricesNormalizes
