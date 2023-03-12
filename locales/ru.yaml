@@ -173,9 +173,6 @@ alertsList_editOne: |
 
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
 
-alertList_deleted: |
-  Удалил оповещение!
-
 alertsList_button_levels-list: |
   ${active ? '◉' : '○'} Ценовые уровни
 

@@ -1,3 +1,4 @@
+import { showAlertEditPage } from '@/commands/list/utils/showAlertEditPage'
 import { shortenerCreateShort } from '@/helpers'
 
 import { listConfig } from '../../../config'
@@ -20,6 +21,7 @@ interface IShowInstrumentPageParams {
    */
   edit?: boolean
   tickersPage?: number
+  noRedirectToEditPage?: boolean
 }
 
 export const getAlertNumberByPage = ({ i, page }) => {
@@ -33,8 +35,18 @@ export const showInstrumentPage = async ({
   instrumentItems,
   edit,
   keyboardMode,
-  tickersPage = 0
+  tickersPage = 0,
+  noRedirectToEditPage = false
 }: IShowInstrumentPageParams) => {
+  // If only one alert for instrument show this alert edit page
+  if (instrumentItems.length === 1 && !noRedirectToEditPage) {
+    return await showAlertEditPage({
+      ctx,
+      alert: instrumentItems[0],
+      edit
+    })
+  }
+
   // Получаем сортированный список инструментов для страницы
   // FIXME: Вынести
   const itemsToShow: PriceAlertItem[] = instrumentItems
@@ -56,10 +68,8 @@ export const showInstrumentPage = async ({
     }).join('\n')
 
   const {
-    type: instrumentType,
     name: instrumentName,
     currency: instrumentCurrency,
-    source,
     tickerId,
     symbol
   } = instrumentItems[0]

@@ -33,7 +33,8 @@ export const alertsForInstrument = async (ctx) => {
       instrumentItems: [alert],
       edit: true,
       keyboardMode,
-      tickersPage
+      tickersPage,
+      noRedirectToEditPage: true
     })
   } catch (e) {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
