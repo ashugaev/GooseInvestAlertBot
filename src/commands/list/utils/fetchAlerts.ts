@@ -1,7 +1,5 @@
 import { set } from 'lodash'
 
-import { ITickerButtonItem } from '@/commands/list/list'
-
 import { log } from '../../../helpers/log'
 import { PriceAlert, PriceAlertModel } from '../../../models'
 
@@ -14,7 +12,7 @@ interface IFetchAlertsParams {
 
 interface FetchAlertsResult {
   alertsList: PriceAlert[]
-  uniqTickersData: ITickerButtonItem[]
+  uniqTickersData: PriceAlert[]
 }
 
 /**
@@ -48,7 +46,7 @@ export const fetchAlerts = async (
 
   // Получаем уникальные тикеры из всех алертов
   // Название уже не совсем корректное, потому что группируем по id а не по тикеру
-  const uniqTickersData: ITickerButtonItem[] = Object.values(alerts.reduce((acc, el) => {
+  const uniqTickersData: PriceAlert[] = Object.values(alerts.reduce((acc, el) => {
     const { tickerId } = el
 
     if (!tickerId) {
@@ -59,8 +57,8 @@ export const fetchAlerts = async (
     acc[tickerId] = el
 
     return acc
-  }, {}) as ITickerButtonItem[])
-    .sort((a: ITickerButtonItem, b: ITickerButtonItem) => (a.name > b.name ? 1 : -1))
+  }, {}) as PriceAlert[])
+    .sort((a: PriceAlert, b: PriceAlert) => (a.name > b.name ? 1 : -1))
 
   // TODO: Избавиться от хранения в контексте, что бы все работало после передеплоя
   if (!noContextUpdate) {

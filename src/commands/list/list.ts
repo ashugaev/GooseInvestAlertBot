@@ -16,12 +16,6 @@ import { instrumentsListKeyboard } from './keyboards/instrumentsListKeyboard'
 import { fetchAlerts } from './utils/fetchAlerts'
 import { showShiftsPage } from './utils/showShiftsPage'
 
-export interface ITickerButtonItem {
-  name: string
-  symbol: string
-  currency: string
-}
-
 export function setupList (bot: Telegraf<Context>) {
   bot.command('list', commandWrapper(async ctx => {
     const data = ctx.message.text.match(/list\s?(\w+)?$/)
@@ -34,7 +28,7 @@ export function setupList (bot: Telegraf<Context>) {
       return
     }
 
-    const [command, tickerName] = data
+    const [, tickerName] = data
 
     // Дефолтные значения констекста для команды
     ctx.session.listCommand = {

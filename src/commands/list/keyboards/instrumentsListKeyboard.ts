@@ -5,7 +5,7 @@ import { Actions } from '../../../constants'
 import { createActionString, shortenerCreateShort } from '../../../helpers'
 import { getSourceMark } from '../../../helpers/getSourceMark'
 import { paginationButtons } from '../../../keyboards/paginationButtons'
-import { getTimeShiftsCountForUser, PriceAlert } from '../../../models'
+import { PriceAlert } from '../../../models'
 import { EListTypes, ListActionsDataKeys } from '../list.types'
 import { alertsTypeToggleButtons } from './alertsTypeToggleButtons'
 import { EKeyboardModes } from './instrumentPageKeyboard'
@@ -23,7 +23,8 @@ export const instrumentsListKeyboard = async ({
   ctx
 }) => {
   // Тикеры которые выведем на это странице
-  const pageTickers: PriceAlert[] = uniqTickersData.slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
+  const pageTickers: PriceAlert[] = uniqTickersData
+    .slice(page * listConfig.itemsPerPage, (Number(page) + 1) * listConfig.itemsPerPage)
 
   // Генерит инлайн кнопки по тикерам
   const getTickerButtons = pageTickers.map(({ name, symbol, tickerId, source }) => {
@@ -34,9 +35,11 @@ export const instrumentsListKeyboard = async ({
       kMode: EKeyboardModes.edit
     }
 
+    const sourceMark = getSourceMark({ source }, true)
+
     return ([
       Markup.callbackButton(
-        (name === symbol) ? name : `${name} (${symbol}) ${getSourceMark({ source }) ?? ''}`,
+        (name === symbol) ? `${name} ${sourceMark}` : `${name} (${symbol}) ${sourceMark}`,
         createActionString(Actions.list_tickerPage, payload)
       )
     ])
@@ -52,8 +55,6 @@ export const instrumentsListKeyboard = async ({
   })
 
   getTickerButtons.push(paginatorButtons)
-
-  const userShiftsCount = user ? await getTimeShiftsCountForUser(user) : 0
 
   getTickerButtons.push(alertsTypeToggleButtons({ listType }))
 
