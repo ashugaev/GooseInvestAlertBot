@@ -32,7 +32,7 @@ export const fetchAlerts = async (
 
   // FIXME: finish text search in alerts for list command filters
   if (ticker?.length) {
-    params.name = ticker.toUpperCase()
+    params.symbol = ticker.toUpperCase()
   }
 
   const alerts = await PriceAlertModel.find(params).lean()

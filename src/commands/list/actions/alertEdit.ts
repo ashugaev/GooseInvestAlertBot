@@ -1,8 +1,9 @@
 import { get, set } from 'lodash'
 
 import { shortenerGetFull } from '@/helpers'
+import { getSourceMark } from '@/helpers/getSourceMark'
+import { getInstrumentByIdFromCache } from '@/models'
 
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
@@ -35,6 +36,8 @@ export const alertEdit = async (ctx) => {
       throw new Error(logPrefix + 'Алерт не найдет')
     }
 
+    const instrumentInfo = await getInstrumentByIdFromCache(alert.tickerId)
+
     // Проставяем id алерта для которого открыли редактирование
     set(ctx, 'session.listCommand.price.selectedAlertId', alert._id)
 
@@ -44,8 +47,8 @@ export const alertEdit = async (ctx) => {
       growth: Boolean(alert.greaterThen),
       price: alert.lowerThen || alert.greaterThen,
       currency: symbolOrCurrency(alert.currency),
-      link: alert.type && getInstrumentLink({ type: alert.type, ticker: alert.symbol, source: alert.source }),
-      message: alert.message
+      message: alert.message,
+      source: getSourceMark(instrumentInfo)
     })
 
     const keyboard = alertEditKeyboard({

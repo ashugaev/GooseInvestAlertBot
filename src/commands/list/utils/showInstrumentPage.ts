@@ -2,12 +2,11 @@ import { shortenerCreateShort } from '@/helpers'
 
 import { listConfig } from '../../../config'
 import { Actions } from '../../../constants'
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
 import { getLastPrice } from '../../../helpers/getLastPrice'
 import { getSourceMark } from '../../../helpers/getSourceMark'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { PriceAlertItem } from '../../../models'
+import { getInstrumentByIdFromCache, PriceAlertItem } from '../../../models'
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
@@ -16,6 +15,9 @@ interface IShowInstrumentPageParams {
   page: number
   ctx: any
   instrumentItems: PriceAlertItem[]
+  /**
+   * Send new keyboard or edit current
+   */
   edit?: boolean
   tickersPage?: number
 }
@@ -64,6 +66,8 @@ export const showInstrumentPage = async ({
 
   let lastPrice
 
+  const instrumentInfo = await getInstrumentByIdFromCache(tickerId)
+
   try {
     lastPrice = await getLastPrice(tickerId)
   } catch (e) {
@@ -71,14 +75,13 @@ export const showInstrumentPage = async ({
   }
 
   const message = ctx.i18n.t('alertList_page', {
-    link: instrumentType && getInstrumentLink({ type: instrumentType, ticker: symbol, source }),
     symbol,
     list: itemsList,
     name: instrumentName,
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
     showEditMessage: keyboardMode === EKeyboardModes.edit,
-    source: getSourceMark({ source })
+    source: getSourceMark(instrumentInfo)
   })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
