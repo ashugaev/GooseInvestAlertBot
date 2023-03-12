@@ -1,5 +1,6 @@
-import { TimeShiftModel } from '@/models'
 import { Context, Extra, Telegraf } from 'telegraf'
+
+import { TimeShiftModel } from '@/models'
 
 import { Actions } from '../../constants'
 import { commandWrapper } from '../../helpers/commandWrapper'
@@ -33,6 +34,8 @@ export function setupList (bot: Telegraf<Context>) {
       return
     }
 
+    const [command, tickerName] = data
+
     // Дефолтные значения констекста для команды
     ctx.session.listCommand = {
       price: {
@@ -51,7 +54,7 @@ export function setupList (bot: Telegraf<Context>) {
     }
 
     // Вернет все алерты юзера и запишет в контекст
-    const { alertsList, uniqTickersData } = await fetchAlerts({ ctx })
+    const { alertsList, uniqTickersData } = await fetchAlerts({ ctx, ticker: tickerName })
 
     // Если есть алерты
     if (alertsList.length) {

@@ -147,6 +147,10 @@ class PriceAlertCache {
     return this.items
   }
 
+  byId (id: string): PriceAlert | undefined {
+    return this.items.find(item => item.tickerId === id)
+  }
+
   removeItemFromCache = (_id: string) => {
     this.items = this.items.filter(item => item._id !== _id)
   }
@@ -223,7 +227,7 @@ export const setLastCheckedAt = async (tickerIds: string[]): Promise<void> => {
 // TODO: Сделать отдельные методы для получения алертов по разным параметрам.
 //  Что бы делать проверку на входные данные и случайно не вернуть лишнего.
 export const getAlerts = async ({ symbol, user, _id, tickerId }: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> => {
-  const params: RemoveOrGetAlertParams = {}
+  const params: Partial<PriceAlert> = {}
 
   symbol && (params.symbol = symbol.toUpperCase())
   tickerId && (params.tickerId = tickerId)
@@ -300,3 +304,13 @@ export const getAlertsCountForUser = async (user: number) => await new Promise(a
     rj(e)
   }
 })
+
+export const alertByIdFromCache = async (tickerId: string): Promise<PriceAlertItem | undefined> => {
+  let alert = await priceAlertCache.byId(tickerId)
+
+  if (!alert) {
+    alert = (await PriceAlertModel.find({ tickerId: tickerId }).lean())[0]
+  }
+
+  return alert
+}
