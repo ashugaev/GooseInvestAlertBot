@@ -8,8 +8,8 @@ help: |
 
   /alert, /a - Мониторинт достижения ценового уровня
   /shift, /s - Мониторинг скорости цены
-  /stat - Подписка на статистику за вчерашний день
   /list - Список всех мониторингов
+  /list btc - Список всех мониторингов для тикера btc
   /price YNDX — Подскажу текущую стоимость по тикеру
   /remove, /r — Групповое удаление уведомлений
   /help - Гусь пришлет это сообщение еще раз
@@ -38,17 +38,10 @@ help: |
 
   В меню команды можно посмотреть, отредактировать и удалить любой мониторинг.
 
-  <b>Сбор статистики</b>
-
-  Сбор статистики происходит вечером после торгового дня только для акций и фондов.
-  Оповещение придет на следующие день в то время, которое ты выберешь при подписке на статистику.
-
-  Для отписки от статистики отправь команду /stat повторно
-
   <b>Источники котировок</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>, <a href="https://www.bybit.com/trade/">ByBit</a>
   Валюты - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
 
   Все вопросы и пожелания можно написать в чат Гуся: @GooseInvestAlertChat 🦢️️
@@ -58,19 +51,10 @@ help: |
 start: |
   🦢 Рад тебя видеть ${first_name}!
 
-  🔔 Добавь свое первое оповещение командой /alert или /add
+  🔔 Добавь отслеживание ценового уровня командой /alert
+  ⚡️ Добавь отслеживание скорости цены командой /shift
 
-  Используй /help, что бы увидеть список всех команд
-
-  <b>Поддерживаю инструменты</b>
-
-  Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
-  Валюты - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
-
-  Задержка может быть 1-3 минуты
-
-  Все вопросы и пожелания можно написать в чат Гуся: @GooseInvestAlertChat 🦢️️
+  /help, что бы увидеть список всех команд
 
 alertErrorInvalidFormat: |
   ❌ Некорректный ввод!
@@ -105,7 +89,7 @@ alertErrorUnexistedSymbol: |
   <b>Поддерживаемые инструменты</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>
+  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>, <a href="https://www.bybit.com/trade/">ByBit</a>
   Валюты - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
 
 alertCreated: |
