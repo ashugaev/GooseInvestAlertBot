@@ -147,8 +147,26 @@ class PriceAlertCache {
     return this.items
   }
 
+  getForUser (user: number) {
+    if (!user) {
+      throw new Error('User is not defined')
+    }
+
+    return this.items.filter(item => item.user === user)
+  }
+
+  byTickerId (tickerId: string, user: number): PriceAlert[] {
+    return this.items.filter(item => (item.tickerId === tickerId && item.user === user))
+  }
+
+  byId (_id: string): PriceAlert | undefined {
+    return this.items.find(item => item._id === _id)
+  }
+
   removeItemFromCache = (_id: string) => {
-    this.items = this.items.filter(item => item._id !== _id)
+    const id = _id.toString()
+    this.items = this.items.filter(item => item._id.toString() !== id)
+    this.needToBeUpdated = true
   }
 }
 
@@ -167,72 +185,6 @@ export const addPriceAlerts = async (newAlerts: AddPriceAlertParams[]): Promise<
   priceAlertCache.update()
 
   return items
-}
-
-/**
- * Вернет из базы указанное кол-во уникальных id тикеров, которые давно не проверялись
- *
- * @param number - кол-во, которое нужно проверять. Вернется по факту после схлопывания меньше.
- *
- * 10000 - magic number. Just less logic with default value.
- */
-export const getUniqOutdatedAlertsIds = async (source?: EMarketDataSources, number: number = 10000): Promise<string[]> => {
-  // Вернем тикеры, которые проверялись больше чем "secondsAgo" назад
-  const secondsAgo = 10
-  const dateToCheck = new Date(new Date().getTime() - secondsAgo * 1000)
-
-  const findParams = {
-    $or: [
-      { lastCheckedAt: null },
-      { lastCheckedAt: { $lte: dateToCheck } }
-    ],
-    tickerId: { $exists: true }
-  }
-
-  if (source) {
-    // @ts-expect-error
-    findParams.source = source
-  }
-
-  const data = await PriceAlertModel
-    .find(
-      findParams,
-      { tickerId: 1 })
-    .sort({ lastCheckedAt: 1 })
-  // 3 - magic number. Can't predict how many alerts with the same tickers.
-    .limit(number * 3)
-    .lean()
-  const allIds = data.map(elem => elem.tickerId)
-  const uniqIds = Array.from(new Set(allIds)).slice(0, number)
-
-  return uniqIds
-}
-
-/**
- * Актуализируем timestamp о последней проверке
- */
-export const setLastCheckedAt = async (tickerIds: string[]): Promise<void> => {
-  const $or = tickerIds.map(ticker => ({
-    tickerId: ticker
-  }))
-
-  await PriceAlertModel.updateMany({ $or }, { $set: { lastCheckedAt: new Date() } })
-  priceAlertCache.update()
-}
-
-// TODO: Сделать отдельные методы для получения алертов по разным параметрам.
-//  Что бы делать проверку на входные данные и случайно не вернуть лишнего.
-export const getAlerts = async ({ symbol, user, _id, tickerId }: RemoveOrGetAlertParams): Promise<PriceAlertItem[]> => {
-  const params: RemoveOrGetAlertParams = {}
-
-  symbol && (params.symbol = symbol.toUpperCase())
-  tickerId && (params.tickerId = tickerId)
-  user && (params.user = user)
-  _id && (params._id = _id)
-
-  const alerts = await PriceAlertModel.find(params).lean()
-
-  return alerts
 }
 
 export async function getAllAlerts (): Promise<PriceAlertItem[]> {
@@ -300,3 +252,27 @@ export const getAlertsCountForUser = async (user: number) => await new Promise(a
     rj(e)
   }
 })
+
+export const alertByTickerIdFromCache = async (tickerId: string, user: number): Promise<PriceAlertItem[]> => {
+  if (!user) {
+    throw new Error('User is not defined')
+  }
+
+  let alerts = priceAlertCache.byTickerId(tickerId, user)
+
+  if (!alerts.length) {
+    alerts = (await PriceAlertModel.find({ tickerId: tickerId, user }).lean())
+  }
+
+  return alerts
+}
+
+export const alertByIdFromCache = async (_id: string): Promise<PriceAlertItem | undefined> => {
+  let alert = await priceAlertCache.byId(_id)
+
+  if (!alert) {
+    alert = (await PriceAlertModel.find({ _id }).lean())[0]
+  }
+
+  return alert
+}

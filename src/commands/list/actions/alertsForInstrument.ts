@@ -1,10 +1,10 @@
 import { set } from 'lodash'
 
 import { shortenerGetFull } from '@/helpers'
+import { alertByTickerIdFromCache } from '@/models'
 
 import { log } from '../../../helpers/log'
 import { ListActionsDataKeys } from '../list.types'
-import { fetchAlerts } from '../utils/fetchAlerts'
 import { showInstrumentPage } from '../utils/showInstrumentPage'
 
 /**
@@ -25,15 +25,16 @@ export const alertsForInstrument = async (ctx) => {
 
     set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId)
 
-    const { alertsList } = await fetchAlerts({ tickerId: selectedTickerId, ctx, noContextUpdate: true })
+    const alerts = await alertByTickerIdFromCache(selectedTickerId, ctx.from.id)
 
     await showInstrumentPage({
       page,
       ctx,
-      instrumentItems: alertsList,
+      instrumentItems: alerts,
       edit: true,
       keyboardMode,
-      tickersPage
+      tickersPage,
+      noRedirectToEditPage: true
     })
   } catch (e) {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))

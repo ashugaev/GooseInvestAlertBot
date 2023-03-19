@@ -1,7 +1,7 @@
 /**
  * Типы списков (алертов), поддерживаемые в list
  */
-import { PriceAlert } from '@/models';
+import { PriceAlert } from '@/models'
 
 export enum EListTypes {
   shifts = 'shifts',
@@ -60,5 +60,8 @@ export interface ListCommandState {
 
 export enum ListActionsDataKeys {
   selectedTickerIdShortened = 'vdd',
-  selectedAlertId = 'eke'
+  selectedAlertIdShortened = '3dd',
+  selectedAlertId = 'eke',
+  selectedAlertPage = 'ap',
+  tickersListPage = 'tp'
 }

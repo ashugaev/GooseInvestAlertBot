@@ -63,7 +63,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
     if (ticker && !instrumentsList?.length) {
       (async () => {
         try {
-          const instrumentsList = await getInstrumentInfoByTicker({ ticker })
+          const instrumentsList = await getInstrumentInfoByTicker({ ticker: [ticker, ticker + 'USDT'] })
 
           if (!instrumentsList.length) {
             await ctx.replyWithHTML(

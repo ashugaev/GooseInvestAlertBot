@@ -1,5 +1,6 @@
 
 import { SOURCE_CONFIG } from '@/constants/sourceConfig'
+import { shiftsCache } from '@/cron/shiftsChecker'
 import { chooseSourceKeyboard } from '@/keyboards/chooseSource'
 import { immediateStep, waitButtonClickStep, waitMessageStep } from '@/scenes/wrappers'
 
@@ -14,7 +15,6 @@ import {
 } from './shift.constants'
 import { getShiftConfigKeyboard, getTimeframesKeyboard } from './shift.keyboards'
 import { IAdditionalShiftConfig } from './shift.types'
-import {shiftsCache} from "@/cron/shiftsChecker";
 
 const WizardScene = require('telegraf/scenes/wizard')
 const { set } = require('lodash')
@@ -105,7 +105,10 @@ const shiftAddChooseTickers = waitMessageStep('shift_add_choose-tickers', async 
 
   const tickersArr = tickers.trim().toUpperCase().split(' ')
 
-  const tickersInfo = await getInstrumentInfoByTicker({ ticker: tickersArr, source })
+  const tickersInfo = await getInstrumentInfoByTicker({
+    ticker: [...tickersArr, ...tickersArr.map((t: string) => `${t}USDT`)],
+    source
+  })
 
   // Если нет таких тикеров в базе по бирже
   if (!tickersInfo.length) {

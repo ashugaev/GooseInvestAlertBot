@@ -1,43 +1,48 @@
-import { get } from 'lodash'
 import { Extra } from 'telegraf'
 
-import { i18n } from '../../../helpers/i18n'
+import { ListActionsDataKeys } from '@/commands/list/list.types'
+import { getUniqTickersData } from '@/commands/list/utils/uniqTickersData'
+import { shortenerGetFull } from '@/helpers'
+
 import { log } from '../../../helpers/log'
-import { removePriceAlert } from '../../../models'
+import { priceAlertCache, removePriceAlert } from '../../../models'
 import { instrumentsListKeyboard } from '../keyboards/instrumentsListKeyboard'
-import { fetchAlerts } from '../utils/fetchAlerts'
 import { showInstrumentPage } from '../utils/showInstrumentPage'
 
 export const alertDelete = async (ctx) => {
   try {
-    const selectedAlertId = get(ctx, 'session.listCommand.price.selectedAlertId')
-    // FIXME: Записать этот id в месте, где происходит клик по тикеру в пагинации
-    const selectedTickerId = get(ctx, 'session.listCommand.price.selectedTickerId')
+    const {
+      [ListActionsDataKeys.selectedAlertIdShortened]: alertIdShort,
+      [ListActionsDataKeys.selectedTickerIdShortened]: tickerIdShort,
+      [ListActionsDataKeys.selectedAlertPage]: alertPage,
+      [ListActionsDataKeys.tickersListPage]: tickerPage
+    } = JSON.parse(ctx.match[1])
 
-    await removePriceAlert({ _id: selectedAlertId })
+    const alertId = shortenerGetFull(alertIdShort)
+    const instrumentId = shortenerGetFull(tickerIdShort)
 
-    ctx.replyWithHTML(i18n.t('ru', 'alertList_deleted'))
+    await removePriceAlert({ _id: alertId.toString() })
+    priceAlertCache.removeItemFromCache(alertId)
 
-    // Повторный фетч для того6 что бы получить обновленный список
-    const data = await fetchAlerts({ ctx })
+    const alerts = priceAlertCache.getForUser(ctx.from.id)
 
-    // FIXME: Фильтровать по id
-    const instrumentItems = data.alertsList.filter(item => item.tickerId === selectedTickerId)
+    const instrumentItems = alerts.filter(item => item.tickerId === instrumentId)
+
+    const uniqTickersData = getUniqTickersData(alerts)
 
     // Если у инструмента еще остались алерты, то покажем их, если нет, то идем на список инструментов
     if (instrumentItems.length) {
-      // FIXME: Проставлять страницу
       await showInstrumentPage({
-        page: 0,
+        page: alertPage ?? 0,
         instrumentItems,
         ctx,
         edit: true
       })
     } else {
-      await ctx.editMessageText(ctx.i18n.t('alertList_titles', { empty: !data.uniqTickersData.length }),
+      await ctx.editMessageText(ctx.i18n.t('alertList_titles', { empty: !uniqTickersData.length }),
         Extra
           .HTML(true)
-          .markup(await instrumentsListKeyboard({ page: 0, uniqTickersData: data.uniqTickersData, ctx }))
+          .markup(await instrumentsListKeyboard({ page: tickerPage ?? 0, uniqTickersData, ctx }))
       )
     }
   } catch (e) {

@@ -140,7 +140,7 @@ alertList_titles: |
   🔔 Подписки на достижение ценовых уровней. Выбери тикер для просмотра списка оповещений ${empty ? '\n\n<b>🧹Нет активных отслеживаний</b>' : ''}${empty ? '\n\nИспользуй /add что бы добавить' : ''}
 
 alertList_page: |
-  🔔 Список оповещений для: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  🔔 Список оповещений для: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''}
 
   ${list}
 
@@ -169,12 +169,9 @@ alertListErrorInvalidFormat: |
   Чтобы увидеть весь список команд и получить больше информации, отправь команду /help
 
 alertsList_editOne: |
-  <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${growth ? '↗️ <b>рост</b>' : '↘️ <b>падение</b>' } до <b>${price}${currency ? currency : ''}</b> ${link ? '<a href="' + link + '">[график]</a>' : ''}
+  <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${growth ? '↗️ <b>рост</b>' : '↘️ <b>падение</b>' } до <b>${price}${currency ? currency : ''}</b>
 
   ${message ? '\n<b>Комментарий:</b>\n<i>' + message + '</i>' : ''}
-
-alertList_deleted: |
-  Удалил оповещение!
 
 alertsList_button_levels-list: |
   ${active ? '◉' : '○'} Ценовые уровни
@@ -375,7 +372,7 @@ shift_add_noTickers: |
    Проверь список и пришли его еще раз
 
 shift_add_wrongTicker: |
-   😱 Некоторые тикеры не найдены нв бирже: <b>${source}</b>. 
+   😱 Некоторые тикеры не найдены на бирже: <b>${source}</b>. 
   
    Оповещения будут добавлены только для <b>${tickers}</b>
 

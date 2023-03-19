@@ -1,28 +1,30 @@
-import { Markup } from 'telegraf';
+import { Markup } from 'telegraf'
 
-import { Actions } from '../../../constants';
-import { createActionString } from '../../../helpers/createActionString';
-import { i18n } from '../../../helpers/i18n';
-import { backButton } from '../../../keyboards/backButton';
-import { ListActionsDataKeys } from '../list.types';
-import { EKeyboardModes } from './instrumentPageKeyboard';
-import {shortenerCreateShort} from "@/helpers";
+import { shortenerCreateShort } from '@/helpers'
 
-export const alertEditKeyboard = ({ tickerId, ctx }) => {
-  const keys = [];
+import { Actions } from '../../../constants'
+import { createActionString } from '../../../helpers/createActionString'
+import { i18n } from '../../../helpers/i18n'
+import { backButton } from '../../../keyboards/backButton'
+import { ListActionsDataKeys } from '../list.types'
+import { EKeyboardModes } from './instrumentPageKeyboard'
+
+export const alertEditKeyboard = ({ tickerId, alertId }) => {
+  const keys = []
 
   const deleteButton = Markup.callbackButton(
     i18n.t('ru', 'button_delete'),
     createActionString(Actions.list_deleteAlert, {
-      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId)
+      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId),
+      [ListActionsDataKeys.selectedAlertIdShortened]: shortenerCreateShort(alertId)
     })
-  );
+  )
 
   // FIXME: Брать из стора
-  const page = 0;
-  const tickersPage = 0;
+  const page = 0
+  const tickersPage = 0
 
-  keys.push([deleteButton]);
+  keys.push([deleteButton])
 
   keys.push([backButton({
     action: createActionString(Actions.list_tickerPage, {
@@ -31,7 +33,7 @@ export const alertEditKeyboard = ({ tickerId, ctx }) => {
       tp: tickersPage,
       [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId)
     })
-  })]);
+  })])
 
-  return keys;
-};
+  return keys
+}

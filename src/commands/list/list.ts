@@ -1,5 +1,8 @@
-import { TimeShiftModel } from '@/models'
 import { Context, Extra, Telegraf } from 'telegraf'
+
+import { EKeyboardModes } from '@/commands/list/keyboards/instrumentPageKeyboard'
+import { showInstrumentPage } from '@/commands/list/utils/showInstrumentPage'
+import { TimeShiftModel } from '@/models'
 
 import { Actions } from '../../constants'
 import { commandWrapper } from '../../helpers/commandWrapper'
@@ -15,12 +18,6 @@ import { instrumentsListKeyboard } from './keyboards/instrumentsListKeyboard'
 import { fetchAlerts } from './utils/fetchAlerts'
 import { showShiftsPage } from './utils/showShiftsPage'
 
-export interface ITickerButtonItem {
-  name: string
-  symbol: string
-  currency: string
-}
-
 export function setupList (bot: Telegraf<Context>) {
   bot.command('list', commandWrapper(async ctx => {
     const data = ctx.message.text.match(/list\s?(\w+)?$/)
@@ -32,6 +29,8 @@ export function setupList (bot: Telegraf<Context>) {
       await ctx.replyWithHTML(ctx.i18n.t('alertListErrorInvalidFormat'))
       return
     }
+
+    const [, tickerName] = data
 
     // Дефолтные значения констекста для команды
     ctx.session.listCommand = {
@@ -51,21 +50,36 @@ export function setupList (bot: Telegraf<Context>) {
     }
 
     // Вернет все алерты юзера и запишет в контекст
-    const { alertsList, uniqTickersData } = await fetchAlerts({ ctx })
+    const { alertsList, uniqTickersData } = await fetchAlerts({ ctx, ticker: tickerName })
 
     // Если есть алерты
-    if (alertsList.length) {
-      // TODO: Создать ShowTickersList для этого reply
-      return ctx.replyWithHTML(ctx.i18n.t('alertList_titles', { empty: !uniqTickersData.length }),
-        Extra
-          .HTML(true)
-          .markup(await instrumentsListKeyboard({
-            page: 0,
-            uniqTickersData,
-            user,
-            ctx
-          }))
-      )
+    if (uniqTickersData.length) {
+      // Если алерты одного инструмента то показываем сразу его
+      if (uniqTickersData.length === 1) {
+        // Если алерт один, то показываем его
+        return await showInstrumentPage({
+          page: 0,
+          ctx,
+          instrumentItems: alertsList,
+          edit: false,
+          keyboardMode: EKeyboardModes.edit,
+          tickersPage: 0
+        })
+      }
+
+      if (uniqTickersData.length > 1) {
+        // TODO: Создать ShowTickersList для этого reply
+        return ctx.replyWithHTML(ctx.i18n.t('alertList_titles', { empty: !uniqTickersData.length }),
+          Extra
+            .HTML(true)
+            .markup(await instrumentsListKeyboard({
+              page: 0,
+              uniqTickersData,
+              user,
+              ctx
+            }))
+        )
+      }
     }
 
     const shiftsList = await TimeShiftModel.find({ user })

@@ -1,22 +1,43 @@
 import { set } from 'lodash'
 
 import { log } from '../../../helpers/log'
-import { getAlerts } from '../../../models'
-import { ITickerButtonItem } from '../index'
+import { PriceAlert, PriceAlertModel } from '../../../models'
 
 interface IFetchAlertsParams {
   tickerId?: string
   ctx: any
   noContextUpdate?: boolean
+  ticker?: string
+}
+
+interface FetchAlertsResult {
+  alertsList: PriceAlert[]
+  uniqTickersData: PriceAlert[]
 }
 
 /**
  *  Получение алертов юзера и запись их в контекст
+ *
+ *  @todo Refactor. Separate uniq tickers and alerts list
+ *  @deprecated Use PriceAlertModel.find() instead
  */
-export const fetchAlerts = async ({ ctx, tickerId, noContextUpdate }: IFetchAlertsParams) => {
-  const alertsList = await getAlerts({ user: ctx.from.id, tickerId })
+export const fetchAlerts = async (
+  { ctx, tickerId, noContextUpdate, ticker }: IFetchAlertsParams
+): Promise<FetchAlertsResult> => {
+  const params: Partial<PriceAlert> = { user: ctx.from.id }
 
-  if (!alertsList.length) {
+  if (tickerId) {
+    params.tickerId = tickerId
+  }
+
+  // FIXME: finish text search in alerts for list command filters
+  if (ticker?.length) {
+    params.symbol = ticker.toUpperCase()
+  }
+
+  const alerts = await PriceAlertModel.find(params).lean()
+
+  if (!alerts.length) {
     return {
       alertsList: [],
       uniqTickersData: []
@@ -25,7 +46,7 @@ export const fetchAlerts = async ({ ctx, tickerId, noContextUpdate }: IFetchAler
 
   // Получаем уникальные тикеры из всех алертов
   // Название уже не совсем корректное, потому что группируем по id а не по тикеру
-  const uniqTickersData = Object.values(alertsList.reduce((acc, el) => {
+  const uniqTickersData: PriceAlert[] = Object.values(alerts.reduce((acc, el) => {
     const { tickerId } = el
 
     if (!tickerId) {
@@ -36,17 +57,17 @@ export const fetchAlerts = async ({ ctx, tickerId, noContextUpdate }: IFetchAler
     acc[tickerId] = el
 
     return acc
-  }, {}))
-    .sort((a: ITickerButtonItem, b: ITickerButtonItem) => (a.name > b.name ? 1 : -1))
+  }, {}) as PriceAlert[])
+    .sort((a: PriceAlert, b: PriceAlert) => (a.name > b.name ? 1 : -1))
 
   // TODO: Избавиться от хранения в контексте, что бы все работало после передеплоя
   if (!noContextUpdate) {
   // Подкидываем состояния в констекст, что бы не делать перезапрос по нажатию на кнопки
     set(ctx, 'session.listCommand.data', {
-      alertsList,
+      alertsList: alerts,
       uniqTickersData
     })
   }
 
-  return { alertsList, uniqTickersData }
+  return { alertsList: alerts, uniqTickersData }
 }

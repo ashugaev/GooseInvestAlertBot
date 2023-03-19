@@ -1,13 +1,13 @@
+import { showAlertEditPage } from '@/commands/list/utils/showAlertEditPage'
 import { shortenerCreateShort } from '@/helpers'
 
 import { listConfig } from '../../../config'
 import { Actions } from '../../../constants'
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
 import { getLastPrice } from '../../../helpers/getLastPrice'
 import { getSourceMark } from '../../../helpers/getSourceMark'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { PriceAlertItem } from '../../../models'
+import { getInstrumentByIdFromCache, PriceAlertItem } from '../../../models'
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
@@ -16,8 +16,12 @@ interface IShowInstrumentPageParams {
   page: number
   ctx: any
   instrumentItems: PriceAlertItem[]
+  /**
+   * Send new keyboard or edit current
+   */
   edit?: boolean
   tickersPage?: number
+  noRedirectToEditPage?: boolean
 }
 
 export const getAlertNumberByPage = ({ i, page }) => {
@@ -31,8 +35,18 @@ export const showInstrumentPage = async ({
   instrumentItems,
   edit,
   keyboardMode,
-  tickersPage = 0
+  tickersPage = 0,
+  noRedirectToEditPage = false
 }: IShowInstrumentPageParams) => {
+  // If only one alert for instrument show this alert edit page
+  if (instrumentItems.length === 1 && !noRedirectToEditPage) {
+    return await showAlertEditPage({
+      ctx,
+      alert: instrumentItems[0],
+      edit
+    })
+  }
+
   // Получаем сортированный список инструментов для страницы
   // FIXME: Вынести
   const itemsToShow: PriceAlertItem[] = instrumentItems
@@ -54,15 +68,15 @@ export const showInstrumentPage = async ({
     }).join('\n')
 
   const {
-    type: instrumentType,
     name: instrumentName,
     currency: instrumentCurrency,
-    source,
     tickerId,
     symbol
   } = instrumentItems[0]
 
   let lastPrice
+
+  const instrumentInfo = await getInstrumentByIdFromCache(tickerId)
 
   try {
     lastPrice = await getLastPrice(tickerId)
@@ -71,14 +85,13 @@ export const showInstrumentPage = async ({
   }
 
   const message = ctx.i18n.t('alertList_page', {
-    link: instrumentType && getInstrumentLink({ type: instrumentType, ticker: symbol, source }),
     symbol,
     list: itemsList,
     name: instrumentName,
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
     showEditMessage: keyboardMode === EKeyboardModes.edit,
-    source: getSourceMark({ source })
+    source: getSourceMark(instrumentInfo)
   })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {

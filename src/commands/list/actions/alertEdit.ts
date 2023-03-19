@@ -1,12 +1,9 @@
-import { get, set } from 'lodash'
+import { get } from 'lodash'
 
+import { showAlertEditPage } from '@/commands/list/utils/showAlertEditPage'
 import { shortenerGetFull } from '@/helpers'
 
-import { getInstrumentLink } from '../../../helpers/getInstrumentLInk'
-import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { alertEditKeyboard } from '../keyboards/alertEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
 const logPrefix = '[ALERT EDIT]'
@@ -35,34 +32,11 @@ export const alertEdit = async (ctx) => {
       throw new Error(logPrefix + 'Алерт не найдет')
     }
 
-    // Проставяем id алерта для которого открыли редактирование
-    set(ctx, 'session.listCommand.price.selectedAlertId', alert._id)
-
-    const message = i18n.t('ru', 'alertsList_editOne', {
-      name: alert.name,
-      symbol: alert.symbol,
-      growth: Boolean(alert.greaterThen),
-      price: alert.lowerThen || alert.greaterThen,
-      currency: symbolOrCurrency(alert.currency),
-      link: alert.type && getInstrumentLink({ type: alert.type, ticker: alert.symbol, source: alert.source }),
-      message: alert.message
+    await showAlertEditPage({
+      ctx,
+      alert,
+      edit: true
     })
-
-    const keyboard = alertEditKeyboard({
-      // page,
-      // tickersPage,
-      tickerId: alert.tickerId,
-      ctx
-    })
-
-    await ctx.editMessageText(message, {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      reply_markup: {
-        inline_keyboard: keyboard
-      }
-    }
-    )
   } catch (e) {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)

@@ -12,10 +12,12 @@ export const getSourceMark = (instrumentData: Partial<InstrumentsList>, noLink?:
 
   let res = '[' + SOURCE_CONFIG[instrumentData.source].shortName + ']'
 
-  const link = getInstrumentLink(instrumentData)
+  if (!noLink) {
+    const link = getInstrumentLink(instrumentData)
 
-  if (link && !noLink) {
-    res = `<a href="${link}" >${res}</a>`
+    if (link) {
+      res = `<a href="${link}" >${res}</a>`
+    }
   }
 
   return res
