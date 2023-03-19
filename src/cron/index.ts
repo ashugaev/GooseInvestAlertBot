@@ -19,8 +19,6 @@ import { setupPriceUpdater, updateTickersList } from '../modules'
 import { copyAlerts } from './copyAlerts'
 import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
-import { createShitEvents } from './statChecker'
-import { shiftSender } from './statSender'
 
 const isDevMode = process.env.NODE_EVN === 'development'
 
@@ -81,23 +79,23 @@ export const setupCheckers = (bot) => {
     period: '0 3 * * *'
   })
 
-  // TODO: Не запускать не деве
-  startCronJob({
-    name: 'Check stat',
-    callback: createShitEvents,
-    callbackArgs: [bot],
-    // раз в день в 2 часа 0 минут
-    period: '0 2 * * *',
-    isReadyToStart: () => isAllPricesUpdated() || isReadyToRunByTimeout()
-  })
+  // // TODO: Не запускать не деве
+  // startCronJob({
+  //   name: 'Check stat',
+  //   callback: createShitEvents,
+  //   callbackArgs: [bot],
+  //   // раз в день в 2 часа 0 минут
+  //   period: '0 2 * * *',
+  //   isReadyToStart: () => isAllPricesUpdated() || isReadyToRunByTimeout()
+  // })
 
-  startCronJob({
-    name: 'Send stat',
-    callback: shiftSender,
-    callbackArgs: [bot],
-    // раз в час
-    period: '0 * * * *'
-  })
+  // startCronJob({
+  //   name: 'Send stat',
+  //   callback: shiftSender,
+  //   callbackArgs: [bot],
+  //   // раз в час
+  //   period: '0 * * * *'
+  // })
 
   startCronJob({
     name: 'Update Currencies List',
