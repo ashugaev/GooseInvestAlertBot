@@ -1,7 +1,7 @@
 import { set } from 'lodash'
 
 import { shortenerGetFull } from '@/helpers'
-import { alertByIdFromCache } from '@/models'
+import { alertByTickerIdFromCache } from '@/models'
 
 import { log } from '../../../helpers/log'
 import { ListActionsDataKeys } from '../list.types'
@@ -25,12 +25,12 @@ export const alertsForInstrument = async (ctx) => {
 
     set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId)
 
-    const alert = await alertByIdFromCache(selectedTickerId)
+    const alerts = await alertByTickerIdFromCache(selectedTickerId, ctx.from.id)
 
     await showInstrumentPage({
       page,
       ctx,
-      instrumentItems: [alert],
+      instrumentItems: alerts,
       edit: true,
       keyboardMode,
       tickersPage,

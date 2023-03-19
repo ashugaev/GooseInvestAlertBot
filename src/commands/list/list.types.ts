@@ -61,5 +61,7 @@ export interface ListCommandState {
 export enum ListActionsDataKeys {
   selectedTickerIdShortened = 'vdd',
   selectedAlertIdShortened = '3dd',
-  selectedAlertId = 'eke'
+  selectedAlertId = 'eke',
+  selectedAlertPage = 'ap',
+  tickersListPage = 'tp'
 }
