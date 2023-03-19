@@ -15,6 +15,7 @@ export const alertDelete = async (ctx) => {
       [ListActionsDataKeys.selectedAlertIdShortened]: alertIdShort,
       [ListActionsDataKeys.selectedTickerIdShortened]: tickerIdShort
     } = JSON.parse(ctx.match[1])
+
     const alertId = shortenerGetFull(alertIdShort)
     const instrumentId = shortenerGetFull(tickerIdShort)
 
