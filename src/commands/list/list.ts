@@ -2,7 +2,7 @@ import { Context, Extra, Telegraf } from 'telegraf'
 
 import { EKeyboardModes } from '@/commands/list/keyboards/instrumentPageKeyboard'
 import { showInstrumentPage } from '@/commands/list/utils/showInstrumentPage'
-import { TimeShiftModel } from '@/models'
+import { TimeShift, TimeShiftModel } from '@/models'
 
 import { Actions } from '../../constants'
 import { commandWrapper } from '../../helpers/commandWrapper'
@@ -82,7 +82,13 @@ export function setupList (bot: Telegraf<Context>) {
       }
     }
 
-    const shiftsList = await TimeShiftModel.find({ user })
+    const shiftsParams: Partial<TimeShift> = { user }
+
+    if (tickerName) {
+      shiftsParams.ticker = tickerName.toUpperCase()
+    }
+
+    const shiftsList = await TimeShiftModel.find(shiftsParams)
 
     // В любом случае показываем эту страницу, даже есои она пустая
     return await showShiftsPage({ ctx, page: 0, edit: false, shiftsList })
