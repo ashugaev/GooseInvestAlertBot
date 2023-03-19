@@ -1,5 +1,6 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
+import { testPriceUpdater } from '@/cron/testPriceUpdater/testPriceUpdater'
 import { log, retry } from '@/helpers'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 
@@ -296,4 +297,13 @@ export const setupCheckers = (bot) => {
   ),
   10000,
   'setupPriceChecker')
+
+  /**
+   * Проверяет что цены обновляются
+   */
+  retry(async () => await testPriceUpdater(
+    bot
+  ),
+  10000,
+  'testPriceUpdater')
 }
