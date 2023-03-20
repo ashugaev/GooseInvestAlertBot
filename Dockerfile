@@ -1,14 +1,21 @@
 FROM node:16
 
+ARG TELEGRAM_TOKEN
+ARG STOCKS_API_TOKEN
+ARG MONGO_URL
+ARG SENTRY_URL
+ARG CHATBASE_ANALYTICS_TOKEN
+ARG BINANCE_APISECRET
+ARG BINANCE_APIKEY
+ARG CURRENCY_CONVERTER_APIKEY
+ARG BOSS_TG_ID
+ARG NODE_EVN=production
+
 WORKDIR /app
 
 COPY . .
 
 RUN npm i --legacy-peer-deps
-
-#RUN mkdir logs -p && mkdir logs/bot -p
-
-#RUN mkdir logs && chmod -R 777 logs/
 
 # for debugging
 RUN apt-get update && apt-get install nano curl -y
