@@ -70,6 +70,6 @@ export const testPriceUpdater = async (bot) => {
       }
     }
 
-    await wait(1000 * 60 * 10)
+    await wait(1000 * 60 * 30)
   }
 }
