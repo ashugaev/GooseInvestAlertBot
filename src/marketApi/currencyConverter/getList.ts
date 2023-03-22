@@ -28,8 +28,9 @@ export interface CurrencyApiSpecificData {
 /**
  * Popular codes for generating only popular pairs
  */
-const popularCodes = ['GBP', 'CAD', 'CHF', 'RUB', 'EUR', 'JPY', 'USD', 'AUD', 'GEL', 'TRY', 'THB', 'HKD']
+const popularCodes = ['GBP', 'CAD', 'CHF', 'RUB', 'EUR', 'JPY', 'USD', 'AUD', 'GEL', 'TRY', 'THB', 'HKD', 'AMD', 'RSD', 'IDR']
 const deprecatedCodes = ['BTC', 'ETH', 'BIH', 'GGP']
+const excludedPairs = ['THBBNB']
 
 const coinTickersCache = new NodeCache({
   stdTTL: 1000 // sec

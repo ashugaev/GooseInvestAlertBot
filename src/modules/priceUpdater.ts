@@ -101,8 +101,12 @@ export const setupPriceUpdater = async ({
         prices = await getPrices(tickerIds, chunk)
 
         // No prices case
-        if (!prices?.length) {
-          log.error(logPrefix, source, 'No prices found for tickers', tickerIds)
+        if (prices?.length < tickerIds.length) {
+          const idsWihoutPrices = tickerIds.filter(id => !prices.find(price => price[2] === id))
+          log.error(logPrefix, source, 'No prices found for tickers', idsWihoutPrices)
+        }
+
+        if (!prices || prices.length === 0) {
           continue
         }
       } catch (e) {
