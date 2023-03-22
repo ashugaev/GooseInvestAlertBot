@@ -4,18 +4,9 @@ import { getSourceMark } from '@/helpers/getSourceMark'
 import { sayToBoss } from '@/helpers/sayToBoss'
 import { EMarketDataSources } from '@/marketApi/types'
 import { EMarketInstrumentTypes, InstrumentsList, InstrumentsListModel } from '@/models'
+import { TINK_TRADING_DAYS, TINK_TRADING_HOURS } from '@/tests/tests.constants'
 
 const CHECKED_PRICES = {}
-
-const TINK_TRADING_HOURS = {
-  start: 8,
-  end: 22
-}
-
-const TINK_TRADING_DAYS = {
-  start: 1,
-  end: 5
-}
 
 interface TestItem {
   params: Partial<InstrumentsList>

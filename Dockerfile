@@ -1,5 +1,6 @@
 FROM node:16
 
+# Args useless for now because of building inside gitlab ci outside of docker
 ARG TELEGRAM_TOKEN
 ARG STOCKS_API_TOKEN
 ARG MONGO_URL
@@ -9,6 +10,7 @@ ARG BINANCE_APISECRET
 ARG BINANCE_APIKEY
 ARG CURRENCY_CONVERTER_APIKEY
 ARG BOSS_TG_ID
+ARG TEST_USER_TG_ID
 ARG NODE_EVN=production
 
 WORKDIR /app
