@@ -1,75 +1,132 @@
+import { log } from '@/helpers'
 import { getLastPrice } from '@/helpers/getLastPrice'
 import { getSourceMark } from '@/helpers/getSourceMark'
 import { sayToBoss } from '@/helpers/sayToBoss'
-import { wait } from '@/helpers/wait'
 import { EMarketDataSources } from '@/marketApi/types'
 import { EMarketInstrumentTypes, InstrumentsList, InstrumentsListModel } from '@/models'
 
-const START_BOT_TIME = Date.now()
+const CHECKED_PRICES = {}
 
-const CHECKED_PRICES = {
-
+const TINK_TRADING_HOURS = {
+  start: 8,
+  end: 22
 }
 
-const CHECKED_CANDLES = {
-
+const TINK_TRADING_DAYS = {
+  start: 1,
+  end: 5
 }
 
-const testTickers: Array<Partial<InstrumentsList>> = [
-  { source: EMarketDataSources.bybit, ticker: 'BTCUSDT' },
-  { source: EMarketDataSources.bybit, ticker: 'ETHUSDT' },
+interface TestItem {
+  params: Partial<InstrumentsList>
+  hours?: { start: number, end: number }
+  days?: { start: number, end: number }
+  checkPeriod: number
+}
 
-  { source: EMarketDataSources.binance, ticker: 'BTCUSDT' },
-  { source: EMarketDataSources.binance, ticker: 'ETHUSDT' },
-
-  { source: EMarketDataSources.tinkoff, type: EMarketInstrumentTypes.Currency, ticker: 'USDRUB' },
-  // { source: EMarketDataSources.tinkoff, type: EMarketInstrumentTypes.Stock, ticker: 'YNDX' },
-
-  // { source: EMarketDataSources.yahoo, ticker: 'USDRUB' },
-  // { source: EMarketDataSources.yahoo, ticker: 'EURUSD' },
-
-  { source: EMarketDataSources.coingecko, ticker: 'ETH' },
-  { source: EMarketDataSources.coingecko, ticker: 'BTC' }
+const testTickers: TestItem[] = [
+  {
+    params: {
+      source: EMarketDataSources.bybit, ticker: 'BTCUSDT'
+    },
+    checkPeriod: 1000 * 60 * 5
+  },
+  {
+    params: { source: EMarketDataSources.bybit, ticker: 'ETHUSDT' },
+    checkPeriod: 1000 * 60 * 5
+  },
+  {
+    params: { source: EMarketDataSources.binance, ticker: 'BTCUSDT' },
+    checkPeriod: 1000 * 60 * 5
+  },
+  {
+    params: { source: EMarketDataSources.binance, ticker: 'ETHUSDT' },
+    checkPeriod: 1000 * 60 * 5
+  },
+  {
+    params: { source: EMarketDataSources.tinkoff, type: EMarketInstrumentTypes.Currency, ticker: 'USDRUB' },
+    hours: TINK_TRADING_HOURS,
+    days: TINK_TRADING_DAYS,
+    checkPeriod: 1000 * 60 * 10
+  },
+  {
+    params: { source: EMarketDataSources.tinkoff, type: EMarketInstrumentTypes.Stock, ticker: 'YNDX' },
+    hours: TINK_TRADING_HOURS,
+    days: TINK_TRADING_DAYS,
+    checkPeriod: 1000 * 60 * 30
+  },
+  {
+    params: { source: EMarketDataSources.yahoo, ticker: 'USDRUB' },
+    checkPeriod: 1000 * 60 * 60
+  },
+  {
+    params: { source: EMarketDataSources.yahoo, ticker: 'EURUSD' },
+    checkPeriod: 1000 * 60 * 60
+  },
+  {
+    params: { source: EMarketDataSources.coingecko, ticker: 'ETH' },
+    checkPeriod: 1000 * 60 * 60
+  },
+  {
+    params: { source: EMarketDataSources.coingecko, ticker: 'BTC' },
+    checkPeriod: 1000 * 60 * 60
+  }
 ]
 
 export const testPriceUpdater = async (bot) => {
-  while (true) {
-    // Start checking after 5 minutes
-    if (Date.now() - START_BOT_TIME < 1000 * 60 * 5) {
-      await wait(1000 * 60)
-      continue
+  for (let i = 0; i < testTickers.length; i++) {
+    const itemConfig = testTickers[i]
+
+    const checkPrice = async () => {
+      try {
+      // Skip if outside hours
+        if (itemConfig.hours) {
+          const currentHour = new Date().getHours()
+
+          if (currentHour < itemConfig.hours.start || currentHour > itemConfig.hours.end) {
+            return
+          }
+        }
+
+        // Skip if outside days
+        if (itemConfig.days) {
+          const currentDay = new Date().getDay()
+
+          if (currentDay < itemConfig.days.start || currentDay > itemConfig.days.end) {
+            return
+          }
+        }
+
+        const instrumentInfo: InstrumentsList = (await InstrumentsListModel.find(itemConfig.params).lean())[0]
+        const price = getLastPrice(instrumentInfo.id, true) ?? null
+
+        if (!instrumentInfo) {
+          await sayToBoss({
+            bot,
+            message: `😱 No instrumentInfo for ${itemConfig.params.ticker} [${itemConfig.params.source}]`
+          })
+        }
+
+        if (!price) {
+          await sayToBoss({
+            bot,
+            message: `😱 No price for ${instrumentInfo.ticker} ${getSourceMark(instrumentInfo)}`
+          })
+        }
+
+        if (price === CHECKED_PRICES[instrumentInfo.id]) {
+          await sayToBoss({
+            bot,
+            message: `😱 Price for ${instrumentInfo.ticker} ${getSourceMark(instrumentInfo)} is the same`
+          })
+        } else {
+          CHECKED_PRICES[instrumentInfo.id] = price
+        }
+      } catch (e) {
+        log.error('Price test crash', e)
+      }
     }
 
-    for (let i = 0; i < testTickers.length; i++) {
-      const itemConfig = testTickers[i]
-      const instrumentInfo: InstrumentsList = (await InstrumentsListModel.find(itemConfig).lean())[0]
-
-      const price = getLastPrice(instrumentInfo.id, true) ?? null
-
-      if (!instrumentInfo) {
-        await sayToBoss({
-          bot,
-          message: `😱 No instrumentInfo for ${itemConfig.ticker} [${itemConfig.source}]`
-        })
-      }
-
-      if (!price) {
-        await sayToBoss({
-          bot,
-          message: `😱 No price for ${instrumentInfo.ticker} ${getSourceMark(instrumentInfo)}`
-        })
-      }
-
-      if (price === CHECKED_PRICES[instrumentInfo.id]) {
-        await sayToBoss({
-          bot,
-          message: `😱 Price for ${instrumentInfo.ticker} ${getSourceMark(instrumentInfo)} is the same`
-        })
-      } else {
-        CHECKED_PRICES[instrumentInfo.id] = price
-      }
-    }
-
-    await wait(1000 * 60 * 30)
+    setInterval(checkPrice, itemConfig.checkPeriod)
   }
 }

@@ -298,6 +298,10 @@ export const setupCheckers = (bot) => {
 
   /**
    * Проверяет что цены обновляются
+   *
+   * Tests TODO:
+   * -Messages send to user (use altertative acc)
+   * -Candles are updated
    */
   retry(async () => await testPriceUpdater(
     bot
