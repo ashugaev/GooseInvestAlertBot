@@ -106,7 +106,7 @@ export const setupPriceUpdater = async ({
           log.error(logPrefix, source, 'No prices found for tickers', idsWihoutPrices)
         }
 
-        if (prices.length === 0) {
+        if (!prices || prices.length === 0) {
           continue
         }
       } catch (e) {
