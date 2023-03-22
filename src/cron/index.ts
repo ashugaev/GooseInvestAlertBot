@@ -1,8 +1,8 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
-import { testPriceUpdater } from '@/cron/testPriceUpdater/testPriceUpdater'
 import { log, retry } from '@/helpers'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
+import { startTests } from '@/tests/indes'
 
 import { startCronJob } from '../helpers/startCronJob'
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
@@ -297,11 +297,11 @@ export const setupCheckers = (bot) => {
   'setupPriceChecker')
 
   /**
-   * Проверяет что цены обновляются
+   * Base health checks for bot
    */
-  retry(async () => await testPriceUpdater(
+  retry(async () => await startTests(
     bot
   ),
   10000,
-  'testPriceUpdater')
+  'tests')
 }

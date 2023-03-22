@@ -53,6 +53,8 @@ export class PriceAlert {
 
   /**
    * @deprecated Unused after alerts refactor
+   *
+   * @todo: remove with migration
    */
   @prop()
   lastCheckedAt: Date

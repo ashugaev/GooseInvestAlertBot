@@ -14,4 +14,5 @@ echo "BINANCE_APISECRET=${BINANCE_APISECRET}" >> .env
 echo "BINANCE_APIKEY=${BINANCE_APIKEY}" >> .env
 echo "CURRENCY_CONVERTER_APIKEY=${CURRENCY_CONVERTER_APIKEY}" >> .env
 echo "BOSS_TG_ID=${BOSS_TG_ID}" >> .env
+echo "TEST_USER_TG_ID=${TEST_USER_TG_ID}" >> .env
 echo "NODE_EVN=production" >> .env
