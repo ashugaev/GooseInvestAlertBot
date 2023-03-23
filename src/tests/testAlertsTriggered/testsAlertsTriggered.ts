@@ -96,6 +96,10 @@ export const testAlertsTriggered = async (bot) => {
           })
         }
 
+        // До создания потому что может не успеть сосчитать правильно до срабатывания
+        const alertsCountById = await PriceAlertModel
+          .count({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID }) + 2
+
         await PriceAlertModel.create({
           ...itemConfig.priceAlert,
           initialPrice: price,
@@ -105,8 +109,6 @@ export const testAlertsTriggered = async (bot) => {
           initialPrice: price,
           greaterThen: price * 1.00001
         })
-
-        const alertsCountById = await PriceAlertModel.count({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
 
         // Wait than check if one of alerts is triggered
         setTimeout(async () => {
