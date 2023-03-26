@@ -19,6 +19,8 @@ export const getBinancePrices = async (tickerIds: string[], allBinanceInstrument
 
   log.info('Binance instruments', allBinanceInstruments.length)
 
+  const tickersWithNoPrice = []
+
   const pricesArrWithId: TickerPrices = pricesArr.reduce<TickerPrices>((acc, [ticker, price]) => {
     const tickerId = allBinanceInstruments.find(el => el.ticker === ticker)?.id
 
@@ -26,11 +28,15 @@ export const getBinancePrices = async (tickerIds: string[], allBinanceInstrument
       // @ts-expect-error Вообще типы корректные
       acc.push([ticker, price, tickerId])
     } else {
-      log.error(logPrefix, 'Can\'t find Binance ticker in database for price from API', ticker)
+      tickersWithNoPrice.push(ticker)
     }
 
     return acc
   }, [])
+
+  if (tickersWithNoPrice.length > 15) {
+    log.error(logPrefix, 'Can\'t find Binance tickers in database for price from API', tickersWithNoPrice)
+  }
 
   return pricesArrWithId
 }

@@ -42,6 +42,8 @@ export interface PriceUpdaterParams {
   jobKey: InitializationItem
 }
 
+const noPricesObject = {}
+
 /**
  * Поддерживает кэш с актуальными ценами для источника
  */
@@ -54,6 +56,16 @@ export const setupPriceUpdater = async ({
   jobKey
 }: PriceUpdaterParams) => {
   await retryUntilTrue(isReadyToStart, 'Price updater for: ' + source)
+
+  // Check every N min ticker without price
+  setInterval(() => {
+    const idsWihoutPrices = Object.keys(noPricesObject)
+
+    if (idsWihoutPrices.length > 100) {
+      log.error(logPrefix, 'No prices found for tickers', idsWihoutPrices)
+    }
+    // N = 5 min
+  }, 1000 * 60 * 5)
 
   let lastIterationStartTime = new Date().getTime()
 
@@ -103,7 +115,8 @@ export const setupPriceUpdater = async ({
         // No prices case
         if (prices?.length < tickerIds.length) {
           const idsWihoutPrices = tickerIds.filter(id => !prices.find(price => price[2] === id))
-          log.error(logPrefix, source, 'No prices found for tickers', idsWihoutPrices)
+
+          idsWihoutPrices.forEach(id => (noPricesObject[id] = true))
         }
 
         if (!prices || prices.length === 0) {
