@@ -42,7 +42,7 @@ export interface PriceUpdaterParams {
   jobKey: InitializationItem
 }
 
-const noPricesObject = {}
+let noPricesObject = {}
 
 /**
  * Поддерживает кэш с актуальными ценами для источника
@@ -64,8 +64,10 @@ export const setupPriceUpdater = async ({
     if (idsWihoutPrices.length > 100) {
       log.error(logPrefix, 'No prices found for tickers', idsWihoutPrices)
     }
-    // N = 5 min
-  }, 1000 * 60 * 5)
+
+    noPricesObject = {}
+    // N = 30 min
+  }, 1000 * 60 * 30)
 
   let lastIterationStartTime = new Date().getTime()
 
