@@ -7,7 +7,7 @@ import { EMarketDataSources } from '@/marketApi/types'
 import { EMarketInstrumentTypes, PriceAlert, PriceAlertModel } from '@/models'
 import { TINK_TRADING_DAYS, TINK_TRADING_HOURS } from '@/tests/tests.constants'
 
-const logPrefix = '[testAlertsTriggered]'
+const logPrefix = '<b>TEST</b>'
 
 const TEST_USER_ID = process.env.TEST_USER_TG_ID as unknown as number
 
