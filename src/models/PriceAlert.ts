@@ -134,6 +134,7 @@ class PriceAlertCache {
         this.items = items as unknown as PriceAlert[]
         this.needToBeUpdated = false
         this.isReady = true
+        log.info(logPrefix, 'Items prices updated')
       } catch (e) {
         log.error(logPrefix, 'Items update crashed', e)
       } finally {
