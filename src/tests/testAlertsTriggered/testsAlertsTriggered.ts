@@ -96,9 +96,8 @@ export const testAlertsTriggered = async (bot) => {
           })
         }
 
-        // До создания потому что может не успеть сосчитать правильно до срабатывания
-        const alertsCountById = await PriceAlertModel
-          .count({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID }) + 2
+        // Clear alerts for this ticker to be sure
+        await PriceAlertModel.remove({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
 
         await PriceAlertModel.create({
           ...itemConfig.priceAlert,
@@ -113,11 +112,12 @@ export const testAlertsTriggered = async (bot) => {
         // Wait than check if one of alerts is triggered
         setTimeout(async () => {
           // Atleast one of alerts must be triggered
-          const newAlertsCountById = await PriceAlertModel.count(
-            { tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID }
-          )
+          const newAlertsById = await PriceAlertModel.find({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
+          const newAlertsCountById = newAlertsById.length
 
-          if (newAlertsCountById === alertsCountById) {
+          log.info(logPrefix, 'newAlertsCountById', newAlertsCountById, 'newAlertsById', newAlertsById)
+
+          if (newAlertsCountById === 2) {
             await sayToBoss({
               bot,
               message: logPrefix + ` 😱 Alerts is not working for ${itemConfig.priceAlert.tickerId}`
