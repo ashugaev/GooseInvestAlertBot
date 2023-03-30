@@ -3,7 +3,7 @@ import { TelegrafContext } from 'telegraf/typings/context'
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { AddPriceAlertParams, addPriceAlerts } from '../../../models'
+import {addPriceAlerts, PriceAlert} from '../../../models'
 import { AddAlertPayload } from '../alert.types'
 import {getSourceMark} from "@/helpers/getSourceMark";
 
@@ -31,7 +31,7 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
     for (let i = 0, l = prices.length; l > i; i++) {
       const price = prices[i]
 
-      const params: AddPriceAlertParams = {
+      const params: PriceAlert = {
         user,
         tickerId: instrumentData.id,
         symbol: instrumentData.ticker,

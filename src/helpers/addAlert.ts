@@ -3,7 +3,7 @@ import { Context as TelegrafContext } from 'telegraf'
 import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { Scenes } from '../constants'
-import { AddPriceAlertParams, addPriceAlerts } from '../models'
+import {addPriceAlerts, PriceAlert} from '../models'
 import { getInstrumentDataWithPrice } from './getInstrumentData'
 import { getPricesFromString } from './getPricesFromString'
 import { i18n } from './i18n'
@@ -75,7 +75,7 @@ export const addAlert = async ({
     const price = prices[i]
 
     try {
-      const params: AddPriceAlertParams = {
+      const params: PriceAlert = {
         tickerId: instrumentData.id,
         user,
         symbol,

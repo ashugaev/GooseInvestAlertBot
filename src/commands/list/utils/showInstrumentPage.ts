@@ -7,7 +7,7 @@ import { getLastPrice } from '../../../helpers/getLastPrice'
 import { getSourceMark } from '../../../helpers/getSourceMark'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import { getInstrumentByIdFromCache, PriceAlertItem } from '../../../models'
+import {getInstrumentByIdFromCache, PriceAlert} from '../../../models'
 import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
@@ -15,7 +15,7 @@ interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
   page: number
   ctx: any
-  instrumentItems: PriceAlertItem[]
+  instrumentItems: PriceAlert[]
   /**
    * Send new keyboard or edit current
    */
@@ -49,7 +49,7 @@ export const showInstrumentPage = async ({
 
   // Получаем сортированный список инструментов для страницы
   // FIXME: Вынести
-  const itemsToShow: PriceAlertItem[] = instrumentItems
+  const itemsToShow: PriceAlert[] = instrumentItems
     .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 

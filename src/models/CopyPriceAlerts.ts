@@ -1,6 +1,6 @@
 import { getModelForClass } from '@typegoose/typegoose';
 
-import { PriceAlert, PriceAlertItem } from './PriceAlert';
+import { PriceAlert } from './PriceAlert';
 
 export class CopyPriceAlert extends PriceAlert {}
 
@@ -14,7 +14,7 @@ export async function clearCopyPriceAlerts () {
   }
 }
 
-export async function putItemsToCopyPriceAlerts (items: PriceAlertItem[]) {
+export async function putItemsToCopyPriceAlerts (items: PriceAlert[]) {
   try {
     await CopyPriceAlertModel.insertMany(items);
   } catch (e) {
