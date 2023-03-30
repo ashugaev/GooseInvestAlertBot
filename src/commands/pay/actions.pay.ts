@@ -1,5 +1,6 @@
-import { log } from '@/helpers'
 import { Context } from 'telegraf'
+
+import { log } from '@/helpers'
 
 import { createCoinbaseInvoice } from '../../paymentApi/coinbase/createInvoice'
 import { TARIFFS } from './pay.constants'

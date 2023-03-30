@@ -1,4 +1,4 @@
-import { InstrumentsList, PriceAlertItem } from '@/models'
+import {InstrumentsList, PriceAlert} from '@/models'
 import { ValidatorResult } from '@/types'
 
 export interface UserInputData {
@@ -39,5 +39,5 @@ export interface AddAlertPayload {
   /**
    * Объект созданного алерта из DB
    */
-  createdItemsList?: PriceAlertItem[]
+  createdItemsList?:PriceAlert[]
 }

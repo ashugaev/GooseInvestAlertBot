@@ -1,10 +1,10 @@
 import Telegraf, { Context } from 'telegraf'
 
 import { log } from '@/helpers'
+import { getSourceMark } from '@/helpers/getSourceMark'
 import { i18n } from '@/helpers/i18n'
 import { symbolOrCurrency } from '@/helpers/symbolOrCurrency'
 import { InstrumentsList, PriceAlert, priceAlertCache, removePriceAlert } from '@/models'
-import {getSourceMark} from "@/helpers/getSourceMark";
 
 export const checkAlertTriggered = (alert: PriceAlert, price: number) => {
   const { lowerThen, greaterThen } = alert

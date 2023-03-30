@@ -2,7 +2,7 @@ import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
 import {getModelForClass, prop} from '@typegoose/typegoose'
 import { Modify } from 'Modify'
 
-import { RemoveOrGetAlertParams } from './PriceAlert'
+import { PriceAlert } from '@/models/PriceAlert'
 
 interface ShiftEventDataItem {
   currentPrice: number
@@ -114,9 +114,10 @@ export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>
 }
 
 export async function removeShiftEvent ({ _id, user }: Partial<ShiftEventItem>): Promise<number> {
+  // eslint-disable-next-line promise/param-names,no-async-promise-executor
   return await new Promise(async (rs, rj) => {
     try {
-      const params: RemoveOrGetAlertParams = {}
+      const params: Partial<PriceAlert> = {}
 
       user && (params.user = user)
       _id && (params._id = _id)

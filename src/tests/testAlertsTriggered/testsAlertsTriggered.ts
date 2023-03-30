@@ -4,7 +4,7 @@ import { log } from '@/helpers'
 import { getLastPrice } from '@/helpers/getLastPrice'
 import { sayToBoss } from '@/helpers/sayToBoss'
 import { EMarketDataSources } from '@/marketApi/types'
-import { EMarketInstrumentTypes, PriceAlert, PriceAlertModel } from '@/models'
+import { addPriceAlerts, EMarketInstrumentTypes, PriceAlert, PriceAlertModel } from '@/models'
 import { TINK_TRADING_DAYS, TINK_TRADING_HOURS } from '@/tests/tests.constants'
 
 const logPrefix = '<b>TEST</b>'
@@ -12,7 +12,7 @@ const logPrefix = '<b>TEST</b>'
 const TEST_USER_ID = process.env.TEST_USER_TG_ID as unknown as number
 
 interface Config {
-  priceAlert: Partial<PriceAlert>
+  priceAlert: Pick<PriceAlert, 'user' | 'symbol' | 'name' | 'currency' | 'type' | 'source' | 'tickerId'>
   checkAfter: number
   days?: { start: number, end: number }
   hours?: { start: number, end: number }
@@ -99,7 +99,7 @@ export const testAlertsTriggered = async (bot) => {
         // Clear alerts for this ticker to be sure
         await PriceAlertModel.remove({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
 
-        await PriceAlertModel.create({
+        await addPriceAlerts([{
           ...itemConfig.priceAlert,
           initialPrice: price,
           lowerThen: price * 0.99999
@@ -107,15 +107,13 @@ export const testAlertsTriggered = async (bot) => {
           ...itemConfig.priceAlert,
           initialPrice: price,
           greaterThen: price * 1.00001
-        })
+        }])
 
         // Wait than check if one of alerts is triggered
         setTimeout(async () => {
           // Atleast one of alerts must be triggered
           const newAlertsById = await PriceAlertModel.find({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
           const newAlertsCountById = newAlertsById.length
-
-          log.info(logPrefix, 'newAlertsCountById', newAlertsCountById, 'newAlertsById', newAlertsById)
 
           if (newAlertsCountById === 2) {
             await sayToBoss({

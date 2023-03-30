@@ -8,30 +8,8 @@ import { EMarketInstrumentTypes } from './InstrumentsList'
 
 const logPrefix = '[PRICE UPDATER]'
 
-export interface AddPriceAlertParams {
-  tickerId: string
-  user: number
-  symbol: string
-  lowerThen?: number
-  greaterThen?: number
-  name: string
-  currency: string
-  type: EMarketInstrumentTypes
-  source: EMarketDataSources
-  initialPrice: number
-}
-
-export interface RemoveOrGetAlertParams {
-  user?: number
-  symbol?: string
-  lowerThen?: number
-  greaterThen?: number
-  tickerId?: string
-  _id?: string
-}
-
 export class PriceAlert {
-  _id: string
+  _id?: string
 
   /**
    * Id по по которому ищем данные о цене (отвязываемся от названия тикера)
@@ -45,22 +23,14 @@ export class PriceAlert {
   @prop({ required: true })
   symbol: string
 
-  @prop()
-  lowerThen: number
+  @prop({required: false})
+  lowerThen?: number
 
-  @prop()
-  greaterThen: number
+  @prop({required: false})
+  greaterThen?: number
 
-  /**
-   * @deprecated Unused after alerts refactor
-   *
-   * @todo: remove with migration
-   */
-  @prop()
-  lastCheckedAt: Date
-
-  @prop()
-  message: string
+  @prop({required: false})
+  message?: string
 
   @prop({ required: true })
   name: string
@@ -81,10 +51,6 @@ export class PriceAlert {
      */
   @prop()
   initialPrice: number
-}
-
-export interface PriceAlertItem extends PriceAlert {
-  _id: string
 }
 
 // Get PriceAlertModel model
@@ -175,13 +141,10 @@ class PriceAlertCache {
 
 export const priceAlertCache = new PriceAlertCache()
 
-export const addPriceAlerts = async (newAlerts: AddPriceAlertParams[]): Promise<PriceAlertItem[]> => {
-  const lastCheckedAt = new Date()
-
+export const addPriceAlerts = async (newAlerts: PriceAlert[]): Promise<PriceAlert[]> => {
   const normalizedAlerts = newAlerts.map(alert => ({
     ...alert,
-    symbol: alert.symbol.toUpperCase(),
-    lastCheckedAt
+    symbol: alert.symbol.toUpperCase()
   }))
 
   const items = await PriceAlertModel.insertMany(normalizedAlerts)
@@ -190,7 +153,7 @@ export const addPriceAlerts = async (newAlerts: AddPriceAlertParams[]): Promise<
   return items
 }
 
-export async function getAllAlerts (): Promise<PriceAlertItem[]> {
+export async function getAllAlerts (): Promise<PriceAlert[]> {
   try {
     const alerts = await PriceAlertModel.find({})
 
@@ -200,11 +163,13 @@ export async function getAllAlerts (): Promise<PriceAlertItem[]> {
   }
 }
 
-export async function removePriceAlert ({ symbol, _id, user }: RemoveOrGetAlertParams): Promise<number> {
+export async function removePriceAlert (
+  { symbol, _id, user }: Partial<Pick<PriceAlert, 'symbol' | '_id' | 'user'>>
+): Promise<number> {
   // eslint-disable-next-line no-async-promise-executor
   return await new Promise(async (resolve, reject) => {
     try {
-      const params: RemoveOrGetAlertParams = {}
+      const params: Partial<PriceAlert> = {}
 
       symbol && (params.symbol = symbol.toUpperCase())
       user && (params.user = user)
@@ -256,7 +221,7 @@ export const getAlertsCountForUser = async (user: number) => await new Promise(a
   }
 })
 
-export const alertByTickerIdFromCache = async (tickerId: string, user: number): Promise<PriceAlertItem[]> => {
+export const alertByTickerIdFromCache = async (tickerId: string, user: number): Promise<PriceAlert[]> => {
   if (!user) {
     throw new Error('User is not defined')
   }
@@ -270,7 +235,7 @@ export const alertByTickerIdFromCache = async (tickerId: string, user: number): 
   return alerts
 }
 
-export const alertByIdFromCache = async (_id: string): Promise<PriceAlertItem | undefined> => {
+export const alertByIdFromCache = async (_id: string): Promise<PriceAlert | undefined> => {
   let alert = await priceAlertCache.byId(_id)
 
   if (!alert) {
