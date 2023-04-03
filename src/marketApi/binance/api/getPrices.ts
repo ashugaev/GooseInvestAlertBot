@@ -17,7 +17,7 @@ export const getBinancePrices = async (tickerIds: string[], allBinanceInstrument
 
   const pricesArr = Object.entries(pricesObj).map(([key, val]) => ([key, Number(val)]))
 
-  log.info('Binance instruments', allBinanceInstruments.length)
+  log.info(logPrefix, 'Binance instruments', allBinanceInstruments.length)
 
   const tickersWithNoPrice = []
 

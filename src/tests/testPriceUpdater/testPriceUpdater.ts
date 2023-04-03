@@ -20,19 +20,19 @@ const testTickers: TestItem[] = [
     params: {
       source: EMarketDataSources.bybit, ticker: 'BTCUSDT'
     },
-    checkPeriod: 1000 * 60 * 5
+    checkPeriod: 1000 * 60 * 10
   },
   {
     params: { source: EMarketDataSources.bybit, ticker: 'ETHUSDT' },
-    checkPeriod: 1000 * 60 * 5
+    checkPeriod: 1000 * 60 * 10
   },
   {
     params: { source: EMarketDataSources.binance, ticker: 'BTCUSDT' },
-    checkPeriod: 1000 * 60 * 5
+    checkPeriod: 1000 * 60 * 10
   },
   {
     params: { source: EMarketDataSources.binance, ticker: 'ETHUSDT' },
-    checkPeriod: 1000 * 60 * 5
+    checkPeriod: 1000 * 60 * 10
   },
   {
     params: { source: EMarketDataSources.tinkoff, type: EMarketInstrumentTypes.Currency, ticker: 'USDRUB' },
@@ -48,11 +48,11 @@ const testTickers: TestItem[] = [
   },
   {
     params: { source: EMarketDataSources.yahoo, ticker: 'USDRUB' },
-    checkPeriod: 1000 * 60 * 60
+    checkPeriod: 1000 * 60 * 90
   },
   {
     params: { source: EMarketDataSources.yahoo, ticker: 'EURUSD' },
-    checkPeriod: 1000 * 60 * 60
+    checkPeriod: 1000 * 60 * 90
   },
   {
     params: { source: EMarketDataSources.coingecko, ticker: 'ETH' },

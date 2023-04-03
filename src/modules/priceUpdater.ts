@@ -59,14 +59,18 @@ export const setupPriceUpdater = async ({
 
   // Check every N min ticker without price
   setInterval(() => {
-    const idsWihoutPrices = Object.keys(noPricesObject)
+    try {
+      const idsWihoutPrices = Object.keys(noPricesObject)
 
-    if (idsWihoutPrices.length > 100) {
-      log.error(logPrefix, 'No prices found for tickers', idsWihoutPrices)
-    }
+      if (idsWihoutPrices.length > 100) {
+        log.error(logPrefix, 'No prices found for tickers', idsWihoutPrices)
+      }
 
-    noPricesObject = {}
+      noPricesObject = {}
     // N = 30 min
+    } catch (e) {
+      log.error(logPrefix, 'Error in setInterval', e)
+    }
   }, 1000 * 60 * 30)
 
   let lastIterationStartTime = new Date().getTime()
