@@ -234,16 +234,14 @@ export const setupCheckers = (bot) => {
   /**
    * COINGECKO prices updater
    *
-   * QUOTA: 50 calls/min
-   * @see https://www.coingecko.com/en/api/documentation
+   * QUOTA: 20 calls/min
+   * @see https://www.coingecko.com/en/api/pricing
    */
   retry(async () => {
     await setupPriceUpdater({
-      // 2sec
-      minTimeBetweenRequests: 3000,
+      minTimeBetweenRequests: 4000,
       getPrices: coingeckoGetLastPriceById,
       source: EMarketDataSources.coingecko,
-      // 500 items works fine
       maxTickersForRequest: 500,
       jobKey: InitializationItem.COINGECKO_PRICES
     })
