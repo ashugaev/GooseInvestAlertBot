@@ -1,5 +1,6 @@
-import { log } from '@/helpers'
 import { TickerPrices } from 'prices'
+
+import { log } from '@/helpers'
 
 import { CoinGeckoClient } from './getAllInstruments'
 
@@ -45,7 +46,13 @@ export async function coingeckoGetLastPriceById (ids: string[], tickersData): Pr
   if (ids.length > prices.length) {
     const uncheckedTickers = ids.filter(el => !prices.find(item => item[2] === el))
 
-    log.error(logPrefix + ' Can\'t get prices for:', uncheckedTickers.join(','))
+    log.info(logPrefix + ' Can\'t get prices for:', uncheckedTickers.join(','))
+
+    // If we get atleast one price but not for all ids
+    if (prices.length) {
+      // TODO: Save ticker id's to black list
+      //  Create new model for it
+    }
   }
 
   return prices
