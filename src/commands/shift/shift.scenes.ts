@@ -29,7 +29,7 @@ const startShiftAddScene = immediateStep('shift_add_start-scene', async (ctx) =>
   // Добавлено уже у юзера
   const userShiftsCount = await getTimeShiftsCountForUser(user)
   // Лимиты для этого юзера
-  const shiftsLimitForUser = ctx.userLimits.shifts
+  const shiftsLimitForUser = ctx.limits.shifts
 
   // Закинем в состояние для следующих шагов
   set(ctx, 'wizard.state.shift.limit', shiftsLimitForUser)

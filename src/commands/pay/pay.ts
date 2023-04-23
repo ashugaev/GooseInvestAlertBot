@@ -7,7 +7,7 @@ import { PAY_ACTIONS } from './pay.constants'
 import { payPricesKeyboard } from './pay.keyboards'
 
 export function setupPay (bot: Telegraf<Context>) {
-  bot.command(['pay', 'subscription'], commandWrapper(async ctx => {
+  bot.command(['pay', 'subscription'], commandWrapper({availableForAdmins: false},async ctx => {
     ctx.replyWithHTML(ctx.i18n.t('pay'),
       {
         disable_web_page_preview: true,

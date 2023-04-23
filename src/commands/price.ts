@@ -8,7 +8,7 @@ import { log } from '../helpers/log'
 import { symbolOrCurrency } from '../helpers/symbolOrCurrency'
 
 export function setupPrice (bot: Telegraf<Context>) {
-  bot.command(['price'], commandWrapper(async ctx => {
+  bot.command(['price'], commandWrapper({availableForAdmins: false}, async ctx => {
     const data: string[] = ctx.message.text.match(/price ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
 
     if (data) {

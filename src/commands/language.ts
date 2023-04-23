@@ -6,7 +6,7 @@ import { ExtraEditMessage } from 'telegraf/typings/telegram-types';
 import { commandWrapper } from '../helpers/commandWrapper';
 
 export function setupLanguage (bot: Telegraf<Context>) {
-  bot.command('language', commandWrapper(async ctx => {
+  bot.command('language', commandWrapper({availableForAdmins: false}, async ctx => {
     ctx.replyWithHTML('🤖 Пока что знаю только русский язык');
 
     return;

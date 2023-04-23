@@ -19,7 +19,8 @@ import { fetchAlerts } from './utils/fetchAlerts'
 import { showShiftsPage } from './utils/showShiftsPage'
 
 export function setupList (bot: Telegraf<Context>) {
-  bot.command('list', commandWrapper(async ctx => {
+  // @ts-ignore
+  bot.command('list', commandWrapper({availableForAdmins: false}, async ctx => {
     const data = ctx.message.text.match(/list\s?(\w+)?$/)
 
     const { id: user } = ctx.from

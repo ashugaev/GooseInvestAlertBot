@@ -3,7 +3,7 @@ import { Extra } from 'telegraf';
 import { commandWrapper } from '../helpers/commandWrapper';
 
 export function setupStart (bot) {
-  bot.command(['start'], commandWrapper(async ctx => {
+  bot.command(['start'], commandWrapper({availableForAdmins: false}, async ctx => {
     const { first_name } = ctx.message.from;
 
     const params = Extra

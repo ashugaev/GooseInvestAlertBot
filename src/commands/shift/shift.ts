@@ -6,7 +6,8 @@ import { shiftAlertSettings } from './shift.actions'
 import { SHIFT_ACTIONS, SHIFT_SCENES } from './shift.constants'
 
 export function setupShift (bot: Telegraf<Context>) {
-  bot.command(['shift', 's'], commandWrapper(async ctx => {
+  bot.command(['shift', 's'], commandWrapper({availableForAdmins: false}, async ctx => {
+    // @ts-ignore
     await ctx.scene.enter(SHIFT_SCENES.add)
   }))
 

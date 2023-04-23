@@ -14,6 +14,7 @@ import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
+import {setupAdmin} from "@/commands/admin/admin"
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
 
@@ -88,6 +89,7 @@ setupStat(bot)
 setupId(bot)
 setupPay(bot)
 setupRemove(bot)
+setupAdmin(bot)
 
 // Start bot
 bot.startPolling()

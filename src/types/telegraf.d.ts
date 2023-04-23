@@ -1,10 +1,12 @@
-import { DocumentType } from '@typegoose/typegoose';
-import { Middleware } from 'telegraf';
-import { TelegrafContext } from 'telegraf/typings/context';
-import I18N from 'telegraf-i18n';
+import { Middleware } from 'telegraf'
+import { TelegrafContext } from 'telegraf/typings/context'
+import * as tt from "telegraf/typings/telegram-types"
+import I18N from 'telegraf-i18n'
 
-import { ListCommandState } from '../commands/list/list.types';
-import { User } from '../models';
+import {UserLimits} from "@/models"
+
+import { ListCommandState } from '../commands/list/list.types'
+import { User } from '../models'
 
 interface CommandsState {
   listCommand: ListCommandState
@@ -12,9 +14,36 @@ interface CommandsState {
 
 declare module 'telegraf' {
   export class Context {
-    dbuser: DocumentType<User>;
-    i18n: I18N;
-    session: CommandsState;
+    i18n: I18N
+    session: CommandsState
+    /**
+     * Bot info
+     */
+    goose: tt.User
+    /**
+     * User info
+     */
+    dbuser: User
+    /**
+     * Chat info
+     */
+    dbchat: Chat
+    /**
+     * Is group chat
+     */
+    isGroup: boolean
+    /**
+     * is private chat
+     */
+    isPrivate: boolean
+    /**
+     * Limits object
+     */
+    limits: UserLimits
+    /**
+     * User in admin mode
+     */
+    adminMode?: boolean
   }
 
   export interface Composer<TContext extends Context> {
