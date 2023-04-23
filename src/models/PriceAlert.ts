@@ -15,42 +15,45 @@ export class PriceAlert {
    * Id по по которому ищем данные о цене (отвязываемся от названия тикера)
    */
   @prop({ required: true })
-  tickerId: string
-
-  @prop({ required: true })
-  user: number
-
-  @prop({ required: true })
-  symbol: string
-
-  @prop({required: false})
-  lowerThen?: number
-
-  @prop({required: false})
-  greaterThen?: number
-
-  @prop({required: false})
-  message?: string
-
-  @prop({ required: true })
-  name: string
+    tickerId: string
 
   @prop({ required: false })
-  currency?: string
+    user?: number
+
+  @prop({ required: false })
+    chat?: number
+
+  @prop({ required: true })
+    symbol: string
+
+  @prop({required: false})
+    lowerThen?: number
+
+  @prop({required: false})
+    greaterThen?: number
+
+  @prop({required: false})
+    message?: string
+
+  @prop({ required: true })
+    name: string
+
+  @prop({ required: false })
+    currency?: string
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
-  type: EMarketInstrumentTypes
+    type: EMarketInstrumentTypes
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
-  source: EMarketDataSources
+    source: EMarketDataSources
 
   /**
      * Цена на момент создания алерта
      */
   @prop()
-  initialPrice: number
+    initialPrice: number
 }
 
 // Get PriceAlertModel model
@@ -124,8 +127,18 @@ class PriceAlertCache {
     return this.items.filter(item => item.user === user)
   }
 
-  byTickerId (tickerId: string, user: number): PriceAlert[] {
-    return this.items.filter(item => (item.tickerId === tickerId && item.user === user))
+  getForChat (chat: number) {
+    if (!chat) {
+      throw new Error('chat is not defined')
+    }
+
+    return this.items.filter(item => item.chat === chat)
+  }
+
+  byTickerId (tickerId: string, user?: number, chat?: number): PriceAlert[] {
+    return chat 
+      ? this.items.filter(item => (item.tickerId === tickerId && item.chat === chat))
+      : this.items.filter(item => (item.tickerId === tickerId && item.user === user))
   }
 
   byId (_id: string): PriceAlert | undefined {
@@ -221,15 +234,22 @@ export const getAlertsCountForUser = async (user: number) => await new Promise(a
   }
 })
 
-export const alertByTickerIdFromCache = async (tickerId: string, user: number): Promise<PriceAlert[]> => {
-  if (!user) {
-    throw new Error('User is not defined')
+export const alertByTickerIdFromCache = async (tickerId: string, user: number | null, chat: number): Promise<PriceAlert[]> => {  
+  let alerts = []
+  
+  if(chat) {
+    alerts = priceAlertCache.byTickerId(tickerId, undefined, chat)
+  } else if(user) {
+    alerts = priceAlertCache.byTickerId(tickerId, user)
+  } else {
+    throw new Error('User or chat is not defined')
+
   }
-
-  let alerts = priceAlertCache.byTickerId(tickerId, user)
-
+  
   if (!alerts.length) {
-    alerts = (await PriceAlertModel.find({ tickerId: tickerId, user }).lean())
+    alerts = chat 
+      ? (await PriceAlertModel.find({ tickerId: tickerId, chat }).lean())
+      : (await PriceAlertModel.find({ tickerId: tickerId, user }).lean())
   }
 
   return alerts

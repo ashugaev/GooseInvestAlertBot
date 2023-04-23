@@ -1,10 +1,11 @@
+import {shiftsCache} from "@/cron/shiftsChecker"
+import {getSourceMark} from "@/helpers/getSourceMark"
+
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
-import { getInstrumentInfoByTicker, TimeShiftModel } from '../../models'
+import {getInstrumentInfoByTicker, TimeShift, TimeShiftModel} from '../../models'
 import { SHIFT_ACTIONS, SHIFT_TIMEFRAMES } from './shift.constants'
 import { getShiftConfigKeyboard } from './shift.keyboards'
-import {shiftsCache} from "@/cron/shiftsChecker";
-import {getSourceMark} from "@/helpers/getSourceMark";
 
 /**
  * Редактирование пришедшего алерта
@@ -24,8 +25,16 @@ export const shiftAlertSettings = async (ctx) => {
     const { id: user } = ctx.from
 
     // FIXME: Три похода в базу за раз это отстой :(
+    
+    const params: Partial<TimeShift> = {_id}
+        
+    if (ctx.dbuser.adminMode) {
+      params.chat = ctx.adminChatActive?.id
+    } else {
+      params.user = user
+    }
 
-    const shiftData = (await TimeShiftModel.find({ _id, user }).lean())[0]
+    const shiftData = (await TimeShiftModel.find(params).lean())[0]
 
     const tickerInfo = (await getInstrumentInfoByTicker({ ticker: shiftData.ticker }))[0]
 
@@ -61,7 +70,7 @@ export const shiftAlertSettings = async (ctx) => {
 
     // TODO: Можно не делать апдейт, если данные не изменились
     // Апдейт параметров
-    await TimeShiftModel.updateOne({ _id, user }, {
+    await TimeShiftModel.updateOne({ _id }, {
       $set: {
         muted: shiftConfig.muted,
         fallAlerts: shiftConfig.fallAlerts,

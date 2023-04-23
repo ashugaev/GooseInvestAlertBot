@@ -24,7 +24,13 @@ interface FetchAlertsResult {
 export const fetchAlerts = async (
   { ctx, tickerId, noContextUpdate, ticker }: IFetchAlertsParams
 ): Promise<FetchAlertsResult> => {
-  const params: Partial<PriceAlert> = { user: ctx.from.id }
+  const params: Partial<PriceAlert> = {}
+
+  if(ctx.dbuser.adminMode) {
+    params.chat = ctx.adminChatActive?.id
+  } else {
+    params.user = ctx.dbuser.id
+  }
 
   if (tickerId) {
     params.tickerId = tickerId

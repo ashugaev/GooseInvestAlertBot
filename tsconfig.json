@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
     "module": "Node16",
     "target": "esnext",
     "lib": ["es2015"],
@@ -24,5 +25,5 @@
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*"]
+  "include": [".eslintrc.js", "src/**/*"]
 }

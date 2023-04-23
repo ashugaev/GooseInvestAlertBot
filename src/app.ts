@@ -7,13 +7,13 @@ import * as dotenv from 'dotenv'
 import * as path from 'path'
 
 // Строка должна быть выше импорта файлов с переменными окружения
-// eslint-disable-next-line import/no-extraneous-dependencies
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
+import {setupAdmin} from "@/commands/admin/admin"
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
 
@@ -88,6 +88,7 @@ setupStat(bot)
 setupId(bot)
 setupPay(bot)
 setupRemove(bot)
+setupAdmin(bot)
 
 // Start bot
 bot.startPolling()

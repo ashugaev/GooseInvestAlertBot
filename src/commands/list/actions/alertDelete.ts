@@ -24,7 +24,9 @@ export const alertDelete = async (ctx) => {
     await removePriceAlert({ _id: alertId.toString() })
     priceAlertCache.removeItemFromCache(alertId)
 
-    const alerts = priceAlertCache.getForUser(ctx.from.id)
+    const alerts = ctx.dbuser.adminMode 
+      ? priceAlertCache.getForChat(ctx.dbuser.activeChatId)
+      : priceAlertCache.getForUser(ctx.from.id)
 
     const instrumentItems = alerts.filter(item => item.tickerId === instrumentId)
 

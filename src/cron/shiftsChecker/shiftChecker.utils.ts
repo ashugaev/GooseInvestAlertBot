@@ -1,6 +1,7 @@
 
 import { ShiftTimeframe } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker/shiftsChecker'
+import {getSourceMark} from "@/helpers/getSourceMark"
 
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
 import { i18n } from '../../helpers/i18n'
@@ -12,7 +13,6 @@ import {
   TimeShiftModel
 } from '../../models'
 import { shiftAlertSettingsKeyboard } from './shiftChecker.keyboards'
-import {getSourceMark} from "@/helpers/getSourceMark";
 
 const logPrefix = '[SHIFT CHECKER]'
 
@@ -133,7 +133,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
     // !!! Update cache before send message for make it faster and not create message duplicate
     triggeredShiftsCache[shift._id] = { lastMessageCandleGrowTime: actualCandleCreatedTime }
     // !!! No 'await' for not block iterator
-    bot.telegram.sendMessage(shift.user, i18n.t(
+    bot.telegram.sendMessage(shift.chat ?? shift.user, i18n.t(
       'ru', 'shift_alert',
       {
         name: tickerInfo.name,

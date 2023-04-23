@@ -10,11 +10,11 @@ import { addAlertScenario } from './scenarios/addAlertScenario'
 const logPrefix = '[ALERT COMMAND]'
 
 export function setupAlert (bot: Telegraf<Context>) {
-  const callback = commandWrapper(async (ctx) => {
+  const callback = commandWrapper({availableForAdmins: false},async (ctx) => {
     const { text } = ctx.message
     const { id: user } = ctx.from
 
-    const alertsLimit = ctx.userLimits.priceLevels
+    const alertsLimit = ctx.limits.priceLevels
     const userAlertsCount = await getAlertsCountForUser(user)
 
     if (userAlertsCount >= alertsLimit) {

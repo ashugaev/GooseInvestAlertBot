@@ -1,28 +1,29 @@
-import { Context, Extra, Telegraf } from 'telegraf'
+import {Context, Extra, Telegraf} from 'telegraf'
 
-import { EKeyboardModes } from '@/commands/list/keyboards/instrumentPageKeyboard'
-import { showInstrumentPage } from '@/commands/list/utils/showInstrumentPage'
-import { TimeShift, TimeShiftModel } from '@/models'
+import {EKeyboardModes} from '@/commands/list/keyboards/instrumentPageKeyboard'
+import {showInstrumentPage} from '@/commands/list/utils/showInstrumentPage'
+import {TimeShift, TimeShiftModel} from '@/models'
 
-import { Actions } from '../../constants'
-import { commandWrapper } from '../../helpers/commandWrapper'
-import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
-import { alertDelete } from './actions/alertDelete'
-import { alertEdit } from './actions/alertEdit'
-import { alertsForInstrument } from './actions/alertsForInstrument'
-import { instrumentsListPagination } from './actions/instrumentsListPagination'
-import { shiftDelete } from './actions/shiftDelete'
-import { shiftEditPage } from './actions/shiftEditPage'
-import { shiftsPage } from './actions/shiftsPage'
-import { instrumentsListKeyboard } from './keyboards/instrumentsListKeyboard'
-import { fetchAlerts } from './utils/fetchAlerts'
-import { showShiftsPage } from './utils/showShiftsPage'
+import {Actions} from '../../constants'
+import {commandWrapper} from '../../helpers/commandWrapper'
+import {triggerActionRegexp} from '../../helpers/triggerActionRegexp'
+import {alertDelete} from './actions/alertDelete'
+import {alertEdit} from './actions/alertEdit'
+import {alertsForInstrument} from './actions/alertsForInstrument'
+import {instrumentsListPagination} from './actions/instrumentsListPagination'
+import {shiftDelete} from './actions/shiftDelete'
+import {shiftEditPage} from './actions/shiftEditPage'
+import {shiftsPage} from './actions/shiftsPage'
+import {instrumentsListKeyboard} from './keyboards/instrumentsListKeyboard'
+import {fetchAlerts} from './utils/fetchAlerts'
+import {showShiftsPage} from './utils/showShiftsPage'
 
-export function setupList (bot: Telegraf<Context>) {
-  bot.command('list', commandWrapper(async ctx => {
+export function setupList(bot: Telegraf<Context>) {
+  // @ts-ignore
+  bot.command('list', commandWrapper({availableForAdmins: true}, async ctx => {
     const data = ctx.message.text.match(/list\s?(\w+)?$/)
 
-    const { id: user } = ctx.from
+    const {id: user} = ctx.from
 
     // Invalid Format
     if (data === null) {
@@ -50,7 +51,7 @@ export function setupList (bot: Telegraf<Context>) {
     }
 
     // Вернет все алерты юзера и запишет в контекст
-    const { alertsList, uniqTickersData } = await fetchAlerts({ ctx, ticker: tickerName })
+    const {alertsList, uniqTickersData} = await fetchAlerts({ctx, ticker: tickerName})
 
     // Если есть алерты
     if (uniqTickersData.length) {
@@ -69,7 +70,7 @@ export function setupList (bot: Telegraf<Context>) {
 
       if (uniqTickersData.length > 1) {
         // TODO: Создать ShowTickersList для этого reply
-        return ctx.replyWithHTML(ctx.i18n.t('alertList_titles', { empty: !uniqTickersData.length }),
+        return ctx.replyWithHTML(ctx.i18n.t('alertList_titles', {empty: !uniqTickersData.length}),
           Extra
             .HTML(true)
             .markup(await instrumentsListKeyboard({
@@ -82,7 +83,13 @@ export function setupList (bot: Telegraf<Context>) {
       }
     }
 
-    const shiftsParams: Partial<TimeShift> = { user }
+    const shiftsParams: Partial<TimeShift> = {}
+
+    if (ctx.dbuser.adminMode) {
+      shiftsParams.chat = ctx.adminChatActive?.id
+    } else {
+      shiftsParams.user = user
+    }
 
     if (tickerName) {
       shiftsParams.ticker = tickerName.toUpperCase()
@@ -91,7 +98,7 @@ export function setupList (bot: Telegraf<Context>) {
     const shiftsList = await TimeShiftModel.find(shiftsParams)
 
     // В любом случае показываем эту страницу, даже есои она пустая
-    return await showShiftsPage({ ctx, page: 0, edit: false, shiftsList })
+    return await showShiftsPage({ctx, page: 0, edit: false, shiftsList})
   }))
 
   // Управление состоянием страницы одного инструмента
