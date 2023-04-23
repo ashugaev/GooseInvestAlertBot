@@ -7,7 +7,6 @@ import * as dotenv from 'dotenv'
 import * as path from 'path'
 
 // Строка должна быть выше импорта файлов с переменными окружения
-// eslint-disable-next-line import/no-extraneous-dependencies
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 import * as Sentry from '@sentry/node'
