@@ -25,7 +25,7 @@ export const alertsForInstrument = async (ctx) => {
 
     set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId)
 
-    const alerts = await alertByTickerIdFromCache(selectedTickerId, ctx.from.id)
+    const alerts = await alertByTickerIdFromCache(selectedTickerId, ctx.from.id, ctx.dbuser.activeChatId)
 
     await showInstrumentPage({
       page,

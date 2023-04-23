@@ -1,12 +1,14 @@
 
+import {Context} from "telegraf"
+
 import { SOURCE_CONFIG } from '@/constants/sourceConfig'
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { chooseSourceKeyboard } from '@/keyboards/chooseSource'
 import { immediateStep, waitButtonClickStep, waitMessageStep } from '@/scenes/wrappers'
 
 import { i18n } from '../../helpers/i18n'
-import { getInstrumentInfoByTicker } from '../../models'
-import { getTimeShiftsCountForUser, TimeShiftModel } from '../../models/TimeShifts'
+import {getInstrumentInfoByTicker, getTimeShiftsCount} from '../../models'
+import { TimeShiftModel } from '../../models/TimeShifts'
 import {
   SHIFT_ACTIONS,
   SHIFT_MAX_PERCENT,
@@ -23,11 +25,13 @@ const { set } = require('lodash')
  * Handle: -
  * Ask: Биржа
  * */
-const startShiftAddScene = immediateStep('shift_add_start-scene', async (ctx) => {
-  const { id: user } = ctx.from
-
+const startShiftAddScene = immediateStep('shift_add_start-scene', async (ctx: Context) => {
   // Добавлено уже у юзера
-  const userShiftsCount = await getTimeShiftsCountForUser(user)
+  const userShiftsCount = await getTimeShiftsCount({
+    user: ctx.from.id,
+    chat: ctx.adminChatActive?.id
+  })
+
   // Лимиты для этого юзера
   const shiftsLimitForUser = ctx.limits.shifts
 
@@ -41,6 +45,7 @@ const startShiftAddScene = immediateStep('shift_add_start-scene', async (ctx) =>
       limit: shiftsLimitForUser
     }))
 
+    // @ts-ignore
     return ctx.scene.leave()
   }
 
@@ -51,6 +56,7 @@ const startShiftAddScene = immediateStep('shift_add_start-scene', async (ctx) =>
     }
   })
 
+  // @ts-ignore
   return ctx.wizard.next()
 })
 
@@ -185,7 +191,8 @@ const shiftAddChoosePercent = waitMessageStep('shift_add_choose-percent', async 
     tickerId: tickersInfoObj[ticker].id,
     timeframe,
     ticker,
-    user,
+    user: ctx.adminChatActive ? null : user,
+    chat: ctx.adminChatActive ? ctx.adminChatActive.id : null,
     name: tickersInfoObj[ticker].name,
     ...additionalShiftConfig
   }))

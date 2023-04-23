@@ -44,6 +44,10 @@ declare module 'telegraf' {
          * Chats awailable for admins
          */
         adminChats: Chat[]
+        /**
+         * Selected chat in admin mode
+         */
+        adminChatActive: Chat
     }
 
     export interface Composer<TContext extends Context> {

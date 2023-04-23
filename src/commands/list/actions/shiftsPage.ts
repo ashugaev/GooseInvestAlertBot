@@ -1,5 +1,5 @@
 import { log } from '../../../helpers/log'
-import { TimeShiftModel } from '../../../models'
+import {TimeShift, TimeShiftModel} from '../../../models'
 import { showShiftsPage } from '../utils/showShiftsPage'
 
 /**
@@ -13,8 +13,13 @@ export const shiftsPage = async (ctx) => {
     } = JSON.parse(ctx.match[1])
 
     const { id: user } = ctx.from
-
-    const shiftsList = await TimeShiftModel.find({ user })
+    const params: Partial<TimeShift> = { }
+    if(ctx.dbuser.adminMode) {
+      params.chat = ctx.adminChatActive.id
+    } else {
+      params.user = user
+    }
+    const shiftsList = await TimeShiftModel.find(params)
 
     await showShiftsPage({
       page,

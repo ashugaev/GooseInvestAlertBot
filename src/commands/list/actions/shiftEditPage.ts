@@ -5,7 +5,7 @@ import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
-import { getInstrumentByIdFromCache, TimeShiftModel } from '../../../models'
+import {getInstrumentByIdFromCache, TimeShift, TimeShiftModel} from '../../../models'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
@@ -28,7 +28,13 @@ export const shiftEditPage = async (ctx) => {
 
     const { id: user } = ctx.from
 
-    const shiftData = (await TimeShiftModel.find({ _id, user }).lean())[0]
+    const params: Partial<TimeShift> = { _id }
+    if(ctx.dbuser.adminMode) {
+      params.chat = ctx.adminChatActive.id
+    } else {
+      params.user = user
+    }
+    const shiftData = (await TimeShiftModel.find(params).lean())[0]
     const instrumentData = await getInstrumentByIdFromCache(shiftData.tickerId)
 
     if (!shiftData) {
