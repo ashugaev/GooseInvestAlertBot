@@ -15,7 +15,7 @@ export const shiftsPage = async (ctx) => {
     const { id: user } = ctx.from
     const params: Partial<TimeShift> = { }
     if(ctx.dbuser.adminMode) {
-      params.chat = ctx.adminChatActive.id
+      params.chat = ctx.adminChatActive?.id
     } else {
       params.user = user
     }

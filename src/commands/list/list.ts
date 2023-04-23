@@ -86,7 +86,7 @@ export function setupList(bot: Telegraf<Context>) {
     const shiftsParams: Partial<TimeShift> = {}
 
     if (ctx.dbuser.adminMode) {
-      shiftsParams.chat = ctx.adminChatActive.id
+      shiftsParams.chat = ctx.adminChatActive?.id
     } else {
       shiftsParams.user = user
     }

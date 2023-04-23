@@ -30,7 +30,7 @@ export const shiftEditPage = async (ctx) => {
 
     const params: Partial<TimeShift> = { _id }
     if(ctx.dbuser.adminMode) {
-      params.chat = ctx.adminChatActive.id
+      params.chat = ctx.adminChatActive?.id
     } else {
       params.user = user
     }

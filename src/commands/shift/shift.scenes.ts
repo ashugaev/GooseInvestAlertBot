@@ -192,7 +192,7 @@ const shiftAddChoosePercent = waitMessageStep('shift_add_choose-percent', async 
     timeframe,
     ticker,
     user: ctx.adminChatActive ? null : user,
-    chat: ctx.adminChatActive ? ctx.adminChatActive.id : null,
+    chat: ctx.adminChatActive ? ctx.adminChatActive?.id : null,
     name: tickersInfoObj[ticker].name,
     ...additionalShiftConfig
   }))
