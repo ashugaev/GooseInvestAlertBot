@@ -21,6 +21,9 @@ export class User {
 
     @prop({required: true, default: false})
     adminMode: boolean
+
+    @prop({required: false, default: null})
+    adminModeChatId: number | string
 }
 
 // Get User model
@@ -41,12 +44,12 @@ export async function findUser(id: string | number) {
     return user
 }
 
-export const toAdminMode = async (ctx: Context) => {
-    await UserModel.update({id: ctx.from.id}, {$set: {adminMode: true}})
-    ctx.adminMode = true
+export const toAdminMode = async (ctx: Context, chatId: number | string) => {
+    await UserModel.update({id: ctx.from.id}, {$set: {adminMode: true, adminModeChatId: chatId}})
+    ctx.dbuser = await UserModel.findOne({id: ctx.from.id}).lean()
 }
 
 export const toUserMode = async (ctx: Context) => {
-    await UserModel.update({id: ctx.from.id}, {$set: {adminMode: false}})
-    ctx.adminMode = false
+    await UserModel.update({id: ctx.from.id}, {$set: {adminMode: false, adminModeChatId: null}})
+    ctx.dbuser = await UserModel.findOne({id: ctx.from.id}).lean()
 }

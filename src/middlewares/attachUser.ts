@@ -1,6 +1,6 @@
 import {Context} from "telegraf"
 
-import {createChat, deactivateChat, updateChatTitle} from "@/models/Chat"
+import {createChat, deactivateChat, getUserChats, updateChatTitle} from "@/models/Chat"
 
 import {log} from '../helpers/log'
 import {findUser} from '../models'
@@ -41,7 +41,10 @@ export async function attachUser(ctx: Context, next) {
         ctx.dbuser = dbuser
         // ctx.isGroup = false
         ctx.isPrivate = true
-        ctx.adminMode = dbuser.adminMode
+
+        if(dbuser.adminMode) {
+            ctx.adminChats = await getUserChats(user.id)
+        }
     } else if (chat.type === 'group' || chat.type === 'supergroup') {
         // Update chat title
         if (ctx.updateSubTypes.includes('new_chat_title')) {

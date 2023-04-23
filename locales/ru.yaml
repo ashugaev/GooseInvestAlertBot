@@ -461,5 +461,9 @@ adminMode_commandHidden: |
 
 adminMode_on: |
   ✅ <b>Режим админа</b> включен
-  
-  Отправь /help, что бы получить больше информации
+
+adminMode_activeChatChanged: |
+  🔄 Включен режим управления чатом <b>${title}</b>
+
+adminMode_off: |
+  👋 <b>Режим админа</b> выключен
