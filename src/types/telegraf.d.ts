@@ -14,40 +14,28 @@ interface CommandsState {
 
 declare module 'telegraf' {
     export class Context {
-        i18n: I18N
-        session: CommandsState
-        /**
+      i18n: I18N
+      session: CommandsState
+      /**
          * Bot info
          */
-        goose: tt.User
-        /**
+      goose: tt.User
+      /**
          * User info
          */
-        dbuser: User
-        /**
-         * Chat info
-         */
-        dbchat: Chat
-        /**
-         * Is group chat
-         */
-        isGroup: boolean
-        /**
-         * is private chat
-         */
-        isPrivate: boolean
-        /**
+      dbuser: User
+      /**
          * Limits object
          */
-        limits: UserLimits
-        /**
+      limits: UserLimits
+      /**
          * Chats awailable for admins
          */
-        adminChats: Chat[]
-        /**
+      adminChats: Chat[]
+      /**
          * Selected chat in admin mode
          */
-        adminChatActive: Chat
+      adminChatActive: Chat
     }
 
     export interface Composer<TContext extends Context> {

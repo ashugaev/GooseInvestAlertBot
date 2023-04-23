@@ -454,7 +454,7 @@ remove_chooseAlertsType_success: |
 
 # Admin mode
 adminMode_noChats: |
-  🤷 Добавиь бота в свой чат, что бы получить доступ к <b>режиму админа</b>
+  🤷 Добавь бота в свой чат, что бы получить доступ к <b>режиму админа</b>
 
 adminMode_commandHidden: |
   🤷 Эта команда не доступна в <b>режиме админа</b>

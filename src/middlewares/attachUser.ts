@@ -43,8 +43,6 @@ export async function attachUser(ctx: Context, next) {
   if (chat.type === 'private') {
     const dbuser = await findUser(user.id)
     ctx.dbuser = dbuser
-    // ctx.isGroup = false
-    ctx.isPrivate = true
 
     if (dbuser.adminMode) {
       ctx.adminChats = await getUserChats(user.id)
