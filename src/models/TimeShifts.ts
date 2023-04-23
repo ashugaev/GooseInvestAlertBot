@@ -25,14 +25,14 @@ export class TimeShift {
     /**
      * Need this if no 'chat'
      */
-    @prop({required: false})
-      user?: number | string
+    @prop({required: true})
+      user: number | string
 
     /**
      * Need this if no 'user'
      */
-    @prop({required: false})
-      chat?: number | string
+    @prop({required: false, default: null})
+      chat: number | string
 
     @prop({required: true})
       muted: boolean
