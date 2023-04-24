@@ -1,15 +1,10 @@
 import {Context} from "telegraf"
 
 import {createChat, deactivateChat, getUserChats, updateChatTitle} from "@/models/Chat"
+import {Limits} from "@/types/limits"
 
 import {log} from '../helpers/log'
 import {findUser} from '../models'
-
-// Используется только тут. Экспортить лимиты из ctx.limits
-export enum Limits {
-    priceLevels = 100,
-    shifts = 30,
-}
 
 // Обновляет лимиты в контексте
 export async function updateLimits(ctx: Context) {
@@ -18,7 +13,9 @@ export async function updateLimits(ctx: Context) {
 
     ctx.adminChats = userChats
     ctx.adminChatActive = userChats.find(chat => chat.id === ctx.dbuser.adminModeChatId)
-    ctx.limits = ctx.adminChatActive.limits
+    if (ctx.adminChatActive?.limits) {
+      ctx.limits = ctx.adminChatActive.limits
+    }
   } else {
     ctx.limits = ctx.dbuser.limits
   }
@@ -34,6 +31,8 @@ export async function updateLimits(ctx: Context) {
   if (!ctx.limits.priceLevels) {
     ctx.limits.priceLevels = Limits.priceLevels
   }
+
+  return
 }
 
 export async function attachUser(ctx: Context, next) {
@@ -43,10 +42,6 @@ export async function attachUser(ctx: Context, next) {
   if (chat.type === 'private') {
     const dbuser = await findUser(user.id)
     ctx.dbuser = dbuser
-
-    if (dbuser.adminMode) {
-      ctx.adminChats = await getUserChats(user.id)
-    }
   } else if (chat.type === 'group' || chat.type === 'supergroup') {
     // Update chat title
     if (ctx.updateSubTypes.includes('new_chat_title')) {
@@ -59,13 +54,13 @@ export async function attachUser(ctx: Context, next) {
             ctx.update.message.new_chat_members.some(user => user.id === ctx.goose.id)
     ) {
       const admins = await ctx.telegram.getChatAdministrators(chat.id)
-      createChat(chat, admins)
+      await createChat(chat, admins)
     }
 
     // Group created
     if (ctx.updateSubTypes.includes('group_chat_created')) {
       const admins = await ctx.telegram.getChatAdministrators(chat.id)
-      createChat(chat, admins)
+      await createChat(chat, admins)
     }
 
     // Bot was removed
