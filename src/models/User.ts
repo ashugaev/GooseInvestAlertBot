@@ -1,13 +1,13 @@
 import {getModelForClass, prop} from '@typegoose/typegoose'
 import {Context} from "telegraf"
 
-import {Limits} from "@/middlewares/attachUser"
+import {Limits} from "@/types/limits"
 
 export class UserLimits {
-    @prop({required: false})
+    @prop({required: false, default: Limits.priceLevels})
       priceLevels: number
 
-    @prop({required: false})
+    @prop({required: false, default: Limits.shifts})
       shifts: number
 }
 
@@ -18,7 +18,7 @@ export class User {
     @prop({required: true, default: 'ru'})
       language: string
 
-    @prop({required: false, default: () => ({priceLevels: Limits.priceLevels, shifts: Limits.shifts})})
+    @prop({required: false, _id: false})
       limits: UserLimits
 
     @prop({required: true, default: false})

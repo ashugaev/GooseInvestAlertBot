@@ -2,14 +2,23 @@ import {getModelForClass, prop} from '@typegoose/typegoose'
 import * as tt from "telegraf/typings/telegram-types"
 import {ChatType} from "telegraf/typings/telegram-types"
 
-import {Limits} from "@/middlewares/attachUser"
+import {Limits} from "@/types/limits"
+
+export class ChatLimits {
+    @prop({required: false, default: Limits.priceLevels})
+      priceLevels: number
+
+    @prop({required: false, default: Limits.shifts})
+      shifts: number
+}
 
 export class Chat {
     @prop({required: true, index: true, unique: true})
       id: number | string
 
-    @prop({required: false, default: () => ({priceLevels: Limits.priceLevels, shifts: Limits.shifts})})
-      limits?: Limits
+    // FIXME: Убрать хардкод
+    @prop({required: false})
+      limits?: ChatLimits
     
     @prop({required: true})
       type: ChatType
@@ -42,7 +51,7 @@ export async function createChat({id, title, type}: tt.Chat, admins: tt.ChatMemb
     isActive: true,
   }
 
-  await ChatModel.create(data)
+  await ChatModel.insertMany([data])
 }
 
 export const deactivateChat = async (chat: tt.Chat) => {
