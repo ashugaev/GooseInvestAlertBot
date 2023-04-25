@@ -9,32 +9,42 @@ interface GetAdminAttachedMenuState {
     activeChatId: number | string,
 }
 
+const adminOffBtn = Markup.callbackButton("🏃🏽‍♂️Выйти из режима админа", "admin_exit")
+
+export const getAdminOffButton = (): tt.ExtraReplyMessage => {
+  return  Markup.inlineKeyboard([
+    [adminOffBtn],
+  ])
+    .resize()
+    .extra()
+}
+
 export const getAdminAttachedMenu = ({chats, activeChatId}: GetAdminAttachedMenuState): tt.ExtraReplyMessage => {
-    const chatButtons = chats.map(chat => {
-        const isActivated = chat.id === activeChatId
-        return Markup.callbackButton((isActivated ? '✅ ' : 'Switch to: ') + chat.title, createActionString('admin_chat', {
-            id: chat.id
-        }))
-    })
+  const chatButtons = chats.map(chat => {
+    const isActivated = chat.id === activeChatId
+    return Markup.callbackButton((isActivated ? '✅ Chat: ' : 'Chat: ') + chat.title, createActionString('admin_chat', {
+      id: chat.id
+    }))
+  })
 
-    // split by two buttons in row
-    const chatButtonsRows = chatButtons.reduce((acc, button, index) => {
-        if (index % 2 === 0) {
-            acc.push([button])
-        } else {
-            acc[acc.length - 1].push(button)
-        }
-        return acc
-    }, [])
+  // split by two buttons in row
+  const chatButtonsRows = chatButtons.reduce((acc, button, index) => {
+    if (index % 2 === 0) {
+      acc.push([button])
+    } else {
+      acc[acc.length - 1].push(button)
+    }
+    return acc
+  }, [])
 
-    const res = (
-        Markup.keyboard([
-            ...chatButtonsRows,
-            [Markup.callbackButton("🏃🏽‍♂️Выйти из режима админа", "admin_exit")],
-        ])
-            .resize()
-            .extra()
-    )
+  const res = (
+    Markup.keyboard([
+      ...chatButtonsRows,
+      [adminOffBtn],
+    ])
+      .resize()
+      .extra()
+  )
 
-    return res
+  return res
 }

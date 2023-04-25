@@ -29,7 +29,6 @@ const startShiftAddScene = immediateStep('shift_add_start-scene', async (ctx: Co
   // Добавлено уже у юзера
   const userShiftsCount = await getTimeShiftsCount({
     user: ctx.from.id,
-    chat: ctx.adminChatActive?.id
   })
 
   // Лимиты для этого юзера
@@ -192,7 +191,7 @@ const shiftAddChoosePercent = waitMessageStep('shift_add_choose-percent', async 
     timeframe,
     ticker,
     user,
-    chat: ctx.adminChatActive?.id,
+    chat: ctx.adminChatActive?.id ?? null,
     name: tickersInfoObj[ticker].name,
     ...additionalShiftConfig
   }))

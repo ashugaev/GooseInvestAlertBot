@@ -46,7 +46,7 @@ export async function findUser(id: string | number) {
   return user
 }
 
-export const toAdminMode = async (ctx: Context, chatId: number | string) => {
+export const userObjToAdminMode = async (ctx: Context, chatId: number | string) => {
   await UserModel.update({id: ctx.from.id}, {$set: {adminMode: true, adminModeChatId: chatId}})
   ctx.dbuser = await UserModel.findOne({id: ctx.from.id}).lean()
 }
