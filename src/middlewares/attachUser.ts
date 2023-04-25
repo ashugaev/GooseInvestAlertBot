@@ -40,8 +40,15 @@ const isTimeForUpdate = (chat) => !lastUpdatedByChatId[chat.id] || (Date.now() -
  */
 export async function attachUser(ctx: Context, next) {
   const user = ctx.from
-  const chat = ctx.chat
+  let chat = ctx.chat
   const update = ctx.update
+
+  // Whet user added bot to group
+  // @ts-ignore
+  if(!chat && ctx.update?.my_chat_member?.chat?.id) {
+    // @ts-ignore
+    chat = ctx.update.my_chat_member.chat
+  }
 
   try {
   // chat or private
