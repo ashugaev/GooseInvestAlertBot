@@ -2,6 +2,7 @@
 import { ShiftTimeframe } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker/shiftsChecker'
 import {getSourceMark} from "@/helpers/getSourceMark"
+import {ChatModel} from "@/models/Chat"
 
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
 import { i18n } from '../../helpers/i18n'
@@ -130,6 +131,8 @@ export const checkTriggeredShiftsAndSendMessage = async ({
 
     const sourceLink = getSourceMark(tickerInfo)
 
+    const keyboard = shiftAlertSettingsKeyboard({ id: _id, isGrow })
+
     // !!! Update cache before send message for make it faster and not create message duplicate
     triggeredShiftsCache[shift._id] = { lastMessageCandleGrowTime: actualCandleCreatedTime }
     // !!! No 'await' for not block iterator
@@ -148,7 +151,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
       disable_web_page_preview: true,
       disable_notification: muted,
       reply_markup: {
-        inline_keyboard: shiftAlertSettingsKeyboard({ id: _id, isGrow })
+        inline_keyboard: shift.chat ? [] : keyboard
       }
     })
       .then(async () => {
@@ -178,6 +181,22 @@ export const checkTriggeredShiftsAndSendMessage = async ({
           shiftsCache.update()
 
           log.info(logPrefix, 'Deleted shift because bot blocked by user')
+        }
+
+        if(
+          e.description === 'Bad Request: group chat was upgraded to a supergroup chat' &&
+            e.parameters?.migrate_to_chat_id &&
+            shift.chat
+        ) {
+          // Update chat in time shift
+          await TimeShiftModel.updateOne({ _id: shift._id }, {$set: {
+            chat: e.parameters?.migrate_to_chat_id
+          }})
+          // Update chat in Chat model
+          await ChatModel.updateOne({ id: shift.chat }, {$set: {
+            id: e.parameters?.migrate_to_chat_id,
+            type: 'supergroup'
+          }})
         }
       })
   }
