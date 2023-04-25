@@ -17,7 +17,7 @@ export function setupAdmin(bot: Telegraf<Context>) {
     }
     
     ctx.adminChats = userChats
-    ctx.adminChatActive = userChats.find(chat => chat.id === ctx.dbuser.adminModeChatId)
+    ctx.adminChatActive = userChats.find(chat => chat.id === ctx.dbuser.adminModeChatId) ?? userChats[0]
 
     await userObjToAdminMode(ctx, userChats[0].id)
 

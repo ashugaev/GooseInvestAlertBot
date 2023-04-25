@@ -15,7 +15,7 @@ export function sceneWrapper (intent: string, callback: (ctx: any) => Promise<vo
         ctx.dbuser = dbuser
         if (dbuser.adminMode) {
           ctx.adminChats = await getUserChats(ctx.from.id)
-          ctx.adminChatActive = ctx.adminChats.find(chat => chat.id === ctx.dbuser.adminModeChatId)
+          ctx.adminChatActive = ctx.adminChats.find(chat => chat.id === ctx.dbuser.adminModeChatId) ?? ctx.adminChats[0]
           ctx.limits = ctx.adminChatActive.limits
         }
       }
