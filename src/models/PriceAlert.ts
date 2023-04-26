@@ -234,7 +234,7 @@ export const getAlertsCountForUser = async (user: number) => await new Promise(a
   }
 })
 
-export const alertByTickerIdFromCache = async (tickerId: string, user: number | null, chat: number): Promise<PriceAlert[]> => {  
+export const alertByTickerIdFromCache = async (tickerId: string, user: number | null, chat: number): Promise<PriceAlert[]> => {
   let alerts = []
   
   if(chat) {
@@ -243,7 +243,6 @@ export const alertByTickerIdFromCache = async (tickerId: string, user: number | 
     alerts = priceAlertCache.byTickerId(tickerId, user)
   } else {
     throw new Error('User or chat is not defined')
-
   }
   
   if (!alerts.length) {

@@ -1,6 +1,7 @@
 import { set } from 'lodash'
 
 import { shortenerGetFull } from '@/helpers'
+import {commandWrapper} from "@/helpers/commandWrapper"
 import { alertByTickerIdFromCache } from '@/models'
 
 import { log } from '../../../helpers/log'
@@ -12,7 +13,7 @@ import { showInstrumentPage } from '../utils/showInstrumentPage'
  *
  * Страницы для ценового уровня
  */
-export const alertsForInstrument = async (ctx) => {
+export const alertsForInstrument = commandWrapper({availableForAdmins: true}, async (ctx) => {
   try {
     const {
       [ListActionsDataKeys.selectedTickerIdShortened]: selectedTickerIdShortened,
@@ -25,7 +26,7 @@ export const alertsForInstrument = async (ctx) => {
 
     set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId)
 
-    const alerts = await alertByTickerIdFromCache(selectedTickerId, ctx.from.id, ctx.dbuser.activeChatId)
+    const alerts = await alertByTickerIdFromCache(selectedTickerId, ctx.from.id, ctx.dbuser.adminModeChatId)
 
     await showInstrumentPage({
       page,
@@ -40,4 +41,4 @@ export const alertsForInstrument = async (ctx) => {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
   }
-}
+})

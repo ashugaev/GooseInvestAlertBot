@@ -1,18 +1,19 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { shortenerGetFull } from '@/helpers'
+import {commandWrapper} from "@/helpers/commandWrapper"
 import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
-import {getInstrumentByIdFromCache, TimeShift, TimeShiftModel} from '../../../models'
+import {getInstrumentByIdFromCache, getTimeShifts, TimeShift, TimeShiftModel} from '../../../models'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
 /**
  * Страница редактирования шифта
  */
-export const shiftEditPage = async (ctx) => {
+export const shiftEditPage = commandWrapper({availableForAdmins: true}, async (ctx) => {
   try {
     const {
       // Данные достаточные для первичного вызова
@@ -28,13 +29,12 @@ export const shiftEditPage = async (ctx) => {
 
     const { id: user } = ctx.from
 
-    const params: Partial<TimeShift> = { _id }
-    if(ctx.dbuser.adminMode) {
-      params.chat = ctx.adminChatActive?.id
-    } else {
-      params.user = user
-    }
-    const shiftData = (await TimeShiftModel.find(params).lean())[0]
+    const shiftData =  (await getTimeShifts({
+      chat: ctx.adminChatActive?.id,
+      user: user,
+      _id
+    }))[0]
+
     const instrumentData = await getInstrumentByIdFromCache(shiftData.tickerId)
 
     if (!shiftData) {
@@ -90,4 +90,4 @@ export const shiftEditPage = async (ctx) => {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
   }
-}
+})

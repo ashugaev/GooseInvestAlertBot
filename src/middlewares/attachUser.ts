@@ -69,7 +69,7 @@ export async function attachUser(ctx: Context, next) {
     }
 
     if (chat.type === 'private') {
-      if(!ctx.dbuser?.adminMode) {
+      if(ctx.dbuser?.adminMode) {
         await switchToAdminMode(ctx)
       } else {
         await switchToPrivateMode(ctx)

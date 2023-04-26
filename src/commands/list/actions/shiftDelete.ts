@@ -1,11 +1,12 @@
 import { shiftsCache } from '@/cron/shiftsChecker'
 
 import { log } from '../../../helpers/log'
-import {TimeShift, TimeShiftModel} from '../../../models'
+import {getTimeShifts, TimeShift, TimeShiftModel} from '../../../models'
 import { EKeyboardModes } from '../keyboards/instrumentPageKeyboard'
 import { showShiftsPage } from '../utils/showShiftsPage'
+import {commandWrapper} from "@/helpers/commandWrapper";
 
-export const shiftDelete = async (ctx) => {
+export const shiftDelete = commandWrapper({availableForAdmins: true}, async (ctx) => {
   try {
     const {
       id: _id,
@@ -16,13 +17,11 @@ export const shiftDelete = async (ctx) => {
     shiftsCache.update()
 
     const { id: user } = ctx.from
-    const params: Partial<TimeShift> = { }
-    if(ctx.dbuser.adminMode) {
-        params.chat = ctx.adminChatActive?.id
-    } else {
-        params.user = user
-    }
-    const shiftsList = await TimeShiftModel.find(params)
+
+    const shiftsList = await getTimeShifts({
+      chat: ctx.adminChatActive?.id,
+      user: user
+    })
 
     await showShiftsPage({
       page,
@@ -35,4 +34,4 @@ export const shiftDelete = async (ctx) => {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
   }
-}
+})

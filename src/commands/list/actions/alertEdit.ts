@@ -5,13 +5,14 @@ import { shortenerGetFull } from '@/helpers'
 
 import { log } from '../../../helpers/log'
 import { ListActionsDataKeys } from '../list.types'
+import {commandWrapper} from "@/helpers/commandWrapper";
 
 const logPrefix = '[ALERT EDIT]'
 
 /**
  * Экшен перехода на страницу списка инструментов
  */
-export const alertEdit = async (ctx) => {
+export const alertEdit = commandWrapper({availableForAdmins: true}, async (ctx) => {
   try {
     const {
       [ListActionsDataKeys.selectedAlertId]: selectedAlertIdShort
@@ -41,4 +42,4 @@ export const alertEdit = async (ctx) => {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
   }
-}
+})

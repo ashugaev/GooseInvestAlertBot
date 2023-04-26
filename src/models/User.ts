@@ -25,7 +25,7 @@ export class User {
       adminMode: boolean
 
     @prop({required: false, default: null})
-      adminModeChatId: number | string
+      adminModeChatId: number
 }
 
 // Get User model
