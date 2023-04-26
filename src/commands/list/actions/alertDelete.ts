@@ -3,13 +3,14 @@ import { Extra } from 'telegraf'
 import { ListActionsDataKeys } from '@/commands/list/list.types'
 import { getUniqTickersData } from '@/commands/list/utils/uniqTickersData'
 import { shortenerGetFull } from '@/helpers'
+import {commandWrapper} from "@/helpers/commandWrapper"
 
 import { log } from '../../../helpers/log'
 import { priceAlertCache, removePriceAlert } from '../../../models'
 import { instrumentsListKeyboard } from '../keyboards/instrumentsListKeyboard'
 import { showInstrumentPage } from '../utils/showInstrumentPage'
 
-export const alertDelete = async (ctx) => {
+export const alertDelete = commandWrapper({availableForAdmins: true}, async (ctx) => {
   try {
     const {
       [ListActionsDataKeys.selectedAlertIdShortened]: alertIdShort,
@@ -25,7 +26,7 @@ export const alertDelete = async (ctx) => {
     priceAlertCache.removeItemFromCache(alertId)
 
     const alerts = ctx.dbuser.adminMode 
-      ? priceAlertCache.getForChat(ctx.dbuser.activeChatId)
+      ? priceAlertCache.getForChat(ctx.dbuser.adminModeChatId)
       : priceAlertCache.getForUser(ctx.from.id)
 
     const instrumentItems = alerts.filter(item => item.tickerId === instrumentId)
@@ -51,4 +52,4 @@ export const alertDelete = async (ctx) => {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
   }
-}
+})

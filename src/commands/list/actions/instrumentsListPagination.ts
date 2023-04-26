@@ -1,10 +1,12 @@
 import { set } from 'lodash'
 import { Extra } from 'telegraf'
 
+import {commandWrapper} from "@/helpers/commandWrapper"
+
 import { log } from '../../../helpers/log'
 import { instrumentsListKeyboard } from '../keyboards/instrumentsListKeyboard'
 
-export const instrumentsListPagination = async (ctx) => {
+export const instrumentsListPagination = commandWrapper({availableForAdmins: true}, async (ctx) => {
   try {
     const {
       p: page = 0
@@ -28,4 +30,4 @@ export const instrumentsListPagination = async (ctx) => {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
   }
-}
+})

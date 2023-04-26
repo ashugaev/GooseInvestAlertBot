@@ -27,7 +27,7 @@ export const fetchAlerts = async (
   const params: Partial<PriceAlert> = {}
 
   if(ctx.dbuser.adminMode) {
-    params.chat = ctx.adminChatActive?.id
+    params.chat = ctx.adminChatActive.id
   } else {
     params.user = ctx.dbuser.id
   }

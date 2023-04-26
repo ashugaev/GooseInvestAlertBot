@@ -2,7 +2,8 @@
  * Отслеживание скорости изменения цены
  */
 
-import {getModelForClass, prop} from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
+import {getModelForClass, prop} from '@typegoose/typegoose'
+import {FilterQuery} from "mongoose" // eslint-disable-line unused-imports/no-unused-imports
 
 export class TimeShift {
   _id: string
@@ -75,9 +76,35 @@ export const TimeShiftModel = getModelForClass(TimeShift, {
   schemaOptions: {timestamps: true}
 })
 
-type GetTimeshiftsCountParams = { user: number | string, chat?: number | string } | { chat: number | string, user?: number | string }
+type GetTimeshiftsParams =
+    { user: number | string, chat?: number | string }
+    | { chat: number | string, user?: number | string }
 
-export const getTimeShiftsCount = async ({user, chat}: GetTimeshiftsCountParams): Promise<number> => {
+export const getTimeShifts = async ({user, chat, ...params}: Partial<TimeShift>): Promise<TimeShift[]> => {
+  if (!user && !chat && !params._id) {
+    throw new Error('No user or chat or id in params')
+  }
+
+  let reqParams: FilterQuery<TimeShift> = {
+    user,
+  }
+  
+  if(chat) {
+    reqParams.chat = chat
+  } else {
+    // If not id field must be null or not exists
+    reqParams.chat = { $eq: null }
+  }
+
+  reqParams = {...reqParams, ...params}
+
+  // @ts-ignore
+  const data = await TimeShiftModel.find(reqParams).lean()
+
+  return data
+}
+
+export const getTimeShiftsCount = async ({user, chat}: GetTimeshiftsParams): Promise<number> => {
   let shiftsCount = null
 
   if (chat) {

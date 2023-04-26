@@ -2,7 +2,7 @@ import {Context, Extra, Telegraf} from 'telegraf'
 
 import {EKeyboardModes} from '@/commands/list/keyboards/instrumentPageKeyboard'
 import {showInstrumentPage} from '@/commands/list/utils/showInstrumentPage'
-import {TimeShift, TimeShiftModel} from '@/models'
+import {getTimeShifts, TimeShift, TimeShiftModel} from '@/models'
 
 import {Actions} from '../../constants'
 import {commandWrapper} from '../../helpers/commandWrapper'
@@ -85,17 +85,15 @@ export function setupList(bot: Telegraf<Context>) {
 
     const shiftsParams: Partial<TimeShift> = {}
 
-    if (ctx.dbuser.adminMode) {
-      shiftsParams.chat = ctx.adminChatActive?.id
-    } else {
-      shiftsParams.user = user
-    }
-
     if (tickerName) {
       shiftsParams.ticker = tickerName.toUpperCase()
     }
 
-    const shiftsList = await TimeShiftModel.find(shiftsParams)
+    const shiftsList = await getTimeShifts({
+      chat: ctx.adminChatActive?.id,
+      user: user,
+      ...shiftsParams
+    })
 
     // В любом случае показываем эту страницу, даже есои она пустая
     return await showShiftsPage({ctx, page: 0, edit: false, shiftsList})

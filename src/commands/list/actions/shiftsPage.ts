@@ -1,11 +1,13 @@
+import {commandWrapper} from "@/helpers/commandWrapper"
+
 import { log } from '../../../helpers/log'
-import {TimeShift, TimeShiftModel} from '../../../models'
+import {getTimeShifts, TimeShift, TimeShiftModel} from '../../../models'
 import { showShiftsPage } from '../utils/showShiftsPage'
 
 /**
  * Страница с отслеживаниями скорости цены
  */
-export const shiftsPage = async (ctx) => {
+export const shiftsPage = commandWrapper({availableForAdmins: true}, async (ctx) => {
   try {
     const {
       p: page,
@@ -13,13 +15,11 @@ export const shiftsPage = async (ctx) => {
     } = JSON.parse(ctx.match[1])
 
     const { id: user } = ctx.from
-    const params: Partial<TimeShift> = { }
-    if(ctx.dbuser.adminMode) {
-      params.chat = ctx.adminChatActive?.id
-    } else {
-      params.user = user
-    }
-    const shiftsList = await TimeShiftModel.find(params)
+
+    const shiftsList = await getTimeShifts({
+      chat: ctx.adminChatActive?.id,
+      user: user,
+    })
 
     await showShiftsPage({
       page,
@@ -32,4 +32,4 @@ export const shiftsPage = async (ctx) => {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
   }
-}
+})
