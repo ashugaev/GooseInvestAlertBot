@@ -74,7 +74,7 @@ export async function attachUser(ctx: Context, next) {
     }
 
     // Bot was kicked
-    const isDeactivationUpdate =
+    const wasKicked =
         // Bot was kicked from chat
         (
           ctx.updateSubTypes?.includes('left_chat_member') &&
@@ -86,7 +86,7 @@ export async function attachUser(ctx: Context, next) {
         // @ts-ignore
         ctx.update.my_chat_member?.new_chat_member?.status === 'left'
 
-    await createOrUpdateChat(chat, ctx, !isDeactivationUpdate)
+    await createOrUpdateChat(chat, ctx, wasKicked)
     
     const isChat = chat.type === 'group' || chat.type === 'supergroup'
     const isChannel = chat.type === 'channel'

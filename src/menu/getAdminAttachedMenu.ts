@@ -20,22 +20,25 @@ export const getAdminOffButton = (): tt.ExtraReplyMessage => {
 }
 
 export const getAdminAttachedMenu = ({chats, activeChatId}: GetAdminAttachedMenuState): tt.ExtraReplyMessage => {
-  const chatButtons = chats.map(chat => {
-    const isActivated = chat.id === activeChatId
-    return Markup.callbackButton((isActivated ? '✅ Chat: ' : 'Chat: ') + chat.title, createActionString('admin_chat', {
-      id: chat.id
-    }))
-  })
+  const chatButtons = chats
+    .filter((chat) => chat.isActive)
+    .map(chat => {
+      const isActivated = chat.id === activeChatId
+      return Markup.callbackButton((isActivated ? '✅ Chat: ' : 'Chat: ') + chat.title, createActionString('admin_chat', {
+        id: chat.id
+      }))
+    })
 
   // split by two buttons in row
-  const chatButtonsRows = chatButtons.reduce((acc, button, index) => {
-    if (index % 2 === 0) {
-      acc.push([button])
-    } else {
-      acc[acc.length - 1].push(button)
-    }
-    return acc
-  }, [])
+  const chatButtonsRows = chatButtons
+    .reduce((acc, button, index) => {
+      if (index % 2 === 0) {
+        acc.push([button])
+      } else {
+        acc[acc.length - 1].push(button)
+      }
+      return acc
+    }, [])
 
   const res = (
     Markup.keyboard([

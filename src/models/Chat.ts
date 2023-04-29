@@ -37,19 +37,20 @@ export const ChatModel = getModelForClass(Chat, {
 })
 
 const lastUpdatedByChatId = {}
+const removeMessageSentByChatId = {}
 const updateChatTimeout = 300000
 const isTimeForChatUpdate = (chat) => 
   !lastUpdatedByChatId[chat.id] || (Date.now() - lastUpdatedByChatId[chat.id] >= updateChatTimeout)
 
 const getAdmins = async ({wasKicked, ctx, id}): Promise<number[]> => {
-  const admins = wasKicked ?  await bot.telegram.getChatAdministrators(id) : []
+  const admins = !wasKicked ?  await bot.telegram.getChatAdministrators(id) : []
   return admins.filter((admin) => !admin.user.is_bot).map((admin) => admin.user.id)
 }
 
 /**
  * All chat create/update login with debounce
  */
-export async function createOrUpdateChat(chat: tt.Chat, ctx: Context, wasKicked = true) {
+export async function createOrUpdateChat(chat: tt.Chat, ctx: Context, wasKicked = false) {
   const {id, title, type} = chat
   
   if(!id) {
@@ -63,13 +64,20 @@ export async function createOrUpdateChat(chat: tt.Chat, ctx: Context, wasKicked 
 
   let nonBotAdmins: number[] = []
 
+  if(ctx.dbuser) {
+    // Правит баг с тем, что иногда бот не видит список админов
+    nonBotAdmins.push(ctx.dbuser.id)
+  }
+
   // When this event about adding bot to channel it will be creshed
   try {
-    nonBotAdmins = await getAdmins({
+    const admins = await getAdmins({
       wasKicked,
       ctx,
       id
     })
+
+    nonBotAdmins = [...nonBotAdmins, ...admins]
   } catch (e) {
     // This case is possible when
     // bot was added to channel (not every time)
@@ -82,17 +90,19 @@ export async function createOrUpdateChat(chat: tt.Chat, ctx: Context, wasKicked 
     title,
     // @ts-ignore
     type,
-    isActive: wasKicked,
+    isActive: !wasKicked,
     admins: nonBotAdmins,
     haveRights: true
   }
 
-  const {upserted} = await ChatModel.updateOne({id}, {$set: data}, {upsert: true})
+  const oldValue = await ChatModel.findOneAndUpdate({id}, {$set: data}, {upsert: true})
 
-  const isNewChatAdded = upserted?.length > 0
+  const isNewChatAdded = !oldValue
+  const isChatDeactivated = oldValue && oldValue.isActive && !data.isActive
+  const isChatActivated = oldValue && !oldValue.isActive && data.isActive
 
   // Send hello message to chat
-  if(isNewChatAdded && id && type && (type === 'group' || type === 'supergroup') && wasKicked) {
+  if((isNewChatAdded || isChatActivated) && id && type && (type === 'group' || type === 'supergroup') && !wasKicked) {
     ctx?.telegram.sendMessage(id, i18n.t('ru', 'admin_helloChat'), {
       parse_mode: 'HTML',
       disable_web_page_preview: true
@@ -100,7 +110,7 @@ export async function createOrUpdateChat(chat: tt.Chat, ctx: Context, wasKicked 
   }
   // Send new chat message to user
   // Will work only on user update, not channel post
-  if(isNewChatAdded && ctx.dbuser?.id && wasKicked) {
+  if((isNewChatAdded || isChatActivated) && ctx.dbuser?.id && !wasKicked) {
     let extraMessageParams = {}
 
     // Update menu if user in admin mode
@@ -123,6 +133,35 @@ export async function createOrUpdateChat(chat: tt.Chat, ctx: Context, wasKicked 
     })
   }
 
+  // Just update menu if user in admin mode
+  if(wasKicked && isChatDeactivated && ctx.dbuser.adminMode && !isNewChatAdded) {
+    if(removeMessageSentByChatId[id]) {
+      return
+    }
+
+    removeMessageSentByChatId[id] = true
+
+    await switchToAdminMode(ctx)
+
+    if(!ctx.adminChatActive) {
+      return
+    }
+
+    const extraMessageParams = getAdminAttachedMenu({
+      chats: ctx.adminChats,
+      activeChatId: ctx.adminChatActive.id
+    })
+
+    await ctx?.telegram.sendMessage(ctx.dbuser?.id, i18n.t('ru','admin_removedChat', {
+      title, channel: type === 'channel'
+    }),
+    {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      ...extraMessageParams
+    })
+  }
+  
   // If no admin we need update as soon as possible
   if(nonBotAdmins.length > 1) {
     lastUpdatedByChatId[id] = Date.now()
@@ -140,6 +179,7 @@ export const updateChatTitle = async (chat: tt.Chat) => {
 export const getUserChats = async (userId: number | string): Promise<Chat[]> => {
   // @ts-ignore
   return await ChatModel.find({
+    isActive: true,
     admins: {
       $in: [userId]
     }
