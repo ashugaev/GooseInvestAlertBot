@@ -3,19 +3,31 @@ import {TelegrafContext} from 'telegraf/typings/context'
 import * as tt from "telegraf/typings/telegram-types"
 import I18N from 'telegraf-i18n'
 
-import {UserLimits} from "@/models"
+import {User, UserLimits} from "@/models"
+import {Chat} from "@/models/Chat"
 
 import {ListCommandState} from '../commands/list/list.types'
-import {User} from '../models'
 
 interface CommandsState {
     listCommand: ListCommandState
 }
 
 declare module 'telegraf' {
+    export class Update extends tt.Update {
+      chat: tt.Chat
+      from: tt.User
+      date: number
+      my_chat_member?: tt.ChatMember
+      old_chat_mamber?: tt.ChatMember
+      new_chat_member?: tt.ChatMember
+      invite_link: tt.ChatInviteLink
+      via_chat_folder_invite_link: boolean
+    }
+    
     export class Context {
+      update: Update
       i18n: I18N
-      session: CommandsState
+      session: tt.CommandsState
       /**
          * Bot info
          */
@@ -23,7 +35,7 @@ declare module 'telegraf' {
       /**
          * User info
          */
-      dbuser: User
+      dbuser?: User
       /**
          * Limits object
          */
