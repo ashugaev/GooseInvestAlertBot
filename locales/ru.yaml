@@ -467,6 +467,9 @@ adminMode_on: |
 adminMode_activeChatChanged: |
   🔄 Перешел к управлению: <b>${title}</b>
 
+admin_removedChat: |
+  🗑 Удален ${channel ? 'канал' : 'чат'} <b>${title}</b>
+
 adminMode_off: |
   👋 <b>Режим админа</b> выключен
 
