@@ -10,8 +10,6 @@ import {bot} from "@/helpers/bot"
 import {i18n} from "@/helpers/i18n"
 import {getAdminAttachedMenu} from "@/menu/getAdminAttachedMenu"
 
-
-
 export class Chat {
     @prop({required: true, index: true, unique: true})
       id: number | string
