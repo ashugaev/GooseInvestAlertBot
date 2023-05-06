@@ -69,6 +69,9 @@ export class TimeShift {
      */
     @prop({required: true})
       name: string
+
+    @prop({required: true, unique: false, index: true})
+      botId: number
 }
 
 // Get User model
