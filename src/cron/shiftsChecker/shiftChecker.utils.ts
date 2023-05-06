@@ -141,6 +141,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
       log.error('Bot removed error. Handle this case gracefully!')
       return
     }
+
     // !!! No 'await' in sentMessage for not block iterator
     bot.telegram.sendMessage(shift.chat ?? shift.user, i18n.t(
       'ru', 'shift_alert',

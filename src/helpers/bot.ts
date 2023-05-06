@@ -3,6 +3,9 @@ import { Context, Telegraf } from 'telegraf'
 import {BotModel} from "@/models/Bot"
 const TelegrafBot = require('telegraf')
 
+// TODO: Log problems with multibot
+//  Potentially it can be a limited by ip
+//  Sent message to Boss
 export const bots = (async () => {
   const res: Telegraf<Context>[] = [
         new TelegrafBot(process.env.TELEGRAM_TOKEN) as Telegraf<Context>
