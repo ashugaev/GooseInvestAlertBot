@@ -9,7 +9,7 @@ export class Bot {
     @prop({required: true})
       userId: number
     
-    @prop({required: true})
+    @prop({required: true, unique: true})
       tgToken: string
 }
 
