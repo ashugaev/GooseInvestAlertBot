@@ -6,7 +6,7 @@ import {ChatType} from "telegraf/typings/telegram-types"
 
 import {log} from "@/helpers"
 import {switchToAdminMode} from "@/helpers/adminMode"
-import {bot} from "@/helpers/bot"
+import {getBot} from "@/helpers/bot"
 import {i18n} from "@/helpers/i18n"
 import {getAdminAttachedMenu} from "@/menu/getAdminAttachedMenu"
 
@@ -41,7 +41,7 @@ const isTimeForChatUpdate = (chat) =>
   !lastUpdatedByChatId[chat.id] || (Date.now() - lastUpdatedByChatId[chat.id] >= updateChatTimeout)
 
 const getAdmins = async ({wasKicked, ctx, id}): Promise<number[]> => {
-  const admins = !wasKicked ?  await bot.telegram.getChatAdministrators(id) : []
+  const admins = !wasKicked ?  await (await getBot(ctx.goose.id)).telegram.getChatAdministrators(id) : []
   return admins.filter((admin) => !admin.user.is_bot).map((admin) => admin.user.id)
 }
 

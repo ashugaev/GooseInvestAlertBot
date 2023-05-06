@@ -12,8 +12,11 @@ export class UserLimits {
 }
 
 export class User {
-    @prop({required: true, index: true, unique: true})
+    @prop({required: true, index: true, unique: false})
       id: number
+
+    @prop({required: true, unique: false, index: true})
+      botId: number
 
     @prop({required: true, default: 'ru'})
       language: string
@@ -34,11 +37,15 @@ const UserModel = getModelForClass(User, {
 })
 
 // Get or create user
-export async function findUser(id: string | number) {
+export async function findUser(id: string | number, botId) {
   let user = await UserModel.findOne({id}).lean()
   if (!user) {
     try {
-      user = await new UserModel({id}).save()
+      user = await new UserModel({
+        id,
+        adminMode: false,
+        botId
+      }).save()
     } catch (err) {
       user = await UserModel.findOne({id}).lean()
     }

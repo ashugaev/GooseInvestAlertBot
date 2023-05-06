@@ -11,7 +11,7 @@ export function sceneWrapper (intent: string, callback: (ctx: any) => Promise<vo
   return async (ctx) => {
     try {
       if(!ctx.dbuser) {
-        const dbuser = await findUser(ctx.from.id)
+        const dbuser = await findUser(ctx.from.id, ctx.goose.id)
         ctx.dbuser = dbuser
         if (dbuser.adminMode) {
           ctx.adminChats = await getUserChats(ctx.from.id)

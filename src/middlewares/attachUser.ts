@@ -52,7 +52,7 @@ export async function attachUser(ctx: Context, next) {
     
     // chat or private
     if(from?.id) {
-      const dbuser = await findUser(from.id)
+      const dbuser = await findUser(from.id, ctx.goose.id)
       ctx.dbuser = dbuser
     }
 

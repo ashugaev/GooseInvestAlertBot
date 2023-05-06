@@ -70,7 +70,7 @@ const isReadyToRunByTimeout = () => {
   return isTimeOut
 }
 
-export const setupCheckers = (bot) => {
+export const setupCheckers = () => {
   startCronJob({
     name: 'Update tinkoff futures margins',
     callback: saveFuturesMargin,
@@ -79,7 +79,7 @@ export const setupCheckers = (bot) => {
     period: '0 3 * * *'
   })
 
-  // // TODO: Не запускать не деве
+  // FIXME: Templarory disabled
   // startCronJob({
   //   name: 'Check stat',
   //   callback: createShitEvents,
@@ -104,7 +104,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.yahoo,
       minTickersCount: 1000
     }),
-    callbackArgs: [bot],
+    callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
@@ -121,7 +121,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.tinkoff,
       minTickersCount: 1000
     }),
-    callbackArgs: [bot],
+    callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
@@ -138,7 +138,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.coingecko,
       minTickersCount: 6000
     }),
-    callbackArgs: [bot],
+    callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
@@ -155,7 +155,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.bybit,
       minTickersCount: 70
     }),
-    callbackArgs: [bot],
+    callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
@@ -172,7 +172,7 @@ export const setupCheckers = (bot) => {
       source: EMarketDataSources.binance,
       minTickersCount: 1000
     }),
-    callbackArgs: [bot],
+    callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
@@ -183,7 +183,7 @@ export const setupCheckers = (bot) => {
   startCronJob({
     name: 'Copy alerts collection',
     callback: copyAlerts,
-    callbackArgs: [bot],
+    callbackArgs: [],
     // В полночь и при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
@@ -195,7 +195,7 @@ export const setupCheckers = (bot) => {
   startCronJob({
     name: 'Clear old candles',
     callback: clearOldCandles,
-    callbackArgs: [bot],
+    callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true
@@ -281,25 +281,19 @@ export const setupCheckers = (bot) => {
   /**
    * Мониторинг скорости
    */
-  retry(async () => await setupShiftsChecker(
-    bot
-  ), 10000, 'setupShiftsChecker')
+  retry(async () => await setupShiftsChecker(), 10000, 'setupShiftsChecker')
 
   /**
    * Мониторинг достижения уровней
    */
-  retry(async () => await setupPriceChecker(
-    bot
-  ),
-  10000,
-  'setupPriceChecker')
+  retry(async () => await setupPriceChecker(),
+    10000,
+    'setupPriceChecker')
 
   /**
    * Base health checks for bot
    */
-  retry(async () => await startTests(
-    bot
-  ),
-  10000,
-  'tests')
+  retry(async () => await startTests(),
+    10000,
+    'tests')
 }

@@ -1,11 +1,12 @@
 import { TelegrafContext } from 'telegraf/typings/context'
 
+import {getSourceMark} from "@/helpers/getSourceMark"
+
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
 import {addPriceAlerts, PriceAlert} from '../../../models'
 import { AddAlertPayload } from '../alert.types'
-import {getSourceMark} from "@/helpers/getSourceMark";
 
 type CreateAlertInDbPayload = Partial<AddAlertPayload>
 
@@ -39,7 +40,8 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
         currency: instrumentData.currency,
         type: instrumentData.type,
         source: instrumentData.source,
-        initialPrice: currentPrice
+        initialPrice: currentPrice,
+        botId: ctx.goose.id
       }
 
       currentPrice < price

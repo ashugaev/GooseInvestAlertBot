@@ -54,6 +54,13 @@ export class PriceAlert {
      */
   @prop()
     initialPrice: number
+
+  /**
+   * Bot id for send alert
+   * Mylti bot support
+   */
+  @prop({required: true})
+    botId: number
 }
 
 // Get PriceAlertModel model

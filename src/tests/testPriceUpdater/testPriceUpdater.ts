@@ -64,7 +64,7 @@ const testTickers: TestItem[] = [
   }
 ]
 
-export const testPriceUpdater = async (bot) => {
+export const testPriceUpdater = async () => {
   for (let i = 0; i < testTickers.length; i++) {
     const itemConfig = testTickers[i]
 
@@ -93,21 +93,18 @@ export const testPriceUpdater = async (bot) => {
 
         if (!instrumentInfo) {
           await sayToBoss({
-            bot,
             message: `😱 No instrumentInfo for ${itemConfig.params.ticker} [${itemConfig.params.source}]`
           })
         }
 
         if (!price) {
           await sayToBoss({
-            bot,
             message: `😱 No price for ${instrumentInfo.ticker} ${getSourceMark(instrumentInfo)}`
           })
         }
 
         if (price === CHECKED_PRICES[instrumentInfo.id]) {
           await sayToBoss({
-            bot,
             message: `😱 Price for ${instrumentInfo.ticker} ${getSourceMark(instrumentInfo)} is the same`
           })
         } else {

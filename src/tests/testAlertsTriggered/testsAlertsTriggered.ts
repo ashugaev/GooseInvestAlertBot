@@ -59,7 +59,7 @@ const CONFIG: Config[] = [
   }
 ]
 
-export const testAlertsTriggered = async (bot) => {
+export const testAlertsTriggered = async () => {
   for (let i = 0; i < CONFIG.length; i++) {
     const itemConfig = CONFIG[i]
 
@@ -91,7 +91,6 @@ export const testAlertsTriggered = async (bot) => {
 
         if (!price) {
           await sayToBoss({
-            bot,
             message: logPrefix + ` 😱 No price for ${itemConfig.priceAlert.tickerId}}`
           })
         }
@@ -102,11 +101,13 @@ export const testAlertsTriggered = async (bot) => {
         await addPriceAlerts([{
           ...itemConfig.priceAlert,
           initialPrice: price,
-          lowerThen: price * 0.99999
+          lowerThen: price * 0.99999,
+          botId: process.env.BOT_ID as unknown as number,
         }, {
           ...itemConfig.priceAlert,
           initialPrice: price,
-          greaterThen: price * 1.00001
+          greaterThen: price * 1.00001,
+          botId: process.env.BOT_ID as unknown as number
         }])
 
         // Wait than check if one of alerts is triggered
@@ -117,7 +118,6 @@ export const testAlertsTriggered = async (bot) => {
 
           if (newAlertsCountById === 2) {
             await sayToBoss({
-              bot,
               message: logPrefix + ` 😱 Alerts is not working for ${itemConfig.priceAlert.tickerId}`
             })
           }
