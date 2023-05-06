@@ -1,6 +1,7 @@
 import * as process from 'process'
 
 import { log } from '@/helpers'
+import {bots} from "@/helpers/bot"
 import { getLastPrice } from '@/helpers/getLastPrice'
 import { sayToBoss } from '@/helpers/sayToBoss'
 import { EMarketDataSources } from '@/marketApi/types'
@@ -60,6 +61,8 @@ const CONFIG: Config[] = [
 ]
 
 export const testAlertsTriggered = async () => {
+  const botId = (await bots[0]).goose.id
+  
   for (let i = 0; i < CONFIG.length; i++) {
     const itemConfig = CONFIG[i]
 
@@ -102,12 +105,12 @@ export const testAlertsTriggered = async () => {
           ...itemConfig.priceAlert,
           initialPrice: price,
           lowerThen: price * 0.99999,
-          botId: process.env.BOT_ID as unknown as number,
+          botId,
         }, {
           ...itemConfig.priceAlert,
           initialPrice: price,
           greaterThen: price * 1.00001,
-          botId: process.env.BOT_ID as unknown as number
+          botId
         }])
 
         // Wait than check if one of alerts is triggered
