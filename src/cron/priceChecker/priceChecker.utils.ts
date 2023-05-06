@@ -43,7 +43,7 @@ export const sendTriggeredAlert = async (alert: PriceAlert, instrumentData: Inst
         disable_web_page_preview: true
       })
     .then(async () => {
-      await removePriceAlert({ _id: alert._id })
+      await removePriceAlert({ _id: alert._id, chat: alert.chat })
     })
     .catch(async (e) => {
       if (
@@ -51,7 +51,7 @@ export const sendTriggeredAlert = async (alert: PriceAlert, instrumentData: Inst
             (e.code === 403 && e.description === 'Forbidden: user is deactivated') ||
             (e.code === 400 && e.description === 'Bad Request: chat not found')
       ) {
-        await removePriceAlert({ _id: alert._id })
+        await removePriceAlert({ _id: alert._id, chat: alert.chat })
         log.info('Алерт удален из-за блокировки юзером', alert)
       } else {
         log.error('Ошибка отправки сообщения юзеру', e)

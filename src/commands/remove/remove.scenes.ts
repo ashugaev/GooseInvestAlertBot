@@ -52,11 +52,11 @@ const removeAlerts = waitButtonClickStep(
 
     if (type === 'shift') {
       // FIXME: Support chat
-      n = (await TimeShiftModel.deleteMany({ user })).n
+      n = (await TimeShiftModel.deleteMany({ user, chat: null })).n
     }
 
     if (type === 'lvl') {
-      n = (await PriceAlertModel.deleteMany({ user })).n
+      n = (await PriceAlertModel.deleteMany({ user, chat: null })).n
     }
 
     await ctx.replyWithHTML(i18n.t('ru', 'remove_chooseAlertsType_success', {
