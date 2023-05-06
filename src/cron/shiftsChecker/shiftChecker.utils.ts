@@ -136,8 +136,13 @@ export const checkTriggeredShiftsAndSendMessage = async ({
     // !!! Update cache before send message for make it faster and not create message duplicate
     // @ts-ignore
     triggeredShiftsCache[shift._id] = { lastMessageCandleGrowTime: actualCandleCreatedTime }
-    // !!! No 'await' for not block iterator
-    (await getBot(shift.botId)).telegram.sendMessage(shift.chat ?? shift.user, i18n.t(
+    const bot = await getBot(shift.botId)
+    if(!bot) {
+      log.error('Bot removed error. Handle this case gracefully!')
+      return
+    }
+    // !!! No 'await' in sentMessage for not block iterator
+    bot.telegram.sendMessage(shift.chat ?? shift.user, i18n.t(
       'ru', 'shift_alert',
       {
         name: tickerInfo.name,

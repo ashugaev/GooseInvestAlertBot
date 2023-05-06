@@ -21,8 +21,13 @@ export const sendTriggeredAlert = async (alert: PriceAlert, instrumentData: Inst
   // Что бы не вызвать повторный триггер до того, как отработает удаление алерта в базе и апдейт кэша
   // @ts-ignore
   priceAlertCache.removeItemFromCache(_id)
-    
-  (await getBot(alert.botId)).telegram
+  
+  const bot = (await getBot(alert.botId))
+  if(!bot) {
+    log.error('Bot removed error. Handle this case gracefully!')
+    return
+  }    
+  bot.telegram
     .sendMessage(alert.user,
       i18n.t('ru', 'priceChecker_triggeredAlert', {
         symbol: instrumentData.ticker,

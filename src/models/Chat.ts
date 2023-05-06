@@ -41,7 +41,12 @@ const isTimeForChatUpdate = (chat) =>
   !lastUpdatedByChatId[chat.id] || (Date.now() - lastUpdatedByChatId[chat.id] >= updateChatTimeout)
 
 const getAdmins = async ({wasKicked, ctx, id}): Promise<number[]> => {
-  const admins = !wasKicked ?  await (await getBot(ctx.goose.id)).telegram.getChatAdministrators(id) : []
+  const bot = await getBot(ctx.goose.id)
+  if(!bot) {
+    log.error('Bot removed error. Handle this case gracefully!')
+    return []
+  }
+  const admins = !wasKicked ?  await bot.telegram.getChatAdministrators(id) : []
   return admins.filter((admin) => !admin.user.is_bot).map((admin) => admin.user.id)
 }
 
