@@ -1,6 +1,7 @@
 import * as process from 'process'
 
 import { log } from '@/helpers'
+import {bots} from "@/helpers/bot"
 import { getLastPrice } from '@/helpers/getLastPrice'
 import { sayToBoss } from '@/helpers/sayToBoss'
 import { EMarketDataSources } from '@/marketApi/types'
@@ -59,7 +60,9 @@ const CONFIG: Config[] = [
   }
 ]
 
-export const testAlertsTriggered = async (bot) => {
+export const testAlertsTriggered = async () => {
+  const botId = (await bots[0]).goose.id
+  
   for (let i = 0; i < CONFIG.length; i++) {
     const itemConfig = CONFIG[i]
 
@@ -91,7 +94,6 @@ export const testAlertsTriggered = async (bot) => {
 
         if (!price) {
           await sayToBoss({
-            bot,
             message: logPrefix + ` 😱 No price for ${itemConfig.priceAlert.tickerId}}`
           })
         }
@@ -102,11 +104,13 @@ export const testAlertsTriggered = async (bot) => {
         await addPriceAlerts([{
           ...itemConfig.priceAlert,
           initialPrice: price,
-          lowerThen: price * 0.99999
+          lowerThen: price * 0.99999,
+          botId,
         }, {
           ...itemConfig.priceAlert,
           initialPrice: price,
-          greaterThen: price * 1.00001
+          greaterThen: price * 1.00001,
+          botId
         }])
 
         // Wait than check if one of alerts is triggered
@@ -117,7 +121,6 @@ export const testAlertsTriggered = async (bot) => {
 
           if (newAlertsCountById === 2) {
             await sayToBoss({
-              bot,
               message: logPrefix + ` 😱 Alerts is not working for ${itemConfig.priceAlert.tickerId}`
             })
           }

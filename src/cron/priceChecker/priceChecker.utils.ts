@@ -1,6 +1,6 @@
-import Telegraf, { Context } from 'telegraf'
 
 import { log } from '@/helpers'
+import {getBot} from "@/helpers/bot"
 import { getSourceMark } from '@/helpers/getSourceMark'
 import { i18n } from '@/helpers/i18n'
 import { symbolOrCurrency } from '@/helpers/symbolOrCurrency'
@@ -14,27 +14,34 @@ export const checkAlertTriggered = (alert: PriceAlert, price: number) => {
   return isLowerThenTriggered || isGreaterThenTriggered
 }
 
-export const sendTriggeredAlert = async (bot: Telegraf<Context>, alert: PriceAlert, instrumentData: InstrumentsList) => {
-  const { message, lowerThen, greaterThen } = alert
+export const sendTriggeredAlert = async (alert: PriceAlert, instrumentData: InstrumentsList) => {
+  const { message, lowerThen, greaterThen, _id } = alert
   const alertPrice = lowerThen || greaterThen
 
   // Что бы не вызвать повторный триггер до того, как отработает удаление алерта в базе и апдейт кэша
-  priceAlertCache.removeItemFromCache(alert._id)
-
-  bot.telegram.sendMessage(alert.user,
-    i18n.t('ru', 'priceChecker_triggeredAlert', {
-      symbol: instrumentData.ticker,
-      name: instrumentData.name,
-      currency: symbolOrCurrency(alert.currency),
-      greaterThen,
-      price: alertPrice,
-      message,
-      link: getSourceMark(instrumentData)
-    }),
-    {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true
-    })
+  // @ts-ignore
+  priceAlertCache.removeItemFromCache(_id)
+  
+  const bot = (await getBot(alert.botId))
+  if(!bot) {
+    log.error('Bot removed error. Handle this case gracefully!')
+    return
+  }    
+  bot.telegram
+    .sendMessage(alert.user,
+      i18n.t('ru', 'priceChecker_triggeredAlert', {
+        symbol: instrumentData.ticker,
+        name: instrumentData.name,
+        currency: symbolOrCurrency(alert.currency),
+        greaterThen,
+        price: alertPrice,
+        message,
+        link: getSourceMark(instrumentData)
+      }),
+      {
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
+      })
     .then(async () => {
       await removePriceAlert({ _id: alert._id })
     })

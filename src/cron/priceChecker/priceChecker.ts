@@ -12,7 +12,7 @@ import {
 const logPrefix = '[CHECK ALERTS]'
 const itemsCheckTime = 500
 
-export const setupPriceChecker = async (bot) => {
+export const setupPriceChecker = async () => {
   await retryUntilTrue(() => priceAlertCache.isReady, logPrefix + ' setupPriceChecker')
 
   while (true) {
@@ -62,7 +62,7 @@ export const setupPriceChecker = async (bot) => {
               alertsTriggeredList.push(alert.tickerId + ':' + alert.user.toString())
 
               // NO AWAIT FOR PERFORMANCE
-              sendTriggeredAlert(bot, alert, instrumentData)
+              sendTriggeredAlert(alert, instrumentData)
             }
           } catch (e) {
             alertsFailedToCheckList.push(alert.tickerId + ':' + alert.user.toString())

@@ -4,6 +4,7 @@ import { getShiftEvents, ShiftEventsModel } from '../../models/ShiftEvents'
 import { i18n } from '../../helpers/i18n'
 import { plur } from '../../helpers/plural'
 import { getItemText } from './getItemText'
+import {bots, getBot} from "@/helpers/bot";
 
 /**
  * Запускается раз в час
@@ -48,7 +49,7 @@ export const shiftSender = async (bot) => {
       // Bond && (message += i18n.t('ru', 'shift_alert_message_bond', { list: Bond.map(getItemText).join('\n') }))
 
       try {
-        await bot.telegram.sendMessage(event.user, message, {
+        await ((await bots)[0]).telegram.sendMessage(event.user, message, {
           parse_mode: 'HTML',
           disable_web_page_preview: true
         })

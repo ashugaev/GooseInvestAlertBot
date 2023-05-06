@@ -16,6 +16,7 @@ import { TinkoffInvestApi } from 'tinkoff-invest-api'
 import {setupAdmin} from "@/commands/admin/admin"
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
+import {setupCheckers} from "@/cron"
 
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
@@ -28,8 +29,7 @@ import { setupPrice } from './commands/price'
 import { setupShift, shiftScenes } from './commands/shift'
 import { setupStart } from './commands/start'
 import { setupStat, statScenes } from './commands/stat'
-import { setupCheckers } from './cron'
-import { bot } from './helpers/bot'
+import {bots} from './helpers/bot'
 import { setupI18N } from './helpers/i18n'
 import { log } from './helpers/log'
 import { attachUser } from './middlewares/attachUser'
@@ -61,39 +61,44 @@ const stage = new Stage([
   ...alertScenes
 ])
 
-bot.use(session())
-bot.use(stage.middleware())
+bots
+  .then((bots) => {
+    for (const bot of bots) {
+      bot.use(session())
+      bot.use(stage.middleware())
 
-// Start all async tasks (cron and continuous)
-setupCheckers(bot)
+      // Check time
+      bot.use(checkTime)
+      // Attach user
+      bot.use(attachUser)
+      // send analytics for commands
+      bot.use(configureAnalytics)
 
-// Check time
-bot.use(checkTime)
-// Attach user
-bot.use(attachUser)
-// send analytics for commands
-bot.use(configureAnalytics)
+      // Setup localization
+      setupI18N(bot)
+      // Setup commands
+      setupHelp(bot)
+      setupAlert(bot)
+      setupList(bot)
+      setupLanguage(bot)
+      setupPrice(bot)
+      setupStart(bot)
+      setupShift(bot)
+      setupStat(bot)
+      setupId(bot)
+      setupPay(bot)
+      setupRemove(bot)
+      setupAdmin(bot)
 
-// Setup localization
-setupI18N(bot)
-// Setup commands
-setupHelp(bot)
-setupAlert(bot)
-setupList(bot)
-setupLanguage(bot)
-setupPrice(bot)
-setupStart(bot)
-setupShift(bot)
-setupStat(bot)
-setupId(bot)
-setupPay(bot)
-setupRemove(bot)
-setupAdmin(bot)
+      // Start bot
+      bot.startPolling()
 
-// Start bot
-bot.startPolling()
+      log.info(`Bot ${bot.context.goose.username} is up and running`)
+    }
 
-log.info('Bot is up and running')
+    // Start all async tasks (cron and continuous)
+    setupCheckers()
+  })
 
 process.on('uncaughtException', function (err) {
   log.error('[UNHANDLED]', err)

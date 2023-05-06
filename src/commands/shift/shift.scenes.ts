@@ -7,7 +7,7 @@ import { chooseSourceKeyboard } from '@/keyboards/chooseSource'
 import { immediateStep, waitButtonClickStep, waitMessageStep } from '@/scenes/wrappers'
 
 import { i18n } from '../../helpers/i18n'
-import {getInstrumentInfoByTicker, getTimeShiftsCount} from '../../models'
+import {getInstrumentInfoByTicker, getTimeShiftsCount, TimeShift} from '../../models'
 import { TimeShiftModel } from '../../models/TimeShifts'
 import {
   SHIFT_ACTIONS,
@@ -185,7 +185,7 @@ const shiftAddChoosePercent = waitMessageStep('shift_add_choose-percent', async 
     fallAlerts: true
   }
 
-  const newShifts = tickers.map(ticker => ({
+  const newShifts: TimeShift[] = tickers.map(ticker => ({
     percent: intPercent,
     tickerId: tickersInfoObj[ticker].id,
     timeframe,
@@ -193,6 +193,7 @@ const shiftAddChoosePercent = waitMessageStep('shift_add_choose-percent', async 
     user,
     chat: ctx.adminChatActive?.id ?? null,
     name: tickersInfoObj[ticker].name,
+    botId: ctx.goose.id,
     ...additionalShiftConfig
   }))
 

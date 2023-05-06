@@ -51,6 +51,7 @@ const removeAlerts = waitButtonClickStep(
     let n = 0
 
     if (type === 'shift') {
+      // FIXME: Support chat
       n = (await TimeShiftModel.deleteMany({ user })).n
     }
 

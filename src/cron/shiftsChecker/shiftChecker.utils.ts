@@ -1,6 +1,7 @@
 
 import { ShiftTimeframe } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker/shiftsChecker'
+import { getBot} from "@/helpers/bot"
 import {getSourceMark} from "@/helpers/getSourceMark"
 import {ChatModel} from "@/models/Chat"
 
@@ -88,7 +89,6 @@ const triggeredShiftsCache: Record<string, {lastMessageCandleGrowTime: number}> 
  */
 export const checkTriggeredShiftsAndSendMessage = async ({
   candle,
-  bot,
   shift,
   timeframeData
 }) => {
@@ -134,8 +134,15 @@ export const checkTriggeredShiftsAndSendMessage = async ({
     const keyboard = shiftAlertSettingsKeyboard({ id: _id, isGrow })
 
     // !!! Update cache before send message for make it faster and not create message duplicate
+    // @ts-ignore
     triggeredShiftsCache[shift._id] = { lastMessageCandleGrowTime: actualCandleCreatedTime }
-    // !!! No 'await' for not block iterator
+    const bot = await getBot(shift.botId)
+    if(!bot) {
+      log.error('Bot removed error. Handle this case gracefully!')
+      return
+    }
+
+    // !!! No 'await' in sentMessage for not block iterator
     bot.telegram.sendMessage(shift.chat ?? shift.user, i18n.t(
       'ru', 'shift_alert',
       {

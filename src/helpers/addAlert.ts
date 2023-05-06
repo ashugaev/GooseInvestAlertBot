@@ -45,7 +45,7 @@ export const addAlert = async ({
         i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
         { disable_web_page_preview: true }
       )
-    };
+    }
 
     instrumentData = result.instrumentData
     lastPrice = result.price
@@ -83,7 +83,8 @@ export const addAlert = async ({
         currency: instrumentData.currency,
         type: instrumentData.type,
         source: instrumentData.source,
-        initialPrice: lastPrice
+        initialPrice: lastPrice,
+        botId: ctx.goose.id
       }
 
       lastPrice < price

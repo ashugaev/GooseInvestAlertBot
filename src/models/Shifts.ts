@@ -18,6 +18,13 @@ export class Shift {
 
   @prop({ required: true })
     user: number
+
+  /**
+   * Bot id for send alert
+   * Multi bot support
+   */
+  @prop({required: true})
+    botId: number
 }
 
 // Get User model

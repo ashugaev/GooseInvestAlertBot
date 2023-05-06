@@ -156,7 +156,7 @@ export const candlesCache = new ShiftCandlesUpdater()
 export const shiftsCache = new ShiftsUpdater()
 
 // TODO: Мониторить кол-во сообщений в минуту или всего через promotheus
-export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) => {
+export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
   if (isReadyToStart) {
     await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
   }
@@ -220,7 +220,6 @@ export const setupShiftsChecker = async (bot, isReadyToStart?: () => boolean) =>
             await checkTriggeredShiftsAndSendMessage({
               candle: updatedCandle,
               shift,
-              bot,
               timeframeData
             })
 
