@@ -14,6 +14,8 @@ import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
 import {setupAdmin} from "@/commands/admin/admin"
+import {setupMyToken} from "@/commands/mytoken/mytoken"
+import {myTokenScenes} from "@/commands/mytoken/mytoken.scenes"
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
 import {setupCheckers} from "@/cron"
@@ -57,43 +59,49 @@ const stage = new Stage([
   statScenes,
   shiftScenes,
   removeScenes,
+  myTokenScenes,
   ...commonScenes,
   ...alertScenes
 ])
 
+export const botInit = (bot) => {
+  bot.use(session())
+  bot.use(stage.middleware())
+
+  // Check time
+  bot.use(checkTime)
+  // Attach user
+  bot.use(attachUser)
+  // send analytics for commands
+  bot.use(configureAnalytics)
+
+  // Setup localization
+  setupI18N(bot)
+  // Setup commands
+  setupHelp(bot)
+  setupAlert(bot)
+  setupList(bot)
+  setupLanguage(bot)
+  setupPrice(bot)
+  setupStart(bot)
+  setupShift(bot)
+  setupStat(bot)
+  setupId(bot)
+  setupPay(bot)
+  setupRemove(bot)
+  setupAdmin(bot)
+  setupMyToken(bot)
+
+  // Start bot
+  bot.startPolling()
+
+  log.info(`Bot ${bot.context.goose.username} is up and running`)
+}
+
 bots
   .then((bots) => {
     for (const bot of bots) {
-      bot.use(session())
-      bot.use(stage.middleware())
-
-      // Check time
-      bot.use(checkTime)
-      // Attach user
-      bot.use(attachUser)
-      // send analytics for commands
-      bot.use(configureAnalytics)
-
-      // Setup localization
-      setupI18N(bot)
-      // Setup commands
-      setupHelp(bot)
-      setupAlert(bot)
-      setupList(bot)
-      setupLanguage(bot)
-      setupPrice(bot)
-      setupStart(bot)
-      setupShift(bot)
-      setupStat(bot)
-      setupId(bot)
-      setupPay(bot)
-      setupRemove(bot)
-      setupAdmin(bot)
-
-      // Start bot
-      bot.startPolling()
-
-      log.info(`Bot ${bot.context.goose.username} is up and running`)
+      botInit(bot)
     }
 
     // Start all async tasks (cron and continuous)

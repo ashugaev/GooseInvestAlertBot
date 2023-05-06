@@ -48,6 +48,10 @@ declare module 'telegraf' {
          * Selected chat in admin mode
          */
       adminChatActive: Chat
+      /**
+         * Used who deployed this bot
+         */
+      promotedByUerId
     }
 
     export interface Composer<TContext extends Context> {

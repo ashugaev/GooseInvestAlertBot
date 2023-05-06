@@ -1,6 +1,7 @@
 import { Context, Telegraf } from 'telegraf'
 
-import {BotModel} from "@/models/Bot"
+import {botInit} from "@/app"
+import { BotModel} from "@/models/Bot"
 const TelegrafBot = require('telegraf')
 
 // TODO: Log problems with multibot
@@ -14,8 +15,10 @@ export const bots = (async () => {
   const customBots = await BotModel.find()
     
   // Add custom bots
-  for (const bot of customBots) {
-    res.push(new TelegrafBot(bot.tgToken) as Telegraf<Context>)
+  for (const botData of customBots) {
+    const bot = new TelegrafBot(botData.tgToken) as Telegraf<Context>
+    bot.context.promotedByUerId = botData.userId
+    res.push(bot)
   }
   
   // Update me info
@@ -39,3 +42,55 @@ export const getBot = async (id: number) => {
   return bot
 }
 
+export const getBotByUserId = async (userId) => {
+  const list = await bots
+
+  const bot = list.find(bot => bot.context.promotedByUerId === userId)
+
+  return bot
+}
+
+export const deployBot = async (ctx: Context, tgToken): Promise<{error?: string, bot?: Telegraf<Context>}> => {
+  const bot = new TelegrafBot(tgToken) as Telegraf<Context>
+
+  let error = ''
+  const list = await bots
+
+  try {
+    const botInfo = await bot.telegram.getMe()
+    bot.context.goose = botInfo
+    bot.context.promotedByUerId = ctx.from.id
+    if(list.some(item => item.context.goose.username === botInfo.username) ) {
+      error = 'Already deployed'
+    }
+  } catch (e) {
+    error = e?.message ?? ''
+  }
+
+  if(error.length) {
+    return {
+      error
+    }
+  }
+
+  botInit(bot)
+  
+  list.push(bot)
+
+  await BotModel.insertMany({
+    userId: ctx.from.id,
+    tgToken
+  })
+
+  return {bot}
+}
+
+export const killBot = async (botId: number, ctx: Context) => {
+  await BotModel.deleteMany({
+    userId: ctx.from.id,
+  })
+
+  const bot = await getBotByUserId(ctx.from.id)
+
+  bot.stop()
+}
