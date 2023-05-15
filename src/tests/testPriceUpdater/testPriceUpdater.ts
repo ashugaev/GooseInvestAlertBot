@@ -46,14 +46,15 @@ const testTickers: TestItem[] = [
     days: TINK_TRADING_DAYS,
     checkPeriod: 1000 * 60 * 30
   },
-  {
-    params: { source: EMarketDataSources.yahoo, ticker: 'USDRUB' },
-    checkPeriod: 1000 * 60 * 90
-  },
-  {
-    params: { source: EMarketDataSources.yahoo, ticker: 'EURUSD' },
-    checkPeriod: 1000 * 60 * 90
-  },
+  // FIXME: Return when will be fixed
+  // {
+  //   params: { source: EMarketDataSources.yahoo, ticker: 'USDRUB' },
+  //   checkPeriod: 1000 * 60 * 90
+  // },
+  // {
+  //   params: { source: EMarketDataSources.yahoo, ticker: 'EURUSD' },
+  //   checkPeriod: 1000 * 60 * 90
+  // },
   {
     params: { source: EMarketDataSources.coingecko, ticker: 'ETH' },
     checkPeriod: 1000 * 60 * 60

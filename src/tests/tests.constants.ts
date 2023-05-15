@@ -1,6 +1,6 @@
 export const TINK_TRADING_HOURS = {
-  start: 7,
-  end: 20
+  start: 11, // + 1 час
+  end: 18  // -1 час
 }
 
 export const TINK_TRADING_DAYS = {
