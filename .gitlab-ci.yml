@@ -47,7 +47,7 @@ release_bot:
   services:
     - docker:dind
   before_script:
-    - "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+    - "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
   script:
     - "docker build --pull -t ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1 ."
     - "docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}/stocks_bot:v1"
@@ -84,7 +84,7 @@ deploy:
     # Удяляет контейнеры, возрастом больше 14 дней
     - sshpass ssh $USER@$HOST 'docker image prune --filter "until=336h" -f'
 
-    - sshpass ssh $USER@$HOST "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY"
+    - sshpass ssh $USER@$HOST "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
 
     # Идет в папку проекта/создаем ее, пишет и запускает конфиг docker-compose
     # '|| true' - благодаря этому стейдж не крашится если операция не прошла
