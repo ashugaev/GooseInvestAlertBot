@@ -3,9 +3,10 @@
  * https://www.yahoofinanceapi.com/
  */
 
+import axios from 'axios'
+
 import { log } from '@/helpers'
 import { InstrumentsList } from '@/models'
-import axios from 'axios'
 
 const logPrefix = '[GET YAHOO PRICES]'
 
@@ -31,7 +32,7 @@ export const getYahooPrices = async (tickerIds: string[], coinsData: Instruments
     const coinData = coinsData.find(item => elTicker === item.ticker)
 
     if (!coinData) {
-      log.error(logPrefix.concat('No coinData obj for ', elTicker))
+      log.error(logPrefix, 'No coinData obj for', elTicker)
     } else {
       acc.push([coinData.ticker, el.regularMarketPrice, coinData.id])
     }

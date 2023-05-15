@@ -184,12 +184,14 @@ export async function getAllAlerts (): Promise<PriceAlert[]> {
 }
 
 export async function removePriceAlert (
-  { symbol, _id, user }: Partial<Pick<PriceAlert, 'symbol' | '_id' | 'user'>>
+  { symbol, _id, user, chat }: Partial<Pick<PriceAlert, 'symbol' | '_id' | 'user' | 'chat'>>
 ): Promise<number> {
   // eslint-disable-next-line no-async-promise-executor
   return await new Promise(async (resolve, reject) => {
     try {
-      const params: Partial<PriceAlert> = {}
+      const params: Partial<PriceAlert> = {
+        chat
+      }
 
       symbol && (params.symbol = symbol.toUpperCase())
       user && (params.user = user)

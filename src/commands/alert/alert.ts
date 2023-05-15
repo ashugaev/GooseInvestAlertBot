@@ -70,7 +70,7 @@ export function setupAlert (bot: Telegraf<Context>) {
       const symbol = data[1].toUpperCase()
 
       try {
-        await removePriceAlertAndSendMessage({ symbol, user, ctx })
+        await removePriceAlertAndSendMessage({ symbol, user, ctx, chat: ctx.adminChatActive?.id ?? null })
       } catch (e) {
         await ctx.replyWithHTML(ctx.i18n.t('alertRemoveError'))
       }
@@ -85,8 +85,8 @@ export function setupAlert (bot: Telegraf<Context>) {
   bot.command(['alert', 'add', 'a'], callback)
   bot.hears(i18n.t('ru', 'alert_button'), callback)
 
-  async function removePriceAlertAndSendMessage ({ user, symbol, ctx }) {
-    const deletedCount = await removePriceAlert({ symbol, user })
+  async function removePriceAlertAndSendMessage ({ user, symbol, ctx, chat }) {
+    const deletedCount = await removePriceAlert({ symbol, user, chat })
 
     if (deletedCount) {
       ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', { symbol: symbol.toUpperCase() }))
@@ -95,5 +95,5 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     log.info('Удалены алерты для', symbol, user)
-  };
+  }
 }
