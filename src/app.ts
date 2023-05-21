@@ -13,6 +13,8 @@ import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
+import {setupAddChat} from "@/commands/addChat/addChat"
+import {addChatScenes} from "@/commands/addChat/addChat.scenes"
 import {setupAdmin} from "@/commands/admin/admin"
 import {setupMyToken} from "@/commands/mytoken/mytoken"
 import {myTokenScenes} from "@/commands/mytoken/mytoken.scenes"
@@ -60,6 +62,7 @@ const stage = new Stage([
   shiftScenes,
   removeScenes,
   myTokenScenes,
+  addChatScenes,
   ...commonScenes,
   ...alertScenes
 ])
@@ -91,6 +94,7 @@ export const botInit = (bot) => {
   setupRemove(bot)
   setupAdmin(bot)
   setupMyToken(bot)
+  setupAddChat(bot)
 
   // Start bot
   bot.startPolling()

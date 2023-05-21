@@ -8,9 +8,16 @@ import {log} from './log'
 interface CommandWrapperConfig {
     availableForAdmins: boolean
     availableForUsers?: boolean
+    bossOnly?: boolean
 }
 
-export function commandWrapper({availableForAdmins, availableForUsers = true}: CommandWrapperConfig, callback: (ctx: Context) => Promise<void>): Middleware<TelegrafContext> {
+const {BOSS_TG_ID}  = process.env
+
+export function commandWrapper({
+  availableForAdmins, 
+  availableForUsers = true, 
+  bossOnly=false
+}: CommandWrapperConfig, callback: (ctx: Context) => Promise<void>): Middleware<TelegrafContext> {
   return async (ctx) => {
     if (!availableForAdmins && ctx.dbuser.adminMode) {
       try {
@@ -18,6 +25,10 @@ export function commandWrapper({availableForAdmins, availableForUsers = true}: C
       } catch (e) {
         log.error('Error in wrapper:', e)
       }
+      return
+    }
+    
+    if(bossOnly && ctx.dbuser.id !== Number(BOSS_TG_ID)) {
       return
     }
 

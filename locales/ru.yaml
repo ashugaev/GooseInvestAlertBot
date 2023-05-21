@@ -528,3 +528,10 @@ mytoken_removeBtn: |
 
 mytoken_removed: |
   Бот деактивирован
+
+# Chats tracker
+addChat_enterChatId: |
+  📝 Введи <b>username</b> чата или канала, который хочешь отслеживать
+
+addChat_success: |
+  🙌 Добавлен новый ${channel ? 'канал' : 'чат'} <b>${title}</b>
