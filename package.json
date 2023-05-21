@@ -65,6 +65,7 @@
     "eslint-plugin-unused-imports": "2.0.0",
     "husky": "4.3.6",
     "input": "1.0.1",
+    "kucoin-node-sdk": "1.0.4",
     "lint-staged": "10.5.3",
     "lodash": "4.17.21",
     "log4js": "6.3.0",
