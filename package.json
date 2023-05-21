@@ -74,6 +74,7 @@
     "rifraf": "2.0.3",
     "telegraf": "3.38.0",
     "telegraf-i18n": "6.6.0",
-    "tinkoff-invest-api": "5.0.0"
+    "tinkoff-invest-api": "5.0.0",
+    "twitter-api-v2": "1.14.2"
   }
 }
