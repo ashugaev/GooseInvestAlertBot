@@ -1,6 +1,7 @@
 import {ADDCHAT_SCENE} from "@/commands/addChat/addChat.constants"
 import {i18n} from "@/helpers/i18n"
 import {addNewEventHandler} from "@/integrations/telegram/setupEventHandlers"
+import {EMarketDataSources} from "@/marketApi/types"
 import { TrackChatModel} from "@/models/TrackChat"
 import {immediateStep, waitMessageStep} from '@/scenes/wrappers'
 
@@ -37,7 +38,8 @@ const handleChatId = waitMessageStep(
       // FIXME: Hardcoded for now
       channel: true, 
       // TODO: Show title here
-      title: username
+      title: username,
+      targetSource: EMarketDataSources.kucoin
     }))
 
     await addNewEventHandler(username)

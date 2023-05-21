@@ -28,5 +28,9 @@ export const SOURCE_CONFIG: Record<EMarketDataSources, SourceConfig> = {
   [EMarketDataSources.bybit]: {
     fullName: 'Bybit',
     shortName: 'BYBIT'
+  },
+  [EMarketDataSources.kucoin]: {
+    fullName: 'Kucoin',
+    shortName: 'KUCOIN'
   }
 }

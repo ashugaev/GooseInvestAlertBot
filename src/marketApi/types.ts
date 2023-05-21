@@ -11,7 +11,8 @@ export enum EMarketDataSources {
    * https://www.currencyconverterapi.com/docs
    */
   yahoo = 'yahoo',
-  bybit = 'bybit'
+  bybit = 'bybit',
+  kucoin = 'kucoin',
 }
 
 /**

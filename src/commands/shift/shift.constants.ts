@@ -123,6 +123,9 @@ const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
   },
   [EMarketDataSources.yahoo]: {
     minTimeframeTime: 3600000
+  },
+  [EMarketDataSources.kucoin]: {
+    minTimeframeTime: 5000
   }
 }
 
