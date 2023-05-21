@@ -1,4 +1,5 @@
 import {log} from "@/helpers"
+import {sayToBoss} from "@/helpers/sayToBoss"
 import {isApproximatelyRoundedToHour} from "@/helpers/time/isTimeApproximatelyRoundedToOneHour"
 import {TrackChatCallbacksParams} from "@/models/TrackChat"
 
@@ -44,12 +45,14 @@ export const handleMessage = (params: TrackChatCallbacksParams) => {
     if(startData && isApproximatelyRoundedToHour(params.messageSentDate, 30)) {
       /// Buy if we don't have opened position
       const ticker = startData
+      sayToBoss({message: `<b>[SIGNAL]</b> Buy ${ticker}`})
     }
     
     const endData = chatDetectors.end(params)
     
     if(endData) {
       /// Sell if we still have opened position
+      sayToBoss({message: `<b>[SIGNAL]</b> Sell ${ticker}`})
     }
   } else {
     log.error('No detector for chat ' + params.chatLinkName)
