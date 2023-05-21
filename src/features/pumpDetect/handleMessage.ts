@@ -31,6 +31,9 @@ const detectorsByChatUsername = {
   }
 }
 
+/**
+ * @fixme check if time of update is approximately same with time of message
+ */
 export const handleMessage = (params: TrackChatCallbacksParams) => {
   // FIXME: Return this !!!
   const chatDetectors = detectorsByChatUsername[params.chatLinkName]
