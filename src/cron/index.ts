@@ -1,6 +1,7 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
 import { log, retry } from '@/helpers'
+import {setupEventHandlers} from "@/integrations/telegram/setupEventHandlers"
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 import { startTests } from '@/tests/indes'
 
@@ -224,7 +225,7 @@ export const setupCheckers = () => {
       minTimeBetweenRequests: 3600000 / 2000,
       getPrices: getYahooPrices,
       source: EMarketDataSources.yahoo,
-      // 10 tickers it's a max for yahoo api
+      // 10 tickers it's a max for yahoo integrations
       maxTickersForRequest: 10,
       // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
       jobKey: InitializationItem.YAHOO_PRICES
@@ -296,4 +297,11 @@ export const setupCheckers = () => {
   retry(async () => await startTests(),
     10000,
     'tests')
+  
+  /**
+   * Track chats feed
+   */
+  retry(async () => await setupEventHandlers(),
+    10000,
+    'chat event handlers')
 }

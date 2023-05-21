@@ -1,0 +1,1 @@
+export const ADDCHAT_SCENE = 'ADDCHAT_SCENE'
