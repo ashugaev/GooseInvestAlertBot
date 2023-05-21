@@ -225,7 +225,7 @@ export const setupCheckers = () => {
       minTimeBetweenRequests: 3600000 / 2000,
       getPrices: getYahooPrices,
       source: EMarketDataSources.yahoo,
-      // 10 tickers it's a max for yahoo integrations
+      // 10 tickers it's a max for yahoo api
       maxTickersForRequest: 10,
       // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
       jobKey: InitializationItem.YAHOO_PRICES

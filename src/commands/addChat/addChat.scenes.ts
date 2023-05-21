@@ -32,14 +32,16 @@ const handleChatId = waitMessageStep(
     await TrackChatModel.insertMany({
       username,
       // FIXME: Hardcoded for now
-      purpose: 'pump'
+      purpose: 'pump',
+      // FIXME: Hardcoded for now
+      targetSource: EMarketDataSources.kucoin
+
     })
     await ctx.replyWithHTML(i18n.t('ru', 'addChat_success', {
       // FIXME: Hardcoded for now
       channel: true, 
       // TODO: Show title here
       title: username,
-      targetSource: EMarketDataSources.kucoin
     }))
 
     await addNewEventHandler(username)

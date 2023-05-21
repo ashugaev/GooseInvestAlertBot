@@ -46,7 +46,7 @@ const session = require('telegraf/session')
 export const tinkoffApi = new TinkoffInvestApi({ token: process.env.STOCKS_API_TOKEN })
 
 const apiURL = 'https://api-invest.tinkoff.ru/openapi'
-const socketURL = 'wss://integrations-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
+const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
 const secretToken = process.env.STOCKS_API_TOKEN
 
 export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
