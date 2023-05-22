@@ -59,7 +59,7 @@ export const handleMessage = (params: TrackChatCallbacksParams) => {
     
     if(endData) {
       /// Sell if we still have opened position
-      sayToBoss({message: `<b>[SIGNAL]</b> Sell ${ticker}`})
+      sayToBoss({message: `<b>[SIGNAL]</b> Sell`})
     }
   } else {
     log.error('No detector for chat ' + params.chatLinkName)
