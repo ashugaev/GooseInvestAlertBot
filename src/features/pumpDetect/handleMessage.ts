@@ -27,6 +27,10 @@ const detectorsByChatUsername = {
       }
 
       return false
+    },
+    // Return time before start of the pump
+    prepare: () => {
+      return false
     }
   }
 }
