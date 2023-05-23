@@ -43,8 +43,6 @@ const normalizeItem = (item: KucoinSymbolInfo): InstrumentsList => {
   return result
 }
 
-
-// @ts-ignore
 export const getInstrumentsKucoin = async (): Promise<InstrumentsList[]> => {
   try {
     const {data} = await KucoinAPI.rest.Market.Symbols.getSymbolsList()
