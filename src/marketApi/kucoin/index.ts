@@ -1,13 +1,16 @@
-/** Require SDK */
-const API = require('kucoin-node-sdk')
+export const KucoinAPI = require('kucoin-node-sdk')
+
+const { NODE_ENV, KUCOIN_API_KEY, KUCOIN_API_PASSPHRASE, KUCOIN_API_SECRET } = process.env
+
+const isDev = NODE_ENV === 'development'
 
 /** Init Configure */
-API.init({
-  baseUrl: '',
+KucoinAPI.init({
+  baseUrl: isDev ? 'https://openapi-sandbox.kucoin.com' : 'https://api.kucoin.com',
   apiAuth: {
-    key: '', // KC-API-KEY
-    secret: '', // API-Secret
-    passphrase: '', // KC-API-PASSPHRASE
+    key: KUCOIN_API_KEY,
+    secret: KUCOIN_API_SECRET,
+    passphrase: KUCOIN_API_PASSPHRASE,
   },
   authVersion: 2, // KC-API-KEY-VERSION. Notice: for v2 API-KEY, not required for v1 version.
 })

@@ -50,5 +50,11 @@ export const getInstrumentLink = ({
     link = `https://www.bybit.com/trade/${currency.toLowerCase()}/${ticker.toUpperCase()}`
   }
 
+  if (source === EMarketDataSources.kucoin && (sourceSpecificData)) {
+    if ("symbol" in sourceSpecificData) {
+      link = `https://www.kucoin.com/trade/${sourceSpecificData.symbol}`
+    }
+  }
+
   return link
 }

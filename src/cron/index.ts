@@ -3,6 +3,8 @@ import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
 import { log, retry } from '@/helpers'
 import {setupEventHandlers} from "@/integrations/telegram/setupEventHandlers"
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
+import {getInstrumentsKucoin} from "@/marketApi/kucoin/getInstruments"
+import {getPricesKucoin} from "@/marketApi/kucoin/getPrices"
 import { startTests } from '@/tests/indes'
 
 import { startCronJob } from '../helpers/startCronJob'
@@ -31,12 +33,14 @@ export enum InitializationItem {
   COINGECKO_TICKERS = 'COINGECKO_TICKERS',
   YAHOO_TICKERS = 'YAHOO_TICKERS',
   BYBIT_TICKERS = 'BYBIT_TICKERS',
+  KUCOIN_TICKERS = 'KUCOIN_TICKERS',
   // Prices
   TINKOFF_PRICES = 'TINKOFF_PRICES',
   BINANCE_PRICES = 'BINANCE_PRICES',
   YAHOO_PRICES = 'YAHOO_PRICES',
   COINGECKO_PRICES = 'COINGECKO_PRICES',
   BYBIT_PRICES = 'BYBIT_PRICES',
+  KUCOIN_PRICES = 'KUCOIN_PRICES',
 }
 
 // Array with all processed steps
@@ -48,7 +52,8 @@ const isInstrumentsListUpdated = () => {
     InitializationItem.COINGECKO_TICKERS,
     InitializationItem.BINANCE_TICKERS,
     InitializationItem.YAHOO_TICKERS,
-    InitializationItem.BYBIT_TICKERS
+    InitializationItem.BYBIT_TICKERS,
+    InitializationItem.KUCOIN_TICKERS
   ].every((step) => appInitStatuses.includes(step))
 }
 const isAllPricesUpdated = () => {
@@ -57,7 +62,8 @@ const isAllPricesUpdated = () => {
     InitializationItem.COINGECKO_PRICES,
     InitializationItem.BINANCE_PRICES,
     InitializationItem.YAHOO_PRICES,
-    InitializationItem.BYBIT_PRICES
+    InitializationItem.BYBIT_PRICES,
+    InitializationItem.KUCOIN_PRICES
   ].every((step) => appInitStatuses.includes(step))
 }
 
@@ -127,6 +133,23 @@ export const setupCheckers = () => {
     period: '0 0 * * *',
     executeBeforeInit: true,
     jobKey: InitializationItem.TINKOFF_TICKERS
+  })
+  
+  /**
+   * KUCOIN tickers list
+   */
+  startCronJob({
+    name: 'Update KUCOIN tickers list',
+    callback: updateTickersList({
+      getList: getInstrumentsKucoin,
+      source: EMarketDataSources.kucoin,
+      minTickersCount: 400
+    }),
+    callbackArgs: [],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.KUCOIN_TICKERS
   })
 
   /**
@@ -213,6 +236,18 @@ export const setupCheckers = () => {
       jobKey: InitializationItem.BINANCE_PRICES
     })
   ), 10000, 'setupPriceUpdater for binance')
+
+  /**
+   * KUCOIN prices updater
+   */
+  retry(async () => (
+    await setupPriceUpdater({
+      minTimeBetweenRequests: 3000,
+      getPrices: getPricesKucoin,
+      source: EMarketDataSources.kucoin,
+      jobKey: InitializationItem.KUCOIN_PRICES
+    })
+  ), 10000, 'setupPriceUpdater for kucoin')
 
   /**
    * YAHOO prices updater
