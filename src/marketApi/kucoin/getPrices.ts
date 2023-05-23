@@ -26,28 +26,33 @@ export interface KucoinPriceItem {
 }
 
 export const getPricesKucoin = async (tickerIds: string[], instrumentsData: InstrumentsList[]): Promise<TickerPrices> => {
-  const {data: {ticker}} = await KucoinAPI.rest.Market.Symbols.getAllTickers()
+  try {
+    const {data: {ticker}} = await KucoinAPI.rest.Market.Symbols.getAllTickers()
 
-  const notFoundItems = []
+    const notFoundItems = []
     
-  const pricesNormilized: TickerPrices = (ticker as KucoinPriceItem[]).reduce<TickerPrices>((acc, item) => {
-    const dataItem = instrumentsData.find(el => el.ticker === item.symbolName.replace('-', ''))
+    const pricesNormilized: TickerPrices = (ticker as KucoinPriceItem[]).reduce<TickerPrices>((acc, item) => {
+      const dataItem = instrumentsData.find(el => el.ticker === item.symbolName.replace('-', ''))
     
-    const lastPrice = item.last
-    const lastPriceNumber = Number(lastPrice)
+      const lastPrice = item.last
+      const lastPriceNumber = Number(lastPrice)
 
-    if (dataItem && lastPriceNumber) {
-      acc.push([dataItem.ticker, lastPriceNumber, dataItem.id, dataItem])
-    } else {
-      notFoundItems.push(item.symbol)
+      if (dataItem && lastPriceNumber) {
+        acc.push([dataItem.ticker, lastPriceNumber, dataItem.id, dataItem])
+      } else {
+        notFoundItems.push(item.symbol)
+      }
+
+      return acc
+    }, [])
+    
+    if(notFoundItems.length) {
+      console.error(logPrefix, 'Not found items:', notFoundItems)
     }
 
-    return acc
-  }, [])
-    
-  if(notFoundItems.length) {
-    console.error(logPrefix, 'Not found items:', notFoundItems)
+    return pricesNormilized
+  } catch (e) {
+    console.log(e)
+    throw e
   }
-
-  return pricesNormilized
 }

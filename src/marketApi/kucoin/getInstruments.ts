@@ -46,9 +46,14 @@ const normalizeItem = (item: KucoinSymbolInfo): InstrumentsList => {
 
 // @ts-ignore
 export const getInstrumentsKucoin = async (): Promise<InstrumentsList[]> => {
-  const {data} = await KucoinAPI.rest.Market.Symbols.getSymbolsList()
+  try {
+    const {data} = await KucoinAPI.rest.Market.Symbols.getSymbolsList()
 
-  const normalizedInstrumentsArray = (data as KucoinSymbolInfo[]).map(normalizeItem)
+    const normalizedInstrumentsArray = (data as KucoinSymbolInfo[]).map(normalizeItem)
     
-  return normalizedInstrumentsArray
+    return normalizedInstrumentsArray
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
 }
