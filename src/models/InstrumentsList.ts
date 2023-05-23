@@ -159,7 +159,9 @@ export async function getInstrumentsBySourceCache (source: EMarketDataSources): 
   return allInstrumentsBySource
 }
 
-export const getInstrumentByIdFromCache = async (id: string, noReqToDb?: boolean, noThrow?: boolean): Promise<InstrumentsList> => {
+export const getInstrumentByIdFromCache = async (
+  id: string, noReqToDb?: boolean, noThrow?: boolean
+): Promise<InstrumentsList> => {
   let res = instrumentsByIdCache.get(id)
 
   if (!res && !noReqToDb) {
