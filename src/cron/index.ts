@@ -23,7 +23,7 @@ import { copyAlerts } from './copyAlerts'
 import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
 
-const isDevMode = process.env.NODE_EVN === 'development'
+const isDevMode = process.env.NODE_ENV === 'development'
 
 // Processed steps list
 export enum InitializationItem {

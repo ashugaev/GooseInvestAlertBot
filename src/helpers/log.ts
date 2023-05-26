@@ -15,7 +15,7 @@ logger.error = (...args) => {
       values: args.filter(arg => arg instanceof Error)
     },
     user: {
-      local: process.env.NODE_EVN === 'development'
+      local: process.env.NODE_ENV === 'development'
     }
   })
 
