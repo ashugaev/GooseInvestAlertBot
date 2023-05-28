@@ -1,5 +1,8 @@
 import { detectorsByChatUsername } from '@/features/pumpDetect/detectors'
-import { configByChannel } from '@/features/pumpDetect/pumpDetect.constants'
+import {
+  configByChannel,
+  logPrefix,
+} from '@/features/pumpDetect/pumpDetect.constants'
 import { log } from '@/helpers'
 import { sayToBoss } from '@/helpers/sayToBoss'
 import { isApproximatelyRoundedToHour } from '@/helpers/time/isTimeApproximatelyRoundedToOneHour'
@@ -9,8 +12,6 @@ import { TrackChatCallbacksParams } from '@/models/TrackChat'
 
 require('dotenv').config()
 
-const logPrefix = '[handleMessage]'
-
 let lastSymbolTrade = null
 let lastTickerTrade = null
 
@@ -18,7 +19,7 @@ let lastTickerTrade = null
  * @fixme check if time of update is approximately same with time of message
  */
 export const handleMessage = async (params: TrackChatCallbacksParams) => {
-  log.info(handleMessage, 'Handling message', params)
+  log.info(logPrefix, 'Handling message', params)
 
   const chatCallbacks = detectorsByChatUsername[params.chatLinkName]
   const chatConfig = configByChannel[params.chatLinkName]
@@ -70,7 +71,7 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
 
         log.info(logPrefix, 'Time to cancel', timeToCancel)
 
-        const amount = await kucoinCellAll({
+        const cellRes = await kucoinCellAll({
           delay: timeToCancel,
           symbol,
           retries: 3,
@@ -81,7 +82,9 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
         lastTickerTrade = ticker
         lastSymbolTrade = symbol
 
-        sayToBoss({ message: `<b>[SIGNAL]</b> Sold ${amount} ${ticker}` })
+        sayToBoss({
+          message: `<b>[SIGNAL]</b> Sold ${cellRes.ticker} ${ticker}. Balance ${cellRes.main} USDT`,
+        })
       }
 
       const endData = chatCallbacks.end(params)
@@ -89,7 +92,7 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
       if (endData && lastSymbolTrade && lastTickerTrade) {
         sayToBoss({ message: `<b>[SIGNAL]</b> Sell` })
 
-        const amount = await kucoinCellAll({
+        const cellRes = await kucoinCellAll({
           delay: 0,
           symbol: lastSymbolTrade,
           retries: 3,
@@ -101,7 +104,7 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
         lastSymbolTrade = null
 
         sayToBoss({
-          message: `<b>[SIGNAL]</b> Sold ${amount} ${lastTickerTrade}`,
+          message: `<b>[SIGNAL]</b> Sold ${cellRes.ticker} ${lastTickerTrade}. Balance ${cellRes.main} USDT`,
         })
       }
     } catch (e) {
@@ -111,6 +114,6 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
       })
     }
   } else {
-    log.info('No detector for chat ' + params.chatLinkName)
+    log.info(logPrefix, 'No detector for chat ' + params.chatLinkName)
   }
 }

@@ -4,6 +4,8 @@ require('dotenv').config()
 
 const isTestMode = process.env.NODE_ENV === 'development'
 
+export const logPrefix = '[PUMP DETECT]'
+
 export interface DetectorConfig {
   allowedUTCHours: number[] | null
   mustBeRoundHour: boolean
@@ -16,7 +18,7 @@ export const configByChannel: Record<ChannelsToTrack, DetectorConfig> = {
     allowedUTCHours: null,
     mustBeRoundHour: true,
     debugMessagesTracker: true,
-    buyAmount: 15,
+    buyAmount: 10,
   },
   keklolkeklolkeklolkeklolkeklol: {
     allowedUTCHours: null,
