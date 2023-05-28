@@ -16,7 +16,7 @@ export const configByChannel: Record<ChannelsToTrack, DetectorConfig> = {
     allowedUTCHours: null,
     mustBeRoundHour: true,
     debugMessagesTracker: true,
-    buyAmount: 15,
+    buyAmount: 10,
   },
   keklolkeklolkeklolkeklolkeklol: {
     allowedUTCHours: null,
