@@ -40,7 +40,8 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
           chatConfig.allowedUTCHours.includes(new Date().getUTCHours())) &&
         // If message date is approximately rounded to hour
         (chatConfig.mustBeRoundHour
-          ? isApproximatelyRoundedToHour(params.messageSentDate, 30)
+          ? // TODO: Уменьшить это время после проверки
+            isApproximatelyRoundedToHour(params.messageSentDate, 60)
           : true)
 
       const timeIsAllowed =
