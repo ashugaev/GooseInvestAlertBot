@@ -1,26 +1,28 @@
-import {KucoinAPI} from "@/marketApi/kucoin/index"
+import { log } from '@/helpers'
+import { KucoinAPI } from '@/marketApi/kucoin/index'
+
 require('dotenv').config()
 
 export interface TradeWithKucoinParams {
-    side: 'buy' | 'sell',
-    amount: number,
-    stopSellPrice: number,
-    stopBuyPrice: number,
-    symbol: string,
+  side: 'buy' | 'sell'
+  amount: number
+  stopSellPrice: number
+  stopBuyPrice: number
+  symbol: string
 }
 
 export interface KucoinOrderParams {
-    clientOid: string,
-    symbol: string,
-    side: 'buy' | 'sell',
-    type: 'limit' | 'market',
-    remark: string,
-    stp?: 'CN' | 'CO' | 'CB' | 'DC'
-    tradeType: 'TRADE' | 'MARGIN_TRADE',
-    // UDT in BTCUSDT
-    funds?: number
-    // BTC in BTCUSDT
-    size?: number
+  clientOid: string
+  symbol: string
+  side: 'buy' | 'sell'
+  type: 'limit' | 'market'
+  remark: string
+  stp?: 'CN' | 'CO' | 'CB' | 'DC'
+  tradeType: 'TRADE' | 'MARGIN_TRADE'
+  // UDT in BTCUSDT
+  funds?: number
+  // BTC in BTCUSDT
+  size?: number
 }
 
 export const tradeWithKucoin = async ({
@@ -42,5 +44,13 @@ export const tradeWithKucoin = async ({
     size,
   }
 
-  return await KucoinAPI.rest.Trade.Orders.postOrder(orderParams)
+  const reqRes = await KucoinAPI.rest.Trade.Orders.postOrder(orderParams)
+  const orderId = reqRes.data.orderId
+
+  if (orderId) {
+    return orderId
+  } else {
+    log.error('tradeWithKucoin', 'Order was not created', reqRes)
+    throw new Error('Order was not created')
+  }
 }
