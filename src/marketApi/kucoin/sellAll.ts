@@ -23,23 +23,26 @@ export const kucoinCellAll = async ({
 
   for (let i = retries; i <= retries; i++) {
     try {
-      const res = await tradeWithKucoin({
+      if (available === 0) {
+        break
+      }
+
+      await tradeWithKucoin({
         size: available,
         symbol,
         side: 'sell',
         remark: 'Sell:' + params.message,
       })
-
-      const orderId = res.data.orderId
-
-      if (orderId) {
-        break
-      } else {
-        throw new Error('Problems with sell order')
-      }
     } catch (e) {
       log.error('kucoinCellAll', 'Error while selling', e)
-      available = await getAvailableAmount(ticker)
+    } finally {
+      const availableNew = await getAvailableAmount(ticker)
+      if (availableNew > 0) {
+        available = availableNew
+      } else {
+        // eslint-disable-next-line no-unsafe-finally
+        break
+      }
     }
   }
 

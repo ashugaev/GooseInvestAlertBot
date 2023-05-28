@@ -11,6 +11,9 @@ require('dotenv').config()
 
 const logPrefix = '[handleMessage]'
 
+let lastSymbolTrade = null
+let lastTickerTrade = null
+
 /**
  * @fixme check if time of update is approximately same with time of message
  */
@@ -43,13 +46,13 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
         // We don't have any delay more than 15 seconds
         new Date().getTime() - params.messageSentDate.getTime() < 15000
 
-      const ticker = startData.toUpperCase()
-      const symbol = ticker + '-USDT'
-
       /**
        * Open trade scenario
        */
       if (startData && hourIsAllowed && timeIsAllowed) {
+        const ticker = startData.toUpperCase()
+        const symbol = ticker + '-USDT'
+
         sayToBoss({ message: `<b>[SIGNAL]</b> Gonna buy ${ticker}` })
 
         await tradeWithKucoin({
@@ -75,21 +78,30 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
           params,
         })
 
+        lastTickerTrade = ticker
+        lastSymbolTrade = symbol
+
         sayToBoss({ message: `<b>[SIGNAL]</b> Sold ${amount} ${ticker}` })
       }
 
       const endData = chatCallbacks.end(params)
 
-      if (endData) {
-        /// Sell if we still have opened position
+      if (endData && lastSymbolTrade && lastTickerTrade) {
         sayToBoss({ message: `<b>[SIGNAL]</b> Sell` })
 
-        await kucoinCellAll({
+        const amount = await kucoinCellAll({
           delay: 0,
-          symbol,
+          symbol: lastSymbolTrade,
           retries: 3,
-          ticker,
+          ticker: lastTickerTrade,
           params,
+        })
+
+        lastTickerTrade = null
+        lastSymbolTrade = null
+
+        sayToBoss({
+          message: `<b>[SIGNAL]</b> Sold ${amount} ${lastTickerTrade}`,
         })
       }
     } catch (e) {

@@ -27,7 +27,9 @@ export const detectorsByChatUsername: Record<
       return null
     },
     end: (params): boolean => {
-      if (params.stickerId === STICKERS.sharkSell) {
+      if (
+        params.stickerId === STICKERS.Whales_Pumping_Cryptocurrency.sharkSell
+      ) {
         return true
       }
 
