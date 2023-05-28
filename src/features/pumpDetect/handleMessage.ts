@@ -40,13 +40,18 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
           chatConfig.allowedUTCHours.includes(new Date().getUTCHours())) &&
         // If message date is approximately rounded to hour
         (chatConfig.mustBeRoundHour
-          ? // TODO: Уменьшить это время после проверки
-            isApproximatelyRoundedToHour(params.messageSentDate, 60)
+          ? isApproximatelyRoundedToHour(params.messageSentDate, 30)
           : true)
 
       const timeIsAllowed =
         // We don't have any delay more than 15 seconds
         new Date().getTime() - params.messageSentDate.getTime() < 15000
+
+      log.info(
+        logPrefix,
+        'Mesage handling delay in seconds:',
+        (new Date().getTime() - params.messageSentDate.getTime()) / 1000
+      )
 
       /**
        * Open trade scenario
@@ -86,6 +91,17 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
         sayToBoss({
           message: `<b>[SIGNAL]</b> Sold ${cellRes.ticker} ${ticker}. Balance ${cellRes.main} USDT`,
         })
+      } else {
+        log.info(
+          logPrefix,
+          'Trigger states.',
+          'Data:',
+          startData,
+          'Hour allowed: ',
+          hourIsAllowed,
+          'Time allowed:',
+          timeIsAllowed
+        )
       }
 
       const endData = chatCallbacks.end(params)
