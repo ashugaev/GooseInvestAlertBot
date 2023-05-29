@@ -52,8 +52,8 @@ export const pollingMessagesCheck = async () => {
 
       const result = await client.invoke(
         new Api.messages.GetHistory({
-          peer: 'Whales_Pumping_Cryptocurrency',
-          limit: 20,
+          peer: 'DefiUniverse',
+          limit: 1,
         })
       )
 
@@ -90,6 +90,7 @@ export const setupEventHandlers = async () => {
   const trackChats: ChannelsToTrack[] = [
     'keklolkeklolkeklolkeklolkeklol',
     'Whales_Pumping_Cryptocurrency',
+    'DefiUniverse',
   ]
 
   // Track chat events
