@@ -32,5 +32,9 @@ export const SOURCE_CONFIG: Record<EMarketDataSources, SourceConfig> = {
   [EMarketDataSources.kucoin]: {
     fullName: 'Kucoin',
     shortName: 'KUCOIN'
+  },
+  [EMarketDataSources.lbank]: {
+    fullName: 'LBank',
+    shortName: 'LBANK'
   }
 }
