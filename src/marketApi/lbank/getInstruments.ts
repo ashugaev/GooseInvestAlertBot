@@ -34,18 +34,14 @@ const normalizeItem = (item: LbankInstrument): InstrumentsList => {
 }
 
 export const lbankGetInstruments = async () => {
-  try {
-    const {
-      // @ts-ignore
-      data: { data },
-    } = (await lbankRequest('/v2/accuracy.do')) as unknown as LbankInstrument[]
+  const {
+    // @ts-ignore
+    data: { data },
+  } = (await lbankRequest('/v2/accuracy.do')) as unknown as LbankInstrument[]
 
-    const normalizedInstrumentsArray = (data as LbankInstrument[])
-      .map(normalizeItem)
-      .filter((item) => Boolean(item))
+  const normalizedInstrumentsArray = (data as LbankInstrument[])
+    .map(normalizeItem)
+    .filter((item) => Boolean(item))
 
-    return normalizedInstrumentsArray
-  } catch (error) {
-    console.log('error', error)
-  }
+  return normalizedInstrumentsArray
 }

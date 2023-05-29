@@ -23,39 +23,34 @@ export const lbankGetPrices = async (
   tickerIds: string[],
   instrumentsData: InstrumentsList[]
 ): Promise<TickerPrices> => {
-  try {
-    const {
-      data: { data },
-    } = await lbankRequest('/v2/ticker.do?symbol=all')
+  const {
+    data: { data },
+  } = await lbankRequest('/v2/ticker.do?symbol=all')
 
-    const notFoundItems = []
+  const notFoundItems = []
 
-    const pricesNormilized: TickerPrices = (
-      data as LbankPriceItem[]
-    ).reduce<TickerPrices>((acc, item) => {
-      const dataItem = instrumentsData.find(
-        // @ts-ignore
-        (el) => el.sourceSpecificData.symbol === item.symbol
-      )
+  const pricesNormilized: TickerPrices = (
+    data as LbankPriceItem[]
+  ).reduce<TickerPrices>((acc, item) => {
+    const dataItem = instrumentsData.find(
+      // @ts-ignore
+      (el) => el.sourceSpecificData.symbol === item.symbol
+    )
 
-      const lastPriceNumber = item.ticker.latest
+    const lastPriceNumber = item.ticker.latest
 
-      if (dataItem && lastPriceNumber) {
-        acc.push([dataItem.ticker, lastPriceNumber, dataItem.id, dataItem])
-      } else {
-        notFoundItems.push(item.symbol)
-      }
-
-      return acc
-    }, [])
-
-    if (notFoundItems.length) {
-      log.info(logPrefix, 'Not found items:', notFoundItems)
+    if (dataItem && lastPriceNumber) {
+      acc.push([dataItem.ticker, lastPriceNumber, dataItem.id, dataItem])
+    } else {
+      notFoundItems.push(item.symbol)
     }
 
-    return pricesNormilized
-  } catch (e) {
-    console.log(e)
-    throw e
+    return acc
+  }, [])
+
+  if (notFoundItems.length) {
+    log.info(logPrefix, 'Not found items:', notFoundItems)
   }
+
+  return pricesNormilized
 }
