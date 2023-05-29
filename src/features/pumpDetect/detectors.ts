@@ -53,4 +53,12 @@ export const detectorsByChatUsername: Record<
       return detectorsByChatUsername.Whales_Pumping_Cryptocurrency.end(params)
     },
   },
+  DefiUniverse: {
+    start: (params: TrackChatCallbacksParams): string | null => {
+      return detectorsByChatUsername.Whales_Pumping_Cryptocurrency.start(params)
+    },
+    end: (params): boolean => {
+      return detectorsByChatUsername.Whales_Pumping_Cryptocurrency.end(params)
+    },
+  },
 }

@@ -26,4 +26,10 @@ export const configByChannel: Record<ChannelsToTrack, DetectorConfig> = {
     debugMessagesTracker: true,
     buyAmount: 0.11,
   },
+  DefiUniverse: {
+    allowedUTCHours: null,
+    mustBeRoundHour: false,
+    debugMessagesTracker: true,
+    buyAmount: 0.11,
+  },
 }
