@@ -13,14 +13,14 @@ import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
-import {setupAddChat} from "@/commands/addChat/addChat"
-import {addChatScenes} from "@/commands/addChat/addChat.scenes"
-import {setupAdmin} from "@/commands/admin/admin"
-import {setupMyToken} from "@/commands/mytoken/mytoken"
-import {myTokenScenes} from "@/commands/mytoken/mytoken.scenes"
+import { setupAddChat } from '@/commands/addChat/addChat'
+import { addChatScenes } from '@/commands/addChat/addChat.scenes'
+import { setupAdmin } from '@/commands/admin/admin'
+import { setupMyToken } from '@/commands/mytoken/mytoken'
+import { myTokenScenes } from '@/commands/mytoken/mytoken.scenes'
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
-import {setupCheckers} from "@/cron"
+import { setupCheckers } from '@/cron'
 
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
@@ -33,7 +33,7 @@ import { setupPrice } from './commands/price'
 import { setupShift, shiftScenes } from './commands/shift'
 import { setupStart } from './commands/start'
 import { setupStat, statScenes } from './commands/stat'
-import {bots} from './helpers/bot'
+import { bots } from './helpers/bot'
 import { setupI18N } from './helpers/i18n'
 import { log } from './helpers/log'
 import { attachUser } from './middlewares/attachUser'
@@ -43,7 +43,9 @@ import { commonScenes } from './scenes'
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
 
-export const tinkoffApi = new TinkoffInvestApi({ token: process.env.STOCKS_API_TOKEN })
+export const tinkoffApi = new TinkoffInvestApi({
+  token: process.env.STOCKS_API_TOKEN,
+})
 
 const apiURL = 'https://api-invest.tinkoff.ru/openapi'
 const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
@@ -54,7 +56,7 @@ export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 Sentry.init({
   dsn: process.env.SENTRY_URL,
   // Процент транзакций, которые будут отправлены в Sentry
-  tracesSampleRate: 1.0
+  tracesSampleRate: 1.0,
 })
 
 const stage = new Stage([
@@ -64,7 +66,7 @@ const stage = new Stage([
   myTokenScenes,
   addChatScenes,
   ...commonScenes,
-  ...alertScenes
+  ...alertScenes,
 ])
 
 export const botInit = (bot) => {
@@ -102,15 +104,14 @@ export const botInit = (bot) => {
   log.info(`Bot ${bot.context.goose.username} is up and running`)
 }
 
-bots
-  .then((bots) => {
-    for (const bot of bots) {
-      botInit(bot)
-    }
+bots.then((bots) => {
+  for (const bot of bots) {
+    botInit(bot)
+  }
 
-    // Start all async tasks (cron and continuous)
-    setupCheckers()
-  })
+  // Start all async tasks (cron and continuous)
+  setupCheckers()
+})
 
 process.on('uncaughtException', function (err) {
   log.error('[UNHANDLED]', err)

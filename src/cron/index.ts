@@ -1,10 +1,12 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
 import { log, retry } from '@/helpers'
-import {setupEventHandlers} from "@/integrations/telegram/setupEventHandlers"
+import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
-import {getInstrumentsKucoin} from "@/marketApi/kucoin/getInstruments"
-import {getPricesKucoin} from "@/marketApi/kucoin/getPrices"
+import { getInstrumentsKucoin } from '@/marketApi/kucoin/getInstruments'
+import { getPricesKucoin } from '@/marketApi/kucoin/getPrices'
+import { lbankGetInstruments } from '@/marketApi/lbank/getInstruments'
+import { lbankGetPrices } from '@/marketApi/lbank/getPrices'
 import { startTests } from '@/tests/indes'
 
 import { startCronJob } from '../helpers/startCronJob'
@@ -34,6 +36,7 @@ export enum InitializationItem {
   YAHOO_TICKERS = 'YAHOO_TICKERS',
   BYBIT_TICKERS = 'BYBIT_TICKERS',
   KUCOIN_TICKERS = 'KUCOIN_TICKERS',
+  LBANK_TICKERS = 'LBANK_TICKERS',
   // Prices
   TINKOFF_PRICES = 'TINKOFF_PRICES',
   BINANCE_PRICES = 'BINANCE_PRICES',
@@ -41,6 +44,7 @@ export enum InitializationItem {
   COINGECKO_PRICES = 'COINGECKO_PRICES',
   BYBIT_PRICES = 'BYBIT_PRICES',
   KUCOIN_PRICES = 'KUCOIN_PRICES',
+  LBANK_PRICES = 'LBANK_PRICES',
 }
 
 // Array with all processed steps
@@ -53,7 +57,8 @@ const isInstrumentsListUpdated = () => {
     InitializationItem.BINANCE_TICKERS,
     InitializationItem.YAHOO_TICKERS,
     InitializationItem.BYBIT_TICKERS,
-    InitializationItem.KUCOIN_TICKERS
+    InitializationItem.KUCOIN_TICKERS,
+    InitializationItem.LBANK_TICKERS,
   ].every((step) => appInitStatuses.includes(step))
 }
 const isAllPricesUpdated = () => {
@@ -63,7 +68,8 @@ const isAllPricesUpdated = () => {
     InitializationItem.BINANCE_PRICES,
     InitializationItem.YAHOO_PRICES,
     InitializationItem.BYBIT_PRICES,
-    InitializationItem.KUCOIN_PRICES
+    InitializationItem.KUCOIN_PRICES,
+    InitializationItem.LBANK_PRICES,
   ].every((step) => appInitStatuses.includes(step))
 }
 
@@ -83,7 +89,7 @@ export const setupCheckers = () => {
     callback: saveFuturesMargin,
     callbackArgs: [],
     // раз в день в 3 часа 0 минут
-    period: '0 3 * * *'
+    period: '0 3 * * *',
   })
 
   // FIXME: Templarory disabled
@@ -109,13 +115,13 @@ export const setupCheckers = () => {
     callback: updateTickersList({
       getList: getCurrenciesList,
       source: EMarketDataSources.yahoo,
-      minTickersCount: 1000
+      minTickersCount: 1000,
     }),
     callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
-    jobKey: InitializationItem.YAHOO_TICKERS
+    jobKey: InitializationItem.YAHOO_TICKERS,
   })
 
   /**
@@ -126,15 +132,15 @@ export const setupCheckers = () => {
     callback: updateTickersList({
       getList: tinkoffGetAllInstruments,
       source: EMarketDataSources.tinkoff,
-      minTickersCount: 1000
+      minTickersCount: 1000,
     }),
     callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
-    jobKey: InitializationItem.TINKOFF_TICKERS
+    jobKey: InitializationItem.TINKOFF_TICKERS,
   })
-  
+
   /**
    * KUCOIN tickers list
    */
@@ -143,13 +149,27 @@ export const setupCheckers = () => {
     callback: updateTickersList({
       getList: getInstrumentsKucoin,
       source: EMarketDataSources.kucoin,
-      minTickersCount: 400
+      minTickersCount: 400,
     }),
     callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
-    jobKey: InitializationItem.KUCOIN_TICKERS
+    jobKey: InitializationItem.KUCOIN_TICKERS,
+  })
+
+  startCronJob({
+    name: 'Update LBANK tickers list',
+    callback: updateTickersList({
+      getList: lbankGetInstruments,
+      source: EMarketDataSources.lbank,
+      minTickersCount: 400,
+    }),
+    callbackArgs: [],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.LBANK_TICKERS,
   })
 
   /**
@@ -160,13 +180,13 @@ export const setupCheckers = () => {
     callback: updateTickersList({
       getList: coingeckoGetAllInstruments,
       source: EMarketDataSources.coingecko,
-      minTickersCount: 6000
+      minTickersCount: 6000,
     }),
     callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
-    jobKey: InitializationItem.COINGECKO_TICKERS
+    jobKey: InitializationItem.COINGECKO_TICKERS,
   })
 
   /**
@@ -177,13 +197,13 @@ export const setupCheckers = () => {
     callback: updateTickersList({
       getList: bybitGetAllInstruments,
       source: EMarketDataSources.bybit,
-      minTickersCount: 70
+      minTickersCount: 70,
     }),
     callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
-    jobKey: InitializationItem.BYBIT_TICKERS
+    jobKey: InitializationItem.BYBIT_TICKERS,
   })
 
   /**
@@ -194,13 +214,13 @@ export const setupCheckers = () => {
     callback: updateTickersList({
       getList: binanceGetAllInstruments,
       source: EMarketDataSources.binance,
-      minTickersCount: 1000
+      minTickersCount: 1000,
     }),
     callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
     executeBeforeInit: true,
-    jobKey: InitializationItem.BINANCE_TICKERS
+    jobKey: InitializationItem.BINANCE_TICKERS,
   })
 
   // Дамп коллекции с алертами
@@ -210,7 +230,7 @@ export const setupCheckers = () => {
     callbackArgs: [],
     // В полночь и при деплое
     period: '0 0 * * *',
-    executeBeforeInit: true
+    executeBeforeInit: true,
   })
 
   /**
@@ -222,50 +242,60 @@ export const setupCheckers = () => {
     callbackArgs: [],
     // Раз в день в 0 часов или при деплое
     period: '0 0 * * *',
-    executeBeforeInit: true
+    executeBeforeInit: true,
   })
 
   /**
    * BINANCE prices updater
    */
-  retry(async () => (
-    await setupPriceUpdater({
-      minTimeBetweenRequests: 1000,
-      getPrices: getBinancePrices,
-      source: EMarketDataSources.binance,
-      jobKey: InitializationItem.BINANCE_PRICES
-    })
-  ), 10000, 'setupPriceUpdater for binance')
+  retry(
+    async () =>
+      await setupPriceUpdater({
+        minTimeBetweenRequests: 1000,
+        getPrices: getBinancePrices,
+        source: EMarketDataSources.binance,
+        jobKey: InitializationItem.BINANCE_PRICES,
+      }),
+    10000,
+    'setupPriceUpdater for binance'
+  )
 
   /**
    * KUCOIN prices updater
    */
-  retry(async () => (
-    await setupPriceUpdater({
-      minTimeBetweenRequests: 3000,
-      getPrices: getPricesKucoin,
-      source: EMarketDataSources.kucoin,
-      jobKey: InitializationItem.KUCOIN_PRICES
-    })
-  ), 10000, 'setupPriceUpdater for kucoin')
+  retry(
+    async () =>
+      await setupPriceUpdater({
+        minTimeBetweenRequests: 3000,
+        getPrices: getPricesKucoin,
+        source: EMarketDataSources.kucoin,
+        jobKey: InitializationItem.KUCOIN_PRICES,
+      }),
+    10000,
+    'setupPriceUpdater for kucoin'
+  )
 
   /**
    * YAHOO prices updater
    *
    * Quota 2000 requests per hour
    */
-  retry(async () => {
-    await setupPriceUpdater({
-      // hour in ms divided by quota
-      minTimeBetweenRequests: 3600000 / 2000,
-      getPrices: getYahooPrices,
-      source: EMarketDataSources.yahoo,
-      // 10 tickers it's a max for yahoo api
-      maxTickersForRequest: 10,
-      // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
-      jobKey: InitializationItem.YAHOO_PRICES
-    })
-  }, 10000, 'setupPriceUpdater for yahoo')
+  retry(
+    async () => {
+      await setupPriceUpdater({
+        // hour in ms divided by quota
+        minTimeBetweenRequests: 3600000 / 2000,
+        getPrices: getYahooPrices,
+        source: EMarketDataSources.yahoo,
+        // 10 tickers it's a max for yahoo api
+        maxTickersForRequest: 10,
+        // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
+        jobKey: InitializationItem.YAHOO_PRICES,
+      })
+    },
+    10000,
+    'setupPriceUpdater for yahoo'
+  )
 
   /**
    * COINGECKO prices updater
@@ -273,15 +303,36 @@ export const setupCheckers = () => {
    * QUOTA: 20 calls/min
    * @see https://www.coingecko.com/en/api/pricing
    */
-  retry(async () => {
-    await setupPriceUpdater({
-      minTimeBetweenRequests: 4000,
-      getPrices: coingeckoGetLastPriceById,
-      source: EMarketDataSources.coingecko,
-      maxTickersForRequest: 500,
-      jobKey: InitializationItem.COINGECKO_PRICES
-    })
-  }, 10000, 'setupPriceUpdater for COINGECKO')
+  retry(
+    async () => {
+      await setupPriceUpdater({
+        minTimeBetweenRequests: 4000,
+        getPrices: coingeckoGetLastPriceById,
+        source: EMarketDataSources.coingecko,
+        maxTickersForRequest: 500,
+        jobKey: InitializationItem.COINGECKO_PRICES,
+      })
+    },
+    10000,
+    'setupPriceUpdater for COINGECKO'
+  )
+  /**
+   * Lbank prices updater
+   *
+   * @see https://www.lbank.com/en-US/docs/index.html
+   */
+  retry(
+    async () => {
+      await setupPriceUpdater({
+        minTimeBetweenRequests: 500,
+        getPrices: lbankGetPrices,
+        source: EMarketDataSources.lbank,
+        jobKey: InitializationItem.LBANK_PRICES,
+      })
+    },
+    10000,
+    'setupPriceUpdater for LBANK'
+  )
 
   /**
    * BYBIT prices updater
@@ -289,14 +340,18 @@ export const setupCheckers = () => {
    * QUOTA: ~50 requests per second
    * @link https://bybit-exchange.github.io/docs/inverse/#t-limits
    */
-  retry(async () => {
-    await setupPriceUpdater({
-      minTimeBetweenRequests: 0,
-      getPrices: bybitGetPrices,
-      source: EMarketDataSources.bybit,
-      jobKey: InitializationItem.BYBIT_PRICES
-    })
-  }, 10000, 'setupPriceUpdater for BYBIT')
+  retry(
+    async () => {
+      await setupPriceUpdater({
+        minTimeBetweenRequests: 0,
+        getPrices: bybitGetPrices,
+        source: EMarketDataSources.bybit,
+        jobKey: InitializationItem.BYBIT_PRICES,
+      })
+    },
+    10000,
+    'setupPriceUpdater for BYBIT'
+  )
 
   /**
    * TINKOFF prices updater
@@ -304,15 +359,19 @@ export const setupCheckers = () => {
    * QUOTA: ~150rec/min
    * @link https://tinkoff.github.io/investAPI/limits/
    */
-  retry(async () => {
-    await setupPriceUpdater({
-      // 1sec
-      minTimeBetweenRequests: 0,
-      getPrices: getTinkoffPrices,
-      source: EMarketDataSources.tinkoff,
-      jobKey: InitializationItem.TINKOFF_PRICES
-    })
-  }, 10000, 'setupPriceUpdater for TINKOFF')
+  retry(
+    async () => {
+      await setupPriceUpdater({
+        // 1sec
+        minTimeBetweenRequests: 0,
+        getPrices: getTinkoffPrices,
+        source: EMarketDataSources.tinkoff,
+        jobKey: InitializationItem.TINKOFF_PRICES,
+      })
+    },
+    10000,
+    'setupPriceUpdater for TINKOFF'
+  )
 
   /**
    * Мониторинг скорости
@@ -322,21 +381,15 @@ export const setupCheckers = () => {
   /**
    * Мониторинг достижения уровней
    */
-  retry(async () => await setupPriceChecker(),
-    10000,
-    'setupPriceChecker')
+  retry(async () => await setupPriceChecker(), 10000, 'setupPriceChecker')
 
   /**
    * Base health checks for bot
    */
-  retry(async () => await startTests(),
-    10000,
-    'tests')
-  
+  retry(async () => await startTests(), 10000, 'tests')
+
   /**
    * Track chats feed
    */
-  retry(async () => await setupEventHandlers(),
-    10000,
-    'chat event handlers')
+  retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
 }

@@ -13,6 +13,7 @@ export enum EMarketDataSources {
   yahoo = 'yahoo',
   bybit = 'bybit',
   kucoin = 'kucoin',
+  lbank = 'lbank',
 }
 
 /**

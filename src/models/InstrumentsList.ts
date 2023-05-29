@@ -9,7 +9,8 @@ import { EMarketDataSources } from '../marketApi/types'
 import NodeCache from 'node-cache'
 import { SymbolInfo } from 'bybit-api'
 import { log, retryForever } from '@/helpers'
-import {KucoinSymbolInfo} from "@/marketApi/kucoin/getInstruments"
+import { KucoinSymbolInfo } from '@/marketApi/kucoin/getInstruments'
+import { LbankInstrument } from '@/marketApi/lbank/getInstruments'
 
 export enum EMarketInstrumentTypes {
   Stock = 'Stock',
@@ -17,7 +18,7 @@ export enum EMarketInstrumentTypes {
   Currency = 'Currency',
   Etf = 'Etf',
   Bond = 'Bond', // Опционы
-  Future = 'Future'
+  Future = 'Future',
 }
 
 const instrumentsByIdCache = new NodeCache()
@@ -38,42 +39,43 @@ export class InstrumentsList {
    * для бумаг это figi
    */
   @prop({ required: true, unique: true })
-    id: string
+  id: string
 
   /**
    * Тикер не обязательный, потому что это иногда крашит бота
    * Может появиться монета без тикера
    */
   @prop({ required: false, unique: false })
-    ticker: string
+  ticker: string
 
   @prop({ required: true })
-    name: string
+  name: string
 
   @prop({ required: true })
-    source: EMarketDataSources
+  source: EMarketDataSources
 
   @prop({ required: true })
-    type: EMarketInstrumentTypes
+  type: EMarketInstrumentTypes
 
   @prop({ required: false })
-    currency?: string
+  currency?: string
 
   @prop({ required: true })
-    sourceSpecificData:
-  ICoingecoSpecificBaseData |
-  ITinkoffSpecificBaseData |
-  BinanceSourceSpecificData |
-  CurrencyApiSpecificData |
-  SymbolInfo // Bybit |
-  | KucoinSymbolInfo
+  sourceSpecificData:
+    | ICoingecoSpecificBaseData
+    | ITinkoffSpecificBaseData
+    | BinanceSourceSpecificData
+    | CurrencyApiSpecificData
+    | SymbolInfo // Bybit
+    | KucoinSymbolInfo
+    | LbankInstrument
 
   /**
    * Разрядность цены (циферок после точки)
    * TODO: Убрать 'null' со временем
    */
   @prop({ required: true, default: null })
-    priceScale: number | null
+  priceScale: number | null
 }
 
 export const InstrumentsListModel = getModelForClass(InstrumentsList, {

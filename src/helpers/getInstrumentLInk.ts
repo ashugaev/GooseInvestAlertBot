@@ -3,7 +3,10 @@ import { BinanceSourceSpecificData } from '@/marketApi/binance/api/getAllInstrum
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes, InstrumentsList } from '../models'
 
-export const getTinkoffInstrumentLink = ({ type, ticker }: Partial<InstrumentsList>) => {
+export const getTinkoffInstrumentLink = ({
+  type,
+  ticker,
+}: Partial<InstrumentsList>) => {
   let typeForLink: EMarketInstrumentTypes | string = type
 
   if (!type && !ticker) {
@@ -30,15 +33,15 @@ export const getInstrumentLink = ({
   ticker,
   source,
   sourceSpecificData,
-  currency
+  currency,
 }: Partial<InstrumentsList>): string | undefined => {
   let link
 
-  if (source === EMarketDataSources.tinkoff && (ticker && type)) {
+  if (source === EMarketDataSources.tinkoff && ticker && type) {
     link = getTinkoffInstrumentLink({ ticker, type })
   }
 
-  if (source === EMarketDataSources.binance && (sourceSpecificData && ticker)) {
+  if (source === EMarketDataSources.binance && sourceSpecificData && ticker) {
     const base = (sourceSpecificData as BinanceSourceSpecificData).baseAsset
     const sec = ticker.replace(base, '')
     if (base?.length && sec?.length) {
@@ -46,13 +49,19 @@ export const getInstrumentLink = ({
     }
   }
 
-  if (source === EMarketDataSources.bybit && (currency && ticker)) {
+  if (source === EMarketDataSources.bybit && currency && ticker) {
     link = `https://www.bybit.com/trade/${currency.toLowerCase()}/${ticker.toUpperCase()}`
   }
 
-  if (source === EMarketDataSources.kucoin && (sourceSpecificData)) {
-    if ("symbol" in sourceSpecificData) {
+  if (source === EMarketDataSources.kucoin && sourceSpecificData) {
+    if ('symbol' in sourceSpecificData) {
       link = `https://www.kucoin.com/trade/${sourceSpecificData.symbol}`
+    }
+  }
+
+  if (source === EMarketDataSources.lbank && sourceSpecificData) {
+    if ('symbol' in sourceSpecificData) {
+      link = `https://www.lbank.com/trade/${sourceSpecificData.symbol}`
     }
   }
 
