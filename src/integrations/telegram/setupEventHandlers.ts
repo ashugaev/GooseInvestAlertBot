@@ -53,7 +53,7 @@ export const pollingMessagesCheck = async () => {
       const result = await client.invoke(
         new Api.messages.GetHistory({
           peer: 'DefiUniverse',
-          limit: 30,
+          limit: 1,
         })
       )
 
