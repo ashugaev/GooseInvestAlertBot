@@ -78,11 +78,13 @@ export class InstrumentsList {
   priceScale: number | null
 }
 
+// @ts-ignore
 export const InstrumentsListModel = getModelForClass(InstrumentsList, {
   schemaOptions: { timestamps: true },
   options: {
-    customName: 'instrumentslist'
-  }
+    customName: 'instrumentslist',
+  },
+  // eslint-disable-next-line
 });
 
 /**
@@ -90,13 +92,34 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
  */
 // eslint-disable-next-line
 (async function autoUpdateInstrumentsListCache () {
-  const items = await retryForever(async () => await InstrumentsListModel.find().lean())
+  const items: InstrumentsList[] = await retryForever(
+    async () => await InstrumentsListModel.find().lean()
+  )
 
   const cacheItemsById = items.map((item) => ({
     key: item.id,
-    val: item
+    val: item,
   }))
   instrumentsByIdCache.mset(cacheItemsById)
+
+  const objByTicker = items.reduce<Record<string, InstrumentsList[]>>(
+    (acc, item) => {
+      if (acc[item.ticker]) {
+        acc[item.ticker].push(item)
+      } else {
+        acc[item.ticker] = [item]
+      }
+
+      return acc
+    },
+    {}
+  )
+
+  const cacheByTicker = Object.entries(objByTicker).map(([key, val]) => ({
+    key,
+    val,
+  }))
+  instrumentsByTickerCache.mset(cacheByTicker)
 
   log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
 
@@ -104,15 +127,23 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
 })()
 
 // eslint-disable-next-line max-len
-export async function getInstrumentInfoByTicker ({ ticker, source }: {ticker: string | string[], source?: string}): Promise<InstrumentsList[]> {
+export async function getInstrumentInfoByTicker({
+  ticker,
+  source,
+}: {
+  ticker: string | string[]
+  source?: string
+}): Promise<InstrumentsList[]> {
   if (!ticker?.length) {
-    throw new Error('[getInstrumentInfoByTicker] Не указан необходимый параметр ticker')
+    throw new Error(
+      '[getInstrumentInfoByTicker] Не указан необходимый параметр ticker'
+    )
   }
 
   const params = {
     ticker: {
-      $in: [].concat(ticker).map(el => el.toUpperCase())
-    }
+      $in: [].concat(ticker).map((el) => el.toUpperCase()),
+    },
   }
 
   if (source) {
@@ -120,19 +151,23 @@ export async function getInstrumentInfoByTicker ({ ticker, source }: {ticker: st
     params.source = source
   }
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
+  const result: InstrumentsList[] = await InstrumentsListModel.find(
+    params
+  ).lean()
 
   return result
 }
 
-export async function getInstrumentListDataByIds (ids: string[]) {
+export async function getInstrumentListDataByIds(ids: string[]) {
   const params = {
     id: {
-      $in: ids
-    }
+      $in: ids,
+    },
   }
 
-  const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
+  const result: InstrumentsList[] = await InstrumentsListModel.find(
+    params
+  ).lean()
 
   return result
 }
@@ -141,13 +176,18 @@ export async function getInstrumentListDataByIds (ids: string[]) {
  * Returns list of isntruments by source with cache
  */
 
-export async function getInstrumentsBySourceCache (source: EMarketDataSources): Promise<InstrumentsList[]> {
+export async function getInstrumentsBySourceCache(
+  source: EMarketDataSources
+): Promise<InstrumentsList[]> {
   const params = { source }
 
-  let allInstrumentsBySource: InstrumentsList[] = instrumentsBySourceCache.get(source)
+  let allInstrumentsBySource: InstrumentsList[] =
+    instrumentsBySourceCache.get(source)
 
   if (!allInstrumentsBySource) {
-    const result: InstrumentsList[] = await InstrumentsListModel.find(params).lean()
+    const result: InstrumentsList[] = await InstrumentsListModel.find(
+      params
+    ).lean()
 
     instrumentsBySourceCache.set(source, result)
 
@@ -155,14 +195,16 @@ export async function getInstrumentsBySourceCache (source: EMarketDataSources): 
   }
 
   if (!allInstrumentsBySource) {
-    throw new Error('getInstrumentsBySourceCache: Can\'t update instruments')
+    throw new Error("getInstrumentsBySourceCache: Can't update instruments")
   }
 
   return allInstrumentsBySource
 }
 
 export const getInstrumentByIdFromCache = async (
-  id: string, noReqToDb?: boolean, noThrow?: boolean
+  id: string,
+  noReqToDb?: boolean,
+  noThrow?: boolean
 ): Promise<InstrumentsList> => {
   let res = instrumentsByIdCache.get(id)
 
@@ -175,4 +217,23 @@ export const getInstrumentByIdFromCache = async (
   }
 
   return res as InstrumentsList
+}
+
+export const getInstrumentByTickerFromCache = async (
+  ticker?: string,
+  noReqToDb?: boolean
+): Promise<InstrumentsList[]> => {
+  let res: InstrumentsList[] = instrumentsByTickerCache.get(
+    ticker
+  ) as InstrumentsList[]
+
+  if (!res?.length && !noReqToDb) {
+    res = await InstrumentsListModel.find({ ticker }).lean()
+  }
+
+  if (!res) {
+    throw new Error(`Can't find instrument by ticker ${ticker}`)
+  }
+
+  return res
 }

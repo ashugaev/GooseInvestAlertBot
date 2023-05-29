@@ -46,7 +46,7 @@ help: |
   <b>Источники котировок</b>
 
   Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>, <a href="https://www.bybit.com/trade/">ByBit</a>
+  Криптовалюты - Почти все основные биржи и агрегаторы
   Валюты - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
 
   Все вопросы и пожелания можно написать в чат Гуся: @GooseInvestAlertChat 🦢️️
@@ -90,12 +90,6 @@ alertAddError: |
 
 alertErrorUnexistedSymbol: |
   ❌ Не могу найти тикер <b>${symbol}</b>
-
-  <b>Поддерживаемые инструменты</b>
-
-  Ценные бумаги - <a href="https://www.tinkoff.ru/invest/stocks/">Тинькофф</a>
-  Криптовалюты - <a href="https://www.coingecko.com/ru">CoinGecko</a>, <a href="https://www.binance.com/ru/markets">Binance</a>, <a href="https://www.bybit.com/trade/">ByBit</a>
-  Валюты - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
 
 alertCreated: |
   🦢 Когда цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} достигнет ${onePrice ? 'уровня' : 'каждого из уровней'} <b>${price}</b>, я тебе сообщу!
@@ -204,7 +198,12 @@ alert_choose_between_duplicates: |
 ### PRICE
 
 price: |  
-  Цена <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} — <b>${price}${currency ? currency : ''} ${source ? source : ''}</b>
+  🟡  Цена <b>${ticker}</b> на разных биржах
+  
+  ${list}
+
+price_row: |
+  ${source} <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${price ? price + ' ' + currency : '❌'}
 
 priceInvalidFormat: |
   ❌ Некорректный ввод!

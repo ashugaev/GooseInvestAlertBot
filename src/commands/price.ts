@@ -1,66 +1,57 @@
 import { Context, Telegraf } from 'telegraf'
 
+import { getLastPrice } from '@/helpers/getLastPrice'
+import { getSourceMark } from '@/helpers/getSourceMark'
+import { getInstrumentByTickerFromCache } from '@/models'
+
 import { commandWrapper } from '../helpers/commandWrapper'
-import { getInstrumentDataWithPrice } from '../helpers/getInstrumentData'
-import { getSourceMark } from '../helpers/getSourceMark'
 import { i18n } from '../helpers/i18n'
-import { log } from '../helpers/log'
-import { symbolOrCurrency } from '../helpers/symbolOrCurrency'
 
-export function setupPrice (bot: Telegraf<Context>) {
-  bot.command(['price'], commandWrapper({availableForAdmins: false}, async ctx => {
-    const data: string[] = ctx.message.text.match(/price ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
+const logPrefix = '[price]'
 
-    if (data) {
-      const symbol = data[1]
-      let instrumentData
-      let price
+export function setupPrice(bot: Telegraf<Context>) {
+  bot.command(
+    ['price'],
+    commandWrapper({ availableForAdmins: false }, async (ctx) => {
+      const data: string[] = ctx.message.text.match(
+        /price ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/
+      )
 
-      try {
-        const data = (await getInstrumentDataWithPrice({ symbol }))[0]
+      if (!data) {
+        throw new Error(logPrefix + 'No data found')
+      }
 
-        if (!data) {
-          await ctx.replyWithHTML(
-            i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
-            { disable_web_page_preview: true }
-          )
-        };
+      const symbol = data[1].toUpperCase()
+      const instrumentsList = await getInstrumentByTickerFromCache(symbol)
 
-        price = data.price
-        instrumentData = data.instrumentData
-      } catch (e) {
-        await ctx.replyWithHTML(ctx.i18n.t('priceCheckError', { symbol }))
-
-        log.error(e)
-
+      if (!instrumentsList.length) {
+        await ctx.replyWithHTML(
+          i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol }),
+          { disable_web_page_preview: true }
+        )
         return
       }
 
-      const { name, currency, ticker, source } = instrumentData
+      const list = instrumentsList
+        .map((item) =>
+          ctx.i18n.t('price_row', {
+            name: item.name,
+            currency: item.currency,
+            source: getSourceMark(item),
+            symbol: item.ticker,
+            price: getLastPrice(item.id, true),
+          })
+        )
+        .join('')
 
       const templateData = {
-        price,
-        name,
-        symbol: null,
-        currency: null,
-        source: getSourceMark(instrumentData)
+        ticker: symbol,
+        list,
       }
 
-      if (currency) {
-        templateData.currency = symbolOrCurrency(currency)
-      }
-
-      if (name.toUpperCase() !== ticker.toUpperCase()) {
-        templateData.symbol = ticker
-      }
-
-      ctx.replyWithHTML(ctx.i18n.t('price', templateData),
-        { disable_web_page_preview: true }
-      )
-
-      return
-    }
-
-    await ctx.replyWithHTML(ctx.i18n.t('priceInvalidFormat'))
-  }))
+      ctx.replyWithHTML(ctx.i18n.t('price', templateData), {
+        disable_web_page_preview: true,
+      })
+    })
+  )
 }
