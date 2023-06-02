@@ -17,7 +17,7 @@ export const configByChannel: Record<ChannelsToTrack, DetectorConfig> = {
   Whales_Pumping_Cryptocurrency: {
     allowedUTCHours: null,
     mustBeRoundHour: true,
-    debugMessagesTracker: true,
+    debugMessagesTracker: false,
     buyAmount: 10,
   },
   keklolkeklolkeklolkeklolkeklol: {
@@ -29,7 +29,7 @@ export const configByChannel: Record<ChannelsToTrack, DetectorConfig> = {
   DefiUniverse: {
     allowedUTCHours: null,
     mustBeRoundHour: false,
-    debugMessagesTracker: true,
+    debugMessagesTracker: false,
     buyAmount: 0.11,
   },
 }
