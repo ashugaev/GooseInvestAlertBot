@@ -11,35 +11,60 @@ import {
   TrackChatCallbacksParams,
 } from '@/models/TrackChat'
 
+const normalizeMessage = (
+  message: Api.Message,
+  chatLink
+): TrackChatCallbacksParams => {
+  return {
+    message: message.message ?? null,
+    chatId: message.chatId.toString(),
+    // @ts-ignore
+    chatTitle: message.chat?.username ?? chatLink,
+    // @ts-ignore
+    chatLinkName: message.chat?.username ?? chatLink,
+    views: message.views,
+    forwards: message.forwards,
+    messageId: message.id,
+    messageSentDate: new Date(message.date * 1000),
+    // @ts-ignore
+    stickerId: message.sticker?.id.toString() ?? null,
+  }
+}
+
+const handleMessage = (
+  message: Api.Message,
+  prevMessages: Api.Message[] = [],
+  // Not required. Need for polling responce
+  chatLink: string
+) => {
+  const res: TrackChatCallbacksParams = {
+    ...normalizeMessage(message, chatLink),
+    prevMessages: prevMessages.map(normalizeMessage, chatLink),
+  }
+
+  // FIXME: Hardcoded for now. Must depend on chat purpose
+  callbacksByChatPurpose.pump.message(res)
+}
+
 async function handleEvent(event: NewMessageEvent) {
-  const data = event.message
+  const message = event.message
 
   try {
     if (event.isChannel) {
-      const res: TrackChatCallbacksParams = {
-        message: data.message ?? null,
-        chatId: data.chatId.toString(),
-        // @ts-ignore
-        chatTitle: data.chat.username,
-        // @ts-ignore
-        chatLinkName: data.chat.username,
-        views: data.views,
-        forwards: data.forwards,
-        messageId: data.id,
-        messageSentDate: new Date(data.date * 1000),
-        // @ts-ignore
-        stickerId: data.sticker?.id.toString() ?? null,
-      }
-
-      // FIXME: Hardcoded for now. Must depend on chat purpose
-      callbacksByChatPurpose.pump.message(res)
+      // @ts-ignore
+      handleMessage(message)
     }
   } catch (e) {
     log.error(e)
   }
 }
 
-// Test delays
+// const pollingChat: ChannelsToTrack = 'DefiUniverse'
+const pollingChat: ChannelsToTrack = 'keklolkeklolkeklolkeklolkeklol'
+
+/**
+ * Need for analysing history of messages
+ */
 export const pollingMessagesCheck = async () => {
   const delayBetweenRequests = 1000
   let startIterationTime = 0
@@ -52,8 +77,8 @@ export const pollingMessagesCheck = async () => {
 
       const result = await client.invoke(
         new Api.messages.GetHistory({
-          peer: 'DefiUniverse',
-          limit: 1,
+          peer: pollingChat,
+          limit: 2,
         })
       )
 
@@ -70,6 +95,9 @@ export const pollingMessagesCheck = async () => {
           (Date.now() - lastMessageDate.getTime()) / 1000
         )
         log.info(logPrefix, 'Text: ', lastMessageText)
+
+        // @ts-ignore
+        handleMessage(lastMessage, result.messages.slice(1), pollingChat)
 
         lastHandledMessageId = lastMessageId
       }
@@ -88,9 +116,9 @@ export const setupEventHandlers = async () => {
   // const trackChats = await TrackChatModel.find().lean()
 
   const trackChats: ChannelsToTrack[] = [
-    'keklolkeklolkeklolkeklolkeklol',
+    // 'keklolkeklolkeklolkeklolkeklol',
     'Whales_Pumping_Cryptocurrency',
-    'DefiUniverse',
+    // 'DefiUniverse',
   ]
 
   // Track chat events

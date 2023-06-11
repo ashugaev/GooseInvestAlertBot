@@ -1,6 +1,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 import { handleMessage } from '@/features/pumpDetect/handleMessage'
+import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 import { EMarketDataSources } from '@/marketApi/types'
 
 export type TrackChatPurpose = 'pump' | 'news'
@@ -9,12 +10,13 @@ export interface TrackChatCallbacksParams {
   message: string | null
   chatId: string
   chatTitle: string
-  chatLinkName: string
+  chatLinkName: ChannelsToTrack
   views: number
   forwards: number
   messageId: number
   messageSentDate: Date
   stickerId: string | null
+  prevMessages?: TrackChatCallbacksParams[]
 }
 
 export const callbacksByChatPurpose: Record<
