@@ -20,11 +20,11 @@ const logPrefix = '[ADD ALERT SCENARIO]'
  * TODO: Оторвать валидация от получения данных, тогда на вход сможем подавать просто данные
  *  без их запроса отдельным шагом
  */
-export function addAlertScenario (ctx, payload: AddAlertPayload) {
+export function addAlertScenario(ctx, payload: AddAlertPayload) {
   // Состояние в замыкании, которое сохранится между вызовами nextStep
-  let state: AddAlertPayload = payload;
+  let state: AddAlertPayload = payload
 
-  (function nextStep (payloadUpdate) {
+  ;(function nextStep(payloadUpdate) {
     state = { ...state, ...payloadUpdate }
 
     const {
@@ -35,7 +35,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       alertCreated,
       messageAttached,
       currentPrice,
-      createdItemsList
+      createdItemsList,
     } = state
 
     /**
@@ -47,7 +47,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
     if (!ticker) {
       ctx.scene.enter(ALERT_SCENES.askTicker, {
         payload: {},
-        callback: nextStep
+        callback: nextStep,
       })
 
       return
@@ -61,9 +61,11 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
      * Find ticker in DB and save results in context
      */
     if (ticker && !instrumentsList?.length) {
-      (async () => {
+      ;(async () => {
         try {
-          const instrumentsList = await getInstrumentInfoByTicker({ ticker: [ticker, ticker + 'USDT'] })
+          const instrumentsList = await getInstrumentInfoByTicker({
+            ticker: [ticker, ticker + 'USDT'],
+          })
 
           if (!instrumentsList.length) {
             await ctx.replyWithHTML(
@@ -91,7 +93,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
     if (instrumentsList?.length > 1) {
       ctx.scene.enter(COMMON_SCENES.tickerDuplicates, {
         payload: { instrumentsList },
-        callback: nextStep
+        callback: nextStep,
       })
 
       return
@@ -103,14 +105,19 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
     if (!prices && instrumentsList.length === 1 && ticker) {
       ctx.scene.enter(ALERT_SCENES.askPrice, {
         payload: { instrumentsList },
-        callback: nextStep
+        callback: nextStep,
       })
 
       return
     }
 
     // Как только собрали основные данные
-    if (prices?.length && instrumentsList?.length === 1 && currentPrice && !alertCreated) {
+    if (
+      prices?.length &&
+      instrumentsList?.length === 1 &&
+      currentPrice &&
+      !alertCreated
+    ) {
       // FIXME: need await?
       createAlertInDb({
         ctx,
@@ -118,7 +125,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
         callback: (arg) => {
           state.alertCreated = true
           nextStep(arg)
-        }
+        },
       }).catch(async (e) => {
         await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
         log.error(logPrefix, 'create alert in DB crash', e)
@@ -131,7 +138,7 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
     if (!message && createdItemsList?.length === 1) {
       ctx.scene.enter(ALERT_SCENES.askMessage, {
         payload: { createdItemsList },
-        callback: nextStep
+        callback: nextStep,
       })
 
       return
@@ -150,4 +157,4 @@ export function addAlertScenario (ctx, payload: AddAlertPayload) {
       })
     }
   })()
-};
+}

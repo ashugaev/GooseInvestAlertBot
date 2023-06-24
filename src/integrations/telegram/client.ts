@@ -1,8 +1,8 @@
 import { TelegramClient } from 'telegram'
 import { StringSession } from 'telegram/sessions'
 
-import { log } from '@/helpers'
-import { sayToBoss } from '@/helpers/sayToBoss'
+import { log } from '../../helpers'
+import { sayToBoss } from '../../helpers/sayToBoss'
 
 require('dotenv').config()
 
