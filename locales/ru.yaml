@@ -457,6 +457,8 @@ adminMode_noChats: |
 
 adminMode_commandHidden: |
   🤷 Эта команда не доступна в <b>режиме админа</b>
+  
+  Отправь: /admin что бы выйти из режима админа
 
 adminMode_on: |
   🧑‍💻 <b>Режим админа</b> включен
