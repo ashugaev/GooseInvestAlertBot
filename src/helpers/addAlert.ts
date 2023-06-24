@@ -3,7 +3,7 @@ import { Context as TelegrafContext } from 'telegraf'
 import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { Scenes } from '../constants'
-import {addPriceAlerts, PriceAlert} from '../models'
+import { addPriceAlerts, PriceAlert } from '../models'
 import { getInstrumentDataWithPrice } from './getInstrumentData'
 import { getPricesFromString } from './getPricesFromString'
 import { i18n } from './i18n'
@@ -24,8 +24,8 @@ interface AddAlertParams {
 export const addAlert = async ({
   data,
   ctx,
-  startedFromScene
-}: AddAlertParams): Promise<{ _id: string, addedCount: number }> => {
+  startedFromScene,
+}: AddAlertParams): Promise<{ _id: string; addedCount: number }> => {
   const { price: targetPrice } = data
   let { symbol } = data
 
@@ -62,7 +62,7 @@ export const addAlert = async ({
 
   const { prices, invalidValues } = getPricesFromString({
     string: targetPrice,
-    lastPrice
+    lastPrice,
   })
 
   console.log(logPrefix, 'prices', prices)
@@ -84,7 +84,8 @@ export const addAlert = async ({
         type: instrumentData.type,
         source: instrumentData.source,
         initialPrice: lastPrice,
-        botId: ctx.goose.id
+        botId: ctx.goose.id,
+        chat: ctx.adminChatActive?.id ? Number(ctx.adminChatActive?.id) : null,
       }
 
       lastPrice < price
@@ -119,19 +120,23 @@ export const addAlert = async ({
   const { currency } = instrumentData
 
   const i18nParams = {
-    price: priceAlerts.map((el: string) => `${el}${symbolOrCurrency(currency) ?? ''}`).join(', '),
+    price: priceAlerts
+      .map((el: string) => `${el}${symbolOrCurrency(currency) ?? ''}`)
+      .join(', '),
     symbol,
     name,
     invalid: null,
     onePrice: priceAlerts.length === 1,
-    source: getSourceMark(instrumentData)
+    source: getSourceMark(instrumentData),
   }
 
   if (invalidValues.length) {
     i18nParams.invalid = invalidValues.join(', ')
   }
 
-  await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams), { disable_web_page_preview: true })
+  await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams), {
+    disable_web_page_preview: true,
+  })
 
   // Если только одна цена
   if (prices.length === 1 && !startedFromScene) {

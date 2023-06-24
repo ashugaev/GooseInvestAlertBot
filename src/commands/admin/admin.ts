@@ -2,6 +2,7 @@ import { Context, Telegraf } from 'telegraf'
 
 import { switchToPrivateMode } from '@/helpers/adminMode'
 import { commandWrapper } from '@/helpers/commandWrapper'
+import { i18n } from '@/helpers/i18n'
 import { getAdminAttachedMenu } from '@/menu/getAdminAttachedMenu'
 import { toUserMode, userObjToAdminMode } from '@/models'
 import { getUserChats } from '@/models/Chat'
@@ -12,36 +13,52 @@ export function setupAdmin(bot: Telegraf<Context>) {
     commandWrapper({ availableForAdmins: true }, async (ctx) => {
       const userChats = await getUserChats(ctx.from.id)
 
-      if (!userChats.length) {
-        await ctx.replyWithHTML(ctx.i18n.t('adminMode_noChats'))
-        await toUserMode(ctx)
-        return
+      if (ctx.dbuser.adminMode) {
+        switchToPrivateMode(ctx)
+        toUserMode(ctx)
+        if (ctx.dbuser.id) {
+          await ctx.telegram.sendMessage(
+            ctx.dbuser.id,
+            i18n.t('ru', 'adminMode_off'),
+            {
+              reply_markup: { remove_keyboard: true },
+              parse_mode: 'HTML',
+              disable_web_page_preview: true,
+            }
+          )
+        }
+      } else {
+        if (!userChats.length) {
+          await ctx.replyWithHTML(ctx.i18n.t('adminMode_noChats'))
+          await toUserMode(ctx)
+          return
+        }
+
+        ctx.adminChats = userChats
+        ctx.adminChatActive =
+          userChats.find((chat) => chat.id === ctx.dbuser.adminModeChatId) ??
+          userChats[0]
+
+        await userObjToAdminMode(ctx, userChats[0].id)
+
+        await ctx.replyWithHTML(
+          ctx.i18n.t('adminMode_on'),
+          getAdminAttachedMenu({
+            chats: userChats,
+            activeChatId: ctx.dbuser.adminModeChatId,
+          })
+        )
+        await ctx.replyWithHTML(
+          ctx.i18n.t('adminMode_activeChatChanged', {
+            title: ctx.adminChatActive.title,
+          })
+        )
       }
-
-      ctx.adminChats = userChats
-      ctx.adminChatActive =
-        userChats.find((chat) => chat.id === ctx.dbuser.adminModeChatId) ??
-        userChats[0]
-
-      await userObjToAdminMode(ctx, userChats[0].id)
-
-      await ctx.replyWithHTML(
-        ctx.i18n.t('adminMode_on'),
-        getAdminAttachedMenu({
-          chats: userChats,
-          activeChatId: ctx.dbuser.adminModeChatId,
-        })
-      )
-      await ctx.replyWithHTML(
-        ctx.i18n.t('adminMode_activeChatChanged', {
-          title: ctx.adminChatActive.title,
-        })
-      )
     })
   )
 
   bot.hears(
-    /Chat\:.+/,
+    /Chat:.+/,
     commandWrapper(
       { availableForAdmins: true, availableForUsers: false },
       async (ctx) => {

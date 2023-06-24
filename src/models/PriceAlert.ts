@@ -15,67 +15,67 @@ export class PriceAlert {
    * Id по по которому ищем данные о цене (отвязываемся от названия тикера)
    */
   @prop({ required: true })
-    tickerId: string
+  tickerId: string
 
   @prop({ required: false })
-    user?: number
+  user?: number
 
   @prop({ required: false })
-    chat?: number
+  chat: number | null
 
   @prop({ required: true })
-    symbol: string
-
-  @prop({required: false})
-    lowerThen?: number
-
-  @prop({required: false})
-    greaterThen?: number
-
-  @prop({required: false})
-    message?: string
-
-  @prop({ required: true })
-    name: string
+  symbol: string
 
   @prop({ required: false })
-    currency?: string
+  lowerThen?: number
+
+  @prop({ required: false })
+  greaterThen?: number
+
+  @prop({ required: false })
+  message?: string
+
+  @prop({ required: true })
+  name: string
+
+  @prop({ required: false })
+  currency?: string
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
-    type: EMarketInstrumentTypes
+  type: EMarketInstrumentTypes
 
   // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
   @prop()
-    source: EMarketDataSources
+  source: EMarketDataSources
 
   /**
-     * Цена на момент создания алерта
-     */
+   * Цена на момент создания алерта
+   */
   @prop()
-    initialPrice: number
+  initialPrice: number
 
   /**
    * Bot id for send alert
    * Mylti bot support
    */
-  @prop({required: true})
-    botId: number
+  @prop({ required: true })
+  botId: number
 }
 
 // Get PriceAlertModel model
 export const PriceAlertModel = getModelForClass(PriceAlert, {
   schemaOptions: { timestamps: true },
   options: {
-    customName: 'priceAlerts'
-  }
+    customName: 'priceAlerts',
+  },
 })
 
 /**
  * Class for hancle price alerts cache
  */
 class PriceAlertCache {
-  constructor () {
+  constructor() {
     this.init()
   }
 
@@ -83,7 +83,7 @@ class PriceAlertCache {
   isReady = false
   needToBeUpdated = true // allows to enforce update
 
-  update () {
+  update() {
     this.needToBeUpdated = true
   }
 
@@ -98,6 +98,7 @@ class PriceAlertCache {
     const waitTime = 180000 // 3 min
     let timerId: NodeJS.Timeout
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       // skip iterations untill needToBeUpdated is true
       if (!this.needToBeUpdated) {
@@ -122,49 +123,55 @@ class PriceAlertCache {
     }
   }
 
-  get get () {
+  get get() {
     return this.items
   }
 
-  getForUser (user: number) {
+  getForUser(user: number) {
     if (!user) {
       throw new Error('User is not defined')
     }
 
-    return this.items.filter(item => item.user === user)
+    return this.items.filter((item) => item.user === user)
   }
 
-  getForChat (chat: number) {
+  getForChat(chat: number) {
     if (!chat) {
       throw new Error('chat is not defined')
     }
 
-    return this.items.filter(item => item.chat === chat)
+    return this.items.filter((item) => item.chat === chat)
   }
 
-  byTickerId (tickerId: string, user?: number, chat?: number): PriceAlert[] {
-    return chat 
-      ? this.items.filter(item => (item.tickerId === tickerId && item.chat === chat))
-      : this.items.filter(item => (item.tickerId === tickerId && item.user === user))
+  byTickerId(tickerId: string, user?: number, chat?: number): PriceAlert[] {
+    return chat
+      ? this.items.filter(
+          (item) => item.tickerId === tickerId && item.chat === chat
+        )
+      : this.items.filter(
+          (item) => item.tickerId === tickerId && item.user === user
+        )
   }
 
-  byId (_id: string): PriceAlert | undefined {
-    return this.items.find(item => item._id === _id)
+  byId(_id: string): PriceAlert | undefined {
+    return this.items.find((item) => item._id === _id)
   }
 
   removeItemFromCache = (_id: string) => {
     const id = _id.toString()
-    this.items = this.items.filter(item => item._id.toString() !== id)
+    this.items = this.items.filter((item) => item._id.toString() !== id)
     this.needToBeUpdated = true
   }
 }
 
 export const priceAlertCache = new PriceAlertCache()
 
-export const addPriceAlerts = async (newAlerts: PriceAlert[]): Promise<PriceAlert[]> => {
-  const normalizedAlerts = newAlerts.map(alert => ({
+export const addPriceAlerts = async (
+  newAlerts: PriceAlert[]
+): Promise<PriceAlert[]> => {
+  const normalizedAlerts = newAlerts.map((alert) => ({
     ...alert,
-    symbol: alert.symbol.toUpperCase()
+    symbol: alert.symbol.toUpperCase(),
   }))
 
   const items = await PriceAlertModel.insertMany(normalizedAlerts)
@@ -173,7 +180,7 @@ export const addPriceAlerts = async (newAlerts: PriceAlert[]): Promise<PriceAler
   return items
 }
 
-export async function getAllAlerts (): Promise<PriceAlert[]> {
+export async function getAllAlerts(): Promise<PriceAlert[]> {
   try {
     const alerts = await PriceAlertModel.find({})
 
@@ -183,14 +190,19 @@ export async function getAllAlerts (): Promise<PriceAlert[]> {
   }
 }
 
-export async function removePriceAlert (
-  { symbol, _id, user, chat }: Partial<Pick<PriceAlert, 'symbol' | '_id' | 'user' | 'chat'>>
-): Promise<number> {
+export async function removePriceAlert({
+  symbol,
+  _id,
+  user,
+  chat,
+}: Partial<
+  Pick<PriceAlert, 'symbol' | '_id' | 'user' | 'chat'>
+>): Promise<number> {
   // eslint-disable-next-line no-async-promise-executor
   return await new Promise(async (resolve, reject) => {
     try {
       const params: Partial<PriceAlert> = {
-        chat
+        chat,
       }
 
       symbol && (params.symbol = symbol.toUpperCase())
@@ -213,7 +225,13 @@ export async function removePriceAlert (
 }
 
 // Вернет массив сработавших алертов
-export async function updateAlert ({ _id, data }: { _id: string, data: { message: string } }): Promise<any> {
+export async function updateAlert({
+  _id,
+  data,
+}: {
+  _id: string
+  data: { message: string }
+}): Promise<any> {
   // eslint-disable-next-line
   return await new Promise(async (rs, rj) => {
     try {
@@ -233,37 +251,43 @@ interface GetAlertsCountForUserParams {
 
 // eslint-disable-next-line
 export const getAlertsCountForUser = async (user: number) => await new Promise(async (rs, rj) => {
-  try {
-    const params: GetAlertsCountForUserParams = { user }
-    const alertsCount = await PriceAlertModel.find(params).count()
+    try {
+      const params: GetAlertsCountForUserParams = { user }
+      const alertsCount = await PriceAlertModel.find(params).count()
 
-    rs(alertsCount)
-  } catch (e) {
-    rj(e)
-  }
-})
+      rs(alertsCount)
+    } catch (e) {
+      rj(e)
+    }
+  })
 
-export const alertByTickerIdFromCache = async (tickerId: string, user: number | null, chat: number): Promise<PriceAlert[]> => {
+export const alertByTickerIdFromCache = async (
+  tickerId: string,
+  user: number | null,
+  chat: number
+): Promise<PriceAlert[]> => {
   let alerts = []
-  
-  if(chat) {
+
+  if (chat) {
     alerts = priceAlertCache.byTickerId(tickerId, undefined, chat)
-  } else if(user) {
+  } else if (user) {
     alerts = priceAlertCache.byTickerId(tickerId, user)
   } else {
     throw new Error('User or chat is not defined')
   }
-  
+
   if (!alerts.length) {
-    alerts = chat 
-      ? (await PriceAlertModel.find({ tickerId: tickerId, chat }).lean())
-      : (await PriceAlertModel.find({ tickerId: tickerId, user }).lean())
+    alerts = chat
+      ? await PriceAlertModel.find({ tickerId: tickerId, chat }).lean()
+      : await PriceAlertModel.find({ tickerId: tickerId, user }).lean()
   }
 
   return alerts
 }
 
-export const alertByIdFromCache = async (_id: string): Promise<PriceAlert | undefined> => {
+export const alertByIdFromCache = async (
+  _id: string
+): Promise<PriceAlert | undefined> => {
   let alert = await priceAlertCache.byId(_id)
 
   if (!alert) {

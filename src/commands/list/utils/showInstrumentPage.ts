@@ -7,8 +7,11 @@ import { getLastPrice } from '../../../helpers/getLastPrice'
 import { getSourceMark } from '../../../helpers/getSourceMark'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import {getInstrumentByIdFromCache, PriceAlert} from '../../../models'
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
+import { getInstrumentByIdFromCache, PriceAlert } from '../../../models'
+import {
+  EKeyboardModes,
+  instrumentPageKeyboard,
+} from '../keyboards/instrumentPageKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
 interface IShowInstrumentPageParams {
@@ -26,7 +29,7 @@ interface IShowInstrumentPageParams {
 
 export const getAlertNumberByPage = ({ i, page }) => {
   // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-  return i + 1 + (page * listConfig.itemsPerPage)
+  return i + 1 + page * listConfig.itemsPerPage
 }
 
 export const showInstrumentPage = async ({
@@ -36,21 +39,23 @@ export const showInstrumentPage = async ({
   edit,
   keyboardMode,
   tickersPage = 0,
-  noRedirectToEditPage = false
+  noRedirectToEditPage = false,
 }: IShowInstrumentPageParams) => {
   // If only one alert for instrument show this alert edit page
   if (instrumentItems.length === 1 && !noRedirectToEditPage) {
     return await showAlertEditPage({
       ctx,
       alert: instrumentItems[0],
-      edit
+      edit,
     })
   }
 
   // Получаем сортированный список инструментов для страницы
   // FIXME: Вынести
   const itemsToShow: PriceAlert[] = instrumentItems
-    .sort((a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen))
+    .sort(
+      (a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen)
+    )
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
   const itemsList = itemsToShow
@@ -63,15 +68,16 @@ export const showInstrumentPage = async ({
         price,
         message,
         currency: symbolOrCurrency(currency),
-        growth: Boolean(greaterThen)
+        growth: Boolean(greaterThen),
       })
-    }).join('\n')
+    })
+    .join('\n')
 
   const {
     name: instrumentName,
     currency: instrumentCurrency,
     tickerId,
-    symbol
+    symbol,
   } = instrumentItems[0]
 
   let lastPrice
@@ -91,7 +97,7 @@ export const showInstrumentPage = async ({
     currency: symbolOrCurrency(instrumentCurrency),
     price: lastPrice,
     showEditMessage: keyboardMode === EKeyboardModes.edit,
-    source: getSourceMark(instrumentInfo)
+    source: getSourceMark(instrumentInfo),
   })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
@@ -109,11 +115,12 @@ export const showInstrumentPage = async ({
         paginationButtonsConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId),
+            [ListActionsDataKeys.selectedTickerIdShortened]:
+              shortenerCreateShort(tickerId),
             p: page,
             kMode: keyboardMode,
-            tp: tickersPage
-          }
+            tp: tickersPage,
+          },
         },
         editNumberButtonsConfig: {
           action: Actions.list_editAlert,
@@ -122,17 +129,20 @@ export const showInstrumentPage = async ({
           // }
           payloadCallback: (i) => {
             return {
-              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(itemsToShow[i]._id.toString())
+              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(
+                itemsToShow[i]._id.toString()
+              ),
             }
-          }
+          },
         },
         editButtonConfig: {
           action: Actions.list_tickerPage,
           payload: {
-            [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId)
-          }
-        }
-      })
-    }
+            [ListActionsDataKeys.selectedTickerIdShortened]:
+              shortenerCreateShort(tickerId),
+          },
+        },
+      }),
+    },
   })
 }

@@ -9,8 +9,8 @@ import { addAlertScenario } from './scenarios/addAlertScenario'
 
 const logPrefix = '[ALERT COMMAND]'
 
-export function setupAlert (bot: Telegraf<Context>) {
-  const callback = commandWrapper({availableForAdmins: false},async (ctx) => {
+export function setupAlert(bot: Telegraf<Context>) {
+  const callback = commandWrapper({ availableForAdmins: true }, async (ctx) => {
     const { text } = ctx.message
     const { id: user } = ctx.from
 
@@ -18,7 +18,9 @@ export function setupAlert (bot: Telegraf<Context>) {
     const userAlertsCount = await getAlertsCountForUser(user)
 
     if (userAlertsCount >= alertsLimit) {
-      await ctx.replyWithHTML(ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }))
+      await ctx.replyWithHTML(
+        ctx.i18n.t('alerts_overlimit', { limit: alertsLimit })
+      )
       return
     }
 
@@ -31,7 +33,9 @@ export function setupAlert (bot: Telegraf<Context>) {
     }
 
     // Добавление одной командой
-    data = text.match(/^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/)
+    data = text.match(
+      /^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/
+    )
 
     log.info(logPrefix, 'data', data)
 
@@ -43,8 +47,8 @@ export function setupAlert (bot: Telegraf<Context>) {
         ctx,
         data: {
           symbol: data[2],
-          price: data[3]
-        }
+          price: data[3],
+        },
       })
 
       return
@@ -54,11 +58,9 @@ export function setupAlert (bot: Telegraf<Context>) {
     data = text.match(/^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
 
     if (data) {
-      addAlertScenario(ctx,
-        {
-          ticker: data[2].toUpperCase()
-        }
-      )
+      addAlertScenario(ctx, {
+        ticker: data[2].toUpperCase(),
+      })
 
       return
     }
@@ -70,7 +72,12 @@ export function setupAlert (bot: Telegraf<Context>) {
       const symbol = data[1].toUpperCase()
 
       try {
-        await removePriceAlertAndSendMessage({ symbol, user, ctx, chat: ctx.adminChatActive?.id ?? null })
+        await removePriceAlertAndSendMessage({
+          symbol,
+          user,
+          ctx,
+          chat: ctx.adminChatActive?.id ?? null,
+        })
       } catch (e) {
         await ctx.replyWithHTML(ctx.i18n.t('alertRemoveError'))
       }
@@ -85,13 +92,19 @@ export function setupAlert (bot: Telegraf<Context>) {
   bot.command(['alert', 'add', 'a'], callback)
   bot.hears(i18n.t('ru', 'alert_button'), callback)
 
-  async function removePriceAlertAndSendMessage ({ user, symbol, ctx, chat }) {
+  async function removePriceAlertAndSendMessage({ user, symbol, ctx, chat }) {
     const deletedCount = await removePriceAlert({ symbol, user, chat })
 
     if (deletedCount) {
-      ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbol', { symbol: symbol.toUpperCase() }))
+      ctx.replyWithHTML(
+        ctx.i18n.t('alertRemovedBySymbol', { symbol: symbol.toUpperCase() })
+      )
     } else {
-      ctx.replyWithHTML(ctx.i18n.t('alertRemovedBySymbolNothingDeleted', { symbol: symbol.toUpperCase() }))
+      ctx.replyWithHTML(
+        ctx.i18n.t('alertRemovedBySymbolNothingDeleted', {
+          symbol: symbol.toUpperCase(),
+        })
+      )
     }
 
     log.info('Удалены алерты для', symbol, user)

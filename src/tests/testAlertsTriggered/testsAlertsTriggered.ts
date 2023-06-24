@@ -1,11 +1,16 @@
 import * as process from 'process'
 
 import { log } from '@/helpers'
-import {bots} from "@/helpers/bot"
+import { bots } from '@/helpers/bot'
 import { getLastPrice } from '@/helpers/getLastPrice'
 import { sayToBoss } from '@/helpers/sayToBoss'
 import { EMarketDataSources } from '@/marketApi/types'
-import { addPriceAlerts, EMarketInstrumentTypes, PriceAlert, PriceAlertModel } from '@/models'
+import {
+  addPriceAlerts,
+  EMarketInstrumentTypes,
+  PriceAlert,
+  PriceAlertModel,
+} from '@/models'
 import { TINK_TRADING_DAYS, TINK_TRADING_HOURS } from '@/tests/tests.constants'
 
 const logPrefix = '<b>TEST</b>'
@@ -13,10 +18,13 @@ const logPrefix = '<b>TEST</b>'
 const TEST_USER_ID = process.env.TEST_USER_TG_ID as unknown as number
 
 interface Config {
-  priceAlert: Pick<PriceAlert, 'user' | 'symbol' | 'name' | 'currency' | 'type' | 'source' | 'tickerId'>
+  priceAlert: Pick<
+    PriceAlert,
+    'user' | 'symbol' | 'name' | 'currency' | 'type' | 'source' | 'tickerId'
+  >
   checkAfter: number
-  days?: { start: number, end: number }
-  hours?: { start: number, end: number }
+  days?: { start: number; end: number }
+  hours?: { start: number; end: number }
 }
 
 const CONFIG: Config[] = [
@@ -28,11 +36,11 @@ const CONFIG: Config[] = [
       currency: 'RUB',
       type: EMarketInstrumentTypes.Stock,
       source: EMarketDataSources.tinkoff,
-      tickerId: 'BBG006L8G4H1'
+      tickerId: 'BBG006L8G4H1',
     },
     checkAfter: 1000 * 60 * 30,
     days: TINK_TRADING_DAYS,
-    hours: TINK_TRADING_HOURS
+    hours: TINK_TRADING_HOURS,
   },
   {
     priceAlert: {
@@ -42,9 +50,9 @@ const CONFIG: Config[] = [
       name: 'BTCUSDT',
       currency: 'USDT',
       type: EMarketInstrumentTypes.Crypto,
-      source: EMarketDataSources.bybit
+      source: EMarketDataSources.bybit,
     },
-    checkAfter: 1000 * 60 * 2
+    checkAfter: 1000 * 60 * 2,
   },
   {
     priceAlert: {
@@ -54,15 +62,15 @@ const CONFIG: Config[] = [
       name: 'BTCUSDT',
       currency: 'USDT',
       type: EMarketInstrumentTypes.Crypto,
-      source: EMarketDataSources.binance
+      source: EMarketDataSources.binance,
     },
-    checkAfter: 1000 * 60 * 2
-  }
+    checkAfter: 1000 * 60 * 2,
+  },
 ]
 
 export const testAlertsTriggered = async () => {
   const botId = (await bots[0]).goose.id
-  
+
   for (let i = 0; i < CONFIG.length; i++) {
     const itemConfig = CONFIG[i]
 
@@ -76,7 +84,10 @@ export const testAlertsTriggered = async () => {
         if (itemConfig.hours) {
           const currentHour = new Date().getHours()
 
-          if (currentHour < itemConfig.hours.start || currentHour > itemConfig.hours.end) {
+          if (
+            currentHour < itemConfig.hours.start ||
+            currentHour > itemConfig.hours.end
+          ) {
             return
           }
         }
@@ -85,7 +96,10 @@ export const testAlertsTriggered = async () => {
         if (itemConfig.days) {
           const currentDay = new Date().getDay()
 
-          if (currentDay < itemConfig.days.start || currentDay > itemConfig.days.end) {
+          if (
+            currentDay < itemConfig.days.start ||
+            currentDay > itemConfig.days.end
+          ) {
             return
           }
         }
@@ -94,39 +108,56 @@ export const testAlertsTriggered = async () => {
 
         if (!price) {
           await sayToBoss({
-            message: logPrefix + ` 😱 No price for ${itemConfig.priceAlert.tickerId}}`
+            message:
+              logPrefix + ` 😱 No price for ${itemConfig.priceAlert.tickerId}}`,
           })
         }
 
         // Clear alerts for this ticker to be sure
-        await PriceAlertModel.remove({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
+        await PriceAlertModel.remove({
+          tickerId: itemConfig.priceAlert.tickerId,
+          user: TEST_USER_ID,
+        })
 
-        await addPriceAlerts([{
-          ...itemConfig.priceAlert,
-          initialPrice: price,
-          lowerThen: price * 0.99999,
-          botId,
-        }, {
-          ...itemConfig.priceAlert,
-          initialPrice: price,
-          greaterThen: price * 1.00001,
-          botId
-        }])
+        await addPriceAlerts([
+          {
+            ...itemConfig.priceAlert,
+            initialPrice: price,
+            lowerThen: price * 0.99999,
+            chat: null,
+            botId,
+          },
+          {
+            ...itemConfig.priceAlert,
+            initialPrice: price,
+            chat: null,
+            greaterThen: price * 1.00001,
+            botId,
+          },
+        ])
 
         // Wait than check if one of alerts is triggered
         setTimeout(async () => {
           // Atleast one of alerts must be triggered
-          const newAlertsById = await PriceAlertModel.find({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
+          const newAlertsById = await PriceAlertModel.find({
+            tickerId: itemConfig.priceAlert.tickerId,
+            user: TEST_USER_ID,
+          })
           const newAlertsCountById = newAlertsById.length
 
           if (newAlertsCountById === 2) {
             await sayToBoss({
-              message: logPrefix + ` 😱 Alerts is not working for ${itemConfig.priceAlert.tickerId}`
+              message:
+                logPrefix +
+                ` 😱 Alerts is not working for ${itemConfig.priceAlert.tickerId}`,
             })
           }
 
           // Clear alerts for this ticker
-          await PriceAlertModel.remove({ tickerId: itemConfig.priceAlert.tickerId, user: TEST_USER_ID })
+          await PriceAlertModel.remove({
+            tickerId: itemConfig.priceAlert.tickerId,
+            user: TEST_USER_ID,
+          })
         }, itemConfig.checkAfter)
       } catch (e) {
         log.error('Price test crash', e)

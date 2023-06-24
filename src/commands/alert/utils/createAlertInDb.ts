@@ -1,11 +1,11 @@
 import { TelegrafContext } from 'telegraf/typings/context'
 
-import {getSourceMark} from "@/helpers/getSourceMark"
+import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
 import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
-import {addPriceAlerts, PriceAlert} from '../../../models'
+import { addPriceAlerts, PriceAlert } from '../../../models'
 import { AddAlertPayload } from '../alert.types'
 
 type CreateAlertInDbPayload = Partial<AddAlertPayload>
@@ -19,7 +19,11 @@ interface CreateAlertInDbParams {
 /**
  * Отправляет данные об алерте в базу и сообщает об это юзеру
  */
-export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInDbParams) => {
+export const createAlertInDb = async ({
+  ctx,
+  payload,
+  callback,
+}: CreateAlertInDbParams) => {
   try {
     const { id: user } = ctx.from
     const { instrumentsList, prices, currentPrice } = payload
@@ -41,7 +45,8 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
         type: instrumentData.type,
         source: instrumentData.source,
         initialPrice: currentPrice,
-        botId: ctx.goose.id
+        botId: ctx.goose.id,
+        chat: ctx.adminChatActive?.id ? Number(ctx.adminChatActive?.id) : null,
       }
 
       currentPrice < price
@@ -63,15 +68,19 @@ export const createAlertInDb = async ({ ctx, payload, callback }: CreateAlertInD
     }
 
     const i18nParams = {
-      price: addedPrices.map((el) => `${el}${symbolOrCurrency(instrumentData.currency) ?? ''}`).join(', '),
+      price: addedPrices
+        .map((el) => `${el}${symbolOrCurrency(instrumentData.currency) ?? ''}`)
+        .join(', '),
       symbol: instrumentData.ticker,
       name: instrumentData.name,
       onePrice: createdItemsList.length === 1,
       invalid: null,
-      source: getSourceMark(instrumentData)
+      source: getSourceMark(instrumentData),
     }
 
-    await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams), { disable_web_page_preview: true })
+    await ctx.replyWithHTML(i18n.t('ru', 'alertCreated', i18nParams), {
+      disable_web_page_preview: true,
+    })
 
     callback({ createdItemsList })
   } catch (e) {
