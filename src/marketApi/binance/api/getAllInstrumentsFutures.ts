@@ -1,9 +1,6 @@
-import {
-  ExchangeInfo,
-  FuturesOrderType_LT,
-  OrderType_LT,
-  Symbol,
-} from 'binance-api-node'
+import { ExchangeInfo, FuturesOrderType_LT } from 'binance-api-node'
+
+import { BinanceTickerItem } from '@/marketApi/binance/api/getAllInstruments'
 
 import { log } from '../../../helpers/log'
 import { wait } from '../../../helpers/wait'
@@ -11,19 +8,12 @@ import { EMarketInstrumentTypes, InstrumentsList } from '../../../models'
 import { EMarketDataSources } from '../../types'
 import { binance } from '../utils/binance'
 
-// eslint-disable-next-line
-export type BinanceTickerItem = Symbol<OrderType_LT | FuturesOrderType_LT>
-export type BinanceSourceSpecificData = Omit<
-  BinanceTickerItem,
-  'quoteAsset' | 'symbol'
->
-
 const normalizeItem = (item: BinanceTickerItem): InstrumentsList => {
   const { symbol, quoteAsset, ...specificData } = item
 
   const result = {
-    id: `binance_${symbol}`,
-    source: EMarketDataSources.binance,
+    id: `binanceFuture_${symbol}`,
+    source: EMarketDataSources.binanceFuture,
     currency: quoteAsset,
     name: symbol,
     ticker: symbol,
@@ -35,9 +25,10 @@ const normalizeItem = (item: BinanceTickerItem): InstrumentsList => {
   return result
 }
 
-export const binanceGetAllInstruments = async () => {
+export const binanceGetAllInstrumentsFutures = async () => {
   try {
-    const data: ExchangeInfo = await binance.exchangeInfo()
+    const data: ExchangeInfo<FuturesOrderType_LT> =
+      await binance.futuresExchangeInfo()
 
     const symbols = data.symbols
 
@@ -50,6 +41,6 @@ export const binanceGetAllInstruments = async () => {
     await wait(30000)
 
     // Ретрай
-    return binanceGetAllInstruments()
+    return binanceGetAllInstrumentsFutures()
   }
 }

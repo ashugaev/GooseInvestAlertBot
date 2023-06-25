@@ -7,6 +7,7 @@ export enum EMarketDataSources {
   tinkoff = 'tinkoff',
   coingecko = 'coingecko',
   binance = 'binance',
+  binanceFuture = 'binanceFuture',
   /**
    * https://www.currencyconverterapi.com/docs
    */

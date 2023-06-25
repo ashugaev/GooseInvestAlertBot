@@ -49,6 +49,10 @@ export const getInstrumentLink = ({
     }
   }
 
+  if (source === EMarketDataSources.binanceFuture && ticker) {
+    link = `https://www.binance.com/en/futures/${ticker}`
+  }
+
   if (source === EMarketDataSources.bybit && currency && ticker) {
     link = `https://www.bybit.com/trade/${currency.toLowerCase()}/${ticker.toUpperCase()}`
   }

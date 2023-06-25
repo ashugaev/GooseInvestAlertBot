@@ -2,6 +2,7 @@ import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
 import { log, retry } from '@/helpers'
 import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
+import { binanceGetAllInstrumentsFutures } from '@/marketApi/binance/api/getAllInstrumentsFutures'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 import { getInstrumentsKucoin } from '@/marketApi/kucoin/getInstruments'
 import { getPricesKucoin } from '@/marketApi/kucoin/getPrices'
@@ -11,7 +12,10 @@ import { startTests } from '@/tests/indes'
 
 import { startCronJob } from '../helpers/startCronJob'
 import { binanceGetAllInstruments } from '../marketApi/binance/api/getAllInstruments'
-import { getBinancePrices } from '../marketApi/binance/api/getPrices'
+import {
+  getBinancePrices,
+  getBinancePricesFutures,
+} from '../marketApi/binance/api/getPrices'
 import { bybitGetAllInstruments } from '../marketApi/bybit/getInstruments'
 import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments'
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
@@ -30,6 +34,7 @@ export enum InitializationItem {
   // Tickers
   TINKOFF_TICKERS = 'TINKOFF_TICKERS',
   BINANCE_TICKERS = 'BINANCE_TICKERS',
+  BINANCE_FUTURES_TICKERS = 'BINANCE_FUTURES_TICKERS',
   COINGECKO_TICKERS = 'COINGECKO_TICKERS',
   YAHOO_TICKERS = 'YAHOO_TICKERS',
   BYBIT_TICKERS = 'BYBIT_TICKERS',
@@ -38,6 +43,7 @@ export enum InitializationItem {
   // Prices
   TINKOFF_PRICES = 'TINKOFF_PRICES',
   BINANCE_PRICES = 'BINANCE_PRICES',
+  BINANCE_FUTURES_PRICES = 'BINANCE_FUTURES_PRICES',
   YAHOO_PRICES = 'YAHOO_PRICES',
   COINGECKO_PRICES = 'COINGECKO_PRICES',
   BYBIT_PRICES = 'BYBIT_PRICES',
@@ -53,6 +59,7 @@ const isInstrumentsListUpdated = () => {
     InitializationItem.TINKOFF_TICKERS,
     InitializationItem.COINGECKO_TICKERS,
     InitializationItem.BINANCE_TICKERS,
+    InitializationItem.BINANCE_FUTURES_TICKERS,
     // InitializationItem.YAHOO_TICKERS,
     InitializationItem.BYBIT_TICKERS,
     InitializationItem.KUCOIN_TICKERS,
@@ -64,6 +71,7 @@ const isAllPricesUpdated = () => {
     InitializationItem.TINKOFF_PRICES,
     InitializationItem.COINGECKO_PRICES,
     InitializationItem.BINANCE_PRICES,
+    InitializationItem.BINANCE_FUTURES_PRICES,
     // InitializationItem.YAHOO_PRICES,
     InitializationItem.BYBIT_PRICES,
     InitializationItem.KUCOIN_PRICES,
@@ -221,6 +229,23 @@ export const setupCheckers = () => {
     jobKey: InitializationItem.BINANCE_TICKERS,
   })
 
+  /**
+   * Update BINANCE_FUTURES tickers list
+   */
+  startCronJob({
+    name: 'Update Binance futures tickers list',
+    callback: updateTickersList({
+      getList: binanceGetAllInstrumentsFutures,
+      source: EMarketDataSources.binanceFuture,
+      minTickersCount: 100,
+    }),
+    callbackArgs: [],
+    // Раз в день в 0 часов или при деплое
+    period: '0 0 * * *',
+    executeBeforeInit: true,
+    jobKey: InitializationItem.BINANCE_FUTURES_TICKERS,
+  })
+
   // Дамп коллекции с алертами
   startCronJob({
     name: 'Copy alerts collection',
@@ -256,6 +281,21 @@ export const setupCheckers = () => {
       }),
     10000,
     'setupPriceUpdater for binance'
+  )
+
+  /**
+   * BINANCE_FUTURES prices updater
+   */
+  retry(
+    async () =>
+      await setupPriceUpdater({
+        minTimeBetweenRequests: 1000,
+        getPrices: getBinancePricesFutures,
+        source: EMarketDataSources.binanceFuture,
+        jobKey: InitializationItem.BINANCE_FUTURES_PRICES,
+      }),
+    10000,
+    'setupPriceUpdater for binance futures'
   )
 
   /**
