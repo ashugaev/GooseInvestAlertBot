@@ -20,6 +20,7 @@ import { setupMyToken } from '@/commands/mytoken/mytoken'
 import { myTokenScenes } from '@/commands/mytoken/mytoken.scenes'
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
+import { setupTest } from '@/commands/test/test'
 import { setupCheckers } from '@/cron'
 
 import { setupAlert } from './commands/alert/alert'
@@ -97,6 +98,7 @@ export const botInit = (bot) => {
   setupAdmin(bot)
   setupMyToken(bot)
   setupAddChat(bot)
+  setupTest(bot)
 
   // Start bot
   bot.startPolling()

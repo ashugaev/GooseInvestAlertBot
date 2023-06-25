@@ -47,7 +47,15 @@ const testTickers: TestItem[] = [
     checkPeriod: 1000 * 60 * 10,
   },
   {
+    params: { source: EMarketDataSources.binanceFuture, ticker: 'BTCUSDT' },
+    checkPeriod: 1000 * 60 * 10,
+  },
+  {
     params: { source: EMarketDataSources.binance, ticker: 'ETHUSDT' },
+    checkPeriod: 1000 * 60 * 10,
+  },
+  {
+    params: { source: EMarketDataSources.binanceFuture, ticker: 'ETHUSDT' },
     checkPeriod: 1000 * 60 * 10,
   },
   {

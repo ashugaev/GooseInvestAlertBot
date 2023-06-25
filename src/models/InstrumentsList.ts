@@ -237,3 +237,23 @@ export const getInstrumentByTickerFromCache = async (
 
   return res
 }
+
+export const getOneInstrumentFromCache = async ({
+  ticker,
+  source,
+}: {
+  ticker: string
+  source: EMarketDataSources
+}): Promise<InstrumentsList> => {
+  const instruments = await getInstrumentByTickerFromCache(ticker)
+
+  const instrument = instruments.find((el) => el.source === source)
+
+  if (!instrument) {
+    throw new Error(
+      `Can't find instrument by ticker ${ticker} and source ${source}`
+    )
+  }
+
+  return instrument
+}
