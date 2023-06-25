@@ -19,9 +19,9 @@ export interface IGetInstrumentDataWithPrice {
   id?: string
 }
 
-export async function getInstrumentDataWithPrice ({
+export async function getInstrumentDataWithPrice({
   symbol,
-  id
+  id,
 }: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice[]> {
   try {
     if (!id && !symbol) {
@@ -41,8 +41,8 @@ export async function getInstrumentDataWithPrice ({
       instrumentsList = await InstrumentsListModel.find({
         ticker: {
           // Adding USDT for binance
-          $in: [symbol, symbol + 'USDT']
-        }
+          $in: [symbol, symbol + 'USDT'],
+        },
       }).lean()
     }
 
@@ -53,7 +53,9 @@ export async function getInstrumentDataWithPrice ({
     }
 
     // Prioritizing binance
-    instrumentsList = instrumentsList.sort(el => el.source === EMarketDataSources.binance ? -1 : 1)
+    instrumentsList = instrumentsList.sort((el) =>
+      el.source === EMarketDataSources.binance ? -1 : 1
+    )
 
     const dataWithPrice = []
 

@@ -21,12 +21,15 @@ interface FetchAlertsResult {
  *  @todo Refactor. Separate uniq tickers and alerts list
  *  @deprecated Use PriceAlertModel.find() instead
  */
-export const fetchAlerts = async (
-  { ctx, tickerId, noContextUpdate, ticker }: IFetchAlertsParams
-): Promise<FetchAlertsResult> => {
+export const fetchAlerts = async ({
+  ctx,
+  tickerId,
+  noContextUpdate,
+  ticker,
+}: IFetchAlertsParams): Promise<FetchAlertsResult> => {
   const params: Partial<PriceAlert> = {}
 
-  if(ctx.dbuser.adminMode) {
+  if (ctx.dbuser.adminMode) {
     params.chat = ctx.adminChatActive.id
   } else {
     params.user = ctx.dbuser.id
@@ -46,32 +49,33 @@ export const fetchAlerts = async (
   if (!alerts.length) {
     return {
       alertsList: [],
-      uniqTickersData: []
+      uniqTickersData: [],
     }
   }
 
   // Получаем уникальные тикеры из всех алертов
   // Название уже не совсем корректное, потому что группируем по id а не по тикеру
-  const uniqTickersData: PriceAlert[] = Object.values(alerts.reduce((acc, el) => {
-    const { tickerId } = el
+  const uniqTickersData: PriceAlert[] = Object.values(
+    alerts.reduce((acc, el) => {
+      const { tickerId } = el
 
-    if (!tickerId) {
-      log.error('Не могу получить tickerId у', el)
+      if (!tickerId) {
+        log.error('Не могу получить tickerId у', el)
+        return acc
+      }
+
+      acc[tickerId] = el
+
       return acc
-    }
-
-    acc[tickerId] = el
-
-    return acc
-  }, {}) as PriceAlert[])
-    .sort((a: PriceAlert, b: PriceAlert) => (a.name > b.name ? 1 : -1))
+    }, {}) as PriceAlert[]
+  ).sort((a: PriceAlert, b: PriceAlert) => (a.name > b.name ? 1 : -1))
 
   // TODO: Избавиться от хранения в контексте, что бы все работало после передеплоя
   if (!noContextUpdate) {
-  // Подкидываем состояния в констекст, что бы не делать перезапрос по нажатию на кнопки
+    // Подкидываем состояния в констекст, что бы не делать перезапрос по нажатию на кнопки
     set(ctx, 'session.listCommand.data', {
       alertsList: alerts,
-      uniqTickersData
+      uniqTickersData,
     })
   }
 

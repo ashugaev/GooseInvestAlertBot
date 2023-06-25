@@ -250,7 +250,8 @@ interface GetAlertsCountForUserParams {
 }
 
 // eslint-disable-next-line
-export const getAlertsCountForUser = async (user: number) => await new Promise(async (rs, rj) => {
+export const getAlertsCountForUser = async (user: number) =>
+  await new Promise(async (rs, rj) => {
     try {
       const params: GetAlertsCountForUserParams = { user }
       const alertsCount = await PriceAlertModel.find(params).count()

@@ -7,7 +7,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'AED',
-      name_plural: 'UAE dirhams'
+      name_plural: 'UAE dirhams',
     },
     AFN: {
       symbol: 'Af',
@@ -16,7 +16,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'AFN',
-      name_plural: 'Afghan Afghanis'
+      name_plural: 'Afghan Afghanis',
     },
     ALL: {
       symbol: 'ALL',
@@ -25,7 +25,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'ALL',
-      name_plural: 'Albanian lekë'
+      name_plural: 'Albanian lekë',
     },
     AMD: {
       symbol: 'AMD',
@@ -34,7 +34,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'AMD',
-      name_plural: 'Armenian drams'
+      name_plural: 'Armenian drams',
     },
     ANG: {
       symbol: 'ƒ',
@@ -44,7 +44,7 @@ export const responseCache = {
       rounding: 0,
       code: 'ANG',
       icon_name: 'ang',
-      name_plural: 'NL Antillean Guilders'
+      name_plural: 'NL Antillean Guilders',
     },
     AOA: {
       symbol: 'Kz',
@@ -54,7 +54,7 @@ export const responseCache = {
       rounding: 0,
       code: 'AOA',
       icon_name: 'aoa',
-      name_plural: 'Angolan Kwanza'
+      name_plural: 'Angolan Kwanza',
     },
     ARS: {
       symbol: 'AR$',
@@ -63,7 +63,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'ARS',
-      name_plural: 'Argentine pesos'
+      name_plural: 'Argentine pesos',
     },
     AUD: {
       symbol: 'AU$',
@@ -72,7 +72,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'AUD',
-      name_plural: 'Australian dollars'
+      name_plural: 'Australian dollars',
     },
     AWG: {
       symbol: 'Afl.',
@@ -82,7 +82,7 @@ export const responseCache = {
       rounding: 0,
       code: 'AWG',
       icon_name: 'awg',
-      name_plural: 'Aruban Florin'
+      name_plural: 'Aruban Florin',
     },
     AZN: {
       symbol: 'man.',
@@ -91,7 +91,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'AZN',
-      name_plural: 'Azerbaijani manats'
+      name_plural: 'Azerbaijani manats',
     },
     BAM: {
       symbol: 'KM',
@@ -100,7 +100,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BAM',
-      name_plural: 'Bosnia-Herzegovina convertible marks'
+      name_plural: 'Bosnia-Herzegovina convertible marks',
     },
     BBD: {
       symbol: 'Bds$',
@@ -110,7 +110,7 @@ export const responseCache = {
       rounding: 0,
       code: 'BBD',
       icon_name: 'bbd',
-      name_plural: 'Barbadian Dollars'
+      name_plural: 'Barbadian Dollars',
     },
     BDT: {
       symbol: 'Tk',
@@ -119,7 +119,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BDT',
-      name_plural: 'Bangladeshi takas'
+      name_plural: 'Bangladeshi takas',
     },
     BGN: {
       symbol: 'BGN',
@@ -128,7 +128,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BGN',
-      name_plural: 'Bulgarian leva'
+      name_plural: 'Bulgarian leva',
     },
     BHD: {
       symbol: 'BD',
@@ -137,7 +137,7 @@ export const responseCache = {
       decimal_digits: 3,
       rounding: 0,
       code: 'BHD',
-      name_plural: 'Bahraini dinars'
+      name_plural: 'Bahraini dinars',
     },
     BIF: {
       symbol: 'FBu',
@@ -146,7 +146,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'BIF',
-      name_plural: 'Burundian francs'
+      name_plural: 'Burundian francs',
     },
     BIH: {
       symbol: 'KM',
@@ -155,7 +155,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BIH',
-      name_plural: 'Bosnia and Herzegovina convertible marks'
+      name_plural: 'Bosnia and Herzegovina convertible marks',
     },
     BMD: {
       symbol: 'BD$',
@@ -165,7 +165,7 @@ export const responseCache = {
       rounding: 0,
       code: 'BMD',
       icon_name: 'bmd',
-      name_plural: 'Bermudan Dollars'
+      name_plural: 'Bermudan Dollars',
     },
     BND: {
       symbol: 'BN$',
@@ -174,7 +174,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BND',
-      name_plural: 'Brunei dollars'
+      name_plural: 'Brunei dollars',
     },
     BOB: {
       symbol: 'Bs',
@@ -183,7 +183,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BOB',
-      name_plural: 'Bolivian bolivianos'
+      name_plural: 'Bolivian bolivianos',
     },
     BRL: {
       symbol: 'R$',
@@ -192,7 +192,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BRL',
-      name_plural: 'Brazilian reals'
+      name_plural: 'Brazilian reals',
     },
     BSD: {
       symbol: 'B$',
@@ -202,7 +202,7 @@ export const responseCache = {
       rounding: 0,
       code: 'BSD',
       icon_name: 'bsd',
-      name_plural: 'Bahamian Dollars'
+      name_plural: 'Bahamian Dollars',
     },
     BTC: {
       symbol: '₿',
@@ -211,7 +211,7 @@ export const responseCache = {
       decimal_digits: 8,
       rounding: 0,
       code: 'BTC',
-      name_plural: 'Bitcoins'
+      name_plural: 'Bitcoins',
     },
     BTN: {
       symbol: 'Nu.',
@@ -221,7 +221,7 @@ export const responseCache = {
       rounding: 0,
       code: 'BTN',
       icon_name: 'btn',
-      name_plural: 'Bhutanese Ngultrum'
+      name_plural: 'Bhutanese Ngultrum',
     },
     BWP: {
       symbol: 'BWP',
@@ -230,7 +230,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BWP',
-      name_plural: 'Botswanan pulas'
+      name_plural: 'Botswanan pulas',
     },
     BYN: {
       symbol: 'Br',
@@ -239,7 +239,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BYN',
-      name_plural: 'Belarusian rubles'
+      name_plural: 'Belarusian rubles',
     },
     BYR: {
       symbol: 'BYR',
@@ -248,7 +248,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'BYR',
-      name_plural: 'Belarusian rubles'
+      name_plural: 'Belarusian rubles',
     },
     BZD: {
       symbol: 'BZ$',
@@ -257,7 +257,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'BZD',
-      name_plural: 'Belize dollars'
+      name_plural: 'Belize dollars',
     },
     CAD: {
       symbol: 'CA$',
@@ -266,7 +266,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'CAD',
-      name_plural: 'Canadian dollars'
+      name_plural: 'Canadian dollars',
     },
     CDF: {
       symbol: 'CDF',
@@ -275,7 +275,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'CDF',
-      name_plural: 'Congolese francs'
+      name_plural: 'Congolese francs',
     },
     CHF: {
       symbol: 'CHF',
@@ -284,7 +284,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'CHF',
-      name_plural: 'Swiss francs'
+      name_plural: 'Swiss francs',
     },
     CLF: {
       symbol: 'UF',
@@ -293,7 +293,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'CLF',
-      name_plural: 'Unidad de Fomentos'
+      name_plural: 'Unidad de Fomentos',
     },
     CLP: {
       symbol: 'CL$',
@@ -302,7 +302,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'CLP',
-      name_plural: 'Chilean pesos'
+      name_plural: 'Chilean pesos',
     },
     CNY: {
       symbol: 'CN¥',
@@ -311,7 +311,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'CNY',
-      name_plural: 'Chinese yuan'
+      name_plural: 'Chinese yuan',
     },
     COP: {
       symbol: 'CO$',
@@ -320,7 +320,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'COP',
-      name_plural: 'Colombian pesos'
+      name_plural: 'Colombian pesos',
     },
     CRC: {
       symbol: '₡',
@@ -329,7 +329,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'CRC',
-      name_plural: 'Costa Rican colóns'
+      name_plural: 'Costa Rican colóns',
     },
     CUC: {
       symbol: 'CUC$',
@@ -339,7 +339,7 @@ export const responseCache = {
       rounding: 0,
       code: 'CUC',
       icon_name: 'cuc',
-      name_plural: 'Cuban Convertible Peso'
+      name_plural: 'Cuban Convertible Peso',
     },
     CUP: {
       symbol: '$MN',
@@ -349,7 +349,7 @@ export const responseCache = {
       rounding: 0,
       code: 'CUP',
       icon_name: 'cup',
-      name_plural: 'Cuban Peso'
+      name_plural: 'Cuban Peso',
     },
     CVE: {
       symbol: 'CV$',
@@ -358,7 +358,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'CVE',
-      name_plural: 'Cape Verdean escudos'
+      name_plural: 'Cape Verdean escudos',
     },
     CZK: {
       symbol: 'Kč',
@@ -367,7 +367,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'CZK',
-      name_plural: 'Czech Republic korunas'
+      name_plural: 'Czech Republic korunas',
     },
     DJF: {
       symbol: 'Fdj',
@@ -376,7 +376,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'DJF',
-      name_plural: 'Djiboutian francs'
+      name_plural: 'Djiboutian francs',
     },
     DKK: {
       symbol: 'Dkr',
@@ -385,7 +385,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'DKK',
-      name_plural: 'Danish kroner'
+      name_plural: 'Danish kroner',
     },
     DOP: {
       symbol: 'RD$',
@@ -394,7 +394,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'DOP',
-      name_plural: 'Dominican pesos'
+      name_plural: 'Dominican pesos',
     },
     DZD: {
       symbol: 'DA',
@@ -403,7 +403,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'DZD',
-      name_plural: 'Algerian dinars'
+      name_plural: 'Algerian dinars',
     },
     EGP: {
       symbol: 'EGP',
@@ -412,7 +412,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'EGP',
-      name_plural: 'Egyptian pounds'
+      name_plural: 'Egyptian pounds',
     },
     ERN: {
       symbol: 'Nfk',
@@ -421,7 +421,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'ERN',
-      name_plural: 'Eritrean nakfas'
+      name_plural: 'Eritrean nakfas',
     },
     ETB: {
       symbol: 'Br',
@@ -430,7 +430,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'ETB',
-      name_plural: 'Ethiopian birrs'
+      name_plural: 'Ethiopian birrs',
     },
     ETH: {
       symbol: 'Ξ',
@@ -439,7 +439,7 @@ export const responseCache = {
       decimal_digits: 18,
       rounding: 0,
       code: 'ETH',
-      name_plural: 'Ethereum'
+      name_plural: 'Ethereum',
     },
     EUR: {
       symbol: '€',
@@ -448,7 +448,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'EUR',
-      name_plural: 'Euros'
+      name_plural: 'Euros',
     },
     FJD: {
       symbol: 'FJ$',
@@ -458,7 +458,7 @@ export const responseCache = {
       rounding: 0,
       code: 'FJD',
       icon_name: 'fjd',
-      name_plural: 'Fijian Dollar'
+      name_plural: 'Fijian Dollar',
     },
     FKP: {
       symbol: 'FK£',
@@ -468,7 +468,7 @@ export const responseCache = {
       rounding: 0,
       code: 'FKP',
       icon_name: 'fkp',
-      name_plural: 'Falkland Islands Pound'
+      name_plural: 'Falkland Islands Pound',
     },
     GBP: {
       symbol: '£',
@@ -477,7 +477,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'GBP',
-      name_plural: 'British pounds sterling'
+      name_plural: 'British pounds sterling',
     },
     GEL: {
       symbol: 'GEL',
@@ -486,7 +486,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'GEL',
-      name_plural: 'Georgian laris'
+      name_plural: 'Georgian laris',
     },
     GGP: {
       symbol: '£',
@@ -495,7 +495,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'GGP',
-      name_plural: 'Guernsey pounds'
+      name_plural: 'Guernsey pounds',
     },
     GHS: {
       symbol: 'GH₵',
@@ -504,7 +504,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'GHS',
-      name_plural: 'Ghanaian cedis'
+      name_plural: 'Ghanaian cedis',
     },
     GIP: {
       symbol: '£',
@@ -514,7 +514,7 @@ export const responseCache = {
       rounding: 0,
       code: 'GIP',
       icon_name: 'gip',
-      name_plural: 'Gibraltar Pounds'
+      name_plural: 'Gibraltar Pounds',
     },
     GMD: {
       symbol: 'D',
@@ -524,7 +524,7 @@ export const responseCache = {
       rounding: 0,
       code: 'GMD',
       icon_name: 'gmd',
-      name_plural: 'Gambian Dalasi'
+      name_plural: 'Gambian Dalasi',
     },
     GNF: {
       symbol: 'FG',
@@ -533,7 +533,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'GNF',
-      name_plural: 'Guinean francs'
+      name_plural: 'Guinean francs',
     },
     GTQ: {
       symbol: 'GTQ',
@@ -542,7 +542,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'GTQ',
-      name_plural: 'Guatemalan quetzals'
+      name_plural: 'Guatemalan quetzals',
     },
     GYD: {
       symbol: 'G$',
@@ -552,7 +552,7 @@ export const responseCache = {
       rounding: 0,
       code: 'GYD',
       icon_name: 'gyd',
-      name_plural: 'Guyanaese Dollar'
+      name_plural: 'Guyanaese Dollar',
     },
     HKD: {
       symbol: 'HK$',
@@ -561,7 +561,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'HKD',
-      name_plural: 'Hong Kong dollars'
+      name_plural: 'Hong Kong dollars',
     },
     HNL: {
       symbol: 'HNL',
@@ -570,7 +570,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'HNL',
-      name_plural: 'Honduran lempiras'
+      name_plural: 'Honduran lempiras',
     },
     HRK: {
       symbol: 'kn',
@@ -579,7 +579,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'HRK',
-      name_plural: 'Croatian kunas'
+      name_plural: 'Croatian kunas',
     },
     HRV: {
       symbol: 'kn',
@@ -588,7 +588,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'HRV',
-      name_plural: 'Croatian kunas'
+      name_plural: 'Croatian kunas',
     },
     HTG: {
       symbol: 'G',
@@ -598,7 +598,7 @@ export const responseCache = {
       rounding: 0,
       code: 'HTG',
       icon_name: 'htg',
-      name_plural: 'Haitian Gourde'
+      name_plural: 'Haitian Gourde',
     },
     HUF: {
       symbol: 'Ft',
@@ -607,7 +607,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'HUF',
-      name_plural: 'Hungarian forints'
+      name_plural: 'Hungarian forints',
     },
     IDR: {
       symbol: 'Rp',
@@ -616,7 +616,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'IDR',
-      name_plural: 'Indonesian rupiahs'
+      name_plural: 'Indonesian rupiahs',
     },
     ILS: {
       symbol: '₪',
@@ -625,7 +625,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'ILS',
-      name_plural: 'Israeli new sheqels'
+      name_plural: 'Israeli new sheqels',
     },
     IMP: {
       symbol: '£',
@@ -634,7 +634,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'IMP',
-      name_plural: 'Manx pounds'
+      name_plural: 'Manx pounds',
     },
     INR: {
       symbol: 'Rs',
@@ -643,7 +643,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'INR',
-      name_plural: 'Indian rupees'
+      name_plural: 'Indian rupees',
     },
     IQD: {
       symbol: 'IQD',
@@ -652,7 +652,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'IQD',
-      name_plural: 'Iraqi dinars'
+      name_plural: 'Iraqi dinars',
     },
     IRR: {
       symbol: 'IRR',
@@ -661,7 +661,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'IRR',
-      name_plural: 'Iranian rials'
+      name_plural: 'Iranian rials',
     },
     ISK: {
       symbol: 'Ikr',
@@ -670,7 +670,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'ISK',
-      name_plural: 'Icelandic krónur'
+      name_plural: 'Icelandic krónur',
     },
     JEP: {
       symbol: '£',
@@ -679,7 +679,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'JEP',
-      name_plural: 'Jersey pound'
+      name_plural: 'Jersey pound',
     },
     JMD: {
       symbol: 'J$',
@@ -688,7 +688,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'JMD',
-      name_plural: 'Jamaican dollars'
+      name_plural: 'Jamaican dollars',
     },
     JOD: {
       symbol: 'JD',
@@ -697,7 +697,7 @@ export const responseCache = {
       decimal_digits: 3,
       rounding: 0,
       code: 'JOD',
-      name_plural: 'Jordanian dinars'
+      name_plural: 'Jordanian dinars',
     },
     JPY: {
       symbol: '¥',
@@ -706,7 +706,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'JPY',
-      name_plural: 'Japanese yen'
+      name_plural: 'Japanese yen',
     },
     KES: {
       symbol: 'Ksh',
@@ -715,7 +715,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'KES',
-      name_plural: 'Kenyan shillings'
+      name_plural: 'Kenyan shillings',
     },
     KGS: {
       symbol: 'KGS',
@@ -725,7 +725,7 @@ export const responseCache = {
       rounding: 0,
       code: 'KGS',
       icon_name: 'kgs',
-      name_plural: 'Kyrgystani Som'
+      name_plural: 'Kyrgystani Som',
     },
     KHR: {
       symbol: 'KHR',
@@ -734,7 +734,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'KHR',
-      name_plural: 'Cambodian riels'
+      name_plural: 'Cambodian riels',
     },
     KMF: {
       symbol: 'CF',
@@ -743,7 +743,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'KMF',
-      name_plural: 'Comorian francs'
+      name_plural: 'Comorian francs',
     },
     KPW: {
       symbol: '₩',
@@ -753,7 +753,7 @@ export const responseCache = {
       rounding: 0,
       code: 'KPW',
       icon_name: 'kpw',
-      name_plural: 'North Korean Won'
+      name_plural: 'North Korean Won',
     },
     KRW: {
       symbol: '₩',
@@ -762,7 +762,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'KRW',
-      name_plural: 'South Korean won'
+      name_plural: 'South Korean won',
     },
     KWD: {
       symbol: 'KD',
@@ -771,7 +771,7 @@ export const responseCache = {
       decimal_digits: 3,
       rounding: 0,
       code: 'KWD',
-      name_plural: 'Kuwaiti dinars'
+      name_plural: 'Kuwaiti dinars',
     },
     KYD: {
       symbol: 'CI$',
@@ -781,7 +781,7 @@ export const responseCache = {
       rounding: 0,
       code: 'KYD',
       icon_name: 'kyd',
-      name_plural: 'Cayman Islands Dollar'
+      name_plural: 'Cayman Islands Dollar',
     },
     KZT: {
       symbol: 'KZT',
@@ -790,7 +790,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'KZT',
-      name_plural: 'Kazakhstani tenges'
+      name_plural: 'Kazakhstani tenges',
     },
     LAK: {
       symbol: '₭N',
@@ -799,7 +799,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'LAK',
-      name_plural: 'Laotian Kip'
+      name_plural: 'Laotian Kip',
     },
     LBP: {
       symbol: 'LB£',
@@ -808,7 +808,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'LBP',
-      name_plural: 'Lebanese pounds'
+      name_plural: 'Lebanese pounds',
     },
     LKR: {
       symbol: 'SLRs',
@@ -817,7 +817,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'LKR',
-      name_plural: 'Sri Lankan rupees'
+      name_plural: 'Sri Lankan rupees',
     },
     LRD: {
       symbol: 'LD$',
@@ -827,7 +827,7 @@ export const responseCache = {
       rounding: 0,
       code: 'LRD',
       icon_name: 'lrd',
-      name_plural: 'Liberian Dollar'
+      name_plural: 'Liberian Dollar',
     },
     LSL: {
       symbol: 'L',
@@ -837,7 +837,7 @@ export const responseCache = {
       rounding: 0,
       code: 'LSL',
       icon_name: 'lsl',
-      name_plural: 'Lesotho Loti'
+      name_plural: 'Lesotho Loti',
     },
     LTC: {
       symbol: 'Ł',
@@ -846,7 +846,7 @@ export const responseCache = {
       decimal_digits: 8,
       rounding: 0,
       code: 'LTC',
-      name_plural: 'Litecoins'
+      name_plural: 'Litecoins',
     },
     LTL: {
       symbol: 'Lt',
@@ -855,7 +855,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'LTL',
-      name_plural: 'Lithuanian litai'
+      name_plural: 'Lithuanian litai',
     },
     LVL: {
       symbol: 'Ls',
@@ -864,7 +864,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'LVL',
-      name_plural: 'Latvian lati'
+      name_plural: 'Latvian lati',
     },
     LYD: {
       symbol: 'LD',
@@ -873,7 +873,7 @@ export const responseCache = {
       decimal_digits: 3,
       rounding: 0,
       code: 'LYD',
-      name_plural: 'Libyan dinars'
+      name_plural: 'Libyan dinars',
     },
     MAD: {
       symbol: 'MAD',
@@ -882,7 +882,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MAD',
-      name_plural: 'Moroccan dirhams'
+      name_plural: 'Moroccan dirhams',
     },
     MDL: {
       symbol: 'MDL',
@@ -891,7 +891,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MDL',
-      name_plural: 'Moldovan lei'
+      name_plural: 'Moldovan lei',
     },
     MGA: {
       symbol: 'MGA',
@@ -900,7 +900,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'MGA',
-      name_plural: 'Malagasy Ariaries'
+      name_plural: 'Malagasy Ariaries',
     },
     MKD: {
       symbol: 'MKD',
@@ -909,7 +909,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MKD',
-      name_plural: 'Macedonian denari'
+      name_plural: 'Macedonian denari',
     },
     MMK: {
       symbol: 'MMK',
@@ -918,7 +918,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'MMK',
-      name_plural: 'Myanma kyats'
+      name_plural: 'Myanma kyats',
     },
     MNT: {
       symbol: '₮',
@@ -928,7 +928,7 @@ export const responseCache = {
       rounding: 0,
       code: 'MNT',
       icon_name: 'mnt',
-      name_plural: 'Mongolian Tugrik'
+      name_plural: 'Mongolian Tugrik',
     },
     MOP: {
       symbol: 'MOP$',
@@ -937,7 +937,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MOP',
-      name_plural: 'Macanese patacas'
+      name_plural: 'Macanese patacas',
     },
     MRO: {
       symbol: 'UM',
@@ -946,7 +946,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MRO',
-      name_plural: 'Mauritanian ouguiyas'
+      name_plural: 'Mauritanian ouguiyas',
     },
     MUR: {
       symbol: 'MURs',
@@ -955,7 +955,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'MUR',
-      name_plural: 'Mauritian rupees'
+      name_plural: 'Mauritian rupees',
     },
     MVR: {
       symbol: 'MRf',
@@ -964,7 +964,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MVR',
-      name_plural: 'Maldivian Rufiyaa'
+      name_plural: 'Maldivian Rufiyaa',
     },
     MWK: {
       symbol: 'MK',
@@ -974,7 +974,7 @@ export const responseCache = {
       rounding: 0,
       code: 'MWK',
       icon_name: 'mwk',
-      name_plural: 'Malawian Kwacha'
+      name_plural: 'Malawian Kwacha',
     },
     MXN: {
       symbol: 'MX$',
@@ -983,7 +983,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MXN',
-      name_plural: 'Mexican pesos'
+      name_plural: 'Mexican pesos',
     },
     MYR: {
       symbol: 'RM',
@@ -992,7 +992,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MYR',
-      name_plural: 'Malaysian ringgits'
+      name_plural: 'Malaysian ringgits',
     },
     MZN: {
       symbol: 'MTn',
@@ -1001,7 +1001,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'MZN',
-      name_plural: 'Mozambican meticals'
+      name_plural: 'Mozambican meticals',
     },
     NAD: {
       symbol: 'N$',
@@ -1010,7 +1010,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'NAD',
-      name_plural: 'Namibian dollars'
+      name_plural: 'Namibian dollars',
     },
     NGN: {
       symbol: '₦',
@@ -1019,7 +1019,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'NGN',
-      name_plural: 'Nigerian nairas'
+      name_plural: 'Nigerian nairas',
     },
     NIO: {
       symbol: 'C$',
@@ -1028,7 +1028,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'NIO',
-      name_plural: 'Nicaraguan córdobas'
+      name_plural: 'Nicaraguan córdobas',
     },
     NOK: {
       symbol: 'Nkr',
@@ -1037,7 +1037,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'NOK',
-      name_plural: 'Norwegian kroner'
+      name_plural: 'Norwegian kroner',
     },
     NPR: {
       symbol: 'NPRs',
@@ -1046,7 +1046,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'NPR',
-      name_plural: 'Nepalese rupees'
+      name_plural: 'Nepalese rupees',
     },
     NZD: {
       symbol: 'NZ$',
@@ -1055,7 +1055,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'NZD',
-      name_plural: 'New Zealand dollars'
+      name_plural: 'New Zealand dollars',
     },
     OMR: {
       symbol: 'OMR',
@@ -1064,7 +1064,7 @@ export const responseCache = {
       decimal_digits: 3,
       rounding: 0,
       code: 'OMR',
-      name_plural: 'Omani rials'
+      name_plural: 'Omani rials',
     },
     PAB: {
       symbol: 'B/.',
@@ -1073,7 +1073,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'PAB',
-      name_plural: 'Panamanian balboas'
+      name_plural: 'Panamanian balboas',
     },
     PEN: {
       symbol: 'S/.',
@@ -1082,7 +1082,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'PEN',
-      name_plural: 'Peruvian nuevos soles'
+      name_plural: 'Peruvian nuevos soles',
     },
     PGK: {
       symbol: 'K',
@@ -1092,7 +1092,7 @@ export const responseCache = {
       rounding: 0,
       code: 'PGK',
       icon_name: 'pgk',
-      name_plural: 'Papua New Guinean Kina'
+      name_plural: 'Papua New Guinean Kina',
     },
     PHP: {
       symbol: '₱',
@@ -1101,7 +1101,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'PHP',
-      name_plural: 'Philippine pesos'
+      name_plural: 'Philippine pesos',
     },
     PKR: {
       symbol: 'PKRs',
@@ -1110,7 +1110,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'PKR',
-      name_plural: 'Pakistani rupees'
+      name_plural: 'Pakistani rupees',
     },
     PLN: {
       symbol: 'zł',
@@ -1119,7 +1119,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'PLN',
-      name_plural: 'Polish zlotys'
+      name_plural: 'Polish zlotys',
     },
     PYG: {
       symbol: '₲',
@@ -1128,7 +1128,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'PYG',
-      name_plural: 'Paraguayan guaranis'
+      name_plural: 'Paraguayan guaranis',
     },
     QAR: {
       symbol: 'QR',
@@ -1137,7 +1137,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'QAR',
-      name_plural: 'Qatari rials'
+      name_plural: 'Qatari rials',
     },
     RON: {
       symbol: 'RON',
@@ -1146,7 +1146,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'RON',
-      name_plural: 'Romanian lei'
+      name_plural: 'Romanian lei',
     },
     RSD: {
       symbol: 'din.',
@@ -1155,7 +1155,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'RSD',
-      name_plural: 'Serbian dinars'
+      name_plural: 'Serbian dinars',
     },
     RUB: {
       symbol: 'RUB',
@@ -1164,7 +1164,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'RUB',
-      name_plural: 'Russian rubles'
+      name_plural: 'Russian rubles',
     },
     RWF: {
       symbol: 'RWF',
@@ -1173,7 +1173,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'RWF',
-      name_plural: 'Rwandan francs'
+      name_plural: 'Rwandan francs',
     },
     SAR: {
       symbol: 'SR',
@@ -1182,7 +1182,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'SAR',
-      name_plural: 'Saudi riyals'
+      name_plural: 'Saudi riyals',
     },
     SBD: {
       symbol: 'SI$',
@@ -1192,7 +1192,7 @@ export const responseCache = {
       rounding: 0,
       code: 'SBD',
       icon_name: 'sbd',
-      name_plural: 'Solomon Islands Dollars'
+      name_plural: 'Solomon Islands Dollars',
     },
     SCR: {
       symbol: 'SRe',
@@ -1202,7 +1202,7 @@ export const responseCache = {
       rounding: 0,
       code: 'SCR',
       icon_name: 'scr',
-      name_plural: 'Seychellois Rupees'
+      name_plural: 'Seychellois Rupees',
     },
     SDG: {
       symbol: 'SDG',
@@ -1211,7 +1211,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'SDG',
-      name_plural: 'Sudanese pounds'
+      name_plural: 'Sudanese pounds',
     },
     SEK: {
       symbol: 'Skr',
@@ -1220,7 +1220,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'SEK',
-      name_plural: 'Swedish kronor'
+      name_plural: 'Swedish kronor',
     },
     SGD: {
       symbol: 'S$',
@@ -1229,7 +1229,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'SGD',
-      name_plural: 'Singapore dollars'
+      name_plural: 'Singapore dollars',
     },
     SHP: {
       symbol: '£',
@@ -1239,7 +1239,7 @@ export const responseCache = {
       rounding: 0,
       code: 'SHP',
       icon_name: 'shp',
-      name_plural: 'Saint Helena Pounds'
+      name_plural: 'Saint Helena Pounds',
     },
     SLL: {
       symbol: 'Le',
@@ -1249,7 +1249,7 @@ export const responseCache = {
       rounding: 0,
       code: 'SLL',
       icon_name: 'sll',
-      name_plural: 'Sierra Leonean Leone'
+      name_plural: 'Sierra Leonean Leone',
     },
     SOS: {
       symbol: 'Ssh',
@@ -1258,7 +1258,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'SOS',
-      name_plural: 'Somali shillings'
+      name_plural: 'Somali shillings',
     },
     SRD: {
       symbol: '$',
@@ -1268,7 +1268,7 @@ export const responseCache = {
       rounding: 0,
       code: 'SRD',
       icon_name: 'srd',
-      name_plural: 'Surinamese Dollar'
+      name_plural: 'Surinamese Dollar',
     },
     SSP: {
       symbol: '£',
@@ -1277,7 +1277,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'SSP',
-      name_plural: 'South Sudanese pounds'
+      name_plural: 'South Sudanese pounds',
     },
     STD: {
       symbol: 'Db',
@@ -1286,7 +1286,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'STD',
-      name_plural: 'São Tomé and Príncipe dobras'
+      name_plural: 'São Tomé and Príncipe dobras',
     },
     SVC: {
       symbol: '₡',
@@ -1296,7 +1296,7 @@ export const responseCache = {
       rounding: 0,
       code: 'SVC',
       icon_name: 'svc',
-      name_plural: 'Salvadoran Colón'
+      name_plural: 'Salvadoran Colón',
     },
     SYP: {
       symbol: 'SY£',
@@ -1305,7 +1305,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'SYP',
-      name_plural: 'Syrian pounds'
+      name_plural: 'Syrian pounds',
     },
     SZL: {
       symbol: 'L',
@@ -1315,7 +1315,7 @@ export const responseCache = {
       rounding: 0,
       code: 'SZL',
       icon_name: 'szl',
-      name_plural: 'Swazi Lilangeni'
+      name_plural: 'Swazi Lilangeni',
     },
     THB: {
       symbol: '฿',
@@ -1324,7 +1324,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'THB',
-      name_plural: 'Thai baht'
+      name_plural: 'Thai baht',
     },
     TJS: {
       symbol: 'TJS',
@@ -1334,7 +1334,7 @@ export const responseCache = {
       rounding: 0,
       code: 'TJS',
       icon_name: 'tjs',
-      name_plural: 'Tajikistani Somoni'
+      name_plural: 'Tajikistani Somoni',
     },
     TMT: {
       symbol: 'T',
@@ -1344,7 +1344,7 @@ export const responseCache = {
       rounding: 0,
       code: 'TMT',
       icon_name: 'tmt',
-      name_plural: 'Turkmenistani Manat'
+      name_plural: 'Turkmenistani Manat',
     },
     TND: {
       symbol: 'DT',
@@ -1353,7 +1353,7 @@ export const responseCache = {
       decimal_digits: 3,
       rounding: 0,
       code: 'TND',
-      name_plural: 'Tunisian dinars'
+      name_plural: 'Tunisian dinars',
     },
     TOP: {
       symbol: 'T$',
@@ -1362,7 +1362,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'TOP',
-      name_plural: 'Tongan paʻanga'
+      name_plural: 'Tongan paʻanga',
     },
     TRY: {
       symbol: 'TL',
@@ -1371,7 +1371,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'TRY',
-      name_plural: 'Turkish Lira'
+      name_plural: 'Turkish Lira',
     },
     TTD: {
       symbol: 'TT$',
@@ -1380,7 +1380,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'TTD',
-      name_plural: 'Trinidad and Tobago dollars'
+      name_plural: 'Trinidad and Tobago dollars',
     },
     TWD: {
       symbol: 'NT$',
@@ -1389,7 +1389,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'TWD',
-      name_plural: 'New Taiwan dollars'
+      name_plural: 'New Taiwan dollars',
     },
     TZS: {
       symbol: 'TSh',
@@ -1398,7 +1398,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'TZS',
-      name_plural: 'Tanzanian shillings'
+      name_plural: 'Tanzanian shillings',
     },
     UAH: {
       symbol: '₴',
@@ -1407,7 +1407,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'UAH',
-      name_plural: 'Ukrainian hryvnias'
+      name_plural: 'Ukrainian hryvnias',
     },
     UGX: {
       symbol: 'USh',
@@ -1416,7 +1416,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'UGX',
-      name_plural: 'Ugandan shillings'
+      name_plural: 'Ugandan shillings',
     },
     URY: {
       symbol: '$U',
@@ -1425,7 +1425,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'URY',
-      name_plural: 'Uruguayan pesos'
+      name_plural: 'Uruguayan pesos',
     },
     USD: {
       symbol: '$',
@@ -1434,7 +1434,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'USD',
-      name_plural: 'US dollars'
+      name_plural: 'US dollars',
     },
     UYU: {
       symbol: '$U',
@@ -1443,7 +1443,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'UYU',
-      name_plural: 'Uruguayan pesos'
+      name_plural: 'Uruguayan pesos',
     },
     UZS: {
       symbol: 'UZS',
@@ -1452,7 +1452,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'UZS',
-      name_plural: 'Uzbekistan som'
+      name_plural: 'Uzbekistan som',
     },
     VEF: {
       symbol: 'Bs.F.',
@@ -1461,7 +1461,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'VEF',
-      name_plural: 'Venezuelan bolívars'
+      name_plural: 'Venezuelan bolívars',
     },
     VND: {
       symbol: '₫',
@@ -1470,7 +1470,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'VND',
-      name_plural: 'Vietnamese dong'
+      name_plural: 'Vietnamese dong',
     },
     VUV: {
       symbol: 'VUV',
@@ -1480,7 +1480,7 @@ export const responseCache = {
       rounding: 0,
       code: 'VUV',
       icon_name: 'vuv',
-      name_plural: 'Vanuatu Vatu'
+      name_plural: 'Vanuatu Vatu',
     },
     WST: {
       symbol: 'WS$',
@@ -1490,7 +1490,7 @@ export const responseCache = {
       rounding: 0,
       code: 'WST',
       icon_name: 'wst',
-      name_plural: 'Samoan Tala'
+      name_plural: 'Samoan Tala',
     },
     XAF: {
       symbol: 'FCFA',
@@ -1499,7 +1499,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'XAF',
-      name_plural: 'CFA francs BEAC'
+      name_plural: 'CFA francs BEAC',
     },
     XAG: {
       symbol: 'XAG',
@@ -1508,7 +1508,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'XAG',
-      name_plural: 'Silver Ounces'
+      name_plural: 'Silver Ounces',
     },
     XAU: {
       symbol: 'XAU',
@@ -1517,7 +1517,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'XAU',
-      name_plural: 'Gold Ounces'
+      name_plural: 'Gold Ounces',
     },
     XCD: {
       symbol: 'EC$',
@@ -1527,7 +1527,7 @@ export const responseCache = {
       rounding: 0,
       code: 'XCD',
       icon_name: 'xcd',
-      name_plural: 'East Caribbean Dollars'
+      name_plural: 'East Caribbean Dollars',
     },
     XDR: {
       symbol: 'SDR',
@@ -1536,7 +1536,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'XDR',
-      name_plural: 'Special drawing rights'
+      name_plural: 'Special drawing rights',
     },
     XOF: {
       symbol: 'CFA',
@@ -1545,7 +1545,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'XOF',
-      name_plural: 'CFA francs BCEAO'
+      name_plural: 'CFA francs BCEAO',
     },
     XPF: {
       symbol: 'CFP',
@@ -1555,7 +1555,7 @@ export const responseCache = {
       rounding: 0,
       code: 'XPF',
       icon_name: 'xpf',
-      name_plural: 'CFP francs'
+      name_plural: 'CFP francs',
     },
     XRP: {
       symbol: 'XRP',
@@ -1564,7 +1564,7 @@ export const responseCache = {
       decimal_digits: 6,
       rounding: 0,
       code: 'XRP',
-      name_plural: 'Ripple'
+      name_plural: 'Ripple',
     },
     YER: {
       symbol: 'YR',
@@ -1573,7 +1573,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'YER',
-      name_plural: 'Yemeni rials'
+      name_plural: 'Yemeni rials',
     },
     ZAR: {
       symbol: 'R',
@@ -1582,7 +1582,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'ZAR',
-      name_plural: 'South African rand'
+      name_plural: 'South African rand',
     },
     ZMK: {
       symbol: 'ZK',
@@ -1591,7 +1591,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'ZMK',
-      name_plural: 'Zambian kwachas'
+      name_plural: 'Zambian kwachas',
     },
     ZMW: {
       symbol: 'ZK',
@@ -1600,7 +1600,7 @@ export const responseCache = {
       decimal_digits: 0,
       rounding: 0,
       code: 'ZMK',
-      name_plural: 'Zambian kwachas'
+      name_plural: 'Zambian kwachas',
     },
     ZWL: {
       symbol: 'ZWL',
@@ -1609,7 +1609,7 @@ export const responseCache = {
       decimal_digits: 2,
       rounding: 0,
       code: 'ZWL',
-      name_plural: 'Zimbabwean dollars'
-    }
-  }
-};
+      name_plural: 'Zimbabwean dollars',
+    },
+  },
+}

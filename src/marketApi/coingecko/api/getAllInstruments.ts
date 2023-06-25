@@ -15,9 +15,9 @@ const normalizeCoingeckoItem = (item): InstrumentsList => {
     type: EMarketInstrumentTypes.Crypto,
     currency: 'USD',
     sourceSpecificData: {
-      id: item.id
+      id: item.id,
     },
-    priceScale: null
+    priceScale: null,
   }
 }
 
@@ -29,8 +29,17 @@ export const coingeckoGetAllInstruments = async () => {
     throw new Error('Не пришли данные из CoinGeko')
   }
 
-  return data.map(normalizeCoingeckoItem)
-  // FIXME: Удаление wormhole монет это костыль, который уберется после перехода на id
-  // Фильтрация говнотикеров у которых нет основных данных
-    .filter(el => !(/.*\(Wormhole\)$/.test(el.name)) && el.id?.length && el.name?.length && el.ticker?.length)
+  return (
+    data
+      .map(normalizeCoingeckoItem)
+      // FIXME: Удаление wormhole монет это костыль, который уберется после перехода на id
+      // Фильтрация говнотикеров у которых нет основных данных
+      .filter(
+        (el) =>
+          !/.*\(Wormhole\)$/.test(el.name) &&
+          el.id?.length &&
+          el.name?.length &&
+          el.ticker?.length
+      )
+  )
 }

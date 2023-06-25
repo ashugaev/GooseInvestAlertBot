@@ -6,8 +6,12 @@ import { EMarketInstrumentTypes, InstrumentsList } from '../../../models'
 import { EMarketDataSources } from '../../types'
 import { binance } from '../utils/binance'
 
+// eslint-disable-next-line
 export type BinanceTickerItem = Symbol<OrderType_LT>
-export type BinanceSourceSpecificData = Omit<BinanceTickerItem, 'quoteAsset' | 'symbol'>
+export type BinanceSourceSpecificData = Omit<
+  BinanceTickerItem,
+  'quoteAsset' | 'symbol'
+>
 
 const normalizeItem = (item: BinanceTickerItem): InstrumentsList => {
   const { symbol, quoteAsset, ...specificData } = item
@@ -20,7 +24,7 @@ const normalizeItem = (item: BinanceTickerItem): InstrumentsList => {
     ticker: symbol,
     type: EMarketInstrumentTypes.Crypto,
     sourceSpecificData: specificData,
-    priceScale: null
+    priceScale: null,
   }
 
   return result

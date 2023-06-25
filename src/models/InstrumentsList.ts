@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import {getModelForClass, prop} from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
 
 import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstruments'
 import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
@@ -85,13 +85,13 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
     customName: 'instrumentslist',
   },
   // eslint-disable-next-line
-});
+})
 
 /**
  * Auto apdate all data structures for instruments list
  */
 // eslint-disable-next-line
-(async function autoUpdateInstrumentsListCache () {
+;(async function autoUpdateInstrumentsListCache() {
   const items: InstrumentsList[] = await retryForever(
     async () => await InstrumentsListModel.find().lean()
   )

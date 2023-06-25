@@ -10,7 +10,12 @@ import { byBitApi } from './api'
 const logPrefix = '[BYBIT GET ALL INSTRUMENTS]'
 
 const normalizeItem = (item: SymbolInfo): InstrumentsList => {
-  const { alias, name, price_scale: priceScale, quote_currency: quoteCurrency } = item
+  const {
+    alias,
+    name,
+    price_scale: priceScale,
+    quote_currency: quoteCurrency,
+  } = item
 
   const result = {
     id: `bybit_${alias}`,
@@ -20,7 +25,7 @@ const normalizeItem = (item: SymbolInfo): InstrumentsList => {
     ticker: alias,
     type: EMarketInstrumentTypes.Crypto,
     sourceSpecificData: item,
-    priceScale
+    priceScale,
   }
 
   return result

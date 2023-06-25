@@ -11,30 +11,30 @@ export interface SourceConfig {
 export const SOURCE_CONFIG: Record<EMarketDataSources, SourceConfig> = {
   [EMarketDataSources.tinkoff]: {
     fullName: 'Tinkoff',
-    shortName: 'TNKF'
+    shortName: 'TNKF',
   },
   [EMarketDataSources.coingecko]: {
     fullName: 'Coingecko',
-    shortName: 'COINGECKO'
+    shortName: 'COINGECKO',
   },
   [EMarketDataSources.binance]: {
     fullName: 'Binance',
-    shortName: 'BINANCE'
+    shortName: 'BINANCE',
   },
   [EMarketDataSources.yahoo]: {
     fullName: 'Yahoo',
-    shortName: 'YH'
+    shortName: 'YH',
   },
   [EMarketDataSources.bybit]: {
     fullName: 'Bybit',
-    shortName: 'BYBIT'
+    shortName: 'BYBIT',
   },
   [EMarketDataSources.kucoin]: {
     fullName: 'Kucoin',
-    shortName: 'KUCOIN'
+    shortName: 'KUCOIN',
   },
   [EMarketDataSources.lbank]: {
     fullName: 'LBank',
-    shortName: 'LBANK'
-  }
+    shortName: 'LBANK',
+  },
 }

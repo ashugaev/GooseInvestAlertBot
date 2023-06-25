@@ -1,6 +1,7 @@
 export const KucoinAPI = require('kucoin-node-sdk')
 
-const { NODE_ENV, KUCOIN_API_KEY, KUCOIN_API_PASSPHRASE, KUCOIN_API_SECRET } = process.env
+const { NODE_ENV, KUCOIN_API_KEY, KUCOIN_API_PASSPHRASE, KUCOIN_API_SECRET } =
+  process.env
 
 require('dotenv').config()
 

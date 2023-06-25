@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import {getModelForClass, prop} from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
 
 /**
  * Вспомогательная таблица для рассчета стоимости фьчерсов в тиньке
@@ -10,19 +10,22 @@ export class TinkoffFuturesMargin {
   @prop({ required: true, unique: true })
   tickerId: string
 
-  @prop({ required: true})
+  @prop({ required: true })
   minPriceIncrement: {
-    'units': number
-    'nano': number
+    units: number
+    nano: number
   }
 
   @prop({ required: true })
   minPriceIncrementAmount: {
-    'units': number
-    'nano': number
+    units: number
+    nano: number
   }
 }
 
-export const TinkoffFuturesMarginModel = getModelForClass(TinkoffFuturesMargin, {
-  schemaOptions: { timestamps: true }
-})
+export const TinkoffFuturesMarginModel = getModelForClass(
+  TinkoffFuturesMargin,
+  {
+    schemaOptions: { timestamps: true },
+  }
+)

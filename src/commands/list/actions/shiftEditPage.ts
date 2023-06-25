@@ -1,93 +1,110 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { shortenerGetFull } from '@/helpers'
-import {commandWrapper} from "@/helpers/commandWrapper"
+import { commandWrapper } from '@/helpers/commandWrapper'
 import { getSourceMark } from '@/helpers/getSourceMark'
 
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
-import {getInstrumentByIdFromCache, getTimeShifts, TimeShift, TimeShiftModel} from '../../../models'
+import {
+  getInstrumentByIdFromCache,
+  getTimeShifts,
+  TimeShiftModel,
+} from '../../../models'
 import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
 /**
  * Страница редактирования шифта
  */
-export const shiftEditPage = commandWrapper({availableForAdmins: true}, async (ctx) => {
-  try {
-    const {
-      // Данные достаточные для первичного вызова
-      [ListActionsDataKeys.selectedAlertId]: _idShort,
-      p: page,
-      // Данные, которые приходят уже после повторных вызовов
-      m: muted,
-      g: growAlerts,
-      f: fallAlerts
-    } = JSON.parse(ctx.match[1])
+export const shiftEditPage = commandWrapper(
+  { availableForAdmins: true },
+  async (ctx) => {
+    try {
+      const {
+        // Данные достаточные для первичного вызова
+        [ListActionsDataKeys.selectedAlertId]: _idShort,
+        p: page,
+        // Данные, которые приходят уже после повторных вызовов
+        m: muted,
+        g: growAlerts,
+        f: fallAlerts,
+      } = JSON.parse(ctx.match[1])
 
-    const _id = shortenerGetFull(_idShort)
+      const _id = shortenerGetFull(_idShort)
 
-    const { id: user } = ctx.from
+      const { id: user } = ctx.from
 
-    const shiftData =  (await getTimeShifts({
-      chat: ctx.adminChatActive?.id,
-      user: user,
-      _id
-    }))[0]
+      const shiftData = (
+        await getTimeShifts({
+          chat: ctx.adminChatActive?.id,
+          user: user,
+          _id,
+        })
+      )[0]
 
-    const instrumentData = await getInstrumentByIdFromCache(shiftData.tickerId)
+      const instrumentData = await getInstrumentByIdFromCache(
+        shiftData.tickerId
+      )
 
-    if (!shiftData) {
-      throw new Error('Не могу получить шифт по id')
-    }
-
-    let shiftDataCopy = shiftData;
-
-    // Меняем параметры
-    (typeof muted === 'number') && (shiftDataCopy = { ...shiftDataCopy, muted: Boolean(muted) });
-    (typeof growAlerts === 'number') && (shiftDataCopy = { ...shiftDataCopy, growAlerts: Boolean(growAlerts) });
-    (typeof fallAlerts === 'number') && (shiftDataCopy = { ...shiftDataCopy, fallAlerts: Boolean(fallAlerts) })
-
-    // Если изменились параметры шифта
-    if (shiftData !== shiftDataCopy) {
-      // Апдейт параметров
-      await TimeShiftModel.updateOne({ _id }, {
-        $set: {
-          muted: shiftDataCopy.muted,
-          fallAlerts: shiftDataCopy.fallAlerts,
-          growAlerts: shiftDataCopy.growAlerts
-        }
-      })
-      shiftsCache.update()
-    }
-
-    const timeframesObj = SHIFT_TIMEFRAMES
-
-    const message = i18n.t('ru', 'alertsList_shifts_editOne', {
-      name: shiftDataCopy.name,
-      ticker: shiftDataCopy.ticker,
-      growthOnly: shiftDataCopy.growAlerts && !shiftDataCopy.fallAlerts,
-      fallOnly: shiftDataCopy.fallAlerts && !shiftDataCopy.growAlerts,
-      change: shiftDataCopy.fallAlerts && shiftDataCopy.growAlerts,
-      percent: shiftDataCopy.percent,
-      time: timeframesObj[shiftDataCopy.timeframe].name_ru_plur,
-      link: getSourceMark(instrumentData)
-    })
-
-    const keyboard = shiftEditKeyboard({
-      page,
-      shiftData: shiftDataCopy
-    })
-
-    await ctx.editMessageText(message, {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      reply_markup: {
-        inline_keyboard: keyboard
+      if (!shiftData) {
+        throw new Error('Не могу получить шифт по id')
       }
-    })
-  } catch (e) {
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-    log.error(e)
+
+      let shiftDataCopy = shiftData
+
+      // Меняем параметры
+      typeof muted === 'number' &&
+        (shiftDataCopy = { ...shiftDataCopy, muted: Boolean(muted) })
+      typeof growAlerts === 'number' &&
+        (shiftDataCopy = { ...shiftDataCopy, growAlerts: Boolean(growAlerts) })
+      typeof fallAlerts === 'number' &&
+        (shiftDataCopy = { ...shiftDataCopy, fallAlerts: Boolean(fallAlerts) })
+
+      // Если изменились параметры шифта
+      if (shiftData !== shiftDataCopy) {
+        // Апдейт параметров
+        await TimeShiftModel.updateOne(
+          { _id },
+          {
+            $set: {
+              muted: shiftDataCopy.muted,
+              fallAlerts: shiftDataCopy.fallAlerts,
+              growAlerts: shiftDataCopy.growAlerts,
+            },
+          }
+        )
+        shiftsCache.update()
+      }
+
+      const timeframesObj = SHIFT_TIMEFRAMES
+
+      const message = i18n.t('ru', 'alertsList_shifts_editOne', {
+        name: shiftDataCopy.name,
+        ticker: shiftDataCopy.ticker,
+        growthOnly: shiftDataCopy.growAlerts && !shiftDataCopy.fallAlerts,
+        fallOnly: shiftDataCopy.fallAlerts && !shiftDataCopy.growAlerts,
+        change: shiftDataCopy.fallAlerts && shiftDataCopy.growAlerts,
+        percent: shiftDataCopy.percent,
+        time: timeframesObj[shiftDataCopy.timeframe].name_ru_plur,
+        link: getSourceMark(instrumentData),
+      })
+
+      const keyboard = shiftEditKeyboard({
+        page,
+        shiftData: shiftDataCopy,
+      })
+
+      await ctx.editMessageText(message, {
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        reply_markup: {
+          inline_keyboard: keyboard,
+        },
+      })
+    } catch (e) {
+      ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+      log.error(e)
+    }
   }
-})
+)

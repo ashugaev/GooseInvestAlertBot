@@ -7,7 +7,7 @@ import { generateShiftsData } from './generateShiftsData'
 const daysBackToCheck = 30
 const maxRetries = 3
 
-export const calculateShifts = async ({ instruments, shifts }) => (
+export const calculateShifts = async ({ instruments, shifts }) =>
   await new Promise<void>(async (rs) => {
     let timesRetried = 0
 
@@ -16,7 +16,14 @@ export const calculateShifts = async ({ instruments, shifts }) => (
     for (let i = 0; i < instruments.length; i++) {
       const instrument = instruments[i]
 
-      log.info('iteration', i, 'of', instruments.length - 1, 'for', instrument.ticker)
+      log.info(
+        'iteration',
+        i,
+        'of',
+        instruments.length - 1,
+        'for',
+        instrument.ticker
+      )
 
       let candles = []
 
@@ -25,7 +32,7 @@ export const calculateShifts = async ({ instruments, shifts }) => (
           from: dateFrom,
           to: dateTo,
           interval: 'day',
-          figi: instrument.sourceSpecificData.figi
+          figi: instrument.sourceSpecificData.figi,
         })
 
         candles = data.candles
@@ -59,4 +66,3 @@ export const calculateShifts = async ({ instruments, shifts }) => (
 
     rs()
   })
-)

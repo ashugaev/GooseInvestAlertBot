@@ -16,42 +16,42 @@ const WizardScene = require('telegraf/scenes/wizard')
 /**
  * Просим выбрать тикер
  */
-const requestStep = immediateStep('check-ticker-duplicates-send-message', async (ctx, state) => {
-  const {
-    instrumentsList
-  } = state.payload
+const requestStep = immediateStep(
+  'check-ticker-duplicates-send-message',
+  async (ctx, state) => {
+    const { instrumentsList } = state.payload
 
-  if (!instrumentsList.length) {
-    throw new Error('Недостаточно входных данных для tickerDuplicatesScene')
-  }
+    if (!instrumentsList.length) {
+      throw new Error('Недостаточно входных данных для tickerDuplicatesScene')
+    }
 
-  const keyboard = m.inlineKeyboard(instrumentsList.map(item => [m.callbackButton(
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    `${item.name} (${item.ticker}) ${getSourceMark(item, true)}`,
-    createActionString(COMMON_ACTIONS.chooseTickerId, {
-      id: item.id
+    const keyboard = m.inlineKeyboard(
+      instrumentsList.map((item) => [
+        m.callbackButton(
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          `${item.name} (${item.ticker}) ${getSourceMark(item, true)}`,
+          createActionString(COMMON_ACTIONS.chooseTickerId, {
+            id: item.id,
+          })
+        ),
+      ])
+    )
+
+    await ctx.replyWithHTML(i18n.t('ru', 'alert_choose_between_duplicates'), {
+      reply_markup: keyboard,
     })
-  )]))
 
-  await ctx.replyWithHTML(i18n.t('ru', 'alert_choose_between_duplicates'), {
-    reply_markup: keyboard
-  })
-
-  return ctx.wizard.next()
-})
+    return ctx.wizard.next()
+  }
+)
 
 const validateAndSaveStep = waitButtonClickStep(
   COMMON_ACTIONS.chooseTickerId,
   'shift_add_choose-timeframe',
   async (ctx, actionPayload, state) => {
-    const {
-      payload,
-      callback
-    } = state
+    const { payload, callback } = state
 
-    const {
-      instrumentsList
-    } = payload
+    const { instrumentsList } = payload
 
     const { id } = actionPayload
 
@@ -59,7 +59,7 @@ const validateAndSaveStep = waitButtonClickStep(
       throw new Error('[CheckTickerDuplicates] Нет id выборе тикера')
     }
 
-    const chosenInstrument = instrumentsList.find(el => el.id === id)
+    const chosenInstrument = instrumentsList.find((el) => el.id === id)
 
     if (!chosenInstrument) {
       throw new Error('[CheckTickerDuplicates] Не сработал выбор инструмента')
@@ -68,9 +68,11 @@ const validateAndSaveStep = waitButtonClickStep(
     callback({ instrumentsList: [chosenInstrument] })
 
     return ctx.scene.leave()
-  })
+  }
+)
 
-export const tickerDuplicatesScene = new WizardScene(COMMON_SCENES.tickerDuplicates,
+export const tickerDuplicatesScene = new WizardScene(
+  COMMON_SCENES.tickerDuplicates,
   requestStep,
   validateAndSaveStep
 )

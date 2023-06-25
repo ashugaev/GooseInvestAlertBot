@@ -5,12 +5,8 @@ import { plur } from '../../helpers/plural'
 
 export const getItemText = (data) => {
   const isFall = data.fallPercent > data.growPercent
-  const percent = isFall
-    ? data.fallPercent
-    : data.growPercent
-  const action = isFall
-    ? i18n.t('ru', 'fall')
-    : i18n.t('ru', 'grow')
+  const percent = isFall ? data.fallPercent : data.growPercent
+  const action = isFall ? i18n.t('ru', 'fall') : i18n.t('ru', 'grow')
 
   const { type, ticker, source } = data.instrument
 
@@ -19,7 +15,7 @@ export const getItemText = (data) => {
     ticker: data.instrument.ticker,
     percent: plur.percent(percent),
     link: getSourceMark(data.instrument),
-    action
+    action,
   })
 
   return text

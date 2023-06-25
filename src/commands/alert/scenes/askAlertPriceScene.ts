@@ -31,7 +31,7 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
     i18n.t('ru', 'alert_add_choosePrice', {
       price,
       currency: symbolOrCurrency(currency),
-      source: getSourceMark(instrumentData)
+      source: getSourceMark(instrumentData),
     }),
     { disable_web_page_preview: true }
   )
@@ -39,28 +39,29 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
   return ctx.wizard.next()
 })
 
-const validateAndSaveStep = waitMessageStep('ask-alert-price-validate-and-save', async (ctx, message, state) => {
-  const {
-    price: lastPrice,
-    callback
-  } = state
+const validateAndSaveStep = waitMessageStep(
+  'ask-alert-price-validate-and-save',
+  async (ctx, message, state) => {
+    const { price: lastPrice, callback } = state
 
-  const { normalized, isValid } = await validateAlertPrice({
-    ctx,
-    message,
-    lastPrice
-  })
+    const { normalized, isValid } = await validateAlertPrice({
+      ctx,
+      message,
+      lastPrice,
+    })
 
-  if (!isValid) {
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
+    if (!isValid) {
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+
+    callback({ prices: normalized, currentPrice: lastPrice })
+
+    return ctx.scene.leave()
   }
+)
 
-  callback({ prices: normalized, currentPrice: lastPrice })
-
-  return ctx.scene.leave()
-})
-
-export const askAlertPriceScene = new WizardScene(ALERT_SCENES.askPrice,
+export const askAlertPriceScene = new WizardScene(
+  ALERT_SCENES.askPrice,
   requestStep,
   validateAndSaveStep
 )

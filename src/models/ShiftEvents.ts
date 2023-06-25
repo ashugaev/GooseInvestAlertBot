@@ -1,5 +1,5 @@
 import { MarketInstrument } from '@tinkoff/invest-openapi-js-sdk/build/domain'
-import {getModelForClass, prop} from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
 import { Modify } from 'Modify'
 
 import { PriceAlert } from '@/models/PriceAlert'
@@ -51,8 +51,8 @@ export class ShiftEvents {
 export const ShiftEventsModel = getModelForClass(ShiftEvents, {
   schemaOptions: { timestamps: true },
   options: {
-    customName: 'shiftevents'
-  }
+    customName: 'shiftevents',
+  },
 })
 
 export interface ShiftEventItem {
@@ -62,9 +62,9 @@ export interface ShiftEventItem {
   days: number
   targetPercent: number
   /**
-     * День для которого создаем оповещение
-     * Берем день месяца. Следовательно история будет храниться только за месяц.
-     */
+   * День для которого создаем оповещение
+   * Берем день месяца. Следовательно история будет храниться только за месяц.
+   */
   forDay: number
 
   /**
@@ -80,7 +80,9 @@ export interface ShiftEventItem {
   }
 }
 
-export async function createShiftEvents (items: ShiftEventItem[]): Promise<null> {
+export async function createShiftEvents(
+  items: ShiftEventItem[]
+): Promise<null> {
   return await new Promise(async (rs, rj) => {
     try {
       await ShiftEventsModel.create(items)
@@ -93,19 +95,25 @@ export async function createShiftEvents (items: ShiftEventItem[]): Promise<null>
   })
 }
 
-type ShiftEventItemFindParams = Modify<ShiftEventItem, {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  time: object | number
-}>
+type ShiftEventItemFindParams = Modify<
+  ShiftEventItem,
+  {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    time: object | number
+  }
+>
 
 /**
  * Присылает по времени события по указанному времени и меньше (что бы точно не пропустить что-нибудь)
  */
-export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
+export async function getShiftEvents({
+  time,
+  wasSent,
+}: Partial<ShiftEventItem>): Promise<ShiftEventItem[]> {
   const params: Partial<ShiftEventItemFindParams> = {
     time: { $lte: time },
     // forDay,
-    wasSent
+    wasSent,
   }
 
   const shifts = await ShiftEventsModel.find(params).lean()
@@ -113,7 +121,10 @@ export async function getShiftEvents ({ time, wasSent }: Partial<ShiftEventItem>
   return shifts
 }
 
-export async function removeShiftEvent ({ _id, user }: Partial<ShiftEventItem>): Promise<number> {
+export async function removeShiftEvent({
+  _id,
+  user,
+}: Partial<ShiftEventItem>): Promise<number> {
   // eslint-disable-next-line promise/param-names,no-async-promise-executor
   return await new Promise(async (rs, rj) => {
     try {

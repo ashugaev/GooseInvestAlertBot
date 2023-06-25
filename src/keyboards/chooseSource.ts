@@ -16,17 +16,23 @@ export const chooseSourceKeyboard = () => {
     const row = []
 
     if (firstRowElement) {
-      row.push(Markup.callbackButton(
-        SOURCE_CONFIG[firstRowElement].fullName,
-        createActionString(SHIFT_ACTIONS.chooseSource, { source: firstRowElement })
-      ))
+      row.push(
+        Markup.callbackButton(
+          SOURCE_CONFIG[firstRowElement].fullName,
+          createActionString(SHIFT_ACTIONS.chooseSource, {
+            source: firstRowElement,
+          })
+        )
+      )
     }
 
     if (secondRowElement) {
       row.push(
         Markup.callbackButton(
           SOURCE_CONFIG[secondRowElement].fullName,
-          createActionString(SHIFT_ACTIONS.chooseSource, { source: secondRowElement })
+          createActionString(SHIFT_ACTIONS.chooseSource, {
+            source: secondRowElement,
+          })
         )
       )
     }

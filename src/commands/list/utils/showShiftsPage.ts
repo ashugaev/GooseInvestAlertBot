@@ -5,7 +5,10 @@ import { getSourceMark } from '@/helpers/getSourceMark'
 import { listConfig } from '../../../config'
 import { Actions } from '../../../constants'
 import { getInstrumentByIdFromCache, TimeShift } from '../../../models'
-import { EKeyboardModes, instrumentPageKeyboard } from '../keyboards/instrumentPageKeyboard'
+import {
+  EKeyboardModes,
+  instrumentPageKeyboard,
+} from '../keyboards/instrumentPageKeyboard'
 import { EListTypes, ListActionsDataKeys } from '../list.types'
 import { getAlertNumberByPage } from './showInstrumentPage'
 
@@ -22,17 +25,25 @@ export const showShiftsPage = async ({
   ctx,
   shiftsList,
   edit,
-  keyboardMode
+  keyboardMode,
 }: IShowShiftsPageParams) => {
   const itemsToShow = shiftsList
-  // Сортировка по названию
-    .sort((a, b) => a.name > b.name ? 1 : -1)
+    // Сортировка по названию
+    .sort((a, b) => (a.name > b.name ? 1 : -1))
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
   let itemsList = ''
 
   for (let i = 0; i < itemsToShow.length; i++) {
-    const { ticker, percent, growAlerts, fallAlerts, timeframe, name, tickerId } = itemsToShow[i]
+    const {
+      ticker,
+      percent,
+      growAlerts,
+      fallAlerts,
+      timeframe,
+      name,
+      tickerId,
+    } = itemsToShow[i]
 
     const instrumentInfo = await getInstrumentByIdFromCache(tickerId)
 
@@ -46,7 +57,7 @@ export const showShiftsPage = async ({
       change: fallAlerts && growAlerts,
       percent,
       time: SHIFT_TIMEFRAMES[timeframe].name_ru_plur,
-      link: getSourceMark(instrumentInfo)
+      link: getSourceMark(instrumentInfo),
     })
 
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
@@ -56,7 +67,7 @@ export const showShiftsPage = async ({
   const message = ctx.i18n.t('alertsList_shifts_list', {
     empty: !itemsList.length,
     list: itemsList,
-    showEditMessage: keyboardMode === EKeyboardModes.edit
+    showEditMessage: keyboardMode === EKeyboardModes.edit,
   })
 
   await ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
@@ -75,29 +86,33 @@ export const showShiftsPage = async ({
           action: Actions.list_shiftsPage,
           payload: {
             p: page,
-            kMode: keyboardMode
-          }
+            kMode: keyboardMode,
+          },
         },
         editButtonConfig: {
           action: Actions.list_shiftsPage,
           payloadCallback: (i) => {
             return {
-              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(itemsToShow[i]._id)
+              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(
+                itemsToShow[i]._id
+              ),
             }
-          }
+          },
         },
         editNumberButtonsConfig: {
           action: Actions.list_shiftEditPage,
           payload: {
-            p: page
+            p: page,
           },
           payloadCallback: (i) => {
             return {
-              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(itemsToShow[i]._id)
+              [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(
+                itemsToShow[i]._id
+              ),
             }
-          }
-        }
-      })
-    }
+          },
+        },
+      }),
+    },
   })
 }

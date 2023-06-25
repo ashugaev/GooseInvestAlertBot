@@ -1,1 +1,1 @@
-export * from './validateAlertPrice';
+export * from './validateAlertPrice'

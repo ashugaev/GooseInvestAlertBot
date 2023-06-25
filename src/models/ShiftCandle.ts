@@ -2,7 +2,7 @@
  * Свечи, которые нужная для работы алгоритма измерения скорости
  */
 
-import { prop, getModelForClass } from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
 
 export class ShiftCandle {
   /**

@@ -1,4 +1,3 @@
-
 import { tinkoffApi } from '../../../app'
 import { log } from '../../../helpers/log'
 import { wait } from '../../../helpers/wait'
@@ -10,7 +9,7 @@ import { EMarketDataSources } from '../../types'
  */
 const tickerReplacements = {
   USD000UTSTOM: 'USDRUB',
-  EUR_RUB__TOM: 'EURRUB'
+  EUR_RUB__TOM: 'EURRUB',
 }
 
 const normalizeTinkoffItem = (item): InstrumentsList => {
@@ -24,7 +23,7 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     type,
     currency,
     sourceSpecificData: specificData,
-    priceScale: null
+    priceScale: null,
   }
 
   // Замена тикера по шаблону
@@ -36,26 +35,45 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
 export const tinkoffGetAllInstruments = async () => {
   try {
     const commonParams = {
-      instrumentStatus: 'INSTRUMENT_STATUS_UNSPECIFIED'
+      instrumentStatus: 'INSTRUMENT_STATUS_UNSPECIFIED',
     }
 
-    // @ts-expect-error
-    // eslint-disable-next-line max-len
-    const shares = (await tinkoffApi.instruments.shares(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Stock }))
-    // @ts-expect-error
-    // eslint-disable-next-line max-len
-    const etfs = (await tinkoffApi.instruments.etfs(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Etf }))
-    // @ts-expect-error
-    // eslint-disable-next-line max-len
-    const bonds = (await tinkoffApi.instruments.bonds(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Bond }))
-    // @ts-expect-error
-    // eslint-disable-next-line max-len
-    const currencies = (await tinkoffApi.instruments.currencies(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Currency }))
-    // @ts-expect-error
-    // eslint-disable-next-line max-len
-    const futures = (await tinkoffApi.instruments.futures(commonParams)).instruments.map(el => ({ ...el, type: EMarketInstrumentTypes.Future }))
+    const shares = // @ts-expect-error
+      (await tinkoffApi.instruments.shares(commonParams)).instruments.map(
+        (el) => ({ ...el, type: EMarketInstrumentTypes.Stock })
+      )
+    const etfs = // @ts-expect-error
+      (await tinkoffApi.instruments.etfs(commonParams)).instruments.map(
+        (el) => ({
+          ...el,
+          type: EMarketInstrumentTypes.Etf,
+        })
+      )
+    const bonds = // @ts-expect-error
+      (await tinkoffApi.instruments.bonds(commonParams)).instruments.map(
+        (el) => ({ ...el, type: EMarketInstrumentTypes.Bond })
+      )
+    const currencies = // @ts-expect-error
+      (await tinkoffApi.instruments.currencies(commonParams)).instruments.map(
+        (el) => ({
+          ...el,
+          type: EMarketInstrumentTypes.Currency,
+        })
+      )
 
-    const allInstruments = [...bonds, ...currencies, ...shares, ...etfs, ...futures]
+    const futures = // @ts-expect-error
+      // eslint-disable-next-line max-len
+      (await tinkoffApi.instruments.futures(commonParams)).instruments.map(
+        (el) => ({ ...el, type: EMarketInstrumentTypes.Future })
+      )
+
+    const allInstruments = [
+      ...bonds,
+      ...currencies,
+      ...shares,
+      ...etfs,
+      ...futures,
+    ]
 
     const normalizedInstrumentsArray = allInstruments.map(normalizeTinkoffItem)
 
@@ -67,6 +85,6 @@ export const tinkoffGetAllInstruments = async () => {
 
     // Ретрай
     // eslint-disable-next-line
-    return (await tinkoffGetAllInstruments())
+    return await tinkoffGetAllInstruments()
   }
 }

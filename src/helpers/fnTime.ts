@@ -8,7 +8,11 @@ export const fnTime = (fn: () => any, logText: string) => {
 
   const res = fn()
 
-  log.info(logText, '. Time: ', ((new Date().getTime() - startTime) / 1000).toString() + 's')
+  log.info(
+    logText,
+    '. Time: ',
+    ((new Date().getTime() - startTime) / 1000).toString() + 's'
+  )
 
   return res
 }

@@ -1,7 +1,7 @@
 import { set } from 'lodash'
 
 import { shortenerGetFull } from '@/helpers'
-import {commandWrapper} from "@/helpers/commandWrapper"
+import { commandWrapper } from '@/helpers/commandWrapper'
 import { alertByTickerIdFromCache } from '@/models'
 
 import { log } from '../../../helpers/log'
@@ -13,32 +13,40 @@ import { showInstrumentPage } from '../utils/showInstrumentPage'
  *
  * Страницы для ценового уровня
  */
-export const alertsForInstrument = commandWrapper({availableForAdmins: true}, async (ctx) => {
-  try {
-    const {
-      [ListActionsDataKeys.selectedTickerIdShortened]: selectedTickerIdShortened,
-      p: page,
-      kMode: keyboardMode,
-      tp: tickersPage
-    } = JSON.parse(ctx.match[1])
+export const alertsForInstrument = commandWrapper(
+  { availableForAdmins: true },
+  async (ctx) => {
+    try {
+      const {
+        [ListActionsDataKeys.selectedTickerIdShortened]:
+          selectedTickerIdShortened,
+        p: page,
+        kMode: keyboardMode,
+        tp: tickersPage,
+      } = JSON.parse(ctx.match[1])
 
-    const selectedTickerId = shortenerGetFull(selectedTickerIdShortened)
+      const selectedTickerId = shortenerGetFull(selectedTickerIdShortened)
 
-    set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId)
+      set(ctx, 'session.listCommand.price.selectedTickerId', selectedTickerId)
 
-    const alerts = await alertByTickerIdFromCache(selectedTickerId, ctx.from.id, ctx.dbuser.adminModeChatId)
+      const alerts = await alertByTickerIdFromCache(
+        selectedTickerId,
+        ctx.from.id,
+        ctx.dbuser.adminModeChatId
+      )
 
-    await showInstrumentPage({
-      page,
-      ctx,
-      instrumentItems: alerts,
-      edit: true,
-      keyboardMode,
-      tickersPage,
-      noRedirectToEditPage: true
-    })
-  } catch (e) {
-    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
-    log.error(e)
+      await showInstrumentPage({
+        page,
+        ctx,
+        instrumentItems: alerts,
+        edit: true,
+        keyboardMode,
+        tickersPage,
+        noRedirectToEditPage: true,
+      })
+    } catch (e) {
+      ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
+      log.error(e)
+    }
   }
-})
+)

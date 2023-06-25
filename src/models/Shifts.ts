@@ -5,34 +5,34 @@ import { getModelForClass, prop } from '@typegoose/typegoose' // eslint-disable-
  */
 export class Shift {
   @prop({ required: true })
-    time: number
+  time: number
 
   @prop({ required: true })
-    timeZone: number
+  timeZone: number
 
   @prop({ required: true })
-    percent: number
+  percent: number
 
   @prop({ required: true })
-    days: number
+  days: number
 
   @prop({ required: true })
-    user: number
+  user: number
 
   /**
    * Bot id for send alert
    * Multi bot support
    */
-  @prop({required: true})
-    botId: number
+  @prop({ required: true })
+  botId: number
 }
 
 // Get User model
 const ShiftModel = getModelForClass(Shift, {
   schemaOptions: { timestamps: true },
   options: {
-    customName: 'shifts'
-  }
+    customName: 'shifts',
+  },
 })
 
 interface ShiftItem {
@@ -43,7 +43,13 @@ interface ShiftItem {
   timeZone: number
 }
 
-export const createShift = async ({ percent, time, user, days, timeZone }: ShiftItem) => {
+export const createShift = async ({
+  percent,
+  time,
+  user,
+  days,
+  timeZone,
+}: ShiftItem) => {
   await ShiftModel.create({ user, time, percent, days, timeZone })
 }
 

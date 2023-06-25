@@ -23,17 +23,33 @@ export interface CurrencyApiSpecificData {
   symbol: string
   baseAssetData: CurrencyListApiResponseItem
   quoteAssetData: CurrencyListApiResponseItem
-};
+}
 
 /**
  * Popular codes for generating only popular pairs
  */
-const popularCodes = ['GBP', 'CAD', 'CHF', 'RUB', 'EUR', 'JPY', 'USD', 'AUD', 'GEL', 'TRY', 'THB', 'HKD', 'AMD', 'RSD', 'IDR']
+const popularCodes = [
+  'GBP',
+  'CAD',
+  'CHF',
+  'RUB',
+  'EUR',
+  'JPY',
+  'USD',
+  'AUD',
+  'GEL',
+  'TRY',
+  'THB',
+  'HKD',
+  'AMD',
+  'RSD',
+  'IDR',
+]
 const deprecatedCodes = ['BTC', 'ETH', 'BIH', 'GGP']
 const excludedPairs = ['THBBNB']
 
 const coinTickersCache = new NodeCache({
-  stdTTL: 1000 // sec
+  stdTTL: 1000, // sec
 })
 
 const COINS_TICKERS_CACHE_KEY = 'KEY'
@@ -46,11 +62,15 @@ export const getBaseCurrencies = async () => {
 
     if (!result) {
       // eslint-disable-next-line max-len
-      result = (await axios(`https://api.currencyapi.com/v3/currencies?apikey=${process.env.CURRENCY_CONVERTER_APIKEY}&currencies=`)).data
+      result = (
+        await axios(
+          `https://api.currencyapi.com/v3/currencies?apikey=${process.env.CURRENCY_CONVERTER_APIKEY}&currencies=`
+        )
+      ).data
     }
 
     if (!result) {
-      throw new Error(logPrefix + ' Can\'t fetch currencies')
+      throw new Error(logPrefix + " Can't fetch currencies")
     }
 
     coinTickersCache.set(COINS_TICKERS_CACHE_KEY, result)
@@ -59,7 +79,7 @@ export const getBaseCurrencies = async () => {
     result = responseCache
   }
 
-  deprecatedCodes.forEach(code => {
+  deprecatedCodes.forEach((code) => {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete result.data[code]
   })
@@ -73,14 +93,16 @@ export const getBaseCurrencies = async () => {
 export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
   const coinsList = await getBaseCurrencies()
   const dataArr: CurrencyListApiResponseItem[] = Object.values(coinsList.data)
-  const dataForPopularCodes: CurrencyListApiResponseItem[] = popularCodes.map(code => coinsList.data[code])
+  const dataForPopularCodes: CurrencyListApiResponseItem[] = popularCodes.map(
+    (code) => coinsList.data[code]
+  )
 
   if (!dataArr) {
     throw new Error('No data in currencies list')
   }
 
   const currencyPairs = dataArr.reduce<InstrumentsList[]>((acc, base) => {
-    dataForPopularCodes.forEach(quote => {
+    dataForPopularCodes.forEach((quote) => {
       if (base.code === quote.code) {
         return
       }
@@ -98,8 +120,8 @@ export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
         sourceSpecificData: {
           symbol: quote.symbol,
           baseAssetData: base,
-          quoteAssetData: quote
-        }
+          quoteAssetData: quote,
+        },
       })
 
       ticker = quote.code + base.code
@@ -115,8 +137,8 @@ export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
         sourceSpecificData: {
           symbol: base.symbol,
           baseAssetData: quote,
-          quoteAssetData: base
-        }
+          quoteAssetData: base,
+        },
       })
     })
 

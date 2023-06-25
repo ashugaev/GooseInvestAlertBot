@@ -2,7 +2,7 @@ import { log } from '../../helpers/log'
 import {
   clearCopyPriceAlerts,
   getAllAlerts,
-  putItemsToCopyPriceAlerts
+  putItemsToCopyPriceAlerts,
 } from '../../models'
 
 /**
@@ -13,7 +13,7 @@ export const copyAlerts = async () => {
     let alerts = await getAllAlerts()
 
     // фильтруем невалидные застрявшие в базе алерты
-    alerts = alerts.filter(el => el.tickerId)
+    alerts = alerts.filter((el) => el.tickerId)
 
     if (!alerts.length) {
       log.info('Нет алертов для резервной копии')

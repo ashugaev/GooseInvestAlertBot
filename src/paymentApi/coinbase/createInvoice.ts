@@ -15,20 +15,20 @@ export const createCoinbaseInvoice = async ({
   customerId,
   amount,
   paymentDescription,
-  paymentName = 'Безграничный доступ к функционалу бота @GooseInvestAlert'
+  paymentName = 'Безграничный доступ к функционалу бота @GooseInvestAlert',
 }: CreateCoinbaseInvoiceParams) => {
   const requestData = JSON.stringify({
     local_price: {
       currency: currency,
-      amount: amount
+      amount: amount,
     },
     metadata: {
       customer_id: customerId,
-      customer_name: customerName
+      customer_name: customerName,
     },
     pricing_type: 'fixed_price',
     name: paymentName,
-    description: paymentDescription
+    description: paymentDescription,
   })
 
   const config = {
@@ -38,9 +38,9 @@ export const createCoinbaseInvoice = async ({
       'Content-Type': 'application/json',
       Accept: 'application/json',
       'X-CC-Api-Key': process.env.COINBASE_TOKEN,
-      'X-CC-Version': '2018-03-22'
+      'X-CC-Version': '2018-03-22',
     },
-    data: requestData
+    data: requestData,
   }
 
   const res = await axios(config)

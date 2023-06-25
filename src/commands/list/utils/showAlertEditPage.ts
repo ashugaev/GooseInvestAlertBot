@@ -1,4 +1,3 @@
-
 import { set } from 'lodash'
 
 import { alertEditKeyboard } from '@/commands/list/keyboards/alertEditKeyboard'
@@ -12,15 +11,15 @@ interface ShowAlertEditPage {
   ctx
   alert: PriceAlert
   /**
-     * Send new keyboard or edit current
-     */
+   * Send new keyboard or edit current
+   */
   edit?: boolean
 }
 
 export const showAlertEditPage = async ({
   ctx,
   alert,
-  edit
+  edit,
 }: ShowAlertEditPage) => {
   const instrumentInfo = await getInstrumentByIdFromCache(alert.tickerId)
 
@@ -34,19 +33,19 @@ export const showAlertEditPage = async ({
     price: alert.lowerThen || alert.greaterThen,
     currency: symbolOrCurrency(alert.currency),
     message: alert.message,
-    source: getSourceMark(instrumentInfo)
+    source: getSourceMark(instrumentInfo),
   })
 
   const keyboard = alertEditKeyboard({
     tickerId: alert.tickerId,
-    alertId: alert._id
+    alertId: alert._id,
   })
 
   ctx[edit ? 'editMessageText' : 'replyWithHTML'](message, {
     parse_mode: 'HTML',
     disable_web_page_preview: true,
     reply_markup: {
-      inline_keyboard: keyboard
-    }
+      inline_keyboard: keyboard,
+    },
   })
 }

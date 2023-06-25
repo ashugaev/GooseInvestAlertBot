@@ -1,2 +1,2 @@
-export * from './prices';
-export * from './validatorResult';
+export * from './prices'
+export * from './validatorResult'

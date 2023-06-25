@@ -1,7 +1,9 @@
-
 import { Markup } from 'telegraf'
 
-import { REMOVE_ACTIONS, REMOVE_SCENE } from '@/commands/remove/remove.constants'
+import {
+  REMOVE_ACTIONS,
+  REMOVE_SCENE,
+} from '@/commands/remove/remove.constants'
 import { createActionString } from '@/helpers'
 import { PriceAlertModel, TimeShiftModel } from '@/models'
 import { immediateStep, waitButtonClickStep } from '@/scenes/wrappers'
@@ -20,13 +22,20 @@ const chooseAlertsType = immediateStep('choose alerts type', async (ctx) => {
       inline_keyboard: [
         [
           // eslint-disable-next-line max-len
-          Markup.callbackButton(i18n.t('ru', 'remove_chooseAlertsType_shift'), createActionString(REMOVE_ACTIONS.chooseSource, { type: 'shift' }))
-        ], [
+          Markup.callbackButton(
+            i18n.t('ru', 'remove_chooseAlertsType_shift'),
+            createActionString(REMOVE_ACTIONS.chooseSource, { type: 'shift' })
+          ),
+        ],
+        [
           // eslint-disable-next-line max-len
-          Markup.callbackButton(i18n.t('ru', 'remove_chooseAlertsType_lvl'), createActionString(REMOVE_ACTIONS.chooseSource, { type: 'lvl' }))
-        ]
-      ]
-    }
+          Markup.callbackButton(
+            i18n.t('ru', 'remove_chooseAlertsType_lvl'),
+            createActionString(REMOVE_ACTIONS.chooseSource, { type: 'lvl' })
+          ),
+        ],
+      ],
+    },
   })
 
   return ctx.wizard.next()
@@ -59,14 +68,18 @@ const removeAlerts = waitButtonClickStep(
       n = (await PriceAlertModel.deleteMany({ user, chat: null })).n
     }
 
-    await ctx.replyWithHTML(i18n.t('ru', 'remove_chooseAlertsType_success', {
-      n
-    }))
+    await ctx.replyWithHTML(
+      i18n.t('ru', 'remove_chooseAlertsType_success', {
+        n,
+      })
+    )
 
     return ctx.scene.leave()
-  })
+  }
+)
 
-export const removeScenes = new WizardScene(REMOVE_SCENE,
+export const removeScenes = new WizardScene(
+  REMOVE_SCENE,
   chooseAlertsType,
   removeAlerts
 )
