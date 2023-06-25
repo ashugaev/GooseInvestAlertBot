@@ -20,7 +20,7 @@ export const shortenerGetFull = (shortString) => {
   const full = SHORTENER_STORE[shortString]
 
   if (!full) {
-    throw new Error('Can\'t find full string by short')
+    throw new Error("Can't find full string by short")
   }
 
   return full

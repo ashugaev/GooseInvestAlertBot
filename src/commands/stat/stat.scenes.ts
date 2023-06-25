@@ -24,23 +24,26 @@ const startShiftAddScene = sceneWrapper('shift_add_start-scene', (ctx) => {
 const shiftAddChoosePercentScent = new Composer()
 
 // Не нечинается с /
-shiftAddChoosePercentScent.hears(/^(?!\/).+$/, sceneWrapper('shift_add_choose-percent', async (ctx) => {
-  const { text: percent } = ctx.message
+shiftAddChoosePercentScent.hears(
+  /^(?!\/).+$/,
+  sceneWrapper('shift_add_choose-percent', async (ctx) => {
+    const { text: percent } = ctx.message
 
-  const floatPercent = parseFloat(percent)
+    const floatPercent = parseFloat(percent)
 
-  if (floatPercent) {
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTime'))
+    if (floatPercent) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTime'))
 
-    ctx.wizard.state.percent = floatPercent
+      ctx.wizard.state.percent = floatPercent
 
-    return ctx.wizard.next()
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_setPercentError'))
-    // Повторить текущий степ
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
-  }
-}))
+      return ctx.wizard.next()
+    } else {
+      ctx.replyWithHTML(i18n.t('ru', 'shift_add_setPercentError'))
+      // Повторить текущий степ
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+  })
+)
 
 // Если сообщение не то, что ожидаем - покидаем сцену
 shiftAddChoosePercentScent.on('message', (ctx, next) => {
@@ -51,23 +54,26 @@ shiftAddChoosePercentScent.on('message', (ctx, next) => {
 const shiftAddSetDays = new Composer()
 
 // Не нечинается с /
-shiftAddSetDays.hears(/^(?!\/).+$/, sceneWrapper('shift_add_set-time', async (ctx) => {
-  const { text: hour } = ctx.message
+shiftAddSetDays.hears(
+  /^(?!\/).+$/,
+  sceneWrapper('shift_add_set-time', async (ctx) => {
+    const { text: hour } = ctx.message
 
-  const intHour = parseInt(hour)
+    const intHour = parseInt(hour)
 
-  if (intHour >= 0 && intHour <= 24) {
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays'))
+    if (intHour >= 0 && intHour <= 24) {
+      await ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays'))
 
-    ctx.wizard.state.hour = intHour
+      ctx.wizard.state.hour = intHour
 
-    return ctx.wizard.next()
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTimeError'))
-    // Повторить текущий степ
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
-  }
-}))
+      return ctx.wizard.next()
+    } else {
+      ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTimeError'))
+      // Повторить текущий степ
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+  })
+)
 
 // Если сообщение не то, что ожидаем - покидаем сцену
 shiftAddSetDays.on('message', (ctx, next) => {
@@ -78,42 +84,47 @@ shiftAddSetDays.on('message', (ctx, next) => {
 const shiftAddSetHourScene = new Composer()
 
 // Не нечинается с '/'
-shiftAddSetHourScene.hears(/^(?!\/).+$/, sceneWrapper('shift_add_setHour', async (ctx) => {
-  const { text: days } = ctx.message
-  const { id: user } = ctx.from
-  const { percent, hour } = ctx.wizard.state
+shiftAddSetHourScene.hears(
+  /^(?!\/).+$/,
+  sceneWrapper('shift_add_setHour', async (ctx) => {
+    const { text: days } = ctx.message
+    const { id: user } = ctx.from
+    const { percent, hour } = ctx.wizard.state
 
-  const daysInt = parseInt(days)
+    const daysInt = parseInt(days)
 
-  if (daysInt >= 1 && daysInt <= 30) {
-    try {
-      await createShift({
-        percent,
-        // Пока хардкожу московское время, переводя его в utc
-        // TODO: Вынести временную зону в константу
-        time: hoursToUtc(hour, -3),
-        timeZone: 3,
-        days: daysInt,
-        user
-      })
-    } catch (e) {
-      ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
-      log.error(e)
+    if (daysInt >= 1 && daysInt <= 30) {
+      try {
+        await createShift({
+          percent,
+          // Пока хардкожу московское время, переводя его в utc
+          // TODO: Вынести временную зону в константу
+          time: hoursToUtc(hour, -3),
+          timeZone: 3,
+          days: daysInt,
+          user,
+        })
+      } catch (e) {
+        ctx.replyWithHTML(i18n.t('ru', 'unrecognizedError'))
+        log.error(e)
+        return ctx.wizard.selectStep(ctx.wizard.cursor)
+      }
+
+      await ctx.replyWithHTML(
+        i18n.t('ru', 'shift_add_created', {
+          time: plur.hours(hour),
+          days: plur.days(daysInt),
+          percent,
+        })
+      )
+
+      return ctx.scene.leave()
+    } else {
+      ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays_error'))
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
-
-    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_created', {
-      time: plur.hours(hour),
-      days: plur.days(daysInt),
-      percent
-    }))
-
-    return ctx.scene.leave()
-  } else {
-    ctx.replyWithHTML(i18n.t('ru', 'shift_add_setDays_error'))
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
-  }
-}))
+  })
+)
 
 // Если сообщение не то, что ожидаем - покидаем сцену
 shiftAddSetHourScene.on('message', (ctx, next) => {
@@ -121,7 +132,8 @@ shiftAddSetHourScene.on('message', (ctx, next) => {
   return ctx.scene.leave()
 })
 
-export const statScenes = new WizardScene(Scenes.shiftAdd,
+export const statScenes = new WizardScene(
+  Scenes.shiftAdd,
   startShiftAddScene,
   shiftAddChoosePercentScent,
   shiftAddSetDays,

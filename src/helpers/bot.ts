@@ -1,7 +1,7 @@
 import { Context, Telegraf } from 'telegraf'
 
-import {botInit} from "@/app"
-import { BotModel} from "@/models/Bot"
+import { botInit } from '@/app'
+import { BotModel } from '@/models/Bot'
 const TelegrafBot = require('telegraf')
 
 // TODO: Log problems with multibot
@@ -9,48 +9,51 @@ const TelegrafBot = require('telegraf')
 //  Sent message to Boss
 export const bots = (async () => {
   const res: Telegraf<Context>[] = [
-        new TelegrafBot(process.env.TELEGRAM_TOKEN) as Telegraf<Context>
+    new TelegrafBot(process.env.TELEGRAM_TOKEN) as Telegraf<Context>,
   ]
-    
+
   const customBots = await BotModel.find()
-    
+
   // Add custom bots
   for (const botData of customBots) {
     const bot = new TelegrafBot(botData.tgToken) as Telegraf<Context>
     bot.context.promotedByUerId = botData.userId
     res.push(bot)
   }
-  
+
   // Update me info
-  for(const bot of res) {
+  for (const bot of res) {
     const botInfo = await bot.telegram.getMe()
     bot.context.goose = botInfo
   }
-    
+
   return res
 })()
 
 export const getBot = async (id: number) => {
-  const list = await bots 
-    
-  const bot = list.find(bot => bot.context.goose.id === id)
+  const list = await bots
+
+  const bot = list.find((bot) => bot.context.goose.id === id)
 
   if (!bot) {
     throw new Error(`Bot ${id} not found`)
   }
-    
+
   return bot
 }
 
 export const getBotByUserId = async (userId) => {
   const list = await bots
 
-  const bot = list.find(bot => bot.context.promotedByUerId === userId)
+  const bot = list.find((bot) => bot.context.promotedByUerId === userId)
 
   return bot
 }
 
-export const deployBot = async (ctx: Context, tgToken): Promise<{error?: string, bot?: Telegraf<Context>}> => {
+export const deployBot = async (
+  ctx: Context,
+  tgToken
+): Promise<{ error?: string; bot?: Telegraf<Context> }> => {
   const bot = new TelegrafBot(tgToken) as Telegraf<Context>
 
   let error = ''
@@ -60,29 +63,29 @@ export const deployBot = async (ctx: Context, tgToken): Promise<{error?: string,
     const botInfo = await bot.telegram.getMe()
     bot.context.goose = botInfo
     bot.context.promotedByUerId = ctx.from.id
-    if(list.some(item => item.context.goose.username === botInfo.username) ) {
+    if (list.some((item) => item.context.goose.username === botInfo.username)) {
       error = 'Already deployed'
     }
   } catch (e) {
     error = e?.message ?? ''
   }
 
-  if(error.length) {
+  if (error.length) {
     return {
-      error
+      error,
     }
   }
 
   botInit(bot)
-  
+
   list.push(bot)
 
   await BotModel.insertMany({
     userId: ctx.from.id,
-    tgToken
+    tgToken,
   })
 
-  return {bot}
+  return { bot }
 }
 
 export const killBot = async (botId: number, ctx: Context) => {

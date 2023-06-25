@@ -1,4 +1,3 @@
-
 const NodeCache = require('node-cache')
 
 const logPrefix = '[LAST PRICE CACHE]'

@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import {getModelForClass, prop} from '@typegoose/typegoose'
+import { getModelForClass, prop } from '@typegoose/typegoose'
 
 /**
  * Данные о подписке на бота
@@ -11,16 +11,16 @@ export class PremiumPayment {
   /**
    * Когда была оплата
    */
-  @prop({ required: true})
+  @prop({ required: true })
   issueDate: Date
 
   /**
    * Время когда была оплачена подписка
    */
-  @prop({ required: false})
+  @prop({ required: false })
   paidDate: Date
 }
 
 export const PremiumModel = getModelForClass(PremiumPayment, {
-  schemaOptions: { timestamps: true }
+  schemaOptions: { timestamps: true },
 })

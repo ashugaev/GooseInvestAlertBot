@@ -6,7 +6,9 @@ const getLastMonday = () => {
   const date = new Date()
   const today = date.getDate()
   const dayOfTheWeek = date.getDay()
-  const newDate = date.setDate(today - (dayOfTheWeek === 0 ? 6 : dayOfTheWeek - 1))
+  const newDate = date.setDate(
+    today - (dayOfTheWeek === 0 ? 6 : dayOfTheWeek - 1)
+  )
   const resultTime = new Date(newDate).getTime()
   const roundedToDayResultTime = roundTime(resultTime, 86400000)
 

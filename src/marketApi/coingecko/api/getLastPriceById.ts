@@ -6,7 +6,10 @@ import { CoinGeckoClient } from './getAllInstruments'
 
 const logPrefix = '[COINGECKO GET PRICES BY IDS]'
 
-export async function coingeckoGetLastPriceById (ids: string[], tickersData): Promise<TickerPrices> {
+export async function coingeckoGetLastPriceById(
+  ids: string[],
+  tickersData
+): Promise<TickerPrices> {
   const tickersDataObj = tickersData.reduce((acc, el) => {
     acc[el.id] = el
 
@@ -15,7 +18,7 @@ export async function coingeckoGetLastPriceById (ids: string[], tickersData): Pr
 
   const currencyPrices = await CoinGeckoClient.simple.price({
     ids: [ids],
-    vs_currencies: ['eur', 'usd', 'rub']
+    vs_currencies: ['eur', 'usd', 'rub'],
   })
 
   if (!currencyPrices.success) {
@@ -28,7 +31,7 @@ export async function coingeckoGetLastPriceById (ids: string[], tickersData): Pr
   const responseArray = Object.entries(data)
 
   const prices = responseArray.reduce((acc, [key, val]) => {
-    const { usd } = val as {usd: number}
+    const { usd } = val as { usd: number }
 
     const tickerData = tickersDataObj[key]
     const ticker = tickerData.ticker
@@ -44,9 +47,11 @@ export async function coingeckoGetLastPriceById (ids: string[], tickersData): Pr
 
   // TODO: Move this check to 'setupPriceUpdater'
   if (ids.length > prices.length) {
-    const uncheckedTickers = ids.filter(el => !prices.find(item => item[2] === el))
+    const uncheckedTickers = ids.filter(
+      (el) => !prices.find((item) => item[2] === el)
+    )
 
-    log.info(logPrefix + ' Can\'t get prices for:', uncheckedTickers.join(','))
+    log.info(logPrefix + " Can't get prices for:", uncheckedTickers.join(','))
 
     // If we get atleast one price but not for all ids
     if (prices.length) {

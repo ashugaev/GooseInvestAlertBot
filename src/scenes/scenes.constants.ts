@@ -1,7 +1,7 @@
 export const COMMON_SCENES = {
-  tickerDuplicates: '3l4'
+  tickerDuplicates: '3l4',
 }
 
 export const COMMON_ACTIONS = {
-  chooseTickerId: '4kv'
+  chooseTickerId: '4kv',
 }

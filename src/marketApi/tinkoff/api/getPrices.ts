@@ -14,8 +14,12 @@ import { moneyObjToValue } from '../utils/moneyObj'
 
 const logPrefix = '[GET PRICES TINK]'
 
-export const getTinkoffPrices = async (ids: string[], tickersData): Promise<TickerPrices> => {
-  const lastPrices: GetLastPricesResponse = (await tinkoffApi.marketdata.getLastPrices({ figi: ids }))
+export const getTinkoffPrices = async (
+  ids: string[],
+  tickersData
+): Promise<TickerPrices> => {
+  const lastPrices: GetLastPricesResponse =
+    await tinkoffApi.marketdata.getLastPrices({ figi: ids })
 
   const pricesNormalizes = []
 
@@ -27,7 +31,7 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       const piceObj = lastPrices.lastPrices[i]
       const { price, figi } = piceObj
 
-      const item = tickersData.find(el => el.sourceSpecificData.figi === figi)
+      const item = tickersData.find((el) => el.sourceSpecificData.figi === figi)
 
       if (!price) {
         // Some futures don't have prices in API
@@ -44,21 +48,25 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
       const normalizedNominal = nominal ? moneyObjToValue(nominal) : 1
 
       /**
-             * Different calculation for different instrument
-             * @see https://tinkoff.github.io/investAPI/head-marketdata/#_4
-             * @see https://tinkoff.github.io/investAPI/faq_marketdata/
-             */
+       * Different calculation for different instrument
+       * @see https://tinkoff.github.io/investAPI/head-marketdata/#_4
+       * @see https://tinkoff.github.io/investAPI/faq_marketdata/
+       */
       if (item?.type === EMarketInstrumentTypes.Currency) {
         priceNormalized = priceNormalized / normalizedNominal
       } else if (item?.type === EMarketInstrumentTypes.Bond) {
-        priceNormalized = priceNormalized / 100 * normalizedNominal
+        priceNormalized = (priceNormalized / 100) * normalizedNominal
       } else if (item?.type === EMarketInstrumentTypes.Etf) {
         // NOTE: Есть расхождения с сайтом на тикерах с лотом 100
         // no changes
       } else if (item?.type === EMarketInstrumentTypes.Future) {
         const futureMargin = await getFutureMarginByTickerId(tickerId)
-        const minPriceIncrementNumber = moneyObjToValue(item.sourceSpecificData.minPriceIncrement)
-        const minPriceIncrementAmountNumber = moneyObjToValue(futureMargin?.minPriceIncrementAmount)
+        const minPriceIncrementNumber = moneyObjToValue(
+          item.sourceSpecificData.minPriceIncrement
+        )
+        const minPriceIncrementAmountNumber = moneyObjToValue(
+          futureMargin?.minPriceIncrementAmount
+        )
 
         if (!minPriceIncrementNumber || !minPriceIncrementAmountNumber) {
           noMinPriceIncrementNumber.push(item.id)
@@ -67,14 +75,25 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
 
         // В данном кейса priceNormalized это цена в пунктах
         // В формуле соответственно переводим пункты в деньги
-        priceNormalized = priceNormalized / minPriceIncrementNumber * minPriceIncrementAmountNumber
+        priceNormalized =
+          (priceNormalized / minPriceIncrementNumber) *
+          minPriceIncrementAmountNumber
       }
 
       if (priceNormalized && tickerId && item) {
         const priceScale = item.priceScale || (priceNormalized > 1 ? 3 : 9)
-        pricesNormalizes.push([item.ticker, Number((priceNormalized).toFixed(priceScale)), tickerId])
+        pricesNormalizes.push([
+          item.ticker,
+          Number(priceNormalized.toFixed(priceScale)),
+          tickerId,
+        ])
       } else {
-        log.error(logPrefix + 'Can\'t generate price data from:', priceNormalized, tickerId, item)
+        log.error(
+          logPrefix + "Can't generate price data from:",
+          priceNormalized,
+          tickerId,
+          item
+        )
       }
     } catch (e) {
       log.error(logPrefix, 'Error in getTinkoffPrices', e)
@@ -82,7 +101,11 @@ export const getTinkoffPrices = async (ids: string[], tickersData): Promise<Tick
   }
 
   if (noMinPriceIncrementNumber.length > 150) {
-    log.error(logPrefix, 'No minPriceIncrementNumber or minPriceIncrementAmountNumber for', noMinPriceIncrementNumber.length)
+    log.error(
+      logPrefix,
+      'No minPriceIncrementNumber or minPriceIncrementAmountNumber for',
+      noMinPriceIncrementNumber.length
+    )
   }
 
   return pricesNormalizes

@@ -20,38 +20,45 @@ export const instrumentsListKeyboard = async ({
   page,
   listType = EListTypes.levels,
   user = null,
-  ctx
+  ctx,
 }) => {
   // Тикеры которые выведем на это странице
-  const pageTickers: PriceAlert[] = uniqTickersData
-    .slice(page * listConfig.itemsPerPage, (Number(page) + 1) * listConfig.itemsPerPage)
+  const pageTickers: PriceAlert[] = uniqTickersData.slice(
+    page * listConfig.itemsPerPage,
+    (Number(page) + 1) * listConfig.itemsPerPage
+  )
 
   // Генерит инлайн кнопки по тикерам
-  const getTickerButtons = pageTickers.map(({ name, symbol, tickerId, source }) => {
-    const payload = {
-      [ListActionsDataKeys.selectedTickerIdShortened]: shortenerCreateShort(tickerId),
-      p: 0,
-      tp: page,
-      kMode: EKeyboardModes.edit
+  const getTickerButtons = pageTickers.map(
+    ({ name, symbol, tickerId, source }) => {
+      const payload = {
+        [ListActionsDataKeys.selectedTickerIdShortened]:
+          shortenerCreateShort(tickerId),
+        p: 0,
+        tp: page,
+        kMode: EKeyboardModes.edit,
+      }
+
+      const sourceMark = getSourceMark({ source }, true)
+
+      return [
+        Markup.callbackButton(
+          name === symbol
+            ? `${name} ${sourceMark}`
+            : `${name} (${symbol}) ${sourceMark}`,
+          createActionString(Actions.list_tickerPage, payload)
+        ),
+      ]
     }
-
-    const sourceMark = getSourceMark({ source }, true)
-
-    return ([
-      Markup.callbackButton(
-        (name === symbol) ? `${name} ${sourceMark}` : `${name} (${symbol}) ${sourceMark}`,
-        createActionString(Actions.list_tickerPage, payload)
-      )
-    ])
-  })
+  )
 
   // Получаю кнопки пагинации
   const paginatorButtons = paginationButtons({
     itemsLength: uniqTickersData.length,
     action: Actions.list_instrumentsPage,
     payload: {
-      p: page
-    }
+      p: page,
+    },
   })
 
   getTickerButtons.push(paginatorButtons)

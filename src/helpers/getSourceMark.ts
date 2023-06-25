@@ -5,7 +5,10 @@ import { getInstrumentLink } from './getInstrumentLInk'
 
 // Returns string or html link. Format: [SHOUT_NAME]
 // Minimal params: { source: EMarketDataSources }
-export const getSourceMark = (instrumentData: Partial<InstrumentsList>, noLink?: boolean) => {
+export const getSourceMark = (
+  instrumentData: Partial<InstrumentsList>,
+  noLink?: boolean
+) => {
   const { source } = instrumentData
 
   if (!source) return null

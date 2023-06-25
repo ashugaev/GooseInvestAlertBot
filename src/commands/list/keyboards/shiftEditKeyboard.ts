@@ -21,29 +21,37 @@ export const shiftEditKeyboard = ({ page, shiftData }) => {
     growAlerts: shiftData.growAlerts,
     fallAlerts: shiftData.fallAlerts,
     [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(shiftData._id),
-    p: page
+    p: page,
   }
 
-  const editKeyboard = getShiftConfigKeyboard(shiftConfig, Actions.list_shiftEditPage, {
-    buttonsOnly: true
-  })
+  const editKeyboard = getShiftConfigKeyboard(
+    shiftConfig,
+    Actions.list_shiftEditPage,
+    {
+      buttonsOnly: true,
+    }
+  )
 
   keys = keys.concat(editKeyboard)
 
-  keys.push([Markup.callbackButton(
-    i18n.t('ru', 'button_delete'),
-    createActionString(Actions.list_shiftDeleteOne, {
-      id: shiftData._id,
-      p: page
-    })
-  )])
+  keys.push([
+    Markup.callbackButton(
+      i18n.t('ru', 'button_delete'),
+      createActionString(Actions.list_shiftDeleteOne, {
+        id: shiftData._id,
+        p: page,
+      })
+    ),
+  ])
 
-  keys.push([backButton({
-    action: createActionString(Actions.list_shiftsPage, {
-      p: page,
-      kMode: EKeyboardModes.edit
-    })
-  })])
+  keys.push([
+    backButton({
+      action: createActionString(Actions.list_shiftsPage, {
+        p: page,
+        kMode: EKeyboardModes.edit,
+      }),
+    }),
+  ])
 
   return keys
 }

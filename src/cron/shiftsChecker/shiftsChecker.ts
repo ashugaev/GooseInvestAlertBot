@@ -8,7 +8,10 @@ import { retryUntilTrue } from '../../helpers/retryUntilTrue'
 import { wait } from '../../helpers/wait'
 import { ShiftCandle, TimeShift, TimeShiftModel } from '../../models'
 import { ShiftCandleModel } from '../../models/ShiftCandle'
-import { checkTriggeredShiftsAndSendMessage, updateCandle } from './shiftChecker.utils'
+import {
+  checkTriggeredShiftsAndSendMessage,
+  updateCandle,
+} from './shiftChecker.utils'
 
 const logPrefix = '[CANDLES UPDATER]'
 
@@ -24,7 +27,7 @@ const getCandleKey = (tickerId: string, timeframe: string) => {
  * Модуль управления кэшом свечей
  */
 class ShiftCandlesUpdater {
-  constructor () {
+  constructor() {
     this.init()
   }
 
@@ -36,10 +39,16 @@ class ShiftCandlesUpdater {
   isReady = false
 
   init = async () => {
-    const data = await retryForever(async () => await ShiftCandleModel.find().lean())
+    const data = await retryForever(
+      async () => await ShiftCandleModel.find().lean()
+    )
     const obj: ShiftCandlesNormalized = data.reduce((acc, item) => {
       if (!item.tickerId || !item.timeframe) {
-        log.error(logPrefix, 'Candle without tickerId or timeframe', item.tickerId)
+        log.error(
+          logPrefix,
+          'Candle without tickerId or timeframe',
+          item.tickerId
+        )
         return acc
       }
       acc[getCandleKey(item.tickerId, item.timeframe)] = item
@@ -79,20 +88,21 @@ class ShiftCandlesUpdater {
           upsert: true,
           filter: {
             tickerId: newCandle.tickerId,
-            timeframe: newCandle.timeframe
+            timeframe: newCandle.timeframe,
           },
-          update: newCandle
-        }
+          update: newCandle,
+        },
       })
-      this.candlesObj[getCandleKey(newCandle.tickerId, newCandle.timeframe)] = newCandle
+      this.candlesObj[getCandleKey(newCandle.tickerId, newCandle.timeframe)] =
+        newCandle
     }
   }
 
-  get get () {
+  get get() {
     return this.candlesObj
   }
 
-  getOne (tickerId: string, timeframe: string): ShiftCandle | undefined {
+  getOne(tickerId: string, timeframe: string): ShiftCandle | undefined {
     return this.candlesObj[getCandleKey(tickerId, timeframe)]
   }
 }
@@ -101,7 +111,7 @@ class ShiftCandlesUpdater {
  * Модуль управления кэшом шифтов
  */
 class ShiftsUpdater {
-  constructor () {
+  constructor() {
     this.init()
   }
 
@@ -109,7 +119,7 @@ class ShiftsUpdater {
   isReady = false
   needToBeUpdated = true // allows to enforce update
 
-  update () {
+  update() {
     this.needToBeUpdated = true
   }
 
@@ -147,7 +157,7 @@ class ShiftsUpdater {
     }
   }
 
-  get get () {
+  get get() {
     return this.shifts
   }
 }
@@ -163,7 +173,10 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
 
   log.info(logPrefix + ' Init')
 
-  await retryUntilTrue(() => candlesCache.isReady && shiftsCache.isReady, 'Shift checker init')
+  await retryUntilTrue(
+    () => candlesCache.isReady && shiftsCache.isReady,
+    'Shift checker init'
+  )
 
   while (true) {
     await fnTimeAsync(async () => {
@@ -179,7 +192,11 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
           acc[getCandleKey(el.tickerId, el.timeframe)] = true
           return acc
         }, {})
-        log.info(logPrefix, 'candles to check', Object.keys(candlesToCheck).length)
+        log.info(
+          logPrefix,
+          'candles to check',
+          Object.keys(candlesToCheck).length
+        )
 
         let noPriceCount = 0
         let candlesChecked = 0
@@ -208,10 +225,11 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
               timeframeData,
               candle,
               price,
-              shift
+              shift,
             })
 
-            const candleIsChanged = updatedCandle.updatedAt !== candle?.updatedAt
+            const candleIsChanged =
+              updatedCandle.updatedAt !== candle?.updatedAt
 
             if (candleIsChanged) {
               await candlesCache.updateCandle(updatedCandle)
@@ -220,7 +238,7 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
             await checkTriggeredShiftsAndSendMessage({
               candle: updatedCandle,
               shift,
-              timeframeData
+              timeframeData,
             })
 
             candlesChecked++
@@ -229,14 +247,21 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
           }
         }
 
-        log.info(logPrefix, 'Checked shifts', candlesChecked, '/', shiftsCache.get.length)
+        log.info(
+          logPrefix,
+          'Checked shifts',
+          candlesChecked,
+          '/',
+          shiftsCache.get.length
+        )
 
         if (noPriceCount > 0) {
           if (noPriceCount > 100) {
             log.error(logPrefix, 'No price errors', noPriceCount)
           }
 
-          if (noPriceCount === shiftsCache.get.length) { // If not prices yet
+          if (noPriceCount === shiftsCache.get.length) {
+            // If not prices yet
             await wait(1000)
           }
         }

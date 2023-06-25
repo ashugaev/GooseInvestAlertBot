@@ -4,7 +4,8 @@ export const symbols = {
   USD: '$',
   usd: '$',
   EUR: '€',
-  eur: '€'
+  eur: '€',
 }
 
-export const symbolOrCurrency = (currency: string): string => currency && (symbols[currency] || ' ' + currency)
+export const symbolOrCurrency = (currency: string): string =>
+  currency && (symbols[currency] || ' ' + currency)

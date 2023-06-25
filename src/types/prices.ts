@@ -5,4 +5,6 @@ import { InstrumentsList } from '@/models'
 
 // TODO: Переделать на объект
 // TODO: Сделать 'data' обязательным
-export type TickerPrices = Array<[ticker: string, price: number, tickerId: string, data?: InstrumentsList]>
+export type TickerPrices = Array<
+  [ticker: string, price: number, tickerId: string, data?: InstrumentsList]
+>

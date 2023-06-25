@@ -8,7 +8,10 @@ interface IGetPriceFromString {
   invalidValues: string[]
 }
 
-export function getPricesFromString ({ string, lastPrice }: GetPriceFromStringParams): IGetPriceFromString {
+export function getPricesFromString({
+  string,
+  lastPrice,
+}: GetPriceFromStringParams): IGetPriceFromString {
   // -10 +10
   const relativeValueMinusRegExp = new RegExp(/^-([\d.]+)$/)
   const relativeValuePlusRegExp = new RegExp(/^\+([\d.]+)$/)
@@ -56,12 +59,12 @@ export function getPricesFromString ({ string, lastPrice }: GetPriceFromStringPa
 
         resultNumberVal = null
       } else {
-        resultNumberVal = lastPrice - ((lastPrice / 100) * percent)
+        resultNumberVal = lastPrice - (lastPrice / 100) * percent
       }
     } else if (percentPlusMath) {
       const percent = parseFloat(percentPlusMath[2])
 
-      resultNumberVal = lastPrice + ((lastPrice / 100) * percent)
+      resultNumberVal = lastPrice + (lastPrice / 100) * percent
     } else if (pureNumberMatch) {
       resultNumberVal = parseFloat(stringVal)
     } else {

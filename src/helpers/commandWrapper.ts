@@ -1,23 +1,26 @@
-import {Context, Middleware} from 'telegraf'
-import {TelegrafContext} from 'telegraf/typings/context'
+import { Context, Middleware } from 'telegraf'
+import { TelegrafContext } from 'telegraf/typings/context'
 
-import {switchToAdminMode} from "@/helpers/adminMode"
+import { switchToAdminMode } from '@/helpers/adminMode'
 
-import {log} from './log'
+import { log } from './log'
 
 interface CommandWrapperConfig {
-    availableForAdmins: boolean
-    availableForUsers?: boolean
-    bossOnly?: boolean
+  availableForAdmins: boolean
+  availableForUsers?: boolean
+  bossOnly?: boolean
 }
 
-const {BOSS_TG_ID}  = process.env
+const { BOSS_TG_ID } = process.env
 
-export function commandWrapper({
-  availableForAdmins, 
-  availableForUsers = true, 
-  bossOnly=false
-}: CommandWrapperConfig, callback: (ctx: Context) => Promise<void>): Middleware<TelegrafContext> {
+export function commandWrapper(
+  {
+    availableForAdmins,
+    availableForUsers = true,
+    bossOnly = false,
+  }: CommandWrapperConfig,
+  callback: (ctx: Context) => Promise<void>
+): Middleware<TelegrafContext> {
   return async (ctx) => {
     if (!availableForAdmins && ctx.dbuser.adminMode) {
       try {
@@ -27,16 +30,16 @@ export function commandWrapper({
       }
       return
     }
-    
-    if(bossOnly && ctx.dbuser.id !== Number(BOSS_TG_ID)) {
+
+    if (bossOnly && ctx.dbuser.id !== Number(BOSS_TG_ID)) {
       return
     }
 
-    if(!availableForUsers && !ctx.dbuser.adminMode) {
+    if (!availableForUsers && !ctx.dbuser.adminMode) {
       return
     }
-    
-    if(ctx.dbuser.adminMode && !ctx.adminChatActive) {
+
+    if (ctx.dbuser.adminMode && !ctx.adminChatActive) {
       await switchToAdminMode(ctx)
     }
 

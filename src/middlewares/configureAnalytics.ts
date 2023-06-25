@@ -1,8 +1,12 @@
-import { log } from '../helpers/log'
-import { addAnalyticsToReply, chb_m } from '../helpers/analytics'
 import { TelegrafContext } from 'telegraf/typings/context'
 
-export function configureAnalytics (ctx: TelegrafContext, next: () => Promise<void>):void {
+import { addAnalyticsToReply, chb_m } from '../helpers/analytics'
+import { log } from '../helpers/log'
+
+export function configureAnalytics(
+  ctx: TelegrafContext,
+  next: () => Promise<void>
+): void {
   try {
     chb_m({ ctx })
     addAnalyticsToReply(ctx)

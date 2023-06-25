@@ -16,16 +16,24 @@ export const getTimeframesKeyboard = (timeframes: ShiftTimeframe[]) => {
     const secondEl = list.shift()
 
     if (firstEl) {
-      row.push(m.callbackButton(
-        firstEl.name_ru,
-        createActionString(SHIFT_ACTIONS.chooseTimeframe, { timeframe: firstEl.timeframe })
-      ))
+      row.push(
+        m.callbackButton(
+          firstEl.name_ru,
+          createActionString(SHIFT_ACTIONS.chooseTimeframe, {
+            timeframe: firstEl.timeframe,
+          })
+        )
+      )
     }
     if (secondEl) {
-      row.push(m.callbackButton(
-        secondEl.name_ru,
-        createActionString(SHIFT_ACTIONS.chooseTimeframe, { timeframe: secondEl.timeframe })
-      ))
+      row.push(
+        m.callbackButton(
+          secondEl.name_ru,
+          createActionString(SHIFT_ACTIONS.chooseTimeframe, {
+            timeframe: secondEl.timeframe,
+          })
+        )
+      )
     }
 
     buttons.push(row)
@@ -34,9 +42,19 @@ export const getTimeframesKeyboard = (timeframes: ShiftTimeframe[]) => {
   return m.inlineKeyboard(buttons)
 }
 
-export const getShiftConfigKeyboard = (payload: IAdditionalShiftConfig, action: string, { buttonsOnly = false } = {}) => {
-  const growMessage = (payload.growAlerts ? '✅' : '❌') + ' ' + i18n.t('ru', 'shift_add_button_growAlert')
-  const fallMessage = (payload.fallAlerts ? '✅' : '❌') + ' ' + i18n.t('ru', 'shift_add_button_fallAlert')
+export const getShiftConfigKeyboard = (
+  payload: IAdditionalShiftConfig,
+  action: string,
+  { buttonsOnly = false } = {}
+) => {
+  const growMessage =
+    (payload.growAlerts ? '✅' : '❌') +
+    ' ' +
+    i18n.t('ru', 'shift_add_button_growAlert')
+  const fallMessage =
+    (payload.fallAlerts ? '✅' : '❌') +
+    ' ' +
+    i18n.t('ru', 'shift_add_button_fallAlert')
   const muteMessage = '🔊 ' + i18n.t('ru', 'shift_add_button_mute')
   const unmuteMessage = '🔇 ' + i18n.t('ru', 'shift_add_button_unmute')
 
@@ -44,7 +62,7 @@ export const getShiftConfigKeyboard = (payload: IAdditionalShiftConfig, action: 
     m: payload.muted ? 1 : 0,
     g: payload.growAlerts ? 1 : 0,
     f: payload.fallAlerts ? 1 : 0,
-    ...payload
+    ...payload,
   }
 
   // Выпиливаю старые/длинные названия
@@ -55,42 +73,30 @@ export const getShiftConfigKeyboard = (payload: IAdditionalShiftConfig, action: 
   const growData = createActionString(action, {
     ...payloadCopy,
     g: payload.growAlerts ? 0 : 1,
-    f: 1
+    f: 1,
   })
   const fallData = createActionString(action, {
     ...payloadCopy,
     f: payload.fallAlerts ? 0 : 1,
-    g: 1
+    g: 1,
   })
   const muteData = createActionString(action, {
     ...payloadCopy,
-    m: 0
+    m: 0,
   })
   const unmuteData = createActionString(action, {
     ...payloadCopy,
-    m: 1
+    m: 1,
   })
 
   const buttons = [
-    [m.callbackButton(
-      growMessage,
-      growData
-    )],
-    [m.callbackButton(
-      fallMessage,
-      fallData
-    )],
+    [m.callbackButton(growMessage, growData)],
+    [m.callbackButton(fallMessage, fallData)],
     [
       payload.muted
-        ? m.callbackButton(
-          unmuteMessage,
-          muteData
-        )
-        : m.callbackButton(
-          muteMessage,
-          unmuteData
-        )
-    ]
+        ? m.callbackButton(unmuteMessage, muteData)
+        : m.callbackButton(muteMessage, unmuteData),
+    ],
   ]
 
   return buttonsOnly ? buttons : m.inlineKeyboard(buttons)

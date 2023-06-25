@@ -1,4 +1,6 @@
-export const getDatesBackFromToday = (days: number):{dateTo: string, dateFrom: string} => {
+export const getDatesBackFromToday = (
+  days: number
+): { dateTo: string; dateFrom: string } => {
   const dateTo = new Date()
   const dateToISO = dateTo.toISOString()
 

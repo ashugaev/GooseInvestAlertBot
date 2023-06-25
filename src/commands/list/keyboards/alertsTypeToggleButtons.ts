@@ -13,11 +13,10 @@ export const alertsTypeToggleButtons = ({ listType }) => {
   const shiftsList = Markup.callbackButton(
     i18n.t('ru', 'alertsList_button_shifts-list', { active: isShiftsList }),
     isShiftsList
-    // Экшен при этом условии уйдет в пустото, потому что не хотим редактировать сообщение
-      ? 'null'
-      : createActionString(Actions.list_shiftsPage,
-        {
-          p: 0
+      ? // Экшен при этом условии уйдет в пустото, потому что не хотим редактировать сообщение
+        'null'
+      : createActionString(Actions.list_shiftsPage, {
+          p: 0,
         })
   )
 
@@ -25,9 +24,8 @@ export const alertsTypeToggleButtons = ({ listType }) => {
     i18n.t('ru', 'alertsList_button_levels-list', { active: isLevelsList }),
     isLevelsList
       ? 'null'
-      : createActionString(Actions.list_instrumentsPage,
-        {
-          p: 0
+      : createActionString(Actions.list_instrumentsPage, {
+          p: 0,
         })
   )
 

@@ -1,4 +1,4 @@
 export interface ICoingecoSpecificBaseData {
-    id: string,
-    currency?: string,
+  id: string
+  currency?: string
 }

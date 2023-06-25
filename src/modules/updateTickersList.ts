@@ -26,49 +26,62 @@ interface UpdateTickersListParams {
  *
  * Double function for make in more suitable for cron initialization
  */
-export const updateTickersList = ({ getList, source, minTickersCount }: UpdateTickersListParams) => async () => {
-  const list = await getList()
+export const updateTickersList =
+  ({ getList, source, minTickersCount }: UpdateTickersListParams) =>
+  async () => {
+    const list = await getList()
 
-  if (list.length < minTickersCount) {
-    throw new Error(logPrefix + 'No items in array')
-  }
+    if (list.length < minTickersCount) {
+      throw new Error(logPrefix + 'No items in array')
+    }
 
-  if (!source) {
-    throw new Error(logPrefix + ' can\'t update tickers without source')
-  }
+    if (!source) {
+      throw new Error(logPrefix + " can't update tickers without source")
+    }
 
-  try {
-    await InstrumentsListModel.bulkWrite([
-    // Remove already unexisting (dead) tickers
-      {
-        deleteMany: {
-          filter: {
-            source,
-            id: {
-            // No include any id from list
-              $nin: list.map(el => el.id)
-            }
-          }
-        }
-      },
-      // Update existing and add new
-      ...list.map((el) => ({
-        updateOne: {
-        // create if not exists
-          upsert: true,
-          filter: {
-            source,
-            id: el.id
+    try {
+      await InstrumentsListModel.bulkWrite([
+        // Remove already unexisting (dead) tickers
+        {
+          deleteMany: {
+            filter: {
+              source,
+              id: {
+                // No include any id from list
+                $nin: list.map((el) => el.id),
+              },
+            },
           },
-          update: el
-        }
-      }))
-    ])
-  } catch (e) {
-    log.error(logPrefix, 'Ошибка при обновлении списка доступных инструментов в базе для', source, e)
-    // Trow exception for trigger retry in cron wrapper
-    throw e
-  }
+        },
+        // Update existing and add new
+        ...list.map((el) => ({
+          updateOne: {
+            // create if not exists
+            upsert: true,
+            filter: {
+              source,
+              id: el.id,
+            },
+            update: el,
+          },
+        })),
+      ])
+    } catch (e) {
+      log.error(
+        logPrefix,
+        'Ошибка при обновлении списка доступных инструментов в базе для',
+        source,
+        e
+      )
+      // Trow exception for trigger retry in cron wrapper
+      throw e
+    }
 
-  log.info(logPrefix, 'Список доступных инструментов в базе для', source, 'был обновлен', list.length)
-}
+    log.info(
+      logPrefix,
+      'Список доступных инструментов в базе для',
+      source,
+      'был обновлен',
+      list.length
+    )
+  }

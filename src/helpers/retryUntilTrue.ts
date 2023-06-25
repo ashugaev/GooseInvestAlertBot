@@ -6,7 +6,10 @@ const logPrefix = '[RETRY UNTIL TRUE]'
 /**
  * Retries callback every second untill isReady will return true
  */
-export const retryUntilTrue = async (isReady: () => boolean, callbackName?: string) => {
+export const retryUntilTrue = async (
+  isReady: () => boolean,
+  callbackName?: string
+) => {
   log.info(logPrefix, 'Waiting to start:', callbackName)
 
   while (isReady ? !isReady() : false) {

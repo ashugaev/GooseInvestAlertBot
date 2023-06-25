@@ -1,9 +1,13 @@
 import { Markup } from 'telegraf'
-import { createActionString, CreateActionStringPayload } from '../helpers/createActionString'
+
 import { listConfig } from '../config'
 import { Actions } from '../constants'
+import {
+  createActionString,
+  CreateActionStringPayload,
+} from '../helpers/createActionString'
 
-interface IPaginationPayload extends CreateActionStringPayload{
+interface IPaginationPayload extends CreateActionStringPayload {
   /**
    * Текущая страница
    */
@@ -12,8 +16,8 @@ interface IPaginationPayload extends CreateActionStringPayload{
 
 interface IPaginationButtonsParams {
   /**
-    * Идентификатор экшена пагинации
-    */
+   * Идентификатор экшена пагинации
+   */
   itemsPerPage?: number
   action: Actions
   itemsLength: number
@@ -27,7 +31,7 @@ export const paginationButtons = ({
   itemsPerPage = listConfig.itemsPerPage,
   itemsLength,
   action,
-  payload
+  payload,
 }: IPaginationButtonsParams) => {
   const page = payload.p
 
@@ -36,25 +40,27 @@ export const paginationButtons = ({
 
   const buttons = []
 
-  !isFirstPage && (buttons.push(
-    Markup.callbackButton(
-      '⬅️',
-      createActionString(action, {
-        ...payload,
-        p: page - 1
-      })
+  !isFirstPage &&
+    buttons.push(
+      Markup.callbackButton(
+        '⬅️',
+        createActionString(action, {
+          ...payload,
+          p: page - 1,
+        })
+      )
     )
-  ))
 
-  !isLastPage && (buttons.push(
-    Markup.callbackButton(
-      '➡️',
-      createActionString(action, {
-        ...payload,
-        p: page + 1
-      })
+  !isLastPage &&
+    buttons.push(
+      Markup.callbackButton(
+        '➡️',
+        createActionString(action, {
+          ...payload,
+          p: page + 1,
+        })
+      )
     )
-  ))
 
   return buttons
 }

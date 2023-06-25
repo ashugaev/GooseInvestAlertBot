@@ -3,12 +3,12 @@
  */
 // @ts-nocheck
 
-import { TelegrafContext } from 'telegraf/typings/context';
+import { TelegrafContext } from 'telegraf/typings/context'
 
-import { ALERT_SCENES } from '../../commands/alert/alert.constants';
-import { i18n } from '../i18n';
+import { ALERT_SCENES } from '../../commands/alert/alert.constants'
+import { i18n } from '../i18n'
 
-type AskUserCollectedValues = Record<string, any>;
+type AskUserCollectedValues = Record<string, any>
 
 interface UserInputValidator {
   validate: () => {}
@@ -51,7 +51,7 @@ interface AskUserQuestionConfig {
 interface AskUser {
   ctx: TelegrafContext
   questionConfig: AskUserQuestionConfig
-  onSuccess: (userInput: {[key: string]: string}) => boolean | undefined
+  onSuccess: (userInput: { [key: string]: string }) => boolean | undefined
   /**
    * Любые данные которые пробросятся в коллбеки для текстов
    */
@@ -68,9 +68,9 @@ const askUser = ({ ctx, questionConfig, onSuccess }: AskUser) => {
   // Эта сцена просто для примера
   ctx.scene.enter(ALERT_SCENES.askPrice, {
     payload: questionConfig,
-    onSuccess: onSuccess
-  });
-};
+    onSuccess: onSuccess,
+  })
+}
 
 /// ///
 
@@ -79,22 +79,23 @@ const questionConfig: AskUserQuestionConfig = {
   validators: [
     {
       validate: (userInput) => {
-        return 'kek';
+        return 'kek'
       },
-      errorMessage: (validateResult) => i18n.t('ru', 'alert_add_choosePrice_invalid', {
-        invalid: collectedValues.invalidPricesString
-      })
-    }
-
+      errorMessage: (validateResult) =>
+        i18n.t('ru', 'alert_add_choosePrice_invalid', {
+          invalid: collectedValues.invalidPricesString,
+        }),
+    },
   ],
   messages: {
     question: '',
-    validationError: (collectedValues) => i18n.t('ru', 'alert_add_choosePrice_invalid', {
-      invalid: collectedValues.invalidPricesString
-    }),
-    success: (collectedValues) => {}
-  }
-};
+    validationError: (collectedValues) =>
+      i18n.t('ru', 'alert_add_choosePrice_invalid', {
+        invalid: collectedValues.invalidPricesString,
+      }),
+    success: (collectedValues) => {},
+  },
+}
 
 /**
  * Ф-ция добавления алерта

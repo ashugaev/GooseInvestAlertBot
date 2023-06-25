@@ -5,7 +5,7 @@ import { PriceAlert } from '@/models'
 
 export enum EListTypes {
   shifts = 'shifts',
-  levels = 'levels'
+  levels = 'levels',
 }
 
 /**
@@ -63,5 +63,5 @@ export enum ListActionsDataKeys {
   selectedAlertIdShortened = '3dd',
   selectedAlertId = 'eke',
   selectedAlertPage = 'ap',
-  tickersListPage = 'tp'
+  tickersListPage = 'tp',
 }

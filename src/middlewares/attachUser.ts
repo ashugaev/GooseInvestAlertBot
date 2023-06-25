@@ -1,11 +1,11 @@
-import {Context} from "telegraf"
+import { Context } from 'telegraf'
 
-import {switchToAdminMode, switchToPrivateMode} from "@/helpers/adminMode"
-import {createOrUpdateChat} from "@/models/Chat"
-import {Limits} from "@/types/limits"
+import { switchToAdminMode, switchToPrivateMode } from '@/helpers/adminMode'
+import { createOrUpdateChat } from '@/models/Chat'
+import { Limits } from '@/types/limits'
 
-import {log} from '../helpers/log'
-import {findUser} from '../models'
+import { log } from '../helpers/log'
+import { findUser } from '../models'
 
 const logPrefix = '[attachUser]'
 
@@ -43,21 +43,25 @@ export async function attachUser(ctx: Context, next) {
     // Bot was updated
     // In this update type we possibly don't have from or chat declared
     // @ts-ignore
-    if(!chat && ctx.update?.my_chat_member) {
-      // @ts-ignore
-      if(!chat) {chat = ctx.update.my_chat_member.chat}
-      // @ts-ignore
-      if (!from) {from = ctx.update.my_chat_member.from}
+    if (!chat && ctx.update?.my_chat_member) {
+      if (!chat) {
+        // @ts-ignore
+        chat = ctx.update.my_chat_member.chat
+      }
+      if (!from) {
+        // @ts-ignore
+        from = ctx.update.my_chat_member.from
+      }
     }
-    
+
     // chat or private
-    if(from?.id) {
+    if (from?.id) {
       const dbuser = await findUser(from.id, ctx.goose.id)
       ctx.dbuser = dbuser
     }
 
     if (chat.type === 'private' && ctx.dbuser) {
-      if(ctx.dbuser?.adminMode) {
+      if (ctx.dbuser?.adminMode) {
         await switchToAdminMode(ctx)
       } else {
         await switchToPrivateMode(ctx)
@@ -68,26 +72,24 @@ export async function attachUser(ctx: Context, next) {
       return next()
     }
 
-    if(!chat) {
-      log.error('No chat obj. Unrecognized update',update)
-      return 
+    if (!chat) {
+      log.error('No chat obj. Unrecognized update', update)
+      return
     }
 
     // Bot was kicked
     const wasKicked =
-        // Bot was kicked from chat
-        (
-          ctx.updateSubTypes?.includes('left_chat_member') &&
-          ctx.update.message?.left_chat_member.id === ctx.goose.id
-        ) ||
-        // Bot was kicked from channel
-        // @ts-ignore
-        ctx.update.my_chat_member?.new_chat_member?.status === 'kicked' ||
-        // @ts-ignore
-        ctx.update.my_chat_member?.new_chat_member?.status === 'left'
+      // Bot was kicked from chat
+      (ctx.updateSubTypes?.includes('left_chat_member') &&
+        ctx.update.message?.left_chat_member.id === ctx.goose.id) ||
+      // Bot was kicked from channel
+      // @ts-ignore
+      ctx.update.my_chat_member?.new_chat_member?.status === 'kicked' ||
+      // @ts-ignore
+      ctx.update.my_chat_member?.new_chat_member?.status === 'left'
 
     await createOrUpdateChat(chat, ctx, wasKicked)
-    
+
     const isChat = chat.type === 'group' || chat.type === 'supergroup'
     const isChannel = chat.type === 'channel'
 

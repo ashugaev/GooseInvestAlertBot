@@ -14,31 +14,35 @@ const requestStep = immediateStep('ask-alert-ticker-request', async (ctx) => {
   return ctx.wizard.next()
 })
 
-const validateAndSaveStep = waitMessageStep('ask-alert-price-validate-and-save', async (ctx, message, state) => {
-  const {
-    callback
-  } = state
+const validateAndSaveStep = waitMessageStep(
+  'ask-alert-price-validate-and-save',
+  async (ctx, message, state) => {
+    const { callback } = state
 
-  message = message.toUpperCase()
+    message = message.toUpperCase()
 
-  // Variant with usdt to find Binance tickers
-  const instrumentsList = await getInstrumentInfoByTicker({ ticker: [message, message + 'USDT'] })
+    // Variant with usdt to find Binance tickers
+    const instrumentsList = await getInstrumentInfoByTicker({
+      ticker: [message, message + 'USDT'],
+    })
 
-  if (!instrumentsList.length) {
-    await ctx.replyWithHTML(
-      i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol: message }),
-      { disable_web_page_preview: true }
-    )
+    if (!instrumentsList.length) {
+      await ctx.replyWithHTML(
+        i18n.t('ru', 'alertErrorUnexistedSymbol', { symbol: message }),
+        { disable_web_page_preview: true }
+      )
 
-    return ctx.wizard.selectStep(ctx.wizard.cursor)
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+
+    callback({ ticker: message, instrumentsList })
+
+    return ctx.scene.leave()
   }
+)
 
-  callback({ ticker: message, instrumentsList })
-
-  return ctx.scene.leave()
-})
-
-export const askAlertTickerScene = new WizardScene(ALERT_SCENES.askTicker,
+export const askAlertTickerScene = new WizardScene(
+  ALERT_SCENES.askTicker,
   requestStep,
   validateAndSaveStep
 )

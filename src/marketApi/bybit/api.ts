@@ -7,5 +7,5 @@ const useTestnet = false
 export const byBitApi = new InverseClient({
   key: API_KEY,
   secret: API_SECRET,
-  testnet: useTestnet
+  testnet: useTestnet,
 })

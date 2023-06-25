@@ -9,7 +9,7 @@ import { TinkoffFuturesMarginModel } from '../../models/TinkoffFuturesMargin'
 export const saveFuturesMargin = async () => {
   const features = await InstrumentsListModel.find({
     type: EMarketInstrumentTypes.Future,
-    source: EMarketDataSources.tinkoff
+    source: EMarketDataSources.tinkoff,
   }).lean()
 
   const dataForBulkUpdate = []
@@ -17,10 +17,15 @@ export const saveFuturesMargin = async () => {
   for (let i = 0; i < features.length; i++) {
     try {
       const feature = features[i]
-      // @ts-expect-error
-      const { id, sourceSpecificData: { figi } } = feature
+      const {
+        id,
+        // @ts-expect-error
+        sourceSpecificData: { figi },
+      } = feature
 
-      const futureMargin = await tinkoffApi.instruments.getFuturesMargin({ figi })
+      const futureMargin = await tinkoffApi.instruments.getFuturesMargin({
+        figi,
+      })
 
       dataForBulkUpdate.push({
         updateOne: {
@@ -29,10 +34,10 @@ export const saveFuturesMargin = async () => {
           update: {
             $set: {
               minPriceIncrement: futureMargin.minPriceIncrement,
-              minPriceIncrementAmount: futureMargin.minPriceIncrementAmount
-            }
-          }
-        }
+              minPriceIncrementAmount: futureMargin.minPriceIncrementAmount,
+            },
+          },
+        },
       })
 
       await wait(5000)

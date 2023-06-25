@@ -9,11 +9,11 @@ const { log } = require('./log')
 interface StartCronJobParams {
   name: string
   period: string
-  callback: (argsArr?: any[]) => void | Promise<void >
+  callback: (argsArr?: any[]) => void | Promise<void>
   callbackArgs: any[]
   /**
-     * Перед тем как делать задачу для крона выполнит callback
-     */
+   * Перед тем как делать задачу для крона выполнит callback
+   */
   executeBeforeInit?: boolean
   isReadyToStart?: () => boolean
   jobKey?: InitializationItem
@@ -26,28 +26,38 @@ export const startCronJob = ({
   callbackArgs,
   executeBeforeInit,
   isReadyToStart,
-  jobKey
+  jobKey,
 }: StartCronJobParams) => {
   const onTickFunction = async () => {
     try {
       await retryUntilTrue(isReadyToStart, name)
 
       callbackArgs
-      // eslint-disable-next-line
-        ? retry(async () => {
-          await callback.apply(null, callbackArgs)
-          setJobKey(jobKey)
-        }, 60000, 'cron job ' + name, 5)
-        : retry(async () => {
-          await callback()
-          setJobKey(jobKey)
-        }, 60000, 'cron job ' + name, 5)
+        ? // eslint-disable-next-line
+          retry(
+            async () => {
+              await callback.apply(null, callbackArgs)
+              setJobKey(jobKey)
+            },
+            60000,
+            'cron job ' + name,
+            5
+          )
+        : retry(
+            async () => {
+              await callback()
+              setJobKey(jobKey)
+            },
+            60000,
+            'cron job ' + name,
+            5
+          )
     } catch (e) {
       log.error('Cron job error', e)
     }
   }
 
-  executeBeforeInit && (onTickFunction())
+  executeBeforeInit && onTickFunction()
 
   const job = new CronJob(
     period,

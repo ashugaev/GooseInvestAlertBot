@@ -9,9 +9,7 @@ const LOG_PREFIX = '[PAY ACTION]'
 
 export const generatePaymentLinkAction = async (ctx: Context) => {
   try {
-    const {
-      i
-    } = JSON.parse(ctx.match[1])
+    const { i } = JSON.parse(ctx.match[1])
 
     const paymentData = TARIFFS[i]
 
@@ -19,20 +17,22 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
       customerName: ctx.from.username,
       customerId: ctx.from.id,
       paymentDescription: paymentData.buttonText,
-      amount: paymentData.price
+      amount: paymentData.price,
     })
 
-    await ctx.replyWithHTML(ctx.i18n.t('pay_link'),
-      {
-        disable_web_page_preview: true,
-        reply_markup: {
-          inline_keyboard: [[{
-            url: invoiceData.hosted_url,
-            text: ctx.i18n.t('pay_link_button')
-          }]]
-        }
-      }
-    )
+    await ctx.replyWithHTML(ctx.i18n.t('pay_link'), {
+      disable_web_page_preview: true,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              url: invoiceData.hosted_url,
+              text: ctx.i18n.t('pay_link_button'),
+            },
+          ],
+        ],
+      },
+    })
   } catch (e) {
     await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(LOG_PREFIX, e)

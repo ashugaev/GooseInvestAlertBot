@@ -12,10 +12,10 @@ export const clearOldCandles = async () => {
           timeframe: timeframe.timeframe,
           updatedAt: {
             // Delete all items whick wasn't updated whole during current candle lifetime
-            $lt: Date.now() - timeframe.lifetime - 1
-          }
-        }
-      }
+            $lt: Date.now() - timeframe.lifetime - 1,
+          },
+        },
+      },
     })
   })
 
