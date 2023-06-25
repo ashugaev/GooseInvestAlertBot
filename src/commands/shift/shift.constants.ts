@@ -130,6 +130,9 @@ const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
   [EMarketDataSources.lbank]: {
     minTimeframeTime: 30000,
   },
+  [EMarketDataSources.binanceFuture]: {
+    minTimeframeTime: 5000,
+  },
 }
 
 export const SHIFT_TIMEFRAMES_ARRAY = Object.values(SHIFT_TIMEFRAMES)

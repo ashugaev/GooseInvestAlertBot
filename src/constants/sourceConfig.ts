@@ -21,6 +21,10 @@ export const SOURCE_CONFIG: Record<EMarketDataSources, SourceConfig> = {
     fullName: 'Binance',
     shortName: 'BINANCE',
   },
+  [EMarketDataSources.binanceFuture]: {
+    fullName: 'Binance Futures',
+    shortName: 'BINANCE FT',
+  },
   [EMarketDataSources.yahoo]: {
     fullName: 'Yahoo',
     shortName: 'YH',
