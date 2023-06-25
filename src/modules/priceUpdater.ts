@@ -1,16 +1,16 @@
 import { TickerPrices } from 'prices'
 
 import { dropOutInvalidPrices } from '@/helpers'
+import { setJobKey } from '@/helpers/setJobKey'
+import { splitArray } from '@/helpers/splitArray'
+import { EMarketDataSources } from '@/marketApi/types'
 import { getInstrumentsBySourceCache, InstrumentsList } from '@/models'
 
 import { InitializationItem } from '../cron'
 import { lastPriceCache } from '../helpers/getLastPrice'
 import { log } from '../helpers/log'
 import { retryUntilTrue } from '../helpers/retryUntilTrue'
-import { setJobKey } from '../helpers/setJobKey'
-import { splitArray } from '../helpers/splitArray'
 import { wait } from '../helpers/wait'
-import { EMarketDataSources } from '../marketApi/types'
 
 const logPrefix = '[PRICE UPDATER]'
 const CRASH_WAIT_TIME = 30000
@@ -24,7 +24,10 @@ export interface PriceUpdaterParams {
   /**
    * tickerIds length will be equal maxTickersForRequest
    */
-  getPrices: (tickerIds: string[], tickersData: InstrumentsList[]) => Promise<TickerPrices>
+  getPrices: (
+    tickerIds: string[],
+    tickersData: InstrumentsList[]
+  ) => Promise<TickerPrices>
   /**
    * The maximum number that can be updated for one request of 'updateRequest' callback
    * null means all tickers for one request
@@ -40,6 +43,7 @@ export interface PriceUpdaterParams {
    */
   isReadyToStart?: () => boolean
   jobKey: InitializationItem
+  onCatch?: (e: Error) => void
 }
 
 let noPricesObject = {}
@@ -53,7 +57,8 @@ export const setupPriceUpdater = async ({
   minTimeBetweenRequests = 100,
   source,
   isReadyToStart,
-  jobKey
+  jobKey,
+  onCatch,
 }: PriceUpdaterParams) => {
   await retryUntilTrue(isReadyToStart, 'Price updater for: ' + source)
 
@@ -67,108 +72,123 @@ export const setupPriceUpdater = async ({
       }
 
       noPricesObject = {}
-    // N = 30 min
+      // N = 30 min
     } catch (e) {
+      onCatch?.(e)
       log.error(logPrefix, 'Error in setInterval', e)
     }
   }, 1000 * 60 * 30)
 
   let lastIterationStartTime = new Date().getTime()
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
-    let sourceInstrumentsList = []
-
-    // Instruments fetch and error handling
     try {
-      sourceInstrumentsList = await getInstrumentsBySourceCache(source)
+      let sourceInstrumentsList = []
 
-      if (!sourceInstrumentsList.length) {
-        log.error(logPrefix, source, 'Нет инструментов в списке')
-        await wait(CRASH_WAIT_TIME)
-        continue
-      }
-    } catch (e) {
-      log.error(logPrefix, source, 'Ошибки получения списка инструментов', e)
-      await wait(CRASH_WAIT_TIME)
-      continue
-    }
-
-    const arrChunks = splitArray(sourceInstrumentsList, maxTickersForRequest)
-
-    console.time(source)
-
-    for (let i = 0; i < arrChunks.length; i++) {
-      const chunk = arrChunks[i]
-
-      // Делаем время между итерациями более предсказуемым учитывая время запроса
-      const timeToWait = minTimeBetweenRequests - (new Date().getTime() - lastIterationStartTime)
-
-      if (timeToWait > 0) {
-        log.info(logPrefix, source, 'waiting', timeToWait)
-        await wait(timeToWait)
-      }
-
-      lastIterationStartTime = new Date().getTime()
-
-      const tickerIds: string[] = chunk.map(el => el.id)
-
-      let prices = []
-
-      // Get prices for tickers
+      // Instruments fetch and error handling
       try {
-        prices = await getPrices(tickerIds, chunk)
+        sourceInstrumentsList = await getInstrumentsBySourceCache(source)
 
-        // No prices case
-        if (prices?.length < tickerIds.length) {
-          const idsWihoutPrices = tickerIds.filter(id => !prices.find(price => price[2] === id))
-
-          idsWihoutPrices.forEach(id => (noPricesObject[id] = true))
-        }
-
-        if (!prices || prices.length === 0) {
+        if (!sourceInstrumentsList.length) {
+          log.error(logPrefix, source, 'Нет инструментов в списке')
+          await wait(CRASH_WAIT_TIME)
           continue
         }
       } catch (e) {
-        log.error(logPrefix, source, 'Update prices error', e)
+        onCatch?.(e)
+        log.error(logPrefix, source, 'Ошибки получения списка инструментов', e)
         await wait(CRASH_WAIT_TIME)
         continue
       }
 
-      prices = dropOutInvalidPrices(prices)
+      const arrChunks = splitArray(sourceInstrumentsList, maxTickersForRequest)
 
-      // No prices case
-      if (!prices.length) {
-        log.error(logPrefix, source, 'No prices after filtering')
-        continue
+      console.time(source)
+
+      for (let i = 0; i < arrChunks.length; i++) {
+        const chunk = arrChunks[i]
+
+        // Делаем время между итерациями более предсказуемым учитывая время запроса
+        const timeToWait =
+          minTimeBetweenRequests -
+          (new Date().getTime() - lastIterationStartTime)
+
+        if (timeToWait > 0) {
+          log.info(logPrefix, source, 'waiting', timeToWait)
+          await wait(timeToWait)
+        }
+
+        lastIterationStartTime = new Date().getTime()
+
+        const tickerIds: string[] = chunk.map((el) => el.id)
+
+        let prices = []
+
+        // Get prices for tickers
+        try {
+          prices = await getPrices(tickerIds, chunk)
+
+          // No prices case
+          if (prices?.length < tickerIds.length) {
+            const idsWihoutPrices = tickerIds.filter(
+              (id) => !prices.find((price) => price[2] === id)
+            )
+
+            idsWihoutPrices.forEach((id) => (noPricesObject[id] = true))
+          }
+
+          if (!prices || prices.length === 0) {
+            continue
+          }
+        } catch (e) {
+          onCatch?.(e)
+          log.error(logPrefix, source, 'Update prices error', e)
+          await wait(CRASH_WAIT_TIME)
+          continue
+        }
+
+        prices = dropOutInvalidPrices(prices)
+
+        // No prices case
+        if (!prices.length) {
+          log.error(logPrefix, source, 'No prices after filtering')
+          continue
+        }
+
+        const cacheData = prices.map(([ticker, price, tickerId]) => ({
+          key: tickerId,
+          val: price,
+        }))
+
+        const success = lastPriceCache.mset(cacheData)
+
+        if (!success) {
+          log.error(logPrefix, source, 'Cache update error')
+          continue
+        }
       }
 
-      const cacheData = prices.map(([ticker, price, tickerId]) => ({
-        key: tickerId,
-        val: price
-      }))
+      log.info(logPrefix + 'Price cache update END ' + source)
 
-      const success = lastPriceCache.mset(cacheData)
+      const currentTime = new Date().getTime()
+      lastUpdateTime[source] &&
+        log.info(
+          logPrefix,
+          source,
+          'Time betweed updates ' +
+            ((currentTime - lastUpdateTime[source]) / 1000).toString() +
+            's'
+        )
+      lastUpdateTime[source] = new Date().getTime()
 
-      if (!success) {
-        log.error(logPrefix, source, 'Cache update error')
-        continue
-      }
+      setJobKey(jobKey)
+
+      console.timeEnd(source)
+    } catch (e) {
+      onCatch?.(e)
+      log.error(logPrefix, source, 'Error in main loop', e)
+      await wait(2000)
     }
-
-    log.info(logPrefix + 'Price cache update END ' + source)
-
-    const currentTime = new Date().getTime()
-    lastUpdateTime[source] && (
-      log.info(
-        logPrefix,
-        source,
-        'Time betweed updates ' + ((currentTime - lastUpdateTime[source]) / 1000).toString() + 's'
-      )
-    )
-    lastUpdateTime[source] = new Date().getTime()
-
-    setJobKey(jobKey)
-
-    console.timeEnd(source)
   }
 }

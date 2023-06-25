@@ -15,11 +15,9 @@ import { getBinancePrices } from '../marketApi/binance/api/getPrices'
 import { bybitGetAllInstruments } from '../marketApi/bybit/getInstruments'
 import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments'
 import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
-import { getCurrenciesList } from '../marketApi/currencyConverter/getList'
 import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments'
 import { getTinkoffPrices } from '../marketApi/tinkoff/api/getPrices'
 import { EMarketDataSources } from '../marketApi/types'
-import { getYahooPrices } from '../marketApi/yahoo/getPrices'
 import { setupPriceUpdater, updateTickersList } from '../modules'
 import { copyAlerts } from './copyAlerts'
 import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
@@ -55,7 +53,7 @@ const isInstrumentsListUpdated = () => {
     InitializationItem.TINKOFF_TICKERS,
     InitializationItem.COINGECKO_TICKERS,
     InitializationItem.BINANCE_TICKERS,
-    InitializationItem.YAHOO_TICKERS,
+    // InitializationItem.YAHOO_TICKERS,
     InitializationItem.BYBIT_TICKERS,
     InitializationItem.KUCOIN_TICKERS,
     InitializationItem.LBANK_TICKERS,
@@ -66,7 +64,7 @@ const isAllPricesUpdated = () => {
     InitializationItem.TINKOFF_PRICES,
     InitializationItem.COINGECKO_PRICES,
     InitializationItem.BINANCE_PRICES,
-    InitializationItem.YAHOO_PRICES,
+    // InitializationItem.YAHOO_PRICES,
     InitializationItem.BYBIT_PRICES,
     InitializationItem.KUCOIN_PRICES,
     InitializationItem.LBANK_PRICES,
@@ -110,19 +108,19 @@ export const setupCheckers = () => {
   //   period: '0 * * * *'
   // })
 
-  startCronJob({
-    name: 'Update Currencies List',
-    callback: updateTickersList({
-      getList: getCurrenciesList,
-      source: EMarketDataSources.yahoo,
-      minTickersCount: 1000,
-    }),
-    callbackArgs: [],
-    // Раз в день в 0 часов или при деплое
-    period: '0 0 * * *',
-    executeBeforeInit: true,
-    jobKey: InitializationItem.YAHOO_TICKERS,
-  })
+  // startCronJob({
+  //   name: 'Update Currencies List',
+  //   callback: updateTickersList({
+  //     getList: getCurrenciesList,
+  //     source: EMarketDataSources.yahoo,
+  //     minTickersCount: 1000,
+  //   }),
+  //   callbackArgs: [],
+  //   // Раз в день в 0 часов или при деплое
+  //   period: '0 0 * * *',
+  //   executeBeforeInit: true,
+  //   jobKey: InitializationItem.YAHOO_TICKERS,
+  // })
 
   /**
    * TINKOFF tickers list
@@ -280,22 +278,22 @@ export const setupCheckers = () => {
    *
    * Quota 2000 requests per hour
    */
-  retry(
-    async () => {
-      await setupPriceUpdater({
-        // hour in ms divided by quota
-        minTimeBetweenRequests: 3600000 / 2000,
-        getPrices: getYahooPrices,
-        source: EMarketDataSources.yahoo,
-        // 10 tickers it's a max for yahoo api
-        maxTickersForRequest: 10,
-        // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
-        jobKey: InitializationItem.YAHOO_PRICES,
-      })
-    },
-    10000,
-    'setupPriceUpdater for yahoo'
-  )
+  // retry(
+  //   async () => {
+  //     await setupPriceUpdater({
+  //       // hour in ms divided by quota
+  //       minTimeBetweenRequests: 3600000 / 2000,
+  //       getPrices: getYahooPrices,
+  //       source: EMarketDataSources.yahoo,
+  //       // 10 tickers it's a max for yahoo api
+  //       maxTickersForRequest: 10,
+  //       // isReadyToStart: () => appInitStatuses.includes(InitializationItem.YAHOO_TICKERS),
+  //       jobKey: InitializationItem.YAHOO_PRICES,
+  //     })
+  //   },
+  //   10000,
+  //   'setupPriceUpdater for yahoo'
+  // )
 
   /**
    * COINGECKO prices updater
