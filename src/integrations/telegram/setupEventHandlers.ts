@@ -31,10 +31,19 @@ const normalizeMessage = (
   }
 }
 
+const callbackByChat: Record<
+  ChannelsToTrack,
+  (data: TrackChatCallbacksParams) => void
+> = {
+  testSignalsName: callbacksByChatPurpose.signal.message,
+  Whales_Pumping_Cryptocurrency: callbacksByChatPurpose.signal.message,
+  keklolkeklolkeklolkeklolkeklol: callbacksByChatPurpose.signal.message,
+  DefiUniverse: callbacksByChatPurpose.signal.message,
+}
+
 const handleMessage = (
   message: Api.Message,
   prevMessages: Api.Message[] = [],
-  // Not required. Need for polling responce
   chatLink: string
 ) => {
   const res: TrackChatCallbacksParams = {
@@ -42,8 +51,7 @@ const handleMessage = (
     prevMessages: prevMessages.map(normalizeMessage, chatLink),
   }
 
-  // FIXME: Hardcoded for now. Must depend on chat purpose
-  callbacksByChatPurpose.pump.message(res)
+  callbackByChat[chatLink](res)
 }
 
 async function handleEvent(event: NewMessageEvent) {
@@ -52,15 +60,16 @@ async function handleEvent(event: NewMessageEvent) {
   try {
     if (event.isChannel) {
       // @ts-ignore
-      handleMessage(message)
+      handleMessage(message, [], event.chat.username)
     }
   } catch (e) {
     log.error(e)
   }
 }
 
+const pollingChat = null
 // const pollingChat: ChannelsToTrack = 'DefiUniverse'
-const pollingChat: ChannelsToTrack = 'keklolkeklolkeklolkeklolkeklol'
+// const pollingChat: ChannelsToTrack = 'keklolkeklolkeklolkeklolkeklol'
 
 /**
  * Need for analysing history of messages
@@ -69,6 +78,10 @@ export const pollingMessagesCheck = async () => {
   const delayBetweenRequests = 1000
   let startIterationTime = 0
   let lastHandledMessageId = 0
+
+  if (!pollingChat) {
+    return
+  }
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -112,13 +125,11 @@ export const pollingMessagesCheck = async () => {
 }
 
 export const setupEventHandlers = async () => {
-  // TODO: Use configuration in bot interface
-  // const trackChats = await TrackChatModel.find().lean()
-
   const trackChats: ChannelsToTrack[] = [
-    // 'keklolkeklolkeklolkeklolkeklol',
+    'keklolkeklolkeklolkeklolkeklol',
     'Whales_Pumping_Cryptocurrency',
-    // 'DefiUniverse',
+    'DefiUniverse',
+    'testSignalsName',
   ]
 
   // Track chat events
@@ -129,6 +140,7 @@ export const setupEventHandlers = async () => {
     })
   )
 
+  // Polling for debug hooks
   pollingMessagesCheck()
 }
 

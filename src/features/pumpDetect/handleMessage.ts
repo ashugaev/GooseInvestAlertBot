@@ -21,8 +21,9 @@ const lastHandledMessageByChat: Record<string, number> = {}
  * @fixme check if time of update is approximately same with time of message
  */
 export const handleMessage = async (params: TrackChatCallbacksParams) => {
-  log.info(logPrefix, 'Handling message', params)
+  log.info(logPrefix, 'Handling signal message', params)
 
+  // Double check avoiding
   if (lastHandledMessageByChat[params.chatLinkName] === params.messageId) {
     return
   } else {

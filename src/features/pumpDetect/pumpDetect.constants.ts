@@ -14,6 +14,9 @@ export interface DetectorConfig {
 }
 
 export const configByChannel: Record<ChannelsToTrack, DetectorConfig> = {
+  testSignalsName: {
+
+  },
   Whales_Pumping_Cryptocurrency: {
     allowedUTCHours: null,
     mustBeRoundHour: true,
