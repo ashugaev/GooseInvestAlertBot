@@ -3,6 +3,7 @@ import { NewMessage, NewMessageEvent } from 'telegram/events'
 
 import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
+import { handleDevochkiChannelMessage } from '@/features/signals/devochkiChannel/handleMessage'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
 import { client } from '@/integrations/telegram/client'
@@ -35,7 +36,7 @@ const callbackByChat: Record<
   ChannelsToTrack,
   (data: TrackChatCallbacksParams) => void
 > = {
-  testSignalsName: callbacksByChatPurpose.signal.message,
+  testSignalsName: handleDevochkiChannelMessage,
   Whales_Pumping_Cryptocurrency: callbacksByChatPurpose.signal.message,
   keklolkeklolkeklolkeklolkeklol: callbacksByChatPurpose.signal.message,
   DefiUniverse: callbacksByChatPurpose.signal.message,

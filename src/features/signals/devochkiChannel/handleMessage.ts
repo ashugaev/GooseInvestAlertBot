@@ -11,5 +11,5 @@ export const handleDevochkiChannelMessage = async (
   // Validation of chat GPT answer
   // Смотрим что уже нет активной сделки по этому тикеру
   // Make orders
-  // Ожидание закрепления
+  // Ожидание закрепления. Отправим с определнным статусом джобу в очередь
 }
