@@ -32,13 +32,13 @@ const normalizeMessage = (
   }
 }
 
+// @ts-ignore
 const callbackByChat: Record<
   ChannelsToTrack,
   (data: TrackChatCallbacksParams) => void
 > = {
-  testSignalsName: handleDevochkiChannelMessage,
+  keklolkeklolkeklolkeklolkeklol: handleDevochkiChannelMessage,
   Whales_Pumping_Cryptocurrency: callbacksByChatPurpose.signal.message,
-  keklolkeklolkeklolkeklolkeklol: callbacksByChatPurpose.signal.message,
   DefiUniverse: callbacksByChatPurpose.signal.message,
 }
 
@@ -58,10 +58,13 @@ const handleMessage = (
 async function handleEvent(event: NewMessageEvent) {
   const message = event.message
 
+  // TODO: Better to cache this data
+  const chat = await message.getChat()
+
   try {
     if (event.isChannel) {
       // @ts-ignore
-      handleMessage(message, [], event.chat.username)
+      handleMessage(message, [], chat.username)
     }
   } catch (e) {
     log.error(e)
@@ -130,7 +133,6 @@ export const setupEventHandlers = async () => {
     'keklolkeklolkeklolkeklolkeklol',
     'Whales_Pumping_Cryptocurrency',
     'DefiUniverse',
-    'testSignalsName',
   ]
 
   // Track chat events
