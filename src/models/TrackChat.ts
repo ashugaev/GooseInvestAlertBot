@@ -4,7 +4,7 @@ import { handleMessage } from '@/features/pumpDetect/handleMessage'
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 import { EMarketDataSources } from '@/marketApi/types'
 
-export type TrackChatPurpose = 'pump' | 'news'
+export type TrackChatPurpose = 'signal' | 'news'
 
 export interface TrackChatCallbacksParams {
   message: string | null
@@ -23,7 +23,7 @@ export const callbacksByChatPurpose: Record<
   TrackChatPurpose,
   { message: (params: TrackChatCallbacksParams) => void }
 > = {
-  pump: {
+  signal: {
     message: handleMessage,
   },
   news: {
