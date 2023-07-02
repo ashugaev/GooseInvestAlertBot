@@ -20,43 +20,60 @@ export const updateLeverage = async (symbol, leverage) => {
  * @todo - принимать для тейкпрофитов массив и делить между ними количество
  */
 export const newMarkenOrderFuturesBinance = async (
-  params: Pick<MarketNewFuturesOrder, 'symbol' | 'quantity'>
+  params: {
+    tpPercentArr: number[]
+    slPercent: number
+    limitPriceLevel?: number
+    type: 'LIMIT' | 'MARKET'
+  } & Pick<MarketNewFuturesOrder, 'symbol' | 'quantity' | 'side'>
 ): Promise<FuturesOrder[]> => {
-  const { symbol, quantity } = params
+  const {
+    symbol,
+    quantity,
+    tpPercentArr,
+    slPercent,
+    type,
+    side,
+    limitPriceLevel,
+  } = params
 
-  await updateLeverage(symbol, 20)
-
-  const ristPercent = 0.5
-  const profitPercent = 2
+  await updateLeverage(symbol, 5)
 
   const symbolInfo = await getOneInstrumentFromCache({
     ticker: symbol,
     source: EMarketDataSources.binanceFuture,
   })
-  const currentPrice = getLastPrice(symbolInfo.id)
+  const price = limitPriceLevel ?? getLastPrice(symbolInfo.id)
 
   // @ts-ignore
   const precision = symbolInfo.sourceSpecificData.pricePrecision
 
-  const stopPrice = (currentPrice * (1 - ristPercent / 100)).toFixed(precision)
-  const takeProfitPrice = (currentPrice * (1 + profitPercent / 100)).toFixed(
-    precision
-  )
+  const stopPrice: string =
+    side === 'BUY'
+      ? (price * (1 - slPercent / 100)).toFixed(precision)
+      : (price * (1 + slPercent / 100)).toFixed(precision)
+
+  const takeProfitPrice: string =
+    side === 'BUY'
+      ? (price * (1 + tpPercentArr[0] / 100)).toFixed(precision)
+      : (price * (1 - tpPercentArr[0] / 100)).toFixed(precision)
 
   const batchOrders: NewFuturesOrder[] = [
     // Order
     {
       quantity,
       symbol,
-      type: 'MARKET',
-      side: 'BUY',
+      type,
+      side,
+      // @ts-ignore
+      price: type === 'LIMIT' ? price.toString() : undefined,
     },
     // Stop loss
     {
       quantity,
       symbol,
       type: 'STOP_MARKET',
-      side: 'SELL',
+      side: side === 'BUY' ? 'SELL' : 'BUY',
       stopPrice, // цена по которой сработает ордер
     },
     // Take profit
@@ -66,7 +83,7 @@ export const newMarkenOrderFuturesBinance = async (
       stopPrice: takeProfitPrice, // цена по которой сработает ордер
       symbol,
       type: 'TAKE_PROFIT',
-      side: 'SELL',
+      side: side === 'BUY' ? 'SELL' : 'BUY',
     },
   ]
 
