@@ -34,7 +34,7 @@ export const handleDevochkiChannelMessage = async (
       !pattern4.test(data.message) ||
       data.message.length <= 40
     ) {
-      signalItem.validationStatus = 'manualCheckFailed'
+      signalItem.status = 'manualCheckFailed'
       throw 'Message is not valid'
       return
     }
@@ -42,7 +42,7 @@ export const handleDevochkiChannelMessage = async (
     const AIRes = await validateWithChatGPT(data.message)
 
     if (!AIRes) {
-      signalItem.validationStatus = 'aiCheckFailed'
+      signalItem.status = 'aiCheckFailed'
       throw 'AI check failed'
     }
 
@@ -53,7 +53,7 @@ export const handleDevochkiChannelMessage = async (
     try {
       dataArr = JSON.parse(AIRes.replace(/'/g, '"'))
     } catch (e) {
-      signalItem.validationStatus = 'aiAnswerInvalid'
+      signalItem.status = 'aiAnswerInvalid'
       throw 'AI answer json is invalid'
     }
 
@@ -76,7 +76,7 @@ export const handleDevochkiChannelMessage = async (
       !type?.match(/(buy|sell)/) ||
       !doubts?.match(/(yes|no)/)
     ) {
-      signalItem.validationStatus = 'aiAnswerInvalid'
+      signalItem.status = 'aiAnswerInvalid'
       throw 'AI answer is invalid'
     }
 
@@ -93,7 +93,7 @@ export const handleDevochkiChannelMessage = async (
     )
 
     if (!tickerInfoBySource) {
-      signalItem.validationStatus = 'tickerNotFound'
+      signalItem.status = 'tickerNotFound'
       throw 'Ticker not found'
     }
 
@@ -106,7 +106,7 @@ export const handleDevochkiChannelMessage = async (
     signalItem.volume = volume
 
     if (!price) {
-      signalItem.validationStatus = 'priceNotFound'
+      signalItem.status = 'priceNotFound'
       throw 'Price not found'
     }
 

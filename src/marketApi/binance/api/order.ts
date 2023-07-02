@@ -60,6 +60,7 @@ export const newMarkenOrderFuturesBinance = async (
 
   const batchOrders: NewFuturesOrder[] = [
     // Order
+    // @ts-ignore
     {
       quantity,
       symbol,
