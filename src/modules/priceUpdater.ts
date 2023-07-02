@@ -48,6 +48,8 @@ export interface PriceUpdaterParams {
 
 let noPricesObject = {}
 
+const kucoinDebugPrefix = '[Kucoin debug]'
+
 /**
  * Поддерживает кэш с актуальными ценами для источника
  */
@@ -83,12 +85,24 @@ export const setupPriceUpdater = async ({
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    if (source === EMarketDataSources.kucoin) {
+      log.info(kucoinDebugPrefix, 'main loop start')
+    }
+
     try {
       let sourceInstrumentsList = []
 
       // Instruments fetch and error handling
       try {
         sourceInstrumentsList = await getInstrumentsBySourceCache(source)
+
+        if (source === EMarketDataSources.kucoin) {
+          log.info(
+            kucoinDebugPrefix,
+            'sourceInstrumentsList',
+            sourceInstrumentsList.length
+          )
+        }
 
         if (!sourceInstrumentsList.length) {
           log.error(logPrefix, source, 'Нет инструментов в списке')
@@ -104,10 +118,18 @@ export const setupPriceUpdater = async ({
 
       const arrChunks = splitArray(sourceInstrumentsList, maxTickersForRequest)
 
+      if (source === EMarketDataSources.kucoin) {
+        log.info(kucoinDebugPrefix, 'arrChunks', arrChunks.length)
+      }
+
       console.time(source)
 
       for (let i = 0; i < arrChunks.length; i++) {
         const chunk = arrChunks[i]
+
+        if (source === EMarketDataSources.kucoin) {
+          log.info(kucoinDebugPrefix, 'chunk handle')
+        }
 
         // Делаем время между итерациями более предсказуемым учитывая время запроса
         const timeToWait =
@@ -127,7 +149,15 @@ export const setupPriceUpdater = async ({
 
         // Get prices for tickers
         try {
+          if (source === EMarketDataSources.kucoin) {
+            log.info(kucoinDebugPrefix, 'prices req')
+          }
+
           prices = await getPrices(tickerIds, chunk)
+
+          if (source === EMarketDataSources.kucoin) {
+            log.info(kucoinDebugPrefix, 'prices res', prices.length)
+          }
 
           // No prices case
           if (prices?.length < tickerIds.length) {

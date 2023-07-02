@@ -15,15 +15,11 @@ interface DetectorCallbacks {
   anounce?: (params: TrackChatCallbacksParams) => boolean
 }
 
+// @ts-ignore
 export const detectorsByChatUsername: Record<
   ChannelsToTrack,
   DetectorCallbacks
 > = {
-  testSignalsName: {
-    start: (params: TrackChatCallbacksParams) => {
-      console.log(params)
-    },
-  },
   Whales_Pumping_Cryptocurrency: {
     start: (params: TrackChatCallbacksParams): string | null => {
       const matched = params.message?.match(/^SELECTED COIN IS \$([A-Z]+)$/)
