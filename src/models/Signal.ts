@@ -45,6 +45,9 @@ export class Signal extends TimeStamps {
 
   @prop({ required: false })
   orderType?: SignalOrderType
+
+  @prop({ required: false, default: false })
+  orderCreated?: boolean
 }
 
 export const SignalModel = getModelForClass(Signal)

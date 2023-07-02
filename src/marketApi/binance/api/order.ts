@@ -16,6 +16,12 @@ export const updateLeverage = async (symbol, leverage) => {
   await binance.futuresLeverage({ leverage, symbol })
 }
 
+const getTPPrice = (price, tpPercent, side, precision) => {
+  return side === 'BUY'
+    ? (price * (1 + tpPercent / 100)).toFixed(precision)
+    : (price * (1 - tpPercent / 100)).toFixed(precision)
+}
+
 /**
  * @todo - принимать для тейкпрофитов массив и делить между ними количество
  */
@@ -25,7 +31,8 @@ export const newMarkenOrderFuturesBinance = async (
     slPercent: number
     limitPriceLevel?: number
     type: 'LIMIT' | 'MARKET'
-  } & Pick<MarketNewFuturesOrder, 'symbol' | 'quantity' | 'side'>
+    quantity: number
+  } & Pick<MarketNewFuturesOrder, 'symbol' | 'side'>
 ): Promise<FuturesOrder[]> => {
   const {
     symbol,
@@ -53,16 +60,11 @@ export const newMarkenOrderFuturesBinance = async (
       ? (price * (1 - slPercent / 100)).toFixed(precision)
       : (price * (1 + slPercent / 100)).toFixed(precision)
 
-  const takeProfitPrice: string =
-    side === 'BUY'
-      ? (price * (1 + tpPercentArr[0] / 100)).toFixed(precision)
-      : (price * (1 - tpPercentArr[0] / 100)).toFixed(precision)
-
   const batchOrders: NewFuturesOrder[] = [
     // Order
     // @ts-ignore
     {
-      quantity,
+      quantity: quantity.toString(),
       symbol,
       type,
       side,
@@ -71,22 +73,29 @@ export const newMarkenOrderFuturesBinance = async (
     },
     // Stop loss
     {
-      quantity,
+      quantity: quantity.toString(),
       symbol,
       type: 'STOP_MARKET',
       side: side === 'BUY' ? 'SELL' : 'BUY',
       stopPrice, // цена по которой сработает ордер
+      closePosition: 'true',
     },
-    // Take profit
-    {
-      quantity,
-      price: takeProfitPrice, // цена по которой продадим фьючерс
-      stopPrice: takeProfitPrice, // цена по которой сработает ордер
+  ]
+
+  const tpToHandle = tpPercentArr.slice(0, 2)
+  const tpVolume = (quantity / tpToHandle.length).toFixed(precision)
+
+  // Take profit
+  for (let i = 0; i < tpToHandle.length; i++) {
+    batchOrders.push({
+      quantity: tpVolume,
+      price: getTPPrice(price, tpToHandle[i], side, precision), // цена по которой продадим фьючерс
+      stopPrice: getTPPrice(price, tpToHandle[i], side, precision), // цена по которой сработает ордер
       symbol,
       type: 'TAKE_PROFIT',
       side: side === 'BUY' ? 'SELL' : 'BUY',
-    },
-  ]
+    })
+  }
 
   // FIXME: Почему-то не работает
   // const resOrder = await binance.futuresBatchOrders({
@@ -96,6 +105,9 @@ export const newMarkenOrderFuturesBinance = async (
   const resOrder = await binance.futuresOrder(batchOrders[0])
   const resSL = await binance.futuresOrder(batchOrders[1])
   const resTP = await binance.futuresOrder(batchOrders[2])
+  if (batchOrders[3]) {
+    await binance.futuresOrder(batchOrders[3])
+  }
 
   return [resOrder, resSL, resTP]
 }

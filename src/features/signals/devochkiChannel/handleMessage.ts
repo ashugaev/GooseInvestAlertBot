@@ -11,6 +11,13 @@ import { TrackChatCallbacksParams } from '@/models/TrackChat'
 const usdtAmountForTrade = 15
 const chatToNotify = -608497569
 
+/**
+ * To TEST
+ * - short market
+ * - short limit
+ * - long market
+ * - long limit
+ */
 export const handleDevochkiChannelMessage = async (
   data: TrackChatCallbacksParams
 ) => {
@@ -66,6 +73,17 @@ export const handleDevochkiChannelMessage = async (
       SignalDoubts | null
     ] = dataArr
 
+    if (
+      ticker === null ||
+      level === null ||
+      tp === null ||
+      stop === null ||
+      type === null
+    ) {
+      signalItem.status = 'Not enough data in AI answer'
+      throw 'Not enough data in AI answer'
+    }
+
     // Validate answer
     if (
       !ticker?.length ||
@@ -76,7 +94,7 @@ export const handleDevochkiChannelMessage = async (
       !type?.match(/(buy|sell)/) ||
       !doubts?.match(/(yes|no)/)
     ) {
-      signalItem.status = 'aiAnswerInvalid'
+      signalItem.status = 'AI answer is invalid'
       throw 'AI answer is invalid'
     }
 
@@ -93,7 +111,7 @@ export const handleDevochkiChannelMessage = async (
     )
 
     if (!tickerInfoBySource) {
-      signalItem.status = 'tickerNotFound'
+      signalItem.status = 'Ticker not found'
       throw 'Ticker not found'
     }
 
@@ -106,7 +124,7 @@ export const handleDevochkiChannelMessage = async (
     signalItem.volume = volume
 
     if (!price) {
-      signalItem.status = 'priceNotFound'
+      signalItem.status = 'Price not found'
       throw 'Price not found'
     }
 
@@ -121,7 +139,7 @@ export const handleDevochkiChannelMessage = async (
       if (levelPercent > buyMarketIfLess) {
         await newMarkenOrderFuturesBinance({
           symbol: tickerPair,
-          quantity: volume.toString(),
+          quantity: volume,
           side: 'BUY',
           type: 'LIMIT',
           limitPriceLevel: price.toString(),
@@ -130,14 +148,15 @@ export const handleDevochkiChannelMessage = async (
         })
 
         signalItem.orderType = 'limit'
-        signalItem.status = 'done'
+        signalItem.status = 'Done'
+        signalItem.orderCreated = true
       } else if (
         levelPercent > buyMarketIfMore &&
         levelPercent < buyMarketIfLess
       ) {
         await newMarkenOrderFuturesBinance({
           symbol: tickerPair,
-          quantity: volume.toString(),
+          quantity: volume,
           side: 'BUY',
           type: 'MARKET',
           slPercent: stop,
@@ -145,9 +164,10 @@ export const handleDevochkiChannelMessage = async (
         })
 
         signalItem.orderType = 'market'
-        signalItem.status = 'done'
+        signalItem.status = 'Done'
+        signalItem.orderCreated = true
       } else {
-        signalItem.status = 'lostLevel'
+        signalItem.status = 'Lost level'
       }
     }
     if (type === 'sell') {
@@ -159,7 +179,7 @@ export const handleDevochkiChannelMessage = async (
       if (levelPercent < sellMarketIfLess) {
         await newMarkenOrderFuturesBinance({
           symbol: tickerPair,
-          quantity: volume.toString(),
+          quantity: volume,
           side: 'SELL',
           type: 'LIMIT',
           limitPriceLevel: price.toString(),
@@ -168,14 +188,15 @@ export const handleDevochkiChannelMessage = async (
         })
 
         signalItem.orderType = 'limit'
-        signalItem.status = 'done'
+        signalItem.orderCreated = true
+        signalItem.status = 'Done'
       } else if (
         levelPercent > sellMarketIfLess &&
         levelPercent < sellMarketIfMore
       ) {
         await newMarkenOrderFuturesBinance({
           symbol: tickerPair,
-          quantity: volume.toString(),
+          quantity: volume,
           side: 'SELL',
           type: 'MARKET',
           slPercent: stop,
@@ -183,13 +204,12 @@ export const handleDevochkiChannelMessage = async (
         })
 
         signalItem.orderType = 'market'
-        signalItem.status = 'done'
+        signalItem.status = 'Done'
+        signalItem.orderCreated = true
       } else {
-        signalItem.status = 'lostLevel'
+        signalItem.status = 'Lost level'
       }
     }
-
-    // TODO: Say result to chat here
 
     // TODO: Смотрим что уже нет активной сделки по этому тикеру
     // TODO: Ожидание закрепления. Отправим с определнным статусом джобу в очередь
@@ -199,24 +219,26 @@ export const handleDevochkiChannelMessage = async (
     // TODO: Уведомление об открытии сделки
   } catch (e) {
     if (!(typeof e === 'string')) {
-      signalItem.status = 'unexpectedError'
+      signalItem.status = 'Unexpected error'
     }
 
     // TODO: Say result to chat here
     log.info(logPrefixDevochki, e)
   } finally {
-    const message = `<b>💬 Обработка сообщения из чата</b>
-    
-    ${
-      '❗Ордер <b>' +
-      (signalItem.status === 'done' ? 'ВЫСТАВЛЕН' : 'НЕ ВЫСТАВЛЕН') +
-      '</b>'
-    }
-
-    ${Object.entries(signalItem)
-      .map(([key, value]) => `<b>${key}</b>: ${value}`)
-      .join('\n')}    
-    `
+    const message =
+      '<b>💬 Обработка сообщения из чата</b>' +
+      '\n\n' +
+      `${
+        `${signalItem.orderCreated ? '✅' : '🚫'}` +
+        ' Ордер <b>' +
+        (signalItem.orderCreated ? 'ВЫСТАВЛЕН' : 'НЕ ВЫСТАВЛЕН') +
+        '</b>'
+      }` +
+      '\n\n' +
+      `${Object.entries(signalItem.toJSON())
+        .filter(([key]) => !['_id', 'messageId', 'orderCreated'].includes(key))
+        .map(([key, value]) => `<b>${key.toUpperCase()}</b>: ${value}`)
+        .join('\n')}`
 
     await (
       await bots
