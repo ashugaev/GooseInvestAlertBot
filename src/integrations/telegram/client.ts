@@ -6,9 +6,17 @@ import { sayToBoss } from '../../helpers/sayToBoss'
 
 require('dotenv').config()
 
-const { SESSION_STRING, TELEGRAM_API_HASH, TELEGRAM_API_ID } = process.env
+const {
+  SESSION_STRING,
+  TELEGRAM_API_HASH,
+  TELEGRAM_API_ID,
+  TELEGRAM_ANN_API_ID,
+  TELEGRAM_ANN_SESSION_STRING,
+  TELEGRAM_ANN_API_HASH,
+} = process.env
 
 const stringSession = new StringSession(SESSION_STRING)
+const stringSessionAnn = new StringSession(TELEGRAM_ANN_SESSION_STRING)
 
 export const client = new TelegramClient(
   stringSession,
@@ -19,9 +27,17 @@ export const client = new TelegramClient(
   }
 )
 
-// Есть риск того, что клиент не успеет запуститься до момента обращения к нему
-client
-  .start({
+export const annClient = new TelegramClient(
+  stringSessionAnn,
+  Number(TELEGRAM_ANN_API_ID),
+  TELEGRAM_ANN_API_HASH,
+  {
+    connectionRetries: 5,
+  }
+)
+;[client, annClient].forEach((cl) => {
+  // Есть риск того, что клиент не успеет запуститься до момента обращения к нему
+  cl.start({
     phoneNumber: async () => '', // Using Session string only for server
     phoneCode: async () => '', // Using Session string only for server
     onError: (err) => {
@@ -34,9 +50,10 @@ client
       console.log(err)
     },
   })
-  .then(async (client) => {
-    log.info('Telegram client started')
-  })
-  .catch((err) => {
-    log.error('Telegram client crashed', err)
-  })
+    .then(async (client) => {
+      log.info('Telegram client started')
+    })
+    .catch((err) => {
+      log.error('Telegram client crashed', err)
+    })
+})

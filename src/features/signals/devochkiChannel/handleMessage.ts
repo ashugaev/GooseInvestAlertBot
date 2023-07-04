@@ -31,6 +31,7 @@ export const handleDevochkiChannelMessage = async (
     messageId: data.messageId,
     channel: data.chatLinkName,
     validationStatus: 'notStarted',
+    chatTitle: data.chatTitle,
   })
 
   try {
@@ -118,7 +119,7 @@ export const handleDevochkiChannelMessage = async (
     // TODO: Проверка есть ли уже сделки по тикеру
 
     const price = getLastPrice(tickerInfoBySource.id, true)
-    const volume = Number((usdtAmountForTrade / price).toFixed(2))
+    const volume = Number((usdtAmountForTrade / price).toFixed(1))
 
     signalItem.tickerPrice = price
     signalItem.volume = volume
@@ -131,8 +132,8 @@ export const handleDevochkiChannelMessage = async (
     const levelPercent = (level / price - 1) * 100
 
     if (type === 'buy') {
-      const buyMarketIfMore = 99.5
-      const buyMarketIfLess = 100.5
+      const buyMarketIfMore = -0.5
+      const buyMarketIfLess = 0.5
 
       signalItem.type = 'buy'
 
@@ -142,7 +143,7 @@ export const handleDevochkiChannelMessage = async (
           quantity: volume,
           side: 'BUY',
           type: 'LIMIT',
-          limitPriceLevel: price.toString(),
+          limitPriceLevel: level,
           slPercent: stop,
           tpPercentArr: tp,
         })
@@ -171,8 +172,8 @@ export const handleDevochkiChannelMessage = async (
       }
     }
     if (type === 'sell') {
-      const sellMarketIfMore = 100.5
-      const sellMarketIfLess = 99.5
+      const sellMarketIfMore = 0.5
+      const sellMarketIfLess = -0.5
 
       signalItem.type = 'sell'
 
@@ -226,7 +227,7 @@ export const handleDevochkiChannelMessage = async (
     log.info(logPrefixDevochki, e)
   } finally {
     const message =
-      '<b>💬 Обработка сообщения из чата</b>' +
+      `💬 Обработка сообщения: <b>${signalItem.chatTitle}</b>` +
       '\n\n' +
       `${
         `${signalItem.orderCreated ? '✅' : '🚫'}` +
@@ -236,7 +237,11 @@ export const handleDevochkiChannelMessage = async (
       }` +
       '\n\n' +
       `${Object.entries(signalItem.toJSON())
-        .filter(([key]) => !['_id', 'messageId', 'orderCreated'].includes(key))
+        .filter(([key, value]) => Boolean(value))
+        .filter(
+          ([key]) =>
+            !['_id', 'messageId', 'orderCreated', 'chatTitle'].includes(key)
+        )
         .map(([key, value]) => `<b>${key.toUpperCase()}</b>: ${value}`)
         .join('\n')}`
 

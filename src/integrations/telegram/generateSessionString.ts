@@ -4,7 +4,12 @@ import { StringSession } from 'telegram/sessions'
 
 require('dotenv').config()
 
-const { TELEGRAM_API_ID, TELEGRAM_API_HASH } = process.env
+const {
+  TELEGRAM_API_ID,
+  TELEGRAM_API_HASH,
+  TELEGRAM_ANN_API_HASH,
+  TELEGRAM_ANN_API_ID,
+} = process.env
 
 const stringSession = new StringSession('')
 
@@ -17,8 +22,8 @@ const generateSessionString = async () => {
 
   const client = new TelegramClient(
     stringSession,
-    Number(TELEGRAM_API_ID),
-    TELEGRAM_API_HASH,
+    Number(TELEGRAM_ANN_API_ID),
+    TELEGRAM_ANN_API_HASH,
     {
       connectionRetries: 5,
     }

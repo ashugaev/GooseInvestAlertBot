@@ -6,23 +6,32 @@ import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 import { handleDevochkiChannelMessage } from '@/features/signals/devochkiChannel/handleMessage'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
-import { client } from '@/integrations/telegram/client'
+import { annClient, client } from '@/integrations/telegram/client'
 import {
   callbacksByChatPurpose,
   TrackChatCallbacksParams,
 } from '@/models/TrackChat'
 
+const trackChatsAnn = [
+  // Devochki crypto dev
+  1966120775,
+  // Devochki crypto prod
+  1979914009,
+]
+
+export type TrackChatsAnn = (typeof trackChatsAnn)[number]
+
 const normalizeMessage = (
   message: Api.Message,
-  chatLink
+  chat: Api.Chat
 ): TrackChatCallbacksParams => {
   return {
     message: message.message ?? null,
     chatId: message.chatId.toString(),
     // @ts-ignore
-    chatTitle: message.chat?.username ?? chatLink,
+    chatTitle: chat?.title ?? null,
     // @ts-ignore
-    chatLinkName: message.chat?.username ?? chatLink,
+    chatLinkName: chat?.username ?? null,
     views: message.views,
     forwards: message.forwards,
     messageId: message.id,
@@ -34,10 +43,12 @@ const normalizeMessage = (
 
 // @ts-ignore
 const callbackByChat: Record<
-  ChannelsToTrack,
+  ChannelsToTrack | TrackChatsAnn,
   (data: TrackChatCallbacksParams) => void
 > = {
   keklolkeklolkeklolkeklolkeklol: handleDevochkiChannelMessage,
+  '-1001966120775': handleDevochkiChannelMessage,
+  '-1001979914009': handleDevochkiChannelMessage,
   Whales_Pumping_Cryptocurrency: callbacksByChatPurpose.signal.message,
   DefiUniverse: callbacksByChatPurpose.signal.message,
 }
@@ -45,26 +56,37 @@ const callbackByChat: Record<
 const handleMessage = (
   message: Api.Message,
   prevMessages: Api.Message[] = [],
-  chatLink: string
+  chat: Api.Chat
 ) => {
+  // @ts-ignore
+  const username = chat?.username ?? null
+
   const res: TrackChatCallbacksParams = {
-    ...normalizeMessage(message, chatLink),
-    prevMessages: prevMessages.map(normalizeMessage, chatLink),
+    ...normalizeMessage(message, chat),
+    prevMessages: prevMessages.map((msg) => normalizeMessage(msg, chat)),
   }
 
-  callbackByChat[chatLink](res)
+  if (callbackByChat[username]) {
+    callbackByChat[username](res)
+
+    return
+  }
+
+  const chatId = message.chatId.toString()
+
+  callbackByChat[chatId](res)
 }
 
 async function handleEvent(event: NewMessageEvent) {
   const message = event.message
 
   // TODO: Better to cache this data
-  const chat = await message.getChat()
+  const chat = await event.message.getChat()
 
   try {
     if (event.isChannel) {
       // @ts-ignore
-      handleMessage(message, [], chat.username)
+      handleMessage(message, [], chat)
     }
   } catch (e) {
     log.error(e)
@@ -140,6 +162,14 @@ export const setupEventHandlers = async () => {
     handleEvent,
     new NewMessage({
       chats: trackChats,
+    })
+  )
+
+  // Track chat events
+  annClient.addEventHandler(
+    handleEvent,
+    new NewMessage({
+      chats: trackChatsAnn,
     })
   )
 

@@ -48,6 +48,9 @@ export class Signal extends TimeStamps {
 
   @prop({ required: false, default: false })
   orderCreated?: boolean
+
+  @prop({ required: false })
+  chatTitle?: string
 }
 
 export const SignalModel = getModelForClass(Signal)
