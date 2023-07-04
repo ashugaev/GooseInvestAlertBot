@@ -54,6 +54,8 @@ export const newMarkenOrderFuturesBinance = async (
 
   // @ts-ignore
   const precision = symbolInfo.sourceSpecificData.pricePrecision
+  // @ts-ignore
+  const quantityPrecision = symbolInfo.sourceSpecificData.quantityPrecision
 
   const stopPrice: string =
     side === 'BUY'
@@ -69,7 +71,8 @@ export const newMarkenOrderFuturesBinance = async (
       type,
       side,
       // @ts-ignore
-      price: type === 'LIMIT' ? price.toString() : undefined,
+      // return it for limit order only
+      // price: type === 'LIMIT' ? price.toString() : undefined,
     },
     // Stop loss
     {
@@ -83,7 +86,7 @@ export const newMarkenOrderFuturesBinance = async (
   ]
 
   const tpToHandle = tpPercentArr.slice(0, 2)
-  const tpVolume = (quantity / tpToHandle.length).toFixed(precision)
+  const tpVolume = (quantity / tpToHandle.length).toFixed(quantityPrecision)
 
   // Take profit
   for (let i = 0; i < tpToHandle.length; i++) {

@@ -132,37 +132,43 @@ export const handleDevochkiChannelMessage = async (
     const levelPercent = (level / price - 1) * 100
 
     if (type === 'buy') {
-      const buyMarketIfMore = -0.5
-      const buyMarketIfLess = 0.5
+      const buyMarketIfMore = -1
+      const buyMarketIfLess = 1
 
       signalItem.type = 'buy'
 
       if (levelPercent > buyMarketIfLess) {
-        await newMarkenOrderFuturesBinance({
-          symbol: tickerPair,
-          quantity: volume,
-          side: 'BUY',
-          type: 'LIMIT',
-          limitPriceLevel: level,
-          slPercent: stop,
-          tpPercentArr: tp,
-        })
+        // await newMarkenOrderFuturesBinance({
+        //   symbol: tickerPair,
+        //   quantity: volume,
+        //   side: 'BUY',
+        //   type: 'LIMIT',
+        //   limitPriceLevel: level,
+        //   slPercent: stop,
+        //   tpPercentArr: tp,
+        // })
 
         signalItem.orderType = 'limit'
-        signalItem.status = 'Done'
-        signalItem.orderCreated = true
+        signalItem.status = "Can't create limit order"
+
+        // signalItem.status = 'Done'
+        // signalItem.orderCreated = true
       } else if (
         levelPercent > buyMarketIfMore &&
         levelPercent < buyMarketIfLess
       ) {
-        await newMarkenOrderFuturesBinance({
-          symbol: tickerPair,
-          quantity: volume,
-          side: 'BUY',
-          type: 'MARKET',
-          slPercent: stop,
-          tpPercentArr: tp,
-        })
+        try {
+          await newMarkenOrderFuturesBinance({
+            symbol: tickerPair,
+            quantity: volume,
+            side: 'BUY',
+            type: 'MARKET',
+            slPercent: stop,
+            tpPercentArr: tp,
+          })
+        } catch (e) {
+          throw 'Binance order err: ' + e.message
+        }
 
         signalItem.orderType = 'market'
         signalItem.status = 'Done'
@@ -172,37 +178,42 @@ export const handleDevochkiChannelMessage = async (
       }
     }
     if (type === 'sell') {
-      const sellMarketIfMore = 0.5
-      const sellMarketIfLess = -0.5
+      const sellMarketIfMore = 1
+      const sellMarketIfLess = -1
 
       signalItem.type = 'sell'
 
       if (levelPercent < sellMarketIfLess) {
-        await newMarkenOrderFuturesBinance({
-          symbol: tickerPair,
-          quantity: volume,
-          side: 'SELL',
-          type: 'LIMIT',
-          limitPriceLevel: price.toString(),
-          slPercent: stop,
-          tpPercentArr: tp,
-        })
+        // await newMarkenOrderFuturesBinance({
+        //   symbol: tickerPair,
+        //   quantity: volume,
+        //   side: 'SELL',
+        //   type: 'LIMIT',
+        //   limitPriceLevel: price.toString(),
+        //   slPercent: stop,
+        //   tpPercentArr: tp,
+        // })
 
+        signalItem.status = "Can't create limit order"
         signalItem.orderType = 'limit'
-        signalItem.orderCreated = true
-        signalItem.status = 'Done'
+        // signalItem.orderCreated = true
+        // signalItem.status = 'Done'
       } else if (
         levelPercent > sellMarketIfLess &&
         levelPercent < sellMarketIfMore
       ) {
-        await newMarkenOrderFuturesBinance({
-          symbol: tickerPair,
-          quantity: volume,
-          side: 'SELL',
-          type: 'MARKET',
-          slPercent: stop,
-          tpPercentArr: tp,
-        })
+        try {
+          await newMarkenOrderFuturesBinance({
+            symbol: tickerPair,
+            quantity: volume,
+            side: 'SELL',
+            type: 'MARKET',
+            slPercent: stop,
+            tpPercentArr: tp,
+          })
+        } catch (e) {
+          throw 'Binance order err: ' + e.message
+        }
 
         signalItem.orderType = 'market'
         signalItem.status = 'Done'
@@ -219,7 +230,11 @@ export const handleDevochkiChannelMessage = async (
     // TODO: Уведомление о закрытии сделки в чат
     // TODO: Уведомление об открытии сделки
   } catch (e) {
-    if (!(typeof e === 'string')) {
+    if (typeof e.message === 'string') {
+      signalItem.status = e.message
+    } else if (typeof e === 'string') {
+      signalItem.status = e
+    } else {
       signalItem.status = 'Unexpected error'
     }
 
