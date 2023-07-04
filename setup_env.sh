@@ -17,6 +17,7 @@ echo "BOSS_TG_ID=${BOSS_TG_ID}" >> .env
 echo "TEST_USER_TG_ID=${TEST_USER_TG_ID}" >> .env
 echo "NODE_ENV=production" >> .env
 echo "SESSION_STRING=${SESSION_STRING}" >> .env
+echo "TELEGRAM_ANN_SESSION_STRING=${TELEGRAM_ANN_SESSION_STRING}" >> .env
 echo "TELEGRAM_API_ID=${TELEGRAM_API_ID}" >> .env
 echo "TELEGRAM_API_HASH=${TELEGRAM_API_HASH}" >> .env
 echo "KUCOIN_API_KEY=${KUCOIN_API_KEY}" >> .env

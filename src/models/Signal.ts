@@ -6,14 +6,9 @@ import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses'
 
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 
-export type SignalValidationStatus =
-  | 'notStarted'
-  | 'manualCheckFailed'
-  | 'aiCheckFailed'
-  | 'aiAnswerInvalid'
-  | 'valid'
-  | 'rejected'
-  | 'AICheckFailed'
+export type SignalDoubts = 'yes' | 'no'
+export type SignalType = 'buy' | 'sell'
+export type SignalOrderType = 'market' | 'limit'
 
 @modelOptions({
   schemaOptions: {
@@ -31,16 +26,31 @@ export class Signal extends TimeStamps {
   messageId: number
 
   @prop({ required: true })
-  validationStatus: SignalValidationStatus
+  status: string
 
   @prop({ required: false })
   chatGptValidationMessage?: string
 
   @prop({ required: false })
-  doubts?: 'yes' | 'no'
+  doubts?: SignalDoubts
 
   @prop({ required: false })
-  type?: 'buy' | 'sell'
+  type?: SignalType
+
+  @prop({ required: false })
+  tickerPrice?: number
+
+  @prop({ required: false })
+  volume?: number
+
+  @prop({ required: false })
+  orderType?: SignalOrderType
+
+  @prop({ required: false, default: false })
+  orderCreated?: boolean
+
+  @prop({ required: false })
+  chatTitle?: string
 }
 
 export const SignalModel = getModelForClass(Signal)
