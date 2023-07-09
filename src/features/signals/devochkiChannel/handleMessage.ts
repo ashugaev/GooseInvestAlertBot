@@ -21,13 +21,25 @@ const chatToNotify = -608497569
 export const handleDevochkiChannelMessage = async (
   data: TrackChatCallbacksParams
 ) => {
+  const normalizedMessage = data.message
+    // Remove all new lines and use dot instead
+    .replace(/\n(.)/g, (_, sumbol) => '. ' + sumbol.toUpperCase())
+    .trim()
+
+  // Reset message patterns
   const pattern1 = /#[A-Z]{3,6}/ // ticker
   const pattern2 = /\d+%/ // number
+
+  // Filter trash
+  if (!pattern1.test(normalizedMessage) || !pattern2.test(normalizedMessage)) {
+    return
+  }
+
+  // Notification will be sent if this patterns fails
   const pattern3 = /закреп/ // закреп notice
-  const pattern4 = /(лонг|шорт)/ // type
 
   const signalItem = new SignalModel({
-    message: data.message,
+    message: normalizedMessage,
     messageId: data.messageId,
     channel: data.chatLinkName,
     validationStatus: 'notStarted',
@@ -35,19 +47,13 @@ export const handleDevochkiChannelMessage = async (
   })
 
   try {
-    if (
-      !pattern1.test(data.message) ||
-      !pattern2.test(data.message) ||
-      !pattern3.test(data.message) ||
-      !pattern4.test(data.message) ||
-      data.message.length <= 40
-    ) {
+    if (!pattern3.test(normalizedMessage) || normalizedMessage.length <= 40) {
       signalItem.status = 'manualCheckFailed'
       throw 'Message is not valid'
       return
     }
 
-    const AIRes = await validateWithChatGPT(data.message)
+    const AIRes = await validateWithChatGPT(normalizedMessage)
 
     if (!AIRes) {
       signalItem.status = 'aiCheckFailed'
@@ -65,7 +71,7 @@ export const handleDevochkiChannelMessage = async (
       throw 'AI answer json is invalid'
     }
 
-    const [ticker, level, tp, stop, type, doubts]: [
+    const [ticker, level, tp, stop, type = 'buy', doubts]: [
       string | null,
       number | null,
       number[] | null,
@@ -252,7 +258,7 @@ export const handleDevochkiChannelMessage = async (
       }` +
       '\n\n' +
       `${Object.entries(signalItem.toJSON())
-        .filter(([key, value]) => Boolean(value))
+        .filter(([, value]) => Boolean(value))
         .filter(
           ([key]) =>
             !['_id', 'messageId', 'orderCreated', 'chatTitle'].includes(key)
@@ -268,6 +274,6 @@ export const handleDevochkiChannelMessage = async (
       disable_notification: true,
     })
 
-    signalItem.save()
+    await signalItem.save()
   }
 }

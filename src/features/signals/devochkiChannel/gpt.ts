@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 import { logPrefixDevochki } from '@/features/signals/devochkiChannel/devochkiChannel.constants'
 import { log } from '@/helpers'
 import { openai } from '@/integrations/openai'
@@ -66,8 +68,6 @@ export const validateWithChatGPT = async (message) => {
       return null
     }
   } catch (e) {
-    debugger
-
     console.log(e)
   }
 }
