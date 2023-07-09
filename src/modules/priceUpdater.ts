@@ -48,7 +48,7 @@ export interface PriceUpdaterParams {
 
 let noPricesObject = {}
 
-const kucoinDebugPrefix = '[Kucoin debug]'
+export const kucoinDebugPrefix = '[Kucoin debug]'
 
 /**
  * Поддерживает кэш с актуальными ценами для источника
@@ -172,10 +172,20 @@ export const setupPriceUpdater = async ({
             continue
           }
         } catch (e) {
+          if (source === EMarketDataSources.kucoin) {
+            console.log(kucoinDebugPrefix, 'Crash price update', e)
+          }
           onCatch?.(e)
           log.error(logPrefix, source, 'Update prices error', e)
           await wait(CRASH_WAIT_TIME)
+          if (source === EMarketDataSources.kucoin) {
+            console.log(kucoinDebugPrefix, 'Crash price update catch end')
+          }
           continue
+        }
+
+        if (source === EMarketDataSources.kucoin) {
+          console.log(kucoinDebugPrefix, 'Got prices and out of catch')
         }
 
         prices = dropOutInvalidPrices(prices)
