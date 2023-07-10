@@ -247,6 +247,15 @@ export const handleDevochkiChannelMessage = async (
     // TODO: Say result to chat here
     log.info(logPrefixDevochki, e)
   } finally {
+    let savedInDb = false
+
+    try {
+      await signalItem.save()
+    } catch (e) {
+      log.info(logPrefixDevochki, 'failed to save in db', e)
+      savedInDb = true
+    }
+
     const message =
       `💬 Обработка сообщения: <b>${signalItem.chatTitle}</b>` +
       '\n\n' +
@@ -263,6 +272,8 @@ export const handleDevochkiChannelMessage = async (
           ([key]) =>
             !['_id', 'messageId', 'orderCreated', 'chatTitle'].includes(key)
         )
+        // Added extra data manually
+        .concat(['saved in db', savedInDb])
         .map(([key, value]) => `<b>${key.toUpperCase()}</b>: ${value}`)
         .join('\n')}`
 
@@ -273,7 +284,5 @@ export const handleDevochkiChannelMessage = async (
       disable_web_page_preview: true,
       disable_notification: true,
     })
-
-    await signalItem.save()
   }
 }
