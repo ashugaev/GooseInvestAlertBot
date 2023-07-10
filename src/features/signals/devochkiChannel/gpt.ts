@@ -69,5 +69,6 @@ export const validateWithChatGPT = async (message) => {
     }
   } catch (e) {
     console.log(e)
+    return null
   }
 }
