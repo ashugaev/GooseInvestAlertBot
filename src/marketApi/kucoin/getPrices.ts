@@ -1,5 +1,6 @@
 import { TickerPrices } from 'prices'
 
+import { log } from '@/helpers'
 import { KucoinAPI } from '@/marketApi/kucoin/index'
 import { InstrumentsList } from '@/models'
 import { kucoinDebugPrefix } from '@/modules'
@@ -32,11 +33,13 @@ export const getPricesKucoin = async (
   try {
     console.log(kucoinDebugPrefix, 'request')
 
-    const {
-      data: { ticker },
-    } = await KucoinAPI.rest.Market.Symbols.getAllTickers()
+    const res = await KucoinAPI.rest.Market.Symbols.getAllTickers()
 
-    console.log(kucoinDebugPrefix, 'res')
+    log.info(kucoinDebugPrefix, 'res', res)
+
+    const ticker = res?.data?.ticker ?? []
+
+    log.info(kucoinDebugPrefix, 'parsed res')
 
     const notFoundItems = []
 
