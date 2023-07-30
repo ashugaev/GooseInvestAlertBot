@@ -1,3 +1,4 @@
+import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import { logPrefixDevochki } from '@/features/signals/devochkiChannel/devochkiChannel.constants'
 import { validateWithChatGPT } from '@/features/signals/devochkiChannel/gpt'
 import { log } from '@/helpers'
@@ -50,6 +51,7 @@ export const handleDevochkiChannelMessage = async (
   try {
     if (!initialValidation(normalizedMessage)) {
       throw 'Initial validation failed'
+      return
     }
 
     // Notification will be sent if this patterns fails
@@ -66,6 +68,7 @@ export const handleDevochkiChannelMessage = async (
     if (!AIRes) {
       signalItem.status = 'aiCheckFailed'
       throw 'AI check failed'
+      return
     }
 
     signalItem.chatGptValidationMessage = AIRes
@@ -77,6 +80,7 @@ export const handleDevochkiChannelMessage = async (
     } catch (e) {
       signalItem.status = 'aiAnswerInvalid'
       throw 'AI answer json is invalid'
+      return
     }
 
     const [ticker, level, tp, stop, type = 'buy', doubts]: [
@@ -97,6 +101,7 @@ export const handleDevochkiChannelMessage = async (
     ) {
       signalItem.status = 'Not enough data in AI answer'
       throw 'Not enough data in AI answer'
+      return
     }
 
     // Validate answer
@@ -128,6 +133,7 @@ export const handleDevochkiChannelMessage = async (
     if (!tickerInfoBySource) {
       signalItem.status = 'Ticker not found'
       throw 'Ticker not found'
+      return
     }
 
     // TODO: Проверка есть ли уже сделки по тикеру
@@ -141,6 +147,7 @@ export const handleDevochkiChannelMessage = async (
     if (!price) {
       signalItem.status = 'Price not found'
       throw 'Price not found'
+      return
     }
 
     const levelPercent = (level / price - 1) * 100
@@ -182,6 +189,7 @@ export const handleDevochkiChannelMessage = async (
           })
         } catch (e) {
           throw 'Binance order err: ' + e.message
+          return
         }
 
         signalItem.orderType = 'market'
@@ -227,6 +235,7 @@ export const handleDevochkiChannelMessage = async (
           })
         } catch (e) {
           throw 'Binance order err: ' + e.message
+          return
         }
 
         signalItem.orderType = 'market'
@@ -255,42 +264,62 @@ export const handleDevochkiChannelMessage = async (
     // TODO: Say result to chat here
     log.info(logPrefixDevochki, e)
   } finally {
-    let savedInDb = false
-
     try {
-      await signalItem.save()
+      let savedInDb
+
+      try {
+        await signalItem.save()
+        savedInDb = 'true'
+      } catch (e) {
+        log.info(logPrefixDevochki, 'failed to save in db', e)
+        savedInDb = 'false'
+      }
+
+      const message =
+        `💬 Обработка сообщения: <b>${signalItem.chatTitle}</b>` +
+        '\n\n' +
+        `${
+          `${signalItem.orderCreated ? '✅' : '🚫'}` +
+          ' Ордер <b>' +
+          (signalItem.orderCreated ? 'ВЫСТАВЛЕН' : 'НЕ ВЫСТАВЛЕН') +
+          '</b>'
+        }` +
+        '\n\n' +
+        `${Object.entries(signalItem.toJSON())
+          .filter(([key]) =>
+            [
+              'channel',
+              'message',
+              'status',
+              'chatGptValidationMessage',
+              'doubts',
+              'type',
+              'tickerPrice',
+              'volume',
+              'orderType',
+              'chatTitle',
+              'orderCreated',
+            ].includes(key)
+          )
+          .filter(([, value]) => Boolean(value))
+          // Added extra data manually
+          .concat(['saved in db', savedInDb])
+          .map(([key, value]) => `<b>${key.toUpperCase()}</b>: ${value}`)
+          .join('\n')}`
+
+      try {
+        await (
+          await bots
+        )[0].telegram.sendMessage(chatToNotify, message, {
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+          disable_notification: true,
+        })
+      } catch (e) {
+        log.error(logPrefix, 'Failed to notify:', e)
+      }
     } catch (e) {
-      log.info(logPrefixDevochki, 'failed to save in db', e)
-      savedInDb = true
+      log.error(logPrefix, 'Crash finally:', e)
     }
-
-    const message =
-      `💬 Обработка сообщения: <b>${signalItem.chatTitle}</b>` +
-      '\n\n' +
-      `${
-        `${signalItem.orderCreated ? '✅' : '🚫'}` +
-        ' Ордер <b>' +
-        (signalItem.orderCreated ? 'ВЫСТАВЛЕН' : 'НЕ ВЫСТАВЛЕН') +
-        '</b>'
-      }` +
-      '\n\n' +
-      `${Object.entries(signalItem.toJSON())
-        .filter(([, value]) => Boolean(value))
-        .filter(
-          ([key]) =>
-            !['_id', 'messageId', 'orderCreated', 'chatTitle'].includes(key)
-        )
-        // Added extra data manually
-        .concat(['saved in db', savedInDb])
-        .map(([key, value]) => `<b>${key.toUpperCase()}</b>: ${value}`)
-        .join('\n')}`
-
-    await (
-      await bots
-    )[0].telegram.sendMessage(chatToNotify, message, {
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-      disable_notification: true,
-    })
   }
 }

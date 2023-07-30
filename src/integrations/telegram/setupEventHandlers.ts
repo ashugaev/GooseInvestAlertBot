@@ -19,6 +19,12 @@ const trackChatsAnn = [
   1979914009,
 ]
 
+const trackChats: ChannelsToTrack[] = [
+  'Whales_Pumping_Cryptocurrency',
+  'DefiUniverse',
+  'keklolkeklolkeklolkeklolkeklol',
+]
+
 export type TrackChatsAnn = (typeof trackChatsAnn)[number]
 
 const normalizeMessage = (
@@ -151,12 +157,6 @@ export const pollingMessagesCheck = async () => {
 }
 
 export const setupEventHandlers = async () => {
-  const trackChats: ChannelsToTrack[] = [
-    'keklolkeklolkeklolkeklolkeklol',
-    'Whales_Pumping_Cryptocurrency',
-    'DefiUniverse',
-  ]
-
   // Track chat events
   client.addEventHandler(
     handleEvent,
