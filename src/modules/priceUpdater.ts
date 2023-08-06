@@ -3,6 +3,7 @@ import { TickerPrices } from 'prices'
 import { dropOutInvalidPrices } from '@/helpers'
 import { setJobKey } from '@/helpers/setJobKey'
 import { splitArray } from '@/helpers/splitArray'
+import { timeoutPromise } from '@/helpers/timeoutPromise'
 import { EMarketDataSources } from '@/marketApi/types'
 import { getInstrumentsBySourceCache, InstrumentsList } from '@/models'
 
@@ -153,7 +154,8 @@ export const setupPriceUpdater = async ({
             log.info(kucoinDebugPrefix, 'prices req')
           }
 
-          prices = await getPrices(tickerIds, chunk)
+          const pricesPromise = getPrices(tickerIds, chunk)
+          prices = await timeoutPromise(pricesPromise, 60000)
 
           if (source === EMarketDataSources.kucoin) {
             log.info(kucoinDebugPrefix, 'prices res', prices.length)
