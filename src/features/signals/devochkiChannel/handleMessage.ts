@@ -15,14 +15,37 @@ const chatToNotify = -608497569
 const normalizeSignalMessage = (message: string): string =>
   message.replace(/\\n(.)/g, (_, symbol) => '. ' + symbol.toUpperCase()).trim()
 
+export interface ConfigForSignalChannel {
+  directionRequired: boolean // AI
+  tickerInBigLetters: boolean // Manual
+  tickerWithHash: boolean // Manual
+  priceRequired: boolean // Manual / AI
+}
+
 // TODO: Move to helpers in signals
-export const initialSignalValidation = (message: string): boolean => {
+export const initialSignalValidation = (
+  message: string,
+  config: ConfigForSignalChannel
+): boolean => {
   // Reset message patterns
-  const pattern1 = /#[A-Z]{3,6}/ // ticker
-  const pattern2 = /\d+/ // price
+  const tickerPattern = /[A-Z]{3,6}/ // ticker
+  const tickerWithHashPattern = /#[A-Za-z]{3,6}/ // ticker
+  const pricePattern = /\d+/
+
+  const patternsToCheck = []
+
+  if (config.tickerInBigLetters) {
+    patternsToCheck.push(tickerPattern)
+  }
+  if (config.tickerWithHash) {
+    patternsToCheck.push(tickerWithHashPattern)
+  }
+  if (config.priceRequired) {
+    patternsToCheck.push(pricePattern)
+  }
 
   // Filter trash
-  if (!pattern1.test(message) || !pattern2.test(message)) {
+  if (patternsToCheck.every((pattern) => !pattern.test(message))) {
     return false
   }
 
@@ -50,6 +73,7 @@ export const handleDevochkiChannelMessage = async (
   })
 
   try {
+    // @ts-ignore
     if (!initialSignalValidation(normalizedMessage)) {
       throw 'Initial validation failed'
       return

@@ -5,7 +5,10 @@ import {
   SignalChat,
   SignalChatModel,
 } from '@/bots/cryptoSignals/models/signalChat'
-import { initialSignalValidation } from '@/features/signals/devochkiChannel/handleMessage'
+import {
+  ConfigForSignalChannel,
+  initialSignalValidation,
+} from '@/features/signals/devochkiChannel/handleMessage'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
 import { signalsClient } from '@/integrations/telegram/client'
@@ -13,6 +16,16 @@ import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { getChatHistory } from '@/integrations/telegram/getChatHistory'
 import { User } from '@/models'
 const { format } = require('date-fns')
+
+// Move to db
+const configByChannelId: Record<string, ConfigForSignalChannel> = {
+  '-1001720000437': {
+    directionRequired: true,
+    tickerInBigLetters: true,
+    tickerWithHash: false,
+    priceRequired: false,
+  },
+}
 
 function convertToCSV(data) {
   const rows = []
@@ -59,7 +72,7 @@ export const updateSignalChannels = async () => {
 
     const normalized: SignalChat[] = chats.map((chat) => ({
       chatId: Number(chat.id),
-      title: chat.title,
+      title: chat?.title,
       username: chat.username,
       clientId: Number(clientInfo.id),
       clientUsername: clientInfo.username,
@@ -84,13 +97,15 @@ export const updateSignalChannels = async () => {
 }
 
 export const normalizeSignalMessage = (message: string): string =>
-  message
-    ?.replace(/\n(.)/g, (_, anySymbol) => '. ' + anySymbol.toUpperCase())
-    .trim()
+  message?.replace(/\n/g, ' | ').trim()
 
 export const defaultSignalCheckMessagesFilter = (message) => {
   const text = normalizeSignalMessage(message.message)
-  if (!initialSignalValidation(text) || text.length < 10) {
+  if (
+    // TODO: Remove hardcoded channel id
+    !initialSignalValidation(text, configByChannelId[-1001720000437]) ||
+    text.length < 8
+  ) {
     return false
   } else {
     return true
@@ -109,7 +124,7 @@ export const fetchSignalChannelsMessages = async ({
   const chats = await SignalChatModel.find({
     monitoringEnabled: true,
     chatId: channelId,
-  })
+  }).lean()
 
   await wait(500)
 
@@ -134,8 +149,12 @@ export const fetchSignalChannelsMessages = async ({
   return filteredAndNormilizedMessages
 }
 
-export const generateTableWithSignals = async (messages): Promise<Buffer> => {
+export const generateTableWithSignals = async (
+  messages,
+  channel
+): Promise<Buffer> => {
   const rows = messages.map((message) => ({
+    channel: channel,
     date: format(new Date(message.date * 1000), 'dd.MM.yyyy'),
     message: message.message,
   }))
@@ -144,6 +163,7 @@ export const generateTableWithSignals = async (messages): Promise<Buffer> => {
     fields: [
       { label: 'Date', value: 'date', headerStyle: 'font-weight:bold' },
       { label: 'Message', value: 'message', headerStyle: 'font-weight:bold' },
+      { label: 'Channel', value: 'channel', headerStyle: 'font-weight:bold' },
     ],
     header: true,
   })

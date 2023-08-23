@@ -4,7 +4,10 @@ import {
   fetchSignalChannelsMessages,
   generateTableWithSignals,
 } from '@/bots/cryptoSignals/commands/analyse/analyse.utils'
+import { validateWithChatGPT } from '@/features/signals/devochkiChannel/gpt'
 import { signalsClient } from '@/integrations/telegram/client'
+
+const chID = -1001720000437
 
 export function setypAnalyseChannelCommand(bot: Telegraf<Context>) {
   bot.on(
@@ -17,27 +20,35 @@ export function setypAnalyseChannelCommand(bot: Telegraf<Context>) {
         // await updateSignalChannels()
         const messages = await fetchSignalChannelsMessages({
           client: signalsClient,
-          tillDate: new Date('2023-08-15'),
-          channelId: -1001720000437,
+          tillDate: new Date('2023-05-01'),
+          channelId: chID,
         })
 
-        const bufferData = await generateTableWithSignals(messages)
+        try {
+          for (const data of messages) {
+            const message = data.message
+            const aiRes = await validateWithChatGPT(message)
+            debugger
+          }
+        } catch (e) {
+          debugger
+        }
 
-        // console.log(
-        //   'messages',
-        //   messages.map((message) => message.message)
-        // )
+        const bufferData = await generateTableWithSignals(messages, chID)
 
-        const resMessage = 'Found ' + messages.length + ' signal messages'
+        const summaryMessage = 'Found ' + messages.length + ' signal messages'
 
-        await ctx.replyWithHTML(resMessage)
-        await ctx.replyWithDocument({
-          source: bufferData,
-          // TODO: ДОбавить название канала и параметры ТП и СЛ
-          filename: 'Signals.csv',
-        })
+        await ctx.replyWithHTML(summaryMessage)
+
+        if (bufferData.length > 0) {
+          await ctx.replyWithDocument({
+            source: bufferData,
+            // TODO: ДОбавить название канала и параметры ТП и СЛ
+            filename: 'Signals.csv',
+          })
+        }
       } catch (e) {
-        debugger
+        ctx.reply('Error while analysing signals')
       }
     }
     // )

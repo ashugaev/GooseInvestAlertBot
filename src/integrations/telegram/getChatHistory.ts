@@ -28,14 +28,14 @@ export const getChatHistory = async ({
   const allMessages = []
 
   let offsetId = 0
-  let offsetDate = unixTillDate
+  // let offsetDate = 0
 
   while (true) {
     const result = await cl.invoke(
       new Api.messages.GetHistory({
         peer: nameOrId,
         limit: batchSize,
-        offsetDate: offsetDate,
+        // offsetDate: offsetDate,
         offsetId: offsetId,
       })
     )
@@ -47,12 +47,23 @@ export const getChatHistory = async ({
       break
     }
 
-    allMessages.push(...messages)
+    // Если дата последнего сообщения меньше указанной крайней
+    //  То фильтруем только те которые в диапазоне
+    if (messages[messages.length - 1].date < unixTillDate) {
+      allMessages.push(
+        ...messages.filter((message) => {
+          return message.date >= unixTillDate
+        })
+      )
+      break
+    } else {
+      allMessages.push(...messages)
+    }
 
     offsetId = messages[messages.length - 1].id
-    offsetDate = messages[messages.length - 1].date
+    // offsetDate = messages[messages.length - 1].date
 
-    log.info('Fetched for:', nameOrId, '. Untill date:', offsetDate)
+    log.info('Fetched for:', nameOrId)
   }
 
   return allMessages
