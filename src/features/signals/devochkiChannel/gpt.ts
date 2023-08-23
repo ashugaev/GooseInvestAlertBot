@@ -4,6 +4,8 @@ import { logPrefixDevochki } from '@/features/signals/devochkiChannel/devochkiCh
 import { log } from '@/helpers'
 import { openai } from '@/integrations/openai'
 
+// TODO: Проверка на рекламу
+// TODO: Классификация сигнала
 export const validateWithChatGPT = async (message) => {
   try {
     const chat_completion = await openai.createChatCompletion({

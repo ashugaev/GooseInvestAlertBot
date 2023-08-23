@@ -1,6 +1,6 @@
 import * as process from 'process'
 
-import { bots } from '@/helpers/bot'
+import { bots } from '../helpers/bot'
 
 const bossId = process.env.BOSS_TG_ID
 

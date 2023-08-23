@@ -22,6 +22,7 @@ export function commandWrapper(
   callback: (ctx: Context) => Promise<void>
 ): Middleware<TelegrafContext> {
   return async (ctx) => {
+    // TODO: Убрать специфическую логику от одного бота тут
     if (!availableForAdmins && ctx.dbuser.adminMode) {
       try {
         await ctx.replyWithHTML(ctx.i18n.t('adminMode_commandHidden'))

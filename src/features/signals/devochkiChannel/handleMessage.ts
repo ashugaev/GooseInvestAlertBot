@@ -12,13 +12,14 @@ import { TrackChatCallbacksParams } from '@/models/TrackChat'
 const usdtAmountForTrade = 15
 const chatToNotify = -608497569
 
-const normalizeMessage = (message: string): string =>
-  message.replace(/\n(.)/g, (_, sumbol) => '. ' + sumbol.toUpperCase()).trim()
+const normalizeSignalMessage = (message: string): string =>
+  message.replace(/\\n(.)/g, (_, symbol) => '. ' + symbol.toUpperCase()).trim()
 
-const initialValidation = (message: string): boolean => {
+// TODO: Move to helpers in signals
+export const initialSignalValidation = (message: string): boolean => {
   // Reset message patterns
   const pattern1 = /#[A-Z]{3,6}/ // ticker
-  const pattern2 = /\d+%/ // number
+  const pattern2 = /\d+/ // price
 
   // Filter trash
   if (!pattern1.test(message) || !pattern2.test(message)) {
@@ -38,7 +39,7 @@ const initialValidation = (message: string): boolean => {
 export const handleDevochkiChannelMessage = async (
   data: TrackChatCallbacksParams
 ) => {
-  const normalizedMessage = normalizeMessage(data.message)
+  const normalizedMessage = normalizeSignalMessage(data.message)
 
   const signalItem = new SignalModel({
     message: normalizedMessage,
@@ -49,15 +50,20 @@ export const handleDevochkiChannelMessage = async (
   })
 
   try {
-    if (!initialValidation(normalizedMessage)) {
+    if (!initialSignalValidation(normalizedMessage)) {
       throw 'Initial validation failed'
       return
     }
 
     // Notification will be sent if this patterns fails
     const pattern3 = /закреп/ // закреп notice
+    const pattern4 = /\d+%/ // закреп notice
 
-    if (!pattern3.test(normalizedMessage) || normalizedMessage.length <= 40) {
+    if (
+      normalizedMessage.length <= 40 ||
+      !pattern3.test(normalizedMessage) ||
+      !pattern4.test(normalizedMessage)
+    ) {
       signalItem.status = 'manualCheckFailed'
       throw 'Message is not valid'
       return

@@ -1,6 +1,7 @@
 import 'module-alias/register'
 // Importing @sentry/tracing patches the global hub for tracing to work.
 import '@sentry/tracing'
+const TelegrafBot = require('telegraf')
 
 // Config dotenv
 import * as dotenv from 'dotenv'
@@ -11,8 +12,10 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
+import { Context, Telegraf } from 'telegraf'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
+import { setypAnalyseChannelCommand } from '@/bots/cryptoSignals/commands/analyse/analyse'
 import { setupAddChat } from '@/commands/addChat/addChat'
 import { addChatScenes } from '@/commands/addChat/addChat.scenes'
 import { setupAdmin } from '@/commands/admin/admin'
@@ -114,6 +117,21 @@ bots.then((bots) => {
   // Start all async tasks (cron and continuous)
   setupCheckers()
 })
+
+// Start signals bot client
+// TODO: Make separated
+;(() => {
+  const bot = new TelegrafBot(
+    process.env.TELEGRAM_SIGNALS_BOT_TOKEN
+  ) as Telegraf<Context>
+  bot.use(session())
+
+  setypAnalyseChannelCommand(bot)
+
+  // Start bot
+  bot.startPolling()
+  log.info(`Bot GOOSE SIGNALS is up and running`)
+})()
 
 process.on('uncaughtException', function (err) {
   log.error('[UNHANDLED]', err)

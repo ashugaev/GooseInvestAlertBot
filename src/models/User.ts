@@ -29,6 +29,10 @@ export class User {
 
   @prop({ required: false, default: null })
   adminModeChatId: number
+
+  // TODO: Save this value
+  @prop({ required: false, default: null })
+  username: string
 }
 
 // Get User model
