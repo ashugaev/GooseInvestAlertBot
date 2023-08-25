@@ -27,6 +27,7 @@ export function sceneWrapper(
         }
       }
 
+      // FIXME: Добавить другой инстремент аналитики
       addAnalyticsToReply(ctx)
       chb_m({ ctx, intent })
 

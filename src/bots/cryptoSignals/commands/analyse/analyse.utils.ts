@@ -170,3 +170,19 @@ export const generateTableWithSignals = async (
 
   return Buffer.from(csvString, 'utf-8')
 }
+
+// const getChannelsKeyboard = ({
+//   page,
+//   items,
+// }: {
+//   page: number
+//   items: SignalChat[]
+// }) => {
+//   return getPaginationKeyboard({
+//     page,
+//     items: items.map((item) => ({
+//       id: item.chatId.toString(), // FIXME: incorrect id
+//     })),
+//     action: 'kk',
+//   })
+// }

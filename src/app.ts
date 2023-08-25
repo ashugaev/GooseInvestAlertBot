@@ -16,6 +16,7 @@ import { Context, Telegraf } from 'telegraf'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
 import { setypAnalyseChannelCommand } from '@/bots/cryptoSignals/commands/analyse/analyse'
+import { analyseScene } from '@/bots/cryptoSignals/commands/analyse/analyse.scenes'
 import { setupAddChat } from '@/commands/addChat/addChat'
 import { addChatScenes } from '@/commands/addChat/addChat.scenes'
 import { setupAdmin } from '@/commands/admin/admin'
@@ -120,11 +121,25 @@ bots.then((bots) => {
 
 // Start signals bot client
 // TODO: Make separated
-;(() => {
+;(async () => {
+  const signalsStage = new Stage([analyseScene])
+
   const bot = new TelegrafBot(
     process.env.TELEGRAM_SIGNALS_BOT_TOKEN
   ) as Telegraf<Context>
+
+  // Ignore old messages
+  bot.use(checkTime)
+
+  const botInfo = await bot.telegram.getMe()
+  bot.context.goose = botInfo
+
+  // Attach user
+  // FIXME: Сейчас он слишком специфические для алерт бота
+  bot.use(attachUser)
+
   bot.use(session())
+  bot.use(signalsStage.middleware())
 
   setypAnalyseChannelCommand(bot)
 
