@@ -21,7 +21,7 @@ const startScene = immediateStep(
     await ctx.replyWithHTML('🔄 Обновляю список каналов...')
     await updateSignalChannels()
 
-    channelsPagination.send(ctx, 0)
+    await channelsPagination.send(ctx, 0)
 
     // @ts-ignore
     return ctx.wizard.next()

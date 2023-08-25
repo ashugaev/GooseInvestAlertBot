@@ -31,13 +31,16 @@ export class Pagination {
   getItems: () => Promise<{ id: number | string; title: string }[]>
   actionKey: string
   messageId?: number
+  bot?: Telegraf<Context>
 
   constructor({ itemsPerPage, title, getItems }: PaginationParams) {
     this.itemsPerPage = itemsPerPage
     this.title = title
     this.getItems = getItems
-    // random string
-    this.actionKey = Math.random().toString(36).substring(7)
+  }
+
+  private generateActionKey() {
+    return Math.random().toString(36).substring(7)
   }
 
   /**
@@ -65,22 +68,43 @@ export class Pagination {
       }),
     ])
 
-    if (this.messageId) {
-      await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        this.messageId,
-        undefined,
-        text,
-        Extra.HTML(true).markup(keyboard) as ExtraEditMessage
-      )
-    } else {
-      const message = await ctx.replyWithHTML(
-        text,
-        Extra.HTML(true).markup(keyboard) as ExtraEditMessage
-      )
+    const message = await ctx.replyWithHTML(
+      text,
+      Extra.HTML(true).markup(keyboard) as ExtraEditMessage
+    )
 
-      this.messageId = message.message_id
-    }
+    this.messageId = message.message_id
+  }
+
+  async update(ctx: Context, page = 0) {
+    const items = await this.getItems()
+
+    const text = getPaginationText({
+      page,
+      items,
+      itemsPerPage: this.itemsPerPage,
+      title: this.title,
+    })
+
+    const keyboard = Markup.inlineKeyboard([
+      paginationButtons({
+        itemsPerPage: this.itemsPerPage,
+        itemsLength: items.length,
+        // @ts-ignore
+        action: this.actionKey,
+        payload: {
+          p: page,
+        },
+      }),
+    ])
+
+    await ctx.telegram.editMessageText(
+      ctx.chat.id,
+      this.messageId,
+      undefined,
+      text,
+      Extra.HTML(true).markup(keyboard) as ExtraEditMessage
+    )
   }
 
   private handleAction = commandWrapper(
@@ -88,12 +112,19 @@ export class Pagination {
     async (ctx) => {
       const { p: page } = JSON.parse(ctx.match[1])
 
-      await this.send(ctx, page)
+      // Ignore old messages clicks
+      if (this.messageId !== ctx.callbackQuery.message.message_id) {
+        return
+      }
+
+      await this.update(ctx, page)
     }
   )
 
   initActions({ bot }: { bot: Telegraf<Context> }) {
-    bot.action(triggerActionRegexp(this.actionKey), this.handleAction)
+    this.bot = bot
+    this.actionKey = this.generateActionKey()
+    this.bot.action(triggerActionRegexp(this.actionKey), this.handleAction)
   }
 }
 
