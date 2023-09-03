@@ -35,12 +35,26 @@ export class SignalAiRecognize {
 
   @prop({ required: false, default: {} })
   aiExtractedData!: {
+    ticker?: string
     doubts?: SignalDoubts
     type?: SignalType
     tickerPrice?: number
     volume?: number
     orderType?: SignalOrderType
+    stop?: number
+    tp?: number[]
   }
+
+  /**
+   * Hash of prompt for chat gpt
+   * If we have same input and this hash,
+   * we can skip chat gpt validation and use previous result
+   */
+  @prop({ required: true, default: null })
+  promptHash?: string
+
+  @prop({ required: false, default: null })
+  status?: string
 }
 
 export const SignalAiRecognizeModel = getModelForClass(SignalAiRecognize)

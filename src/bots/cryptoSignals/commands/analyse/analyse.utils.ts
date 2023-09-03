@@ -1,10 +1,24 @@
-import { TelegramClient } from 'telegram'
+import { Api, TelegramClient } from 'telegram'
 const Papa = require('papaparse')
+import { BulkWriteOperation } from 'mongodb'
+import { Context } from 'telegraf'
 
+import {
+  SignalAiRecognize,
+  SignalAiRecognizeModel,
+} from '@/bots/cryptoSignals/models/signalAiRecognize'
 import {
   SignalChat,
   SignalChatModel,
 } from '@/bots/cryptoSignals/models/signalChat'
+import {
+  SignalMessage,
+  SignalMessageModel,
+} from '@/bots/cryptoSignals/models/signalMessage'
+import {
+  chatGptRequestHash,
+  validateWithChatGPT,
+} from '@/features/signals/devochkiChannel/gpt'
 import {
   ConfigForSignalChannel,
   initialSignalValidation,
@@ -15,6 +29,7 @@ import { signalsClient } from '@/integrations/telegram/client'
 import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { getChatHistory } from '@/integrations/telegram/getChatHistory'
 import { User } from '@/models'
+import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
 
 // Move to db
@@ -151,19 +166,88 @@ export const fetchSignalChannelsMessages = async ({
 
 export const generateTableWithSignals = async (
   messages,
-  channel
+  channel: SignalChat,
+  aiAnswerByMessageId: Record<number, Partial<SignalAiRecognize>>
 ): Promise<Buffer> => {
-  const rows = messages.map((message) => ({
-    channel: channel,
+  const maxWidth = 200
+  const transform = (value) =>
+    value && value.length > maxWidth ? value.substring(0, maxWidth) : value
+
+  const rows = messages.map((message: Api.Message) => ({
+    channel: channel.title,
     date: format(new Date(message.date * 1000), 'dd.MM.yyyy'),
     message: message.message,
+    ticker: aiAnswerByMessageId[message.id]?.aiExtractedData?.ticker,
+    tp: aiAnswerByMessageId[message.id]?.aiExtractedData?.tp,
+    stop: aiAnswerByMessageId[message.id]?.aiExtractedData?.stop,
+    volume: aiAnswerByMessageId[message.id]?.aiExtractedData?.volume,
+    type: aiAnswerByMessageId[message.id]?.aiExtractedData?.type,
+    doubts: aiAnswerByMessageId[message.id]?.aiExtractedData?.doubts,
+    tickerPrice: aiAnswerByMessageId[message.id]?.aiExtractedData?.tickerPrice,
+    aiAnswer:
+      aiAnswerByMessageId[message.id.toString()]?.chatGptValidationMessage,
   }))
 
   const csvString = Papa.unparse(rows, {
     fields: [
-      { label: 'Date', value: 'date', headerStyle: 'font-weight:bold' },
-      { label: 'Message', value: 'message', headerStyle: 'font-weight:bold' },
-      { label: 'Channel', value: 'channel', headerStyle: 'font-weight:bold' },
+      {
+        label: 'Date',
+        value: 'date',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
+      {
+        label: 'Channel',
+        value: 'channel',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
+      {
+        label: 'Message',
+        value: 'message',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
+      {
+        label: 'Doubts',
+        value: 'doubts',
+        headerStyle: 'font-weight:bold',
+      },
+      {
+        label: 'Type',
+        value: 'type',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
+      {
+        label: 'Make Order Price',
+        value: 'tickerPrice',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
+      {
+        label: 'Volume',
+        value: 'volume',
+        headerStyle: 'font-weight:bold',
+      },
+      {
+        label: 'Take Profit',
+        value: 'tp',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
+      {
+        label: 'Stop Loss',
+        value: 'stop',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
+      {
+        label: 'Ai Answer',
+        value: 'aiAnswer',
+        headerStyle: 'font-weight:bold',
+        transform,
+      },
     ],
     header: true,
   })
@@ -171,18 +255,194 @@ export const generateTableWithSignals = async (
   return Buffer.from(csvString, 'utf-8')
 }
 
-// const getChannelsKeyboard = ({
-//   page,
-//   items,
-// }: {
-//   page: number
-//   items: SignalChat[]
-// }) => {
-//   return getPaginationKeyboard({
-//     page,
-//     items: items.map((item) => ({
-//       id: item.chatId.toString(), // FIXME: incorrect id
-//     })),
-//     action: 'kk',
-//   })
-// }
+export interface GenerateReportByChannelParams {
+  channelInd: number
+  takeProfitPercent: number
+  stopLossPercent: number
+  ctx: Context
+}
+
+export const generateReportByChannel = async ({
+  channelInd,
+  takeProfitPercent,
+  stopLossPercent,
+  ctx,
+}: GenerateReportByChannelParams) => {
+  try {
+    const channels = await SignalChatModel.find().lean()
+    const channel = channels[channelInd - 1]
+
+    // Временный хардкод
+    const dateTill = new Date('2023-08-15')
+
+    const message = await ctx.replyWithHTML(
+      `<b>⏳ Генерирую отчет</b>
+      
+      📊 Канал: ${channel.title} 
+      
+      🟢 Тейк-профит: ${takeProfitPercent}%
+      
+      🔴 Стоп-лосс: ${stopLossPercent}%
+ 
+      📅 Анализ начиная с даты: ${format(dateTill, 'dd.MM.yyyy')}
+    `
+    )
+
+    const messages = await fetchSignalChannelsMessages({
+      client: signalsClient,
+      tillDate: new Date(dateTill),
+      channelId: channel.chatId,
+    })
+
+    if (!messages.length) {
+      await ctx.replyWithHTML(
+        `Не нашел ни одного сообщения в канале ${channel.title}`
+      )
+      return
+    }
+
+    try {
+      const bulkMessageUpdate: BulkWriteOperation<SignalMessage>[] =
+        messages.map((message) => ({
+          updateOne: {
+            filter: {
+              messageId: message.messageId,
+              chat: channel._id,
+            },
+            update: {
+              $set: {
+                chat: channel._id,
+                messageId: message.id,
+                message: message.message,
+                date: message.date * 1000,
+              },
+            },
+            upsert: true, // Insert if the document doesn't exist, update if it does
+          },
+        }))
+
+      // FIXME: Creating duplicates now
+      await SignalMessageModel.bulkWrite(bulkMessageUpdate)
+
+      log.info('Messages saved to DB')
+    } catch (e) {
+      log.error('Error while saving messages to DB', e)
+    }
+
+    const aiAnswerByMessageId: Record<number, Partial<SignalAiRecognize>> = {}
+
+    // FIXME: REMOVE IT BEFORE PRODUCTION
+    const messagesLimitedForDebug = messages.slice(0, 3)
+
+    for (const data of messagesLimitedForDebug) {
+      try {
+        const message = data.message
+        const aiRes = await validateWithChatGPT(message)
+
+        const newItem: Partial<SignalAiRecognize> = {
+          channelId: channel.chatId,
+          message,
+          messageId: data.id,
+          promptHash: chatGptRequestHash,
+          aiExtractedData: {},
+        }
+
+        aiAnswerByMessageId[data.id] = newItem
+
+        if (aiRes) {
+          newItem.chatGptValidationMessage = aiRes
+
+          let aiResArr
+
+          try {
+            aiResArr = JSON.parse(aiRes.replace(/'/g, '"'))
+          } catch (e) {
+            newItem.status = "Can't recognize chat gpt answer"
+          }
+
+          if (aiResArr.length) {
+            const [ticker, level, tp, stop, type = 'buy', doubts]: [
+              string | null,
+              number | null,
+              number[] | null,
+              number | null,
+              SignalType | null,
+              SignalDoubts | null
+            ] = aiResArr
+
+            // Validate answer
+            if (
+              !ticker?.length ||
+              !(level > 0 || level === null) ||
+              !(tp?.length || level === null) ||
+              !(stop > 0 || stop === null) ||
+              !type?.match(/(buy|sell)/) ||
+              !doubts?.match(/(yes|no)/)
+            ) {
+              newItem.status = 'AI answer is invalid'
+              continue
+            }
+
+            newItem.aiExtractedData.doubts = doubts
+            newItem.aiExtractedData.type = type
+            newItem.aiExtractedData.stop = stop
+            newItem.aiExtractedData.tickerPrice = level
+            newItem.aiExtractedData.tp = tp
+            newItem.aiExtractedData.ticker = ticker
+          }
+        }
+
+        log.info('Saving ai answer', newItem)
+      } catch (e) {
+        log.error('Error while asking ai', e)
+      }
+    }
+
+    try {
+      const aiAnswerByMessageIdArr = Object.values(aiAnswerByMessageId)
+      // Bulk update config
+      const bulkUpdateAiAnswers: BulkWriteOperation<SignalAiRecognize>[] =
+        aiAnswerByMessageIdArr.map((data) => ({
+          updateOne: {
+            filter: {
+              messageId: data.messageId,
+              channelId: data.channelId,
+              promptHash: data.promptHash,
+            },
+            update: {
+              $set: {
+                ...data,
+              },
+            },
+          },
+        }))
+
+      await SignalAiRecognizeModel.bulkWrite(bulkUpdateAiAnswers)
+    } catch (e) {
+      log.error('Error while saving ai answers', e)
+    }
+
+    const bufferData = await generateTableWithSignals(
+      messages,
+      channel,
+      aiAnswerByMessageId
+    )
+
+    if (bufferData.length > 0) {
+      await ctx.replyWithDocument(
+        {
+          source: bufferData,
+          // TODO: ДОбавить название канала и параметры ТП и СЛ
+          filename: `Signals_${channel.title}.csv`,
+        },
+        {
+          reply_to_message_id: message.message_id,
+        }
+      )
+    } else {
+      await ctx.replyWithHTML('Не нашел ни одного сообщения')
+    }
+  } catch (e) {
+    ctx.replyWithHTML('Error while generating report')
+  }
+}

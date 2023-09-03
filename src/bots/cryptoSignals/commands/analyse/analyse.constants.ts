@@ -19,6 +19,6 @@ export const channelsPagination = new Pagination({
 
     return items
   },
-  itemsPerPage: 50,
+  itemsPerPage: 25,
   title: '👇 Отправь номер канала',
 })

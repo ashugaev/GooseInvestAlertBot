@@ -10,7 +10,7 @@ import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
 })
 export class SignalChat {
   @prop({ required: true, index: true, unique: true })
-  chatId: number | string
+  chatId: number
 
   @prop({ required: true })
   title: string
