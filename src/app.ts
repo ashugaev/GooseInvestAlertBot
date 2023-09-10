@@ -25,6 +25,7 @@ import { myTokenScenes } from '@/commands/mytoken/mytoken.scenes'
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
 import { setupTest } from '@/commands/test/test'
+import { botConfig } from '@/config'
 import { setupCheckers } from '@/cron'
 
 import { setupAlert } from './commands/alert/alert'
@@ -110,44 +111,48 @@ export const botInit = (bot) => {
   log.info(`Bot ${bot.context.goose.username} is up and running`)
 }
 
-bots.then((bots) => {
-  for (const bot of bots) {
-    botInit(bot)
-  }
+if (botConfig.appFlags.priceAlertBots) {
+  bots.then((bots) => {
+    for (const bot of bots) {
+      botInit(bot)
+    }
 
-  // Start all async tasks (cron and continuous)
-  setupCheckers()
-})
+    // Start all async tasks (cron and continuous)
+    setupCheckers()
+  })
+}
 
-// Start signals bot client
-// TODO: Make separated
-;(async () => {
-  const signalsStage = new Stage([analyseScene])
+if (botConfig.appFlags.cryptoSignalBots) {
+  // Start signals bot client
+  // TODO: Make separated
+  ;(async () => {
+    const signalsStage = new Stage([analyseScene])
 
-  const bot = new TelegrafBot(
-    process.env.TELEGRAM_SIGNALS_BOT_TOKEN
-  ) as Telegraf<Context>
+    const bot = new TelegrafBot(
+      process.env.TELEGRAM_SIGNALS_BOT_TOKEN
+    ) as Telegraf<Context>
 
-  // Ignore old messages
-  bot.use(checkTime)
+    // Ignore old messages
+    bot.use(checkTime)
 
-  const botInfo = await bot.telegram.getMe()
-  bot.context.goose = botInfo
+    const botInfo = await bot.telegram.getMe()
+    bot.context.goose = botInfo
 
-  // Attach user
-  // FIXME: Сейчас он слишком специфические для алерт бота
-  bot.use(attachUser)
+    // Attach user
+    // FIXME: Сейчас он слишком специфические для алерт бота
+    bot.use(attachUser)
 
-  bot.use(session())
-  bot.use(signalsStage.middleware())
+    bot.use(session())
+    bot.use(signalsStage.middleware())
 
-  setypAnalyseChannelCommand(bot)
+    setypAnalyseChannelCommand(bot)
 
-  // Start bot
-  bot.startPolling()
-  log.info(`Bot GOOSE SIGNALS is up and running`)
-})()
+    // Start bot
+    bot.startPolling()
+    log.info(`Bot GOOSE SIGNALS is up and running`)
+  })()
 
-process.on('uncaughtException', function (err) {
-  log.error('[UNHANDLED]', err)
-})
+  process.on('uncaughtException', function (err) {
+    log.error('[UNHANDLED]', err)
+  })
+}
