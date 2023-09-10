@@ -89,7 +89,7 @@ export const getTinkoffPrices = async (
         ])
       } else {
         log.error(
-          logPrefix + "Can't generate price data from:",
+          logPrefix + " Can't generate price data from:",
           priceNormalized,
           tickerId,
           item

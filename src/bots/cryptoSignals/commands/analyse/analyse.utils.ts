@@ -3,6 +3,7 @@ const Papa = require('papaparse')
 import { BulkWriteOperation } from 'mongodb'
 import { Context } from 'telegraf'
 
+import { HistoryPriceAnalyze } from '@/bots/cryptoSignals/models/historyPriceAnalyze'
 import {
   SignalAiRecognize,
   SignalAiRecognizeModel,
@@ -28,6 +29,7 @@ import { wait } from '@/helpers/wait'
 import { signalsClient } from '@/integrations/telegram/client'
 import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { getChatHistory } from '@/integrations/telegram/getChatHistory'
+import { getTicks } from '@/marketApi/binance/api/getTicks'
 import { User } from '@/models'
 import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
@@ -307,10 +309,11 @@ export const generateReportByChannel = async ({
           updateOne: {
             filter: {
               messageId: message.messageId,
-              chat: channel._id,
+              chatId: channel.chatId,
             },
             update: {
               $set: {
+                chatId: channel.chatId,
                 chat: channel._id,
                 messageId: message.id,
                 message: message.message,
@@ -330,6 +333,10 @@ export const generateReportByChannel = async ({
     }
 
     const aiAnswerByMessageId: Record<number, Partial<SignalAiRecognize>> = {}
+    const priceAnalysisByMessageId: Record<
+      number,
+      Partial<HistoryPriceAnalyze>
+    > = {}
 
     // FIXME: REMOVE IT BEFORE PRODUCTION
     const messagesLimitedForDebug = messages.slice(0, 3)
@@ -389,6 +396,24 @@ export const generateReportByChannel = async ({
             newItem.aiExtractedData.tickerPrice = level
             newItem.aiExtractedData.tp = tp
             newItem.aiExtractedData.ticker = ticker
+
+            try {
+              const { ticks, closed, tpTriggered, slTriggered } =
+                await getTicks({
+                  startTime: data.date * 1000,
+                  tpPercent: takeProfitPercent,
+                  slPercent: stopLossPercent,
+                  symbol: ticker,
+                })
+
+              // FIXME Check ticks res
+              debugger
+              // priceAnalysisByMessageId[data.id] = {
+              //   ticker,
+              // }
+            } catch (e) {
+              newItem.status = 'Error while getting price'
+            }
           }
         }
 

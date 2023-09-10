@@ -28,9 +28,4 @@ export function setypAnalyseChannelCommand(bot: Telegraf<Context>) {
   channelsPagination.initActions({
     bot,
   })
-
-  // bot.action(
-  //   triggerActionRegexp(ANALYSE_ACTIONS.channelsPagination),
-  //   shiftAlertSettings
-  // )
 }

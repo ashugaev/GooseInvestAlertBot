@@ -12,6 +12,9 @@ export class SignalMessage {
   chat: Ref<SignalChat>
 
   @prop({ required: true })
+  chatId: number
+
+  @prop({ required: true })
   messageId: number
 
   @prop({ required: true })
