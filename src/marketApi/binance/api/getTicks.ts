@@ -2,7 +2,7 @@ import { AggregatedTrade } from 'binance-api-node'
 
 import { log } from '@/helpers'
 import { binance } from '@/marketApi/binance/utils/binance'
-const { format } = require('date-fns')
+const { format, differenceInDays } = require('date-fns')
 
 interface GetTicksParams {
   startTime: number
@@ -25,7 +25,13 @@ interface GetTicksResult {
   slPrice: number
   priceDetectedByDate: boolean
   notEnougthDataForCheck: boolean
+  startDate: Date
+  tpDate: Date
+  slDate: Date
+  skippedBecauseOfPeriod: boolean
 }
+
+const maxDaysToCheck = 5
 
 /**
  * @todo может быть кейс, когда startTime !== времени входа в сделку, по этому скрипт должен опреределять вход
@@ -42,11 +48,14 @@ export const getTicks = async ({
   let slTriggered = false
   let tpTriggered = false
   let tpPrice = null
+  let tpDate = null
   let slPrice = null
+  let slDate = null
   let highestPrice = null
   let lowestPrice = null
   let closed = false
   let notEnougthDataForCheck = false
+  let skippedBecauseOfPeriod = false
   const priceDetectedByDate = false
 
   const getMoreTicks = async ({
@@ -105,6 +114,17 @@ export const getTicks = async ({
         lastFetchedId = params.fromId
       }
 
+      if (
+        ticks.length &&
+        differenceInDays(
+          new Date(ticks[ticks.length - 1].timestamp),
+          new Date(ticks[0].timestamp)
+        ) > maxDaysToCheck
+      ) {
+        skippedBecauseOfPeriod = true
+        break
+      }
+
       await getMoreTicks(params)
 
       if (!startPrice) {
@@ -125,22 +145,24 @@ export const getTicks = async ({
       break
     }
 
-    if (Number(ticks[i].price) > highestPrice) {
+    if (!highestPrice || Number(ticks[i].price) > highestPrice) {
       highestPrice = Number(ticks[i].price)
     }
 
-    if (Number(ticks[i].price) < lowestPrice) {
+    if (!lowestPrice || Number(ticks[i].price) < lowestPrice) {
       lowestPrice = Number(ticks[i].price)
     }
 
     if (Number(ticks[i].price) >= tpPrice) {
       tpTriggered = true
+      tpDate = new Date(ticks[i].timestamp)
       closed = true
       break
     }
 
     if (Number(ticks[i].price) <= slPrice) {
       slTriggered = true
+      slDate = new Date(ticks[i].timestamp)
       closed = true
       break
     }
@@ -172,5 +194,9 @@ export const getTicks = async ({
     closed,
     notEnougthDataForCheck,
     priceDetectedByDate,
+    startDate: new Date(ticks[0].timestamp),
+    tpDate,
+    slDate,
+    skippedBecauseOfPeriod,
   }
 }

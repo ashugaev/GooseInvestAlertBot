@@ -1,8 +1,6 @@
 import { getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose'
 
-import { SignalAiRecognize } from '@/bots/cryptoSignals/models/signalAiRecognize'
 import { SignalChat } from '@/bots/cryptoSignals/models/signalChat'
-import { SignalMessage } from '@/bots/cryptoSignals/models/signalMessage'
 
 @modelOptions({
   schemaOptions: {
@@ -13,11 +11,14 @@ export class HistoryPriceAnalyze {
   @prop({ required: true, ref: () => SignalChat })
   chat: Ref<SignalChat>
 
-  @prop({ required: true, ref: () => SignalMessage })
-  message: Ref<SignalMessage>
+  @prop({ required: true })
+  message: string
 
-  @prop({ required: true, ref: () => SignalAiRecognize })
-  aiAnswer: Ref<SignalAiRecognize>
+  @prop({ required: true })
+  messageId: number
+
+  // @prop({ required: true, ref: () => SignalAiRecognize })
+  // aiAnswer: Ref<SignalAiRecognize>
 
   @prop({ required: true })
   signalDate: Date
@@ -50,7 +51,13 @@ export class HistoryPriceAnalyze {
   slDate: Date
 
   @prop({ required: false })
-  status: string
+  status?: string
+
+  /**
+   * If tp or sl wasn't triggered during N days
+   */
+  @prop({ required: true })
+  skippedBecauseOfPeriod: boolean
 }
 
 export const HistoryPriceAnalyzeModel = getModelForClass(HistoryPriceAnalyze)

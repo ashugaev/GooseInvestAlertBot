@@ -3,7 +3,10 @@ const Papa = require('papaparse')
 import { BulkWriteOperation } from 'mongodb'
 import { Context } from 'telegraf'
 
-import { HistoryPriceAnalyze } from '@/bots/cryptoSignals/models/historyPriceAnalyze'
+import {
+  HistoryPriceAnalyze,
+  HistoryPriceAnalyzeModel,
+} from '@/bots/cryptoSignals/models/historyPriceAnalyze'
 import {
   SignalAiRecognize,
   SignalAiRecognizeModel,
@@ -169,90 +172,67 @@ export const fetchSignalChannelsMessages = async ({
 export const generateTableWithSignals = async (
   messages,
   channel: SignalChat,
-  aiAnswerByMessageId: Record<number, Partial<SignalAiRecognize>>
+  aiAnswerByMessageId: Record<number, Partial<SignalAiRecognize>>,
+  priceAnalysisByMessageId: Record<number, Partial<HistoryPriceAnalyze>>
 ): Promise<Buffer> => {
   const maxWidth = 200
   const transform = (value) =>
     value && value.length > maxWidth ? value.substring(0, maxWidth) : value
 
   const rows = messages.map((message: Api.Message) => ({
-    channel: channel.title,
-    date: format(new Date(message.date * 1000), 'dd.MM.yyyy'),
-    message: message.message,
-    ticker: aiAnswerByMessageId[message.id]?.aiExtractedData?.ticker,
-    tp: aiAnswerByMessageId[message.id]?.aiExtractedData?.tp,
-    stop: aiAnswerByMessageId[message.id]?.aiExtractedData?.stop,
-    volume: aiAnswerByMessageId[message.id]?.aiExtractedData?.volume,
-    type: aiAnswerByMessageId[message.id]?.aiExtractedData?.type,
-    doubts: aiAnswerByMessageId[message.id]?.aiExtractedData?.doubts,
-    tickerPrice: aiAnswerByMessageId[message.id]?.aiExtractedData?.tickerPrice,
-    aiAnswer:
+    // Данные из телеграмма
+    'TG | Channel': channel.title,
+    'TG | Message Time': format(
+      new Date(message.date * 1000),
+      'dd.MM.yyyy HH:mm:ss'
+    ),
+    'TG | Message': message.message,
+    // Данные извеченные из сигнала
+    'SIGNAL | Ticker': aiAnswerByMessageId[message.id]?.aiExtractedData?.ticker,
+    'SIGNAL | Trade Start Price':
+      aiAnswerByMessageId[message.id]?.aiExtractedData?.tickerPrice,
+    'SIGNAL | TP Price': aiAnswerByMessageId[message.id]?.aiExtractedData?.tp,
+    'SIGNAL | SL Price': aiAnswerByMessageId[message.id]?.aiExtractedData?.stop,
+    'SIGNAL | Volume': aiAnswerByMessageId[message.id]?.aiExtractedData?.volume,
+    'SIGNAL | Order Type':
+      aiAnswerByMessageId[message.id]?.aiExtractedData?.type,
+    'SIGNAL | Have Doubts': aiAnswerByMessageId[message.id]?.aiExtractedData
+      ?.doubts
+      ? 'YES'
+      : 'NO',
+
+    // Результаты срабатывания
+    'RESULT | SL Triggered': priceAnalysisByMessageId[message.id]?.slTriggered
+      ? '✅'
+      : '',
+    'RESULT | TP Triggered': priceAnalysisByMessageId[message.id]?.tpTriggered
+      ? '✅'
+      : '',
+    'RESULT | TP Triggered Date': priceAnalysisByMessageId[message.id]?.tpDate
+      ? format(
+          priceAnalysisByMessageId[message.id]?.tpDate,
+          'dd.MM.yyyy HH:mm:ss'
+        )
+      : '',
+    'RESULT | SL Triggered Date': priceAnalysisByMessageId[message.id]?.slDate
+      ? format(
+          priceAnalysisByMessageId[message.id]?.slDate,
+          'dd.MM.yyyy HH:mm:ss'
+        )
+      : '',
+    // Ввод юзера
+    'INPUT | Autocalculated Start Price':
+      priceAnalysisByMessageId[message.id]?.startPrice.toFixed(4),
+    'INPUT | TP Autocalculated Price ':
+      priceAnalysisByMessageId[message.id]?.tpPrice.toFixed(4) || '',
+    'INPUT | SL Autocalculated Price':
+      priceAnalysisByMessageId[message.id]?.slPrice.toFixed(4) || '',
+    // AI
+    'AI Answer':
       aiAnswerByMessageId[message.id.toString()]?.chatGptValidationMessage,
   }))
 
-  const csvString = Papa.unparse(rows, {
-    fields: [
-      {
-        label: 'Date',
-        value: 'date',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-      {
-        label: 'Channel',
-        value: 'channel',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-      {
-        label: 'Message',
-        value: 'message',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-      {
-        label: 'Doubts',
-        value: 'doubts',
-        headerStyle: 'font-weight:bold',
-      },
-      {
-        label: 'Type',
-        value: 'type',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-      {
-        label: 'Make Order Price',
-        value: 'tickerPrice',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-      {
-        label: 'Volume',
-        value: 'volume',
-        headerStyle: 'font-weight:bold',
-      },
-      {
-        label: 'Take Profit',
-        value: 'tp',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-      {
-        label: 'Stop Loss',
-        value: 'stop',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-      {
-        label: 'Ai Answer',
-        value: 'aiAnswer',
-        headerStyle: 'font-weight:bold',
-        transform,
-      },
-    ],
-    header: true,
-  })
+  const csvString = Papa.unparse(rows)
 
   return Buffer.from(csvString, 'utf-8')
 }
@@ -275,7 +255,7 @@ export const generateReportByChannel = async ({
     const channel = channels[channelInd - 1]
 
     // Временный хардкод
-    const dateTill = new Date('2023-08-15')
+    const dateTill = new Date('2023-07-01')
 
     const message = await ctx.replyWithHTML(
       `<b>⏳ Генерирую отчет</b>
@@ -338,10 +318,7 @@ export const generateReportByChannel = async ({
       Partial<HistoryPriceAnalyze>
     > = {}
 
-    // FIXME: REMOVE IT BEFORE PRODUCTION
-    const messagesLimitedForDebug = messages.slice(0, 3)
-
-    for (const data of messagesLimitedForDebug) {
+    for (const data of messages) {
       try {
         const message = data.message
         const aiRes = await validateWithChatGPT(message)
@@ -398,19 +375,43 @@ export const generateReportByChannel = async ({
             newItem.aiExtractedData.ticker = ticker
 
             try {
-              const { ticks, closed, tpTriggered, slTriggered } =
-                await getTicks({
-                  startTime: data.date * 1000,
-                  tpPercent: takeProfitPercent,
-                  slPercent: stopLossPercent,
-                  symbol: ticker,
-                })
+              const {
+                ticks,
+                slTriggered,
+                tpTriggered,
+                startPrice,
+                tpPrice,
+                slPrice,
+                closed,
+                notEnougthDataForCheck,
+                priceDetectedByDate,
+                startDate,
+                tpDate,
+                slDate,
+                skippedBecauseOfPeriod,
+              } = await getTicks({
+                startTime: data.date * 1000,
+                tpPercent: takeProfitPercent,
+                slPercent: stopLossPercent,
+                symbol: ticker,
+              })
 
-              // FIXME Check ticks res
-              debugger
-              // priceAnalysisByMessageId[data.id] = {
-              //   ticker,
-              // }
+              priceAnalysisByMessageId[data.id] = {
+                chat: channel._id,
+                message: data.message,
+                messageId: data.id,
+                signalDate: new Date(data.date * 1000),
+                startPrice,
+                startDate,
+                parsedData: newItem.aiExtractedData,
+                tpTriggered,
+                slTriggered,
+                tpPrice,
+                tpDate,
+                slPrice,
+                slDate,
+                skippedBecauseOfPeriod,
+              }
             } catch (e) {
               newItem.status = 'Error while getting price'
             }
@@ -423,34 +424,60 @@ export const generateReportByChannel = async ({
       }
     }
 
+    let bulkUpdateAiAnswers: BulkWriteOperation<SignalAiRecognize>[] = []
+
     try {
       const aiAnswerByMessageIdArr = Object.values(aiAnswerByMessageId)
       // Bulk update config
-      const bulkUpdateAiAnswers: BulkWriteOperation<SignalAiRecognize>[] =
-        aiAnswerByMessageIdArr.map((data) => ({
-          updateOne: {
-            filter: {
-              messageId: data.messageId,
-              channelId: data.channelId,
-              promptHash: data.promptHash,
-            },
-            update: {
-              $set: {
-                ...data,
-              },
+      bulkUpdateAiAnswers = aiAnswerByMessageIdArr.map((data) => ({
+        updateOne: {
+          filter: {
+            messageId: data.messageId,
+            channelId: data.channelId,
+            promptHash: data.promptHash,
+          },
+          update: {
+            $set: {
+              ...data,
             },
           },
-        }))
+        },
+      }))
 
       await SignalAiRecognizeModel.bulkWrite(bulkUpdateAiAnswers)
     } catch (e) {
       log.error('Error while saving ai answers', e)
     }
 
+    // Upload price analysis
+    try {
+      const bulkUpdatePriceAnalysis: BulkWriteOperation<HistoryPriceAnalyze>[] =
+        Object.values(priceAnalysisByMessageId).map((data) => ({
+          updateOne: {
+            filter: {
+              messageId: data.messageId,
+              chat: channel._id,
+            },
+            update: {
+              $set: {
+                // FIXME: fix this
+                // aiAnswer: bulkUpdateAiAnswers.find(el => el.messageId === data.messageId)
+                ...data,
+              },
+            },
+          },
+        }))
+
+      await HistoryPriceAnalyzeModel.bulkWrite(bulkUpdatePriceAnalysis)
+    } catch (e) {
+      log.error('Error while saving price analysis', e)
+    }
+
     const bufferData = await generateTableWithSignals(
       messages,
       channel,
-      aiAnswerByMessageId
+      aiAnswerByMessageId,
+      priceAnalysisByMessageId
     )
 
     if (bufferData.length > 0) {
