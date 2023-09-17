@@ -26,7 +26,7 @@ export interface ConfigForSignalChannel {
 // TODO: Move to helpers in signals
 export const initialSignalValidation = (
   message: string,
-  config: ConfigForSignalChannel
+  config: ConfigForSignalChannel | undefined
 ): boolean => {
   // Reset message patterns
   const tickerPattern = /[A-Z]{3,6}/ // ticker
@@ -35,16 +35,16 @@ export const initialSignalValidation = (
 
   const patternsToCheck = []
 
-  if (config.tickerInBigLetters) {
+  if (config?.tickerInBigLetters) {
     patternsToCheck.push(tickerPattern)
   }
-  if (config.tickerWithHash) {
+  if (config?.tickerWithHash) {
     patternsToCheck.push(tickerWithHashPattern)
   }
-  if (config.priceRequired) {
+  if (config?.priceRequired) {
     patternsToCheck.push(pricePattern)
   }
-  if (config.keyWords.length) {
+  if (config?.keyWords.length) {
     patternsToCheck.push(...config.keyWords.map((word) => new RegExp(word)))
   }
 

@@ -51,6 +51,12 @@ const configByChannelId: Record<string, ConfigForSignalChannel> = {
   '-1001922990972': {
     keyWords: ['Торговая пара', 'Точка входа'],
   },
+  '-1001810513504': {
+    keyWords: ['СИГНАЛ'],
+  },
+  '-1001596060097': {
+    keyWords: ['Открываю'],
+  },
 }
 
 function convertToCSV(data) {
@@ -214,7 +220,7 @@ export const generateTableWithSignals = async (
 
     // Результаты срабатывания
     'RESULT | Price when message sent':
-      priceAnalysisByMessageId[message.id].priceWhenMessageSent,
+      priceAnalysisByMessageId[message.id]?.priceWhenMessageSent,
     'RESULT | Trade start date':
       priceAnalysisByMessageId[message.id]?.startDate,
     'RESULT | SL Triggered': priceAnalysisByMessageId[message.id]?.slTriggered
@@ -237,14 +243,14 @@ export const generateTableWithSignals = async (
       : '',
     // Ввод юзера
     'INPUT | Start Price By Message Date':
-      priceAnalysisByMessageId[message.id].startPriceDetectedByDate &&
+      priceAnalysisByMessageId[message.id]?.startPriceDetectedByDate &&
       priceAnalysisByMessageId[message.id]?.startPrice.toFixed(4),
     'INPUT | TP Autocalculated Price':
-      (!aiAnswerByMessageId[message.id].aiExtractedData.tp &&
+      (!aiAnswerByMessageId[message.id]?.aiExtractedData.tp &&
         priceAnalysisByMessageId[message.id]?.tpPrice.toFixed(4)) ||
       '',
     'INPUT | SL Autocalculated Price':
-      (!aiAnswerByMessageId[message.id].aiExtractedData.stop &&
+      (!aiAnswerByMessageId[message.id]?.aiExtractedData.stop &&
         priceAnalysisByMessageId[message.id]?.slPrice.toFixed(4)) ||
       '',
     // AI
