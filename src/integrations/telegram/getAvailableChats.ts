@@ -9,7 +9,9 @@ export async function getBotsAndChannels({
 }) {
   const botsAndChannels = []
 
-  const allDialogs = await client.getDialogs()
+  const allDialogs = await client.getDialogs({
+    // folder: 1, // FIXME
+  })
 
   const filteredDialogs = allDialogs.filter(
     // @ts-ignore

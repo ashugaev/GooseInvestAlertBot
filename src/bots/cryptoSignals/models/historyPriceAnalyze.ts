@@ -58,6 +58,17 @@ export class HistoryPriceAnalyze {
    */
   @prop({ required: true })
   skippedBecauseOfPeriod: boolean
+
+  /**
+   * Start price was found in signal message or not
+   * If not, we can detect it by date of message
+   */
+  startPriceDetectedByDate: boolean
+
+  /**
+   * Price whet message sent
+   */
+  priceWhenMessageSent: number
 }
 
 export const HistoryPriceAnalyzeModel = getModelForClass(HistoryPriceAnalyze)

@@ -38,7 +38,10 @@ export class SignalAiRecognize {
     ticker?: string
     doubts?: SignalDoubts
     type?: SignalType
-    tickerPrice?: number
+    /**
+     * Точка входа в сделку
+     */
+    tradeStartPrice?: number
     volume?: number
     orderType?: SignalOrderType
     stop?: number

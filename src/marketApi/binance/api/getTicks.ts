@@ -25,12 +25,13 @@ interface GetTicksResult {
   startPrice: number
   tpPrice: number
   slPrice: number
-  priceDetectedByDate: boolean
+  startPriceDetectedByDate: boolean
   notEnougthDataForCheck: boolean
   startDate: Date
   tpDate: Date
   slDate: Date
   skippedBecauseOfPeriod: boolean
+  priceForStartDate: number
 }
 
 const maxDaysToCheck = 5
@@ -61,7 +62,9 @@ export const getTicks = async ({
   let closed = false
   let notEnougthDataForCheck = false
   let skippedBecauseOfPeriod = false
-  const priceDetectedByDate = false
+  let startPriceDetectedByDate = false
+  let startDate: Date = null
+  let priceForStartDate = null
 
   const getMoreTicks = async ({
     startTime,
@@ -93,9 +96,13 @@ export const getTicks = async ({
     ticks.push(...newTicks)
   }
 
+  let tradeStarted = false
+
   // Price wasn't sent in signal message
   if (!startPrice && startTime) {
-    priceDetectedByDate
+    startPriceDetectedByDate = true
+    tradeStarted = true
+    startDate = new Date(startTime)
   }
 
   let i = 0
@@ -132,22 +139,30 @@ export const getTicks = async ({
 
       await getMoreTicks(params)
 
+      // Collect first tick price
+      if (startDate && !priceForStartDate) {
+        priceForStartDate = Number(ticks[0].price)
+      }
+
       if (!startPrice) {
         startPrice = Number(ticks[0].price)
       }
       if (!tpPrice) {
-        // first tick price
-        tpPrice = Number(ticks[0].price) * (1 + tpPercentManual / 100)
+        tpPrice = Number(startPrice) * (1 + tpPercentManual / 100)
       }
       if (!slPrice) {
-        // first tick price
-        slPrice = Number(ticks[0].price) * (1 - slPercentManual / 100)
+        slPrice = Number(startPrice) * (1 - slPercentManual / 100)
       }
     }
 
     // if still last
     if (ticks.length === i) {
       break
+    }
+
+    if (!tradeStarted && Number(ticks[i].price) === startPrice) {
+      tradeStarted = true
+      startDate = new Date(ticks[i].timestamp)
     }
 
     if (!highestPrice || Number(ticks[i].price) > highestPrice) {
@@ -158,14 +173,14 @@ export const getTicks = async ({
       lowestPrice = Number(ticks[i].price)
     }
 
-    if (Number(ticks[i].price) >= tpPrice) {
+    if (tradeStarted && Number(ticks[i].price) >= tpPrice) {
       tpTriggered = true
       tpDate = new Date(ticks[i].timestamp)
       closed = true
       break
     }
 
-    if (Number(ticks[i].price) <= slPrice) {
+    if (tradeStarted && Number(ticks[i].price) <= slPrice) {
       slTriggered = true
       slDate = new Date(ticks[i].timestamp)
       closed = true
@@ -198,10 +213,11 @@ export const getTicks = async ({
     slPrice,
     closed,
     notEnougthDataForCheck,
-    priceDetectedByDate,
-    startDate: new Date(ticks[0].timestamp),
+    startPriceDetectedByDate,
     tpDate,
     slDate,
     skippedBecauseOfPeriod,
+    startDate,
+    priceForStartDate,
   }
 }

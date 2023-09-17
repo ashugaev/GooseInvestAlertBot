@@ -1,7 +1,8 @@
 import { Api, TelegramClient } from 'telegram'
 const Papa = require('papaparse')
 import { BulkWriteOperation } from 'mongodb'
-import { Context } from 'telegraf'
+import { Context, Extra } from 'telegraf'
+import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 
 import { cryptoSignals } from '@/bots/cryptoSignals/config'
 import {
@@ -20,6 +21,7 @@ import {
   SignalMessage,
   SignalMessageModel,
 } from '@/bots/cryptoSignals/models/signalMessage'
+import { finishAnalysisForUser } from '@/bots/cryptoSignals/models/userProcess'
 import {
   chatGptRequestHash,
   validateWithChatGPT,
@@ -87,6 +89,10 @@ const buffer = Buffer.from(csvString, 'utf-8')
 export const updateSignalChannels = async () => {
   try {
     await wait(500)
+
+    // const folders = await signalsClient.invoke(
+    //   new Api.messages.GetDialogFilters(null)
+    // )
 
     const chats = await getBotsAndChannels({
       client: signalsClient,
@@ -193,7 +199,7 @@ export const generateTableWithSignals = async (
     // Данные извеченные из сигнала
     'SIGNAL | Ticker': aiAnswerByMessageId[message.id]?.aiExtractedData?.ticker,
     'SIGNAL | Trade Start Price':
-      aiAnswerByMessageId[message.id]?.aiExtractedData?.tickerPrice,
+      aiAnswerByMessageId[message.id]?.aiExtractedData?.tradeStartPrice,
     'SIGNAL | TP Price': aiAnswerByMessageId[message.id]?.aiExtractedData?.tp,
     'SIGNAL | SL Price': aiAnswerByMessageId[message.id]?.aiExtractedData?.stop,
     'SIGNAL | Volume': aiAnswerByMessageId[message.id]?.aiExtractedData?.volume,
@@ -207,6 +213,10 @@ export const generateTableWithSignals = async (
         : '',
 
     // Результаты срабатывания
+    'RESULT | Price when message sent':
+      priceAnalysisByMessageId[message.id].priceWhenMessageSent,
+    'RESULT | Trade start date':
+      priceAnalysisByMessageId[message.id]?.startDate,
     'RESULT | SL Triggered': priceAnalysisByMessageId[message.id]?.slTriggered
       ? '✅'
       : '',
@@ -226,12 +236,17 @@ export const generateTableWithSignals = async (
         )
       : '',
     // Ввод юзера
-    'INPUT | Autocalculated Start Price':
+    'INPUT | Start Price By Message Date':
+      priceAnalysisByMessageId[message.id].startPriceDetectedByDate &&
       priceAnalysisByMessageId[message.id]?.startPrice.toFixed(4),
-    'INPUT | TP Autocalculated Price ':
-      priceAnalysisByMessageId[message.id]?.tpPrice.toFixed(4) || '',
+    'INPUT | TP Autocalculated Price':
+      (!aiAnswerByMessageId[message.id].aiExtractedData.tp &&
+        priceAnalysisByMessageId[message.id]?.tpPrice.toFixed(4)) ||
+      '',
     'INPUT | SL Autocalculated Price':
-      priceAnalysisByMessageId[message.id]?.slPrice.toFixed(4) || '',
+      (!aiAnswerByMessageId[message.id].aiExtractedData.stop &&
+        priceAnalysisByMessageId[message.id]?.slPrice.toFixed(4)) ||
+      '',
     // AI
     'AI Answer':
       aiAnswerByMessageId[message.id.toString()]?.chatGptValidationMessage,
@@ -259,8 +274,10 @@ export const generateReportByChannel = async ({
     const channels = await SignalChatModel.find().sort({ title: 1 }).lean()
     const channel = channels[channelInd - 1]
 
-    const message = await ctx.replyWithHTML(
-      `<b>⏳ Генерирую отчет</b>
+    const getMessageByStatus = (status: string, isDone?: boolean) =>
+      `<b>${isDone ? '✅' : '⏳'} Генерирую отчет ${
+        status?.length ? ': ' + status : ''
+      }</b>
       
       📊 Канал: ${channel.title} 
       
@@ -270,7 +287,8 @@ export const generateReportByChannel = async ({
  
       📅 Анализ начиная с даты: ${format(cryptoSignals.dateTill, 'dd.MM.yyyy')}
     `
-    )
+
+    const { message_id, chat } = await ctx.replyWithHTML(getMessageByStatus(''))
 
     const messages = await fetchSignalChannelsMessages({
       client: signalsClient,
@@ -284,6 +302,14 @@ export const generateReportByChannel = async ({
       )
       return
     }
+
+    await ctx.telegram.editMessageText(
+      chat.id,
+      message_id,
+      undefined,
+      getMessageByStatus(`Получил сообщения`),
+      Extra.HTML(true) as ExtraEditMessage
+    )
 
     try {
       const bulkMessageUpdate: BulkWriteOperation<SignalMessage>[] =
@@ -313,12 +339,21 @@ export const generateReportByChannel = async ({
       log.error('Error while saving messages to DB', e)
     }
 
+    await ctx.telegram.editMessageText(
+      chat.id,
+      message_id,
+      undefined,
+      getMessageByStatus(`Сохранил сообщения`),
+      Extra.HTML(true) as ExtraEditMessage
+    )
+
     const aiAnswerByMessageId: Record<number, Partial<SignalAiRecognize>> = {}
     const priceAnalysisByMessageId: Record<
       number,
       Partial<HistoryPriceAnalyze>
     > = {}
 
+    let i = 0
     for (const data of messages) {
       try {
         let aiRes = ''
@@ -360,7 +395,8 @@ export const generateReportByChannel = async ({
           }
 
           if (aiResArr.length) {
-            const [ticker, level, tp, stop, type = 'buy', doubts]: [
+            // eslint-disable-next-line prefer-const
+            let [ticker, level, tp, stop, type = 'buy', doubts]: [
               string | null,
               number | null,
               number[] | null,
@@ -368,6 +404,11 @@ export const generateReportByChannel = async ({
               SignalType | null,
               SignalDoubts | null
             ] = aiResArr
+
+            // Иногда chatGpt отдает num вместо array
+            if (Number(tp)) {
+              tp = [Number(tp)]
+            }
 
             // Validate answer
             if (
@@ -385,9 +426,9 @@ export const generateReportByChannel = async ({
             newItem.aiExtractedData.doubts = doubts
             newItem.aiExtractedData.type = type
             newItem.aiExtractedData.stop = stop
-            newItem.aiExtractedData.tickerPrice = level
             newItem.aiExtractedData.tp = tp
             newItem.aiExtractedData.ticker = ticker
+            newItem.aiExtractedData.tradeStartPrice = level
 
             try {
               const {
@@ -399,11 +440,12 @@ export const generateReportByChannel = async ({
                 slPrice,
                 closed,
                 notEnougthDataForCheck,
-                priceDetectedByDate,
+                startPriceDetectedByDate,
                 startDate,
                 tpDate,
                 slDate,
                 skippedBecauseOfPeriod,
+                priceForStartDate,
               } = await getTicks({
                 startTime: data.date * 1000,
                 tpPercentManual: takeProfitPercent,
@@ -411,6 +453,7 @@ export const generateReportByChannel = async ({
                 tpValue: tp,
                 slValue: stop,
                 symbol: ticker,
+                startPrice: level,
               })
 
               priceAnalysisByMessageId[data.id] = {
@@ -428,6 +471,8 @@ export const generateReportByChannel = async ({
                 slPrice,
                 slDate,
                 skippedBecauseOfPeriod,
+                startPriceDetectedByDate,
+                priceWhenMessageSent: priceForStartDate,
               }
             } catch (e) {
               newItem.status = 'Error while getting price'
@@ -438,10 +483,27 @@ export const generateReportByChannel = async ({
         log.info('Saving ai answer', newItem)
       } catch (e) {
         log.error('Error while asking ai', e)
+      } finally {
+        await ctx.telegram.editMessageText(
+          chat.id,
+          message_id,
+          undefined,
+          getMessageByStatus(`Recognize and trade ${i}/${messages.length}`),
+          Extra.HTML(true) as ExtraEditMessage
+        )
+        i++
       }
     }
 
     let bulkUpdateAiAnswers: BulkWriteOperation<SignalAiRecognize>[] = []
+
+    await ctx.telegram.editMessageText(
+      chat.id,
+      message_id,
+      undefined,
+      getMessageByStatus(`Results saving in DB...`),
+      Extra.HTML(true) as ExtraEditMessage
+    )
 
     try {
       const aiAnswerByMessageIdArr = Object.values(aiAnswerByMessageId)
@@ -492,6 +554,14 @@ export const generateReportByChannel = async ({
       log.error('Error while saving price analysis', e)
     }
 
+    await ctx.telegram.editMessageText(
+      chat.id,
+      message_id,
+      undefined,
+      getMessageByStatus(`Results saved in DB`),
+      Extra.HTML(true) as ExtraEditMessage
+    )
+
     const bufferData = await generateTableWithSignals(
       messages,
       channel,
@@ -499,15 +569,69 @@ export const generateReportByChannel = async ({
       priceAnalysisByMessageId
     )
 
+    const handledSignals = Object.values(priceAnalysisByMessageId)
+    const recognizedSignals = Object.values(aiAnswerByMessageId)
+
+    await ctx.telegram.editMessageText(
+      chat.id,
+      message_id,
+      undefined,
+      getMessageByStatus(`Done`, true),
+      Extra.HTML(true) as ExtraEditMessage
+    )
+
     if (bufferData.length > 0) {
+      const summaryMessage = `
+        <b>📊 Отчет по каналу ${channel.title}</b>
+        
+        Сообщений проверенно: ${messages.length}
+        Распознанно сигналов: ${Object.values(aiAnswerByMessageId).length}
+        Обработано сигналов: ${handledSignals.length}
+        
+        Сработало SL: ${
+          handledSignals.filter((el) => el.slTriggered).length
+        } (${(
+        (handledSignals.filter((el) => el.slTriggered).length /
+          handledSignals.length) *
+        100
+      ).toFixed(1)}%)
+        Сработало TP: ${
+          handledSignals.filter((el) => el.tpTriggered).length
+        } (${(
+        (handledSignals.filter((el) => el.tpTriggered).length /
+          handledSignals.length) *
+        100
+      ).toFixed(1)}%)
+        
+        Сигналов с указанной точкой входа: ${
+          recognizedSignals.filter((el) => el.aiExtractedData.tradeStartPrice)
+            .length
+        }
+        Сигналов с указанным TP: ${
+          recognizedSignals.filter((el) => el.aiExtractedData.tp).length
+        }
+        Сигналов с указанным SL: ${
+          recognizedSignals.filter((el) => el.aiExtractedData.stop).length
+        }
+        
+        Сигналов где взяли свой TP или SL: ${
+          handledSignals.filter(
+            (el) =>
+              el.tpPrice !==
+                aiAnswerByMessageId[el.messageId].aiExtractedData.tp[0] ||
+              el.slPrice !==
+                aiAnswerByMessageId[el.messageId].aiExtractedData.stop
+          ).length
+        }
+      `
+      await ctx.replyWithHTML(summaryMessage)
       await ctx.replyWithDocument(
         {
           source: bufferData,
-          // TODO: ДОбавить название канала и параметры ТП и СЛ
           filename: `Signals_${channel.title}.csv`,
         },
         {
-          reply_to_message_id: message.message_id,
+          reply_to_message_id: message_id,
         }
       )
     } else {
@@ -515,5 +639,7 @@ export const generateReportByChannel = async ({
     }
   } catch (e) {
     ctx.replyWithHTML('Error while generating report')
+  } finally {
+    await finishAnalysisForUser(ctx.from.id)
   }
 }

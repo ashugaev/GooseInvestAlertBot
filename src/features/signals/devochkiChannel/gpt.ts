@@ -5,7 +5,38 @@ import { log } from '@/helpers'
 import { createUniqueHash } from '@/helpers/uniqueHash'
 import { openai } from '@/integrations/openai'
 
-const getChatGptReqParams = ({ message }) => ({
+const getChatGptDefaultExamples = (message: string) => [
+  {
+    role: 'user',
+    content:
+      '#APE - при закреплении на уровне 2,2 - лонг Цели первые 2-4%, далее, сели продолжится рост, 6-8% стоп 2%',
+  },
+  {
+    role: 'assistant',
+    content: "['APE', 2.2, [2, 6], 2, 'buy', 'no']",
+  },
+  {
+    role: 'user',
+    content:
+      '#JASMY - сделка с повышенным риском на текущем рынке❗️ При закреплении на уровне 0,0047 - лонг цели 2-4-6% стоп 2% Кто не готов к риску, лучше пропустить.',
+  },
+  {
+    role: 'assistant',
+    content: "['JASMY', 0.0047, [2, 4, 6], 2, 'buy', 'yes']",
+  },
+  {
+    role: 'user',
+    content: message,
+  },
+]
+
+const getChatGptReqParams = ({
+  message,
+  examples,
+}: {
+  message: string
+  examples?: { role: string; content: string }[]
+}) => ({
   model: 'gpt-3.5-turbo',
   max_tokens: 50,
   temperature: 0,
@@ -14,7 +45,7 @@ const getChatGptReqParams = ({ message }) => ({
       role: 'system',
       content: `
         Извлеки данные из сообщений в указанном формате:
-        [[baseCurrencyOfTicker:string|null], [ценаЗакрепления:number|null], [целиДляТейкПрофита:number|number[]|null], [стопЛоссВПроцентах:number|null], [типОрдера:buy|sell|null], [сомненияВСделке:yes|no]]
+        [[baseCurrencyOfTicker:string|null], [точкаВхода:number|null], [целиДляТейкПрофита:number|number[]|null], [стопЛосс:number|null], [типОрдера:buy|sell|null], [сомненияВСделке:yes|no]]
         целиДляТейкПрофита - если тут указан, диапазон, то выбирай наименьшее число
         Все строки должны быть обернуты в одинарные кавычки результатом должен быть валидный массив
         Для дробных чисел используй точку
@@ -26,28 +57,7 @@ const getChatGptReqParams = ({ message }) => ({
           [null, null, [2, 4, 6, 8], null, 'sell', 'no']
       `,
     },
-    {
-      role: 'user',
-      content:
-        '#APE - при закреплении на уровне 2,2 - лонг Цели первые 2-4%, далее, сели продолжится рост, 6-8% стоп 2%',
-    },
-    {
-      role: 'assistant',
-      content: "['APE', 2.2, [2, 6], 2, 'buy', 'no']",
-    },
-    {
-      role: 'user',
-      content:
-        '#JASMY - сделка с повышенным риском на текущем рынке❗️ При закреплении на уровне 0,0047 - лонг цели 2-4-6% стоп 2% Кто не готов к риску, лучше пропустить.',
-    },
-    {
-      role: 'assistant',
-      content: "['JASMY', 0.0047, [2, 4, 6], 2, 'buy', 'yes']",
-    },
-    {
-      role: 'user',
-      content: message,
-    },
+    ...(examples?.length ? examples : getChatGptDefaultExamples(message)),
   ],
 })
 

@@ -8,6 +8,7 @@ import {
   generateReportByChannel,
   updateSignalChannels,
 } from '@/bots/cryptoSignals/commands/analyse/analyse.utils'
+import { startAnalysisForUser } from '@/bots/cryptoSignals/models/userProcess'
 import { immediateStep, waitMessageStep } from '@/scenes'
 
 const WizardScene = require('telegraf/scenes/wizard')
@@ -61,6 +62,8 @@ const fourth = waitMessageStep(
   async (ctx, text, state) => {
     state.stopLoss = text
 
+    await startAnalysisForUser(ctx.from.id)
+
     generateReportByChannel({
       channelInd: Number(state.channel),
       takeProfitPercent: Number(state.takeProfit),
@@ -68,14 +71,9 @@ const fourth = waitMessageStep(
       ctx,
     })
 
-    return ctx.wizard.next()
+    return ctx.scene.leave()
   }
 )
-
-// const chooseStopLoss = waitMessageStep(
-//   'analyse_scene_choose_stop_loss',
-//   (ctx) => {}
-// )
 
 export const analyseScene = new WizardScene(
   ANALYSE_SCENES.init,
