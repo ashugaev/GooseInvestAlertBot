@@ -16,10 +16,11 @@ const normalizeSignalMessage = (message: string): string =>
   message.replace(/\\n(.)/g, (_, symbol) => '. ' + symbol.toUpperCase()).trim()
 
 export interface ConfigForSignalChannel {
-  directionRequired: boolean // AI
-  tickerInBigLetters: boolean // Manual
-  tickerWithHash: boolean // Manual
-  priceRequired: boolean // Manual / AI
+  directionRequired?: boolean // AI
+  tickerInBigLetters?: boolean // Manual
+  tickerWithHash?: boolean // Manual
+  priceRequired?: boolean // Manual / AI
+  keyWords?: string[] // Manual
 }
 
 // TODO: Move to helpers in signals
@@ -42,6 +43,9 @@ export const initialSignalValidation = (
   }
   if (config.priceRequired) {
     patternsToCheck.push(pricePattern)
+  }
+  if (config.keyWords.length) {
+    patternsToCheck.push(...config.keyWords.map((word) => new RegExp(word)))
   }
 
   // Filter trash

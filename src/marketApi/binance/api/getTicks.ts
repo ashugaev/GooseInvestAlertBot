@@ -6,10 +6,12 @@ const { format, differenceInDays } = require('date-fns')
 
 interface GetTicksParams {
   startTime: number
-  tpPercent: number
-  slPercent: number
   symbol: string
   startPrice?: number
+  tpPercentManual: number
+  slPercentManual: number
+  tpValue: number[]
+  slValue: number
 }
 
 interface GetTicksResult {
@@ -36,20 +38,23 @@ const maxDaysToCheck = 5
 /**
  * @todo может быть кейс, когда startTime !== времени входа в сделку, по этому скрипт должен опреределять вход
  * @todo Check tpPrice and slPrice
+ * @todo Если есть startPrice то сначала ждем входа, потом уже проверяем tp и sl
  */
 export const getTicks = async ({
   startTime,
   startPrice,
-  tpPercent,
-  slPercent,
+  tpPercentManual,
+  slPercentManual,
+  tpValue,
+  slValue,
   symbol,
 }: GetTicksParams): Promise<GetTicksResult> => {
   const ticks: AggregatedTrade[] = []
   let slTriggered = false
   let tpTriggered = false
-  let tpPrice = null
+  let tpPrice = tpValue[0]
   let tpDate = null
-  let slPrice = null
+  let slPrice = slValue
   let slDate = null
   let highestPrice = null
   let lowestPrice = null
@@ -132,11 +137,11 @@ export const getTicks = async ({
       }
       if (!tpPrice) {
         // first tick price
-        tpPrice = Number(ticks[0].price) * (1 + tpPercent / 100)
+        tpPrice = Number(ticks[0].price) * (1 + tpPercentManual / 100)
       }
       if (!slPrice) {
         // first tick price
-        slPrice = Number(ticks[0].price) * (1 - slPercent / 100)
+        slPrice = Number(ticks[0].price) * (1 - slPercentManual / 100)
       }
     }
 

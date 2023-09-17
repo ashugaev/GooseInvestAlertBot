@@ -3,6 +3,7 @@ const Papa = require('papaparse')
 import { BulkWriteOperation } from 'mongodb'
 import { Context } from 'telegraf'
 
+import { cryptoSignals } from '@/bots/cryptoSignals/config'
 import {
   HistoryPriceAnalyze,
   HistoryPriceAnalyzeModel,
@@ -40,10 +41,13 @@ const { format } = require('date-fns')
 // Move to db
 const configByChannelId: Record<string, ConfigForSignalChannel> = {
   '-1001720000437': {
-    directionRequired: true,
-    tickerInBigLetters: true,
-    tickerWithHash: false,
-    priceRequired: false,
+    // directionRequired: true,
+    // tickerInBigLetters: true,
+    // tickerWithHash: false,
+    // priceRequired: false,
+  },
+  '-1001922990972': {
+    keyWords: ['Торговая пара', 'Точка входа'],
   },
 }
 
@@ -119,18 +123,19 @@ export const updateSignalChannels = async () => {
 export const normalizeSignalMessage = (message: string): string =>
   message?.replace(/\n/g, ' | ').trim()
 
-export const defaultSignalCheckMessagesFilter = (message) => {
-  const text = normalizeSignalMessage(message.message)
-  if (
-    // TODO: Remove hardcoded channel id
-    !initialSignalValidation(text, configByChannelId[-1001720000437]) ||
-    text.length < 8
-  ) {
-    return false
-  } else {
-    return true
+export const defaultSignalCheckMessagesFilter =
+  (chat: SignalChat) => (message) => {
+    const text = normalizeSignalMessage(message.message)
+    if (
+      // TODO: Remove hardcoded channel id
+      !initialSignalValidation(text, configByChannelId[chat.chatId]) ||
+      text.length < 8
+    ) {
+      return false
+    } else {
+      return true
+    }
   }
-}
 
 export const fetchSignalChannelsMessages = async ({
   tillDate,
@@ -142,11 +147,9 @@ export const fetchSignalChannelsMessages = async ({
   channelId: number
 }) => {
   const chats = await SignalChatModel.find({
-    monitoringEnabled: true,
+    // monitoringEnabled: true,
     chatId: channelId,
   }).lean()
-
-  await wait(500)
 
   const filteredAndNormilizedMessages = []
 
@@ -157,7 +160,7 @@ export const fetchSignalChannelsMessages = async ({
       tillDate,
     })
 
-    const filtered = messages.filter(defaultSignalCheckMessagesFilter)
+    const filtered = messages.filter(defaultSignalCheckMessagesFilter(chat))
     const normalized = filtered.map((data) => ({
       ...data,
       message: normalizeSignalMessage(data.message),
@@ -196,10 +199,12 @@ export const generateTableWithSignals = async (
     'SIGNAL | Volume': aiAnswerByMessageId[message.id]?.aiExtractedData?.volume,
     'SIGNAL | Order Type':
       aiAnswerByMessageId[message.id]?.aiExtractedData?.type,
-    'SIGNAL | Have Doubts': aiAnswerByMessageId[message.id]?.aiExtractedData
-      ?.doubts
-      ? 'YES'
-      : 'NO',
+    'SIGNAL | Have Doubts':
+      aiAnswerByMessageId[message.id]?.aiExtractedData?.doubts === 'yes'
+        ? 'YES'
+        : aiAnswerByMessageId[message.id]?.aiExtractedData?.doubts === 'no'
+        ? 'NO'
+        : '',
 
     // Результаты срабатывания
     'RESULT | SL Triggered': priceAnalysisByMessageId[message.id]?.slTriggered
@@ -251,11 +256,8 @@ export const generateReportByChannel = async ({
   ctx,
 }: GenerateReportByChannelParams) => {
   try {
-    const channels = await SignalChatModel.find().lean()
+    const channels = await SignalChatModel.find().sort({ title: 1 }).lean()
     const channel = channels[channelInd - 1]
-
-    // Временный хардкод
-    const dateTill = new Date('2023-07-01')
 
     const message = await ctx.replyWithHTML(
       `<b>⏳ Генерирую отчет</b>
@@ -266,13 +268,13 @@ export const generateReportByChannel = async ({
       
       🔴 Стоп-лосс: ${stopLossPercent}%
  
-      📅 Анализ начиная с даты: ${format(dateTill, 'dd.MM.yyyy')}
+      📅 Анализ начиная с даты: ${format(cryptoSignals.dateTill, 'dd.MM.yyyy')}
     `
     )
 
     const messages = await fetchSignalChannelsMessages({
       client: signalsClient,
-      tillDate: new Date(dateTill),
+      tillDate: new Date(cryptoSignals.dateTill),
       channelId: channel.chatId,
     })
 
@@ -288,8 +290,8 @@ export const generateReportByChannel = async ({
         messages.map((message) => ({
           updateOne: {
             filter: {
-              messageId: message.messageId,
-              chatId: channel.chatId,
+              messageId: Number(message.id),
+              chatId: Number(channel.chatId),
             },
             update: {
               $set: {
@@ -304,7 +306,6 @@ export const generateReportByChannel = async ({
           },
         }))
 
-      // FIXME: Creating duplicates now
       await SignalMessageModel.bulkWrite(bulkMessageUpdate)
 
       log.info('Messages saved to DB')
@@ -320,8 +321,22 @@ export const generateReportByChannel = async ({
 
     for (const data of messages) {
       try {
+        let aiRes = ''
+
+        const chatGptResFromDb = await SignalAiRecognizeModel.findOne({
+          messageId: Number(data.id),
+          channelId: Number(channel.chatId),
+          promptHash: chatGptRequestHash,
+        }).lean()
+
         const message = data.message
-        const aiRes = await validateWithChatGPT(message)
+
+        // Prev answer
+        if (chatGptResFromDb?.chatGptValidationMessage?.length) {
+          aiRes = chatGptResFromDb.chatGptValidationMessage
+        } else {
+          aiRes = await validateWithChatGPT(message)
+        }
 
         const newItem: Partial<SignalAiRecognize> = {
           channelId: channel.chatId,
@@ -391,8 +406,10 @@ export const generateReportByChannel = async ({
                 skippedBecauseOfPeriod,
               } = await getTicks({
                 startTime: data.date * 1000,
-                tpPercent: takeProfitPercent,
-                slPercent: stopLossPercent,
+                tpPercentManual: takeProfitPercent,
+                slPercentManual: stopLossPercent,
+                tpValue: tp,
+                slValue: stop,
                 symbol: ticker,
               })
 
@@ -441,6 +458,7 @@ export const generateReportByChannel = async ({
               ...data,
             },
           },
+          upsert: true,
         },
       }))
 
@@ -465,6 +483,7 @@ export const generateReportByChannel = async ({
                 ...data,
               },
             },
+            upsert: true,
           },
         }))
 

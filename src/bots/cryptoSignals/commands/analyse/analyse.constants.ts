@@ -10,7 +10,7 @@ export const ANALYSE_SCENES = {
 
 export const channelsPagination = new Pagination({
   getItems: async () => {
-    const channels = await SignalChatModel.find().lean()
+    const channels = await SignalChatModel.find().sort({ title: 1 }).lean()
 
     const items = channels.map((channel: SignalChat) => ({
       id: channel.chatId,
