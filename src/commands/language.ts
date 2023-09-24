@@ -9,7 +9,7 @@ export function setupLanguage(bot: Telegraf<Context>) {
   bot.command(
     'language',
     commandWrapper({ availableForAdmins: false }, async (ctx) => {
-      ctx.replyWithHTML('🤖 Пока что знаю только русский язык')
+      ctx.replyWithHTML('🤖 Only Russian language available now')
 
       return
 

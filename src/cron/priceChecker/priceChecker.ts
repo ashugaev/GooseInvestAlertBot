@@ -16,6 +16,9 @@ import {
 const logPrefix = '[CHECK ALERTS]'
 const itemsCheckTime = 500
 
+// Avoid duplicates
+const trigeredCache = new Set<string>()
+
 export const setupPriceChecker = async () => {
   await retryUntilTrue(
     () => priceAlertCache.isReady,
@@ -81,6 +84,21 @@ export const setupPriceChecker = async () => {
               alertsTriggeredList.push(
                 alert.tickerId + ':' + alert.user.toString()
               )
+
+              if (trigeredCache.has(alert._id.toString())) {
+                log.error(
+                  logPrefix,
+                  'Попытка повторного алерта',
+                  alert._id.toString()
+                )
+
+                priceAlertCache.removeItemFromCache(alert._id.toString())
+
+                continue
+              }
+
+              // Avoid duplicates
+              trigeredCache.add(alert._id.toString())
 
               // NO AWAIT FOR PERFORMANCE
               sendTriggeredAlert(alert, instrumentData)

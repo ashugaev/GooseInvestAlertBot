@@ -1,13 +1,20 @@
-import { getModelForClass, prop } from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
+import { getModelForClass, pre, prop } from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
 
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
+const ObjectId = require('mongodb').ObjectId
 
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes } from './InstrumentsList'
 
 const logPrefix = '[PRICE UPDATER]'
 
+@pre('find', function () {
+  this.getFilter().triggered === undefined &&
+    this.where('triggered').equals(false)
+
+  this.getFilter().removed === undefined && this.where('removed').equals(false)
+})
 export class PriceAlert {
   _id?: string
 
@@ -61,6 +68,24 @@ export class PriceAlert {
    */
   @prop({ required: true })
   botId: number
+
+  /**
+   * Сработал ли алерт
+   */
+  @prop({ required: true, default: false })
+  triggered?: boolean
+
+  /**
+   * Алерт удален
+   */
+  @prop({ required: true, default: false })
+  removed?: boolean
+
+  @prop({ required: false, default: false })
+  createdAsACopy?: boolean
+
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 // Get PriceAlertModel model
@@ -107,7 +132,10 @@ class PriceAlertCache {
       }
 
       try {
-        const items = await PriceAlertModel.find().lean()
+        const items = await PriceAlertModel.find({
+          removed: false,
+          triggered: false,
+        }).lean()
         this.items = items as unknown as PriceAlert[]
         this.needToBeUpdated = false
         this.isReady = true
@@ -159,7 +187,9 @@ class PriceAlertCache {
 
   removeItemFromCache = (_id: string) => {
     const id = _id.toString()
-    this.items = this.items.filter((item) => item._id.toString() !== id)
+    this.items = this.items
+      .filter((item) => item._id.toString() !== id)
+      .filter((item) => item.triggered === false && item.removed === false)
     this.needToBeUpdated = true
   }
 }
@@ -195,29 +225,46 @@ export async function removePriceAlert({
   _id,
   user,
   chat,
+  triggered,
+  removed,
 }: Partial<
-  Pick<PriceAlert, 'symbol' | '_id' | 'user' | 'chat'>
+  Pick<PriceAlert, 'symbol' | '_id' | 'user' | 'chat' | 'triggered' | 'removed'>
 >): Promise<number> {
   // eslint-disable-next-line no-async-promise-executor
   return await new Promise(async (resolve, reject) => {
+    if (!_id && !user && !chat) {
+      reject('Not all params are defined')
+      return
+    }
+
     try {
-      const params: Partial<PriceAlert> = {
+      const searchParams: Partial<PriceAlert> = {
         chat,
       }
 
-      symbol && (params.symbol = symbol.toUpperCase())
-      user && (params.user = user)
-      _id && (params._id = _id)
+      triggered && (searchParams.triggered = false)
+      removed && (searchParams.removed = false)
+      symbol && (searchParams.symbol = symbol.toUpperCase())
+      user && (searchParams.user = user)
+      // @ts-ignore
+      _id && (searchParams._id = _id)
 
-      if (!Object.keys(params).length) {
+      if (!Object.keys(searchParams).length) {
         reject('Не указанны параметры')
         return
       }
 
-      const { deletedCount } = await PriceAlertModel.deleteMany(params)
+      const { nModified } = await PriceAlertModel.updateMany(searchParams, {
+        $set: {
+          removed: removed ? true : false,
+          triggered: triggered ? true : false,
+        },
+      })
+
+      _id && priceAlertCache.removeItemFromCache(_id.toString())
       priceAlertCache.update()
 
-      resolve(deletedCount)
+      resolve(nModified)
     } catch (e) {
       reject(e)
     }

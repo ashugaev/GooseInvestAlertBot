@@ -65,7 +65,17 @@ const removeAlerts = waitButtonClickStep(
     }
 
     if (type === 'lvl') {
-      n = (await PriceAlertModel.deleteMany({ user, chat: null })).n
+      // Костыль что делаю два запроса, но не нашел кол-ва измененных объектов
+      const res = await PriceAlertModel.updateMany(
+        { user, chat: null, removed: false, triggered: false },
+        {
+          $set: {
+            removed: true,
+          },
+        }
+      )
+
+      n = res?.nModified ?? 0
     }
 
     await ctx.replyWithHTML(

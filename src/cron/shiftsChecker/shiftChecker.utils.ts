@@ -1,7 +1,9 @@
 import { ShiftTimeframe } from '@/commands/shift'
 import { shiftsCache } from '@/cron/shiftsChecker/shiftsChecker'
 import { getBot } from '@/helpers/bot'
+import { getLastPrice } from '@/helpers/getLastPrice'
 import { getSourceMark } from '@/helpers/getSourceMark'
+import { getSymbolByTicker } from '@/helpers/getSymbolByTicker'
 import { ChatModel } from '@/models/Chat'
 
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
@@ -161,8 +163,10 @@ export const checkTriggeredShiftsAndSendMessage = async ({
           percent: shift.percent,
           isGrow,
           time: timeframeData.name_ru_plur,
-          ticker,
+          ticker: tickerInfo.name === ticker ? null : tickerInfo.name,
           source: sourceLink,
+          price: getLastPrice(tickerInfo.id, true),
+          priceSymbol: getSymbolByTicker(tickerInfo.currency),
         }),
         {
           parse_mode: 'HTML',

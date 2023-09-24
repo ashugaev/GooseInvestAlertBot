@@ -6,9 +6,9 @@ import { Scenes } from '../constants'
 import { addPriceAlerts, PriceAlert } from '../models'
 import { getInstrumentDataWithPrice } from './getInstrumentData'
 import { getPricesFromString } from './getPricesFromString'
+import { getSymbolByTicker } from './getSymbolByTicker'
 import { i18n } from './i18n'
 import { log } from './log'
-import { symbolOrCurrency } from './symbolOrCurrency'
 
 const logPrefix = '[ADD ALERT]'
 
@@ -121,7 +121,7 @@ export const addAlert = async ({
 
   const i18nParams = {
     price: priceAlerts
-      .map((el: string) => `${el}${symbolOrCurrency(currency) ?? ''}`)
+      .map((el: string) => `${el}${getSymbolByTicker(currency) ?? ''}`)
       .join(', '),
     symbol,
     name,

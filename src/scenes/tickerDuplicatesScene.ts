@@ -29,7 +29,9 @@ const requestStep = immediateStep(
       instrumentsList.map((item) => [
         m.callbackButton(
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          `${item.name} (${item.ticker}) ${getSourceMark(item, true)}`,
+          `${item.name}${
+            item.name !== item.ticker ? ` (${item.ticker})` : ''
+          } ${getSourceMark(item, true, true)}`,
           createActionString(COMMON_ACTIONS.chooseTickerId, {
             id: item.id,
           })
