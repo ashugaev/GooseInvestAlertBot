@@ -1,5 +1,6 @@
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { getSourceMark } from '@/helpers/getSourceMark'
+import { getSymbolByTicker } from '@/helpers/getSymbolByTicker'
 
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
@@ -69,8 +70,11 @@ export const shiftAlertSettings = async (ctx) => {
         percent: shiftData.percent,
         isGrow: Boolean(isGrow),
         time: timeframesObj[shiftData.timeframe].name_ru_plur,
-        ticker: shiftData.ticker,
+        ticker: shiftData.name === shiftData.ticker ? null : shiftData.name,
         source: getSourceMark(tickerInfo),
+        // Если брать последнюю цену, то сообщение сигнала будет не корректным, а цену срабатывания я не храню
+        price: null,
+        priceSymbol: getSymbolByTicker(tickerInfo.currency),
       }),
       {
         parse_mode: 'HTML',
