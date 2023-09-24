@@ -52,7 +52,7 @@ const CONFIG: Config[] = [
       type: EMarketInstrumentTypes.Crypto,
       source: EMarketDataSources.bybit,
     },
-    checkAfter: 1000 * 60 * 2,
+    checkAfter: 1000 * 60 * 10,
   },
   {
     priceAlert: {
@@ -64,7 +64,7 @@ const CONFIG: Config[] = [
       type: EMarketInstrumentTypes.Crypto,
       source: EMarketDataSources.binance,
     },
-    checkAfter: 1000 * 60 * 2,
+    checkAfter: 1000 * 60 * 10,
   },
 ]
 

@@ -17,9 +17,6 @@ interface FetchAlertsResult {
 
 /**
  *  Получение алертов юзера и запись их в контекст
- *
- *  @todo Refactor. Separate uniq tickers and alerts list
- *  @deprecated Use PriceAlertModel.find() instead
  */
 export const fetchAlerts = async ({
   ctx,

@@ -1,8 +1,7 @@
+import { triggeredAlertKeyboad } from '@/commands/alert/keyboards/triggeredAlert'
+import { alertMessage } from '@/commands/alert/messages/alert'
 import { log } from '@/helpers'
 import { getBot } from '@/helpers/bot'
-import { getSourceMark } from '@/helpers/getSourceMark'
-import { getSymbolByTicker } from '@/helpers/getSymbolByTicker'
-import { i18n } from '@/helpers/i18n'
 import {
   InstrumentsList,
   PriceAlert,
@@ -23,11 +22,10 @@ export const sendTriggeredAlert = async (
   instrumentData: InstrumentsList
 ) => {
   const { message, lowerThen, greaterThen, _id } = alert
-  const alertPrice = lowerThen || greaterThen
 
   // Что бы не вызвать повторный триггер до того, как отработает удаление алерта в базе и апдейт кэша
   // @ts-ignore
-  priceAlertCache.removeItemFromCache(_id)
+  priceAlertCache.removeItemFromCache(_id.toString())
 
   const bot = await getBot(alert.botId)
   if (!bot) {
@@ -37,22 +35,20 @@ export const sendTriggeredAlert = async (
   bot.telegram
     .sendMessage(
       alert.chat ?? alert.user,
-      i18n.t('ru', 'priceChecker_triggeredAlert', {
-        symbol: instrumentData.ticker,
-        name: instrumentData.name,
-        currency: getSymbolByTicker(alert.currency),
-        greaterThen,
-        price: alertPrice,
-        message,
-        link: getSourceMark(instrumentData),
-      }),
+      alertMessage(alert, instrumentData),
       {
         parse_mode: 'HTML',
         disable_web_page_preview: true,
+        reply_markup: {
+          inline_keyboard: triggeredAlertKeyboad({
+            alert,
+            clicked: false,
+          }),
+        },
       }
     )
     .then(async () => {
-      await removePriceAlert({ _id: alert._id, chat: alert.chat })
+      await removePriceAlert({ _id: alert._id, chat: alert.chat, triggered: true })
     })
     .catch(async (e) => {
       if (
@@ -62,7 +58,7 @@ export const sendTriggeredAlert = async (
           e.description === 'Forbidden: user is deactivated') ||
         (e.code === 400 && e.description === 'Bad Request: chat not found')
       ) {
-        await removePriceAlert({ _id: alert._id, chat: alert.chat })
+        await removePriceAlert({ _id: alert._id, chat: alert.chat, removed: true })
         log.info('Алерт удален из-за блокировки юзером', alert)
       } else {
         log.error('Ошибка отправки сообщения юзеру', e)

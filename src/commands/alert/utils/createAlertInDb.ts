@@ -26,7 +26,7 @@ export const createAlertInDb = async ({
 }: CreateAlertInDbParams) => {
   try {
     const { id: user } = ctx.from
-    const { instrumentsList, prices, currentPrice } = payload
+    const { instrumentsList, prices, currentPrice, copy } = payload
 
     const instrumentData = instrumentsList[0]
 
@@ -47,6 +47,7 @@ export const createAlertInDb = async ({
         initialPrice: currentPrice,
         botId: ctx.goose.id,
         chat: ctx.adminChatActive?.id ? Number(ctx.adminChatActive?.id) : null,
+        createdAsACopy: copy === true && true,
       }
 
       currentPrice < price

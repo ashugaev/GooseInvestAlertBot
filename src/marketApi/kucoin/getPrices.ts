@@ -1,9 +1,7 @@
 import { TickerPrices } from 'prices'
 
-import { log } from '@/helpers'
 import { KucoinAPI } from '@/marketApi/kucoin/index'
 import { InstrumentsList } from '@/models'
-import { kucoinDebugPrefix } from '@/modules'
 
 const logPrefix = '[GET KUCOIN PRICES]'
 
@@ -31,15 +29,9 @@ export const getPricesKucoin = async (
   instrumentsData: InstrumentsList[]
 ): Promise<TickerPrices> => {
   try {
-    console.log(kucoinDebugPrefix, 'request')
-
     const res = await KucoinAPI.rest.Market.Symbols.getAllTickers()
 
-    log.info(kucoinDebugPrefix, 'res', res)
-
     const ticker = res?.data?.ticker ?? []
-
-    log.info(kucoinDebugPrefix, 'parsed res')
 
     const notFoundItems = []
 
@@ -66,11 +58,8 @@ export const getPricesKucoin = async (
       console.error(logPrefix, 'Not found items:', notFoundItems)
     }
 
-    console.log(kucoinDebugPrefix, 'normalized')
-
     return pricesNormilized
   } catch (e) {
-    console.log(kucoinDebugPrefix, 'Crash getPricesKucoin', e)
     console.log(logPrefix, e)
     throw e
   }
