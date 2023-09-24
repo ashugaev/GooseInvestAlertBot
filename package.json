@@ -71,6 +71,8 @@
     "eslint-config-prettier": "8.8.0",
     "eslint-plugin-simple-import-sort": "10.0.0",
     "eslint-plugin-unused-imports": "2.0.0",
+    "google-auth-library": "8.9.0",
+    "google-spreadsheet": "4.1.0",
     "husky": "4.3.6",
     "input": "1.0.1",
     "kucoin-node-sdk": "1.0.4",

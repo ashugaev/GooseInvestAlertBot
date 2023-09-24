@@ -221,8 +221,12 @@ export const generateTableWithSignals = async (
     // Результаты срабатывания
     'RESULT | Price when message sent':
       priceAnalysisByMessageId[message.id]?.priceWhenMessageSent,
-    'RESULT | Trade start date':
-      priceAnalysisByMessageId[message.id]?.startDate,
+    'RESULT | Trade start date': priceAnalysisByMessageId[message.id]?.startDate
+      ? format(
+          priceAnalysisByMessageId[message.id]?.startDate,
+          'dd.MM.yyyy HH:mm:ss'
+        )
+      : '',
     'RESULT | SL Triggered': priceAnalysisByMessageId[message.id]?.slTriggered
       ? '✅'
       : '',
@@ -243,7 +247,7 @@ export const generateTableWithSignals = async (
       : '',
     // Ввод юзера
     'INPUT | Start Price By Message Date':
-      priceAnalysisByMessageId[message.id]?.startPriceDetectedByDate &&
+      priceAnalysisByMessageId[message.id]?.isStartPriceDetectedByDate &&
       priceAnalysisByMessageId[message.id]?.startPrice.toFixed(4),
     'INPUT | TP Autocalculated Price':
       (!aiAnswerByMessageId[message.id]?.aiExtractedData.tp &&
@@ -445,12 +449,12 @@ export const generateReportByChannel = async ({
                 tpPrice,
                 slPrice,
                 closed,
-                notEnougthDataForCheck,
-                startPriceDetectedByDate,
+                isNotEnougthDataForCheck,
+                isStartPriceDetectedByDate,
                 startDate,
                 tpDate,
                 slDate,
-                skippedBecauseOfPeriod,
+                isSkippedBecauseOfPeriod,
                 priceForStartDate,
               } = await getTicks({
                 startTime: data.date * 1000,
@@ -476,8 +480,8 @@ export const generateReportByChannel = async ({
                 tpDate,
                 slPrice,
                 slDate,
-                skippedBecauseOfPeriod,
-                startPriceDetectedByDate,
+                isSkippedBecauseOfPeriod,
+                isStartPriceDetectedByDate,
                 priceWhenMessageSent: priceForStartDate,
               }
             } catch (e) {

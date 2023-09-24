@@ -57,13 +57,13 @@ export class HistoryPriceAnalyze {
    * If tp or sl wasn't triggered during N days
    */
   @prop({ required: true })
-  skippedBecauseOfPeriod: boolean
+  isSkippedBecauseOfPeriod: boolean
 
   /**
    * Start price was found in signal message or not
    * If not, we can detect it by date of message
    */
-  startPriceDetectedByDate: boolean
+  isStartPriceDetectedByDate: boolean
 
   /**
    * Price whet message sent

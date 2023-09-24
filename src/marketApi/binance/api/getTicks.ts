@@ -5,78 +5,130 @@ import { binance } from '@/marketApi/binance/utils/binance'
 const { format, differenceInDays } = require('date-fns')
 
 interface GetTicksParams {
-  startTime: number
+  /**
+   * Врем выхода сигнала
+   */
+  signalMessageTime: number
+  /**
+   * Символ сигнала
+   */
   symbol: string
-  startPrice?: number
-  tpPercentManual: number
-  slPercentManual: number
+  /**
+   *
+   */
+  manualInputTPPercent: number
+  manualInputSLPercent: number
+  /**
+   * Игнорировать TP, SL в сигнале и использовать свои
+   */
+  manualInputPercentOverrideSignalPrice: boolean
+  /**
+   * Обрабатыват только сигналы с указанным TP, SL
+   */
+  ignoreSignalsWithoutTPSL: boolean
+  /**
+   * Если нет данных то использовать процент указанный юзером
+   */
+  manualInputPercentAsFallbackForLackOfSignalTPSL: boolean
   tpValue: number[]
   slValue: number
+  signalTradeStartPrice?: number
 }
 
 interface GetTicksResult {
+  /**
+   * All collected ticks
+   */
   ticks: AggregatedTrade[]
-  slTriggered: boolean
-  tpTriggered: boolean
+  /**
+   * Сделка закрыта по SL
+   */
+  isSLTriggered: boolean
+  /**
+   * Сделка закрыта по TP
+   */
+  isTPTriggered: boolean
   /**
    * Сделка закрыта по tp или sl
+   * Т.е. проверка прошла корректно
    */
-  closed: boolean
-  startPrice: number
-  tpPrice: number
-  slPrice: number
-  startPriceDetectedByDate: boolean
-  notEnougthDataForCheck: boolean
-  startDate: Date
-  tpDate: Date
-  slDate: Date
-  skippedBecauseOfPeriod: boolean
-  priceForStartDate: number
+  isTradeSuccessfullyFinished: boolean
+  /**
+   * Время входа указанное в сигнале
+   */
+  signalTradeStartPrice: number
+  tradeTPExpectingPrice: number
+  tradeSLExpectingPrice: number
+  isStartPriceDetectedByDate: boolean
+  isNotEnougthDataForCheck: boolean
+
+  tradeTPTriggeredDate: Date
+  tradeSLTriggeredDate: Date
+  isSkippedBecauseOfPeriod: boolean
+
+  /**
+   * Date when bot did enter the trade
+   */
+  tradeStartDate: Date
+  /**
+   * Price of ticker when signal came
+   */
+  tradeStartDatePrice: number
 }
 
 const maxDaysToCheck = 5
 
 /**
- * @todo может быть кейс, когда startTime !== времени входа в сделку, по этому скрипт должен опреределять вход
- * @todo Check tpPrice and slPrice
+ * @todo может быть кейс, когда signalMessageTime !== времени входа в сделку, по этому скрипт должен опреределять вход
+ * @todo Check tradeTPExpectingPrice and tradeSLExpectingPrice
  * @todo Если есть startPrice то сначала ждем входа, потом уже проверяем tp и sl
  */
 export const getTicks = async ({
-  startTime,
-  startPrice,
-  tpPercentManual,
-  slPercentManual,
+  signalMessageTime,
+  signalTradeStartPrice,
+  manualInputTPPercent,
+  manualInputSLPercent,
   tpValue,
   slValue,
   symbol,
 }: GetTicksParams): Promise<GetTicksResult> => {
   const ticks: AggregatedTrade[] = []
-  let slTriggered = false
-  let tpTriggered = false
-  let tpPrice = tpValue[0]
-  let tpDate = null
-  let slPrice = slValue
-  let slDate = null
+
+  // Logs
   let highestPrice = null
   let lowestPrice = null
-  let closed = false
-  let notEnougthDataForCheck = false
-  let skippedBecauseOfPeriod = false
-  let startPriceDetectedByDate = false
-  let startDate: Date = null
-  let priceForStartDate = null
+
+  // Flags
+  let isTradeSuccessfullyFinished = false
+  let isNotEnougthDataForCheck = false
+  let isSkippedBecauseOfPeriod = false
+  let isStartPriceDetectedByDate = false
+  let isSLTriggered = false
+  let isTPTriggered = false
+
+  // Trade trading start
+  let tradeStartDate: Date = null
+  let tradeStartDatePrice = null
+
+  // Trade result
+  let tradeTPTriggeredDate = null
+  let tradeSLTriggeredDate = null
+
+  // Trade input
+  let tradeTPExpectingPrice = tpValue[0]
+  let tradeSLExpectingPrice = slValue
 
   const getMoreTicks = async ({
-    startTime,
+    signalMessageTime,
     fromId,
   }: {
-    startTime?: number
+    signalMessageTime?: number
     fromId?: string
   }) => {
     const params: {
       symbol: string
       fromId?: string
-      startTime?: number
+      signalMessageTime?: number
       endTime?: number
       limit?: number
     } = {
@@ -84,8 +136,8 @@ export const getTicks = async ({
       limit: 1000,
     }
 
-    if (startTime) {
-      params.startTime = startTime
+    if (signalMessageTime) {
+      params.signalMessageTime = signalMessageTime
     }
 
     if (fromId) {
@@ -99,10 +151,10 @@ export const getTicks = async ({
   let tradeStarted = false
 
   // Price wasn't sent in signal message
-  if (!startPrice && startTime) {
-    startPriceDetectedByDate = true
+  if (!signalTradeStartPrice && signalMessageTime) {
+    isStartPriceDetectedByDate = true
     tradeStarted = true
-    startDate = new Date(startTime)
+    tradeStartDate = new Date(signalMessageTime)
   }
 
   let i = 0
@@ -116,11 +168,11 @@ export const getTicks = async ({
             fromId: ticks[ticks.length - 1].aggId.toString(),
           }
         : {
-            startTime,
+            signalMessageTime,
           }
 
       if (lastFetchedId?.length && lastFetchedId === params.fromId) {
-        notEnougthDataForCheck = true
+        isNotEnougthDataForCheck = true
         break
       } else {
         lastFetchedId = params.fromId
@@ -133,25 +185,27 @@ export const getTicks = async ({
           new Date(ticks[0].timestamp)
         ) > maxDaysToCheck
       ) {
-        skippedBecauseOfPeriod = true
+        isSkippedBecauseOfPeriod = true
         break
       }
 
       await getMoreTicks(params)
 
       // Collect first tick price
-      if (startDate && !priceForStartDate) {
-        priceForStartDate = Number(ticks[0].price)
+      if (tradeStartDate && !tradeStartDatePrice) {
+        tradeStartDatePrice = Number(ticks[0].price)
       }
 
-      if (!startPrice) {
-        startPrice = Number(ticks[0].price)
+      if (!signalTradeStartPrice) {
+        signalTradeStartPrice = Number(ticks[0].price)
       }
-      if (!tpPrice) {
-        tpPrice = Number(startPrice) * (1 + tpPercentManual / 100)
+      if (!tradeTPExpectingPrice) {
+        tradeTPExpectingPrice =
+          Number(signalTradeStartPrice) * (1 + manualInputTPPercent / 100)
       }
-      if (!slPrice) {
-        slPrice = Number(startPrice) * (1 - slPercentManual / 100)
+      if (!tradeSLExpectingPrice) {
+        tradeSLExpectingPrice =
+          Number(signalTradeStartPrice) * (1 - manualInputSLPercent / 100)
       }
     }
 
@@ -160,9 +214,9 @@ export const getTicks = async ({
       break
     }
 
-    if (!tradeStarted && Number(ticks[i].price) === startPrice) {
+    if (!tradeStarted && Number(ticks[i].price) === signalTradeStartPrice) {
       tradeStarted = true
-      startDate = new Date(ticks[i].timestamp)
+      tradeStartDate = new Date(ticks[i].timestamp)
     }
 
     if (!highestPrice || Number(ticks[i].price) > highestPrice) {
@@ -173,17 +227,17 @@ export const getTicks = async ({
       lowestPrice = Number(ticks[i].price)
     }
 
-    if (tradeStarted && Number(ticks[i].price) >= tpPrice) {
-      tpTriggered = true
-      tpDate = new Date(ticks[i].timestamp)
-      closed = true
+    if (tradeStarted && Number(ticks[i].price) >= tradeTPExpectingPrice) {
+      isTPTriggered = true
+      tradeTPTriggeredDate = new Date(ticks[i].timestamp)
+      isTradeSuccessfullyFinished = true
       break
     }
 
-    if (tradeStarted && Number(ticks[i].price) <= slPrice) {
-      slTriggered = true
-      slDate = new Date(ticks[i].timestamp)
-      closed = true
+    if (tradeStarted && Number(ticks[i].price) <= tradeSLExpectingPrice) {
+      isSLTriggered = true
+      tradeSLTriggeredDate = new Date(ticks[i].timestamp)
+      isTradeSuccessfullyFinished = true
       break
     }
 
@@ -193,8 +247,8 @@ export const getTicks = async ({
         `
         Ticks: ${i} 
         Highest: ${highestPrice} 
-        Target TP: ${tpPrice}
-        Target SL: ${slPrice}
+        Target TP: ${tradeTPExpectingPrice}
+        Target SL: ${tradeSLExpectingPrice}
         Lowest: ${lowestPrice} 
         Current: ${ticks[i].price} 
         Date: ${format(new Date(ticks[i].timestamp), 'dd.MM.yyyy HH:mm:ss')}`
@@ -206,18 +260,18 @@ export const getTicks = async ({
 
   return {
     ticks,
-    slTriggered,
-    tpTriggered,
-    startPrice,
-    tpPrice,
-    slPrice,
-    closed,
-    notEnougthDataForCheck,
-    startPriceDetectedByDate,
-    tpDate,
-    slDate,
-    skippedBecauseOfPeriod,
-    startDate,
-    priceForStartDate,
+    isSLTriggered,
+    isTPTriggered,
+    signalTradeStartPrice,
+    tradeTPExpectingPrice,
+    tradeSLExpectingPrice,
+    isTradeSuccessfullyFinished,
+    isNotEnougthDataForCheck,
+    isStartPriceDetectedByDate,
+    tradeTPTriggeredDate,
+    tradeSLTriggeredDate,
+    isSkippedBecauseOfPeriod,
+    tradeStartDate,
+    tradeStartDatePrice,
   }
 }
