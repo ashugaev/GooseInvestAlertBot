@@ -1,8 +1,8 @@
 import { log } from '@/helpers'
 import { getBot } from '@/helpers/bot'
 import { getSourceMark } from '@/helpers/getSourceMark'
+import { getSymbolByTicker } from '@/helpers/getSymbolByTicker'
 import { i18n } from '@/helpers/i18n'
-import { symbolOrCurrency } from '@/helpers/symbolOrCurrency'
 import {
   InstrumentsList,
   PriceAlert,
@@ -40,7 +40,7 @@ export const sendTriggeredAlert = async (
       i18n.t('ru', 'priceChecker_triggeredAlert', {
         symbol: instrumentData.ticker,
         name: instrumentData.name,
-        currency: symbolOrCurrency(alert.currency),
+        currency: getSymbolByTicker(alert.currency),
         greaterThen,
         price: alertPrice,
         message,

@@ -2,9 +2,9 @@ import { TelegrafContext } from 'telegraf/typings/context'
 
 import { getSourceMark } from '@/helpers/getSourceMark'
 
+import { getSymbolByTicker } from '../../../helpers/getSymbolByTicker'
 import { i18n } from '../../../helpers/i18n'
 import { log } from '../../../helpers/log'
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
 import { addPriceAlerts, PriceAlert } from '../../../models'
 import { AddAlertPayload } from '../alert.types'
 
@@ -69,7 +69,7 @@ export const createAlertInDb = async ({
 
     const i18nParams = {
       price: addedPrices
-        .map((el) => `${el}${symbolOrCurrency(instrumentData.currency) ?? ''}`)
+        .map((el) => `${el}${getSymbolByTicker(instrumentData.currency) ?? ''}`)
         .join(', '),
       symbol: instrumentData.ticker,
       name: instrumentData.name,

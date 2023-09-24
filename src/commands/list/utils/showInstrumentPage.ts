@@ -5,8 +5,8 @@ import { listConfig } from '../../../config'
 import { Actions } from '../../../constants'
 import { getLastPrice } from '../../../helpers/getLastPrice'
 import { getSourceMark } from '../../../helpers/getSourceMark'
+import { getSymbolByTicker } from '../../../helpers/getSymbolByTicker'
 import { log } from '../../../helpers/log'
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
 import { getInstrumentByIdFromCache, PriceAlert } from '../../../models'
 import {
   EKeyboardModes,
@@ -67,7 +67,7 @@ export const showInstrumentPage = async ({
         number: getAlertNumberByPage({ i, page }),
         price,
         message,
-        currency: symbolOrCurrency(currency),
+        currency: getSymbolByTicker(currency),
         growth: Boolean(greaterThen),
       })
     })
@@ -94,7 +94,7 @@ export const showInstrumentPage = async ({
     symbol,
     list: itemsList,
     name: instrumentName,
-    currency: symbolOrCurrency(instrumentCurrency),
+    currency: getSymbolByTicker(instrumentCurrency),
     price: lastPrice,
     showEditMessage: keyboardMode === EKeyboardModes.edit,
     source: getSourceMark(instrumentInfo),
