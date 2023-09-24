@@ -19,6 +19,11 @@ export const repeatWithSamePrice = commandWrapper(
     const alert = await PriceAlertModel.findOne({ _id }).lean()
     const instrumentData = await getInstrumentByIdFromCache(alert.tickerId)
 
+    const targetPrice = alert.greaterThen || alert.lowerThen
+    const currentPrice = getLastPrice(instrumentData.id, true)
+
+    const currentPriceBiggerThanTarget = currentPrice > targetPrice
+
     const newAlertParams: PriceAlert = {
       ...alert,
       // Resetting the alert params
@@ -26,8 +31,11 @@ export const repeatWithSamePrice = commandWrapper(
       removed: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-      initialPrice: getLastPrice(instrumentData.id, true),
+      initialPrice: currentPrice,
       createdAsACopy: true,
+      // target higher than current than waiting grow
+      greaterThen: currentPriceBiggerThanTarget ? undefined : targetPrice,
+      lowerThen: currentPriceBiggerThanTarget ? targetPrice : undefined,
       _id: undefined,
       // @ts-ignore
       _v: undefined,

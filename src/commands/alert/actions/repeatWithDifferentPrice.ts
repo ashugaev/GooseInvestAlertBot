@@ -4,7 +4,7 @@ import { alertMessage } from '@/commands/alert/messages/alert'
 import { createAlertInDb } from '@/commands/alert/utils/createAlertInDb'
 import { log } from '@/helpers'
 import { commandWrapper } from '@/helpers/commandWrapper'
-import { getInstrumentByIdFromCache, PriceAlertModel } from '@/models'
+import {getInstrumentByIdFromCache, priceAlertCache, PriceAlertModel} from '@/models'
 const { set } = require('lodash')
 
 const logPrefix = '[ALERT repeatWithDifferentPrice]'
