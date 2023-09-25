@@ -34,6 +34,8 @@ export const showShiftsPage = async ({
 
   let itemsList = ''
 
+  const instrumentsInfoByIds = {}
+
   for (let i = 0; i < itemsToShow.length; i++) {
     const {
       ticker,
@@ -45,7 +47,17 @@ export const showShiftsPage = async ({
       tickerId,
     } = itemsToShow[i]
 
-    const instrumentInfo = await getInstrumentByIdFromCache(tickerId)
+    const instrumentInfo = await getInstrumentByIdFromCache(
+      tickerId,
+      false,
+      true
+    )
+
+    if (!instrumentInfo) {
+      continue
+    } else {
+      instrumentsInfoByIds[tickerId] = instrumentInfo
+    }
 
     const item = ctx.i18n.t('alertsList_shifts_listItem', {
       // Номер элемента с учетом страницы
@@ -64,6 +76,11 @@ export const showShiftsPage = async ({
     itemsList = itemsList.concat('\n' + item)
   }
 
+  // Fo the case if instrument was removed from api
+  const filteredITemsToShow = itemsToShow.filter(
+    (item) => !!instrumentsInfoByIds[item.tickerId]
+  )
+
   const message = ctx.i18n.t('alertsList_shifts_list', {
     empty: !itemsList.length,
     list: itemsList,
@@ -77,7 +94,7 @@ export const showShiftsPage = async ({
       ...instrumentPageKeyboard(ctx, {
         page,
         itemsLength: shiftsList.length,
-        itemsToShowLength: itemsToShow.length,
+        itemsToShowLength: filteredITemsToShow.length,
         withoutBackButton: true,
         keyboardMode,
         showAlertsTypeToggler: true,
@@ -94,7 +111,7 @@ export const showShiftsPage = async ({
           payloadCallback: (i) => {
             return {
               [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(
-                itemsToShow[i]._id
+                filteredITemsToShow[i]._id
               ),
             }
           },
@@ -107,7 +124,7 @@ export const showShiftsPage = async ({
           payloadCallback: (i) => {
             return {
               [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(
-                itemsToShow[i]._id
+                filteredITemsToShow[i]._id
               ),
             }
           },
