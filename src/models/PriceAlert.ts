@@ -9,11 +9,12 @@ import { EMarketInstrumentTypes } from './InstrumentsList'
 
 const logPrefix = '[PRICE UPDATER]'
 
-@pre('find', function () {
-  this.getFilter().triggered === undefined &&
-    this.where('triggered').equals(false)
+@pre(['find', 'count'], function () {
+  const filters = this.getFilter()
 
-  this.getFilter().removed === undefined && this.where('removed').equals(false)
+  filters.triggered === undefined && this.where('triggered').equals(false)
+
+  filters.removed === undefined && this.where('removed').equals(false)
 })
 export class PriceAlert {
   _id?: string
@@ -295,19 +296,6 @@ export async function updateAlert({
 interface GetAlertsCountForUserParams {
   user: number
 }
-
-// eslint-disable-next-line
-export const getAlertsCountForUser = async (user: number) =>
-  await new Promise(async (rs, rj) => {
-    try {
-      const params: GetAlertsCountForUserParams = { user }
-      const alertsCount = await PriceAlertModel.find(params).count()
-
-      rs(alertsCount)
-    } catch (e) {
-      rj(e)
-    }
-  })
 
 export const alertByTickerIdFromCache = async (
   tickerId: string,
