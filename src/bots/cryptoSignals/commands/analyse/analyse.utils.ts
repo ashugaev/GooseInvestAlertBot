@@ -440,31 +440,25 @@ export const generateReportByChannel = async ({
             newItem.aiExtractedData.ticker = ticker
             newItem.aiExtractedData.tradeStartPrice = level
 
+            // TODO: Move to config
+            const manualInputPercentOverrideSignalPrice = false
+            const ignoreSignalsWithoutTPSL = false
+            const manualInputPercentAsFallbackForLackOfSignalTPSL = false
+
             try {
-              const {
-                ticks,
-                slTriggered,
-                tpTriggered,
-                startPrice,
-                tpPrice,
-                slPrice,
-                closed,
-                isNotEnougthDataForCheck,
-                isStartPriceDetectedByDate,
-                startDate,
-                tpDate,
-                slDate,
-                isSkippedBecauseOfPeriod,
-                priceForStartDate,
-              } = await tradeByHistory({
-                startTime: data.date * 1000,
-                tpPercentManual: takeProfitPercent,
-                slPercentManual: stopLossPercent,
-                tpValue: tp,
-                slValue: stop,
-                symbol: ticker,
-                startPrice: level,
-              })
+              const tradeRes =
+                (await tradeByHistory({
+                  signalMessageTime: data.date * 1000,
+                  signalMessageTPValue: tp,
+                  signalMessageSLValue: stop,
+                  signalMessageSymbol: ticker,
+                  signalMessageTradeStartPrice: level,
+                  manualInputTPPercent: takeProfitPercent,
+                  manualInputSLPercent: stopLossPercent,
+                  manualInputPercentOverrideSignalPrice,
+                  ignoreSignalsWithoutTPSL,
+                  manualInputPercentAsFallbackForLackOfSignalTPSL,
+                })) ?? {}
 
               priceAnalysisByMessageId[data.id] = {
                 chat: channel._id,
@@ -483,6 +477,9 @@ export const generateReportByChannel = async ({
                 isSkippedBecauseOfPeriod,
                 isStartPriceDetectedByDate,
                 priceWhenMessageSent: priceForStartDate,
+                ignoreSignalsWithoutTPSL,
+                manualInputPercentAsFallbackForLackOfSignalTPSL,
+                manualInputPercentOverrideSignalPrice,
               }
             } catch (e) {
               newItem.status = 'Error while getting price'

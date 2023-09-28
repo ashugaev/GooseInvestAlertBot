@@ -103,6 +103,13 @@ export const tradeByHistory = async ({
 }: GetTicksParams): Promise<GetTicksResult> => {
   const ticks: AggregatedTrade[] = []
 
+  if (
+    ignoreSignalsWithoutTPSL &&
+    (!signalMessageTPValue || !signalMessageSLValue)
+  ) {
+    return null
+  }
+
   // Logs
   let highestPrice = null
   let lowestPrice = null
@@ -128,6 +135,9 @@ export const tradeByHistory = async ({
   let tradeSLExpectingPrice = signalMessageSLValue
 
   let tradeStarted = false
+
+  const isShort = signalMessageDirection === 'sell'
+  const isLong = signalMessageDirection === 'buy'
 
   // Price wasn't sent in signal message
   if (!signalMessageTradeStartPrice && signalMessageTime) {
@@ -174,23 +184,26 @@ export const tradeByHistory = async ({
       })
       ticks.push(...newTicks)
 
-      // Collect first tick price
+      // Collect first tick price for the case when we start instantly
       if (tradeStartDate && !tradeStartDatePrice) {
         tradeStartDatePrice = Number(ticks[0].price)
       }
 
-      if (!signalMessageTradeStartPrice) {
-        signalMessageTradeStartPrice = Number(ticks[0].price)
-      }
-      if (!tradeTPExpectingPrice) {
+      if (
+        (!tradeTPExpectingPrice &&
+          manualInputPercentAsFallbackForLackOfSignalTPSL) ||
+        manualInputPercentOverrideSignalPrice
+      ) {
         tradeTPExpectingPrice =
-          Number(signalMessageTradeStartPrice) *
-          (1 + manualInputTPPercent / 100)
+          Number(tradeStartDatePrice) * (1 + manualInputTPPercent / 100)
       }
-      if (!tradeSLExpectingPrice) {
+      if (
+        (!tradeSLExpectingPrice &&
+          manualInputPercentAsFallbackForLackOfSignalTPSL) ||
+        manualInputPercentOverrideSignalPrice
+      ) {
         tradeSLExpectingPrice =
-          Number(signalMessageTradeStartPrice) *
-          (1 - manualInputSLPercent / 100)
+          Number(tradeStartDatePrice) * (1 - manualInputSLPercent / 100)
       }
     }
 
@@ -199,35 +212,48 @@ export const tradeByHistory = async ({
       break
     }
 
+    if (!tradeSLExpectingPrice || !tradeTPExpectingPrice) {
+      return null
+    }
+
+    const tickPrice = Number(ticks[i].price)
+
     if (
       !tradeStarted &&
       // Wait price higher for buy
-      ((Number(ticks[i].price) >= signalMessageTradeStartPrice &&
-        signalMessageDirection === 'buy') ||
+      ((tickPrice >= signalMessageTradeStartPrice && isLong) ||
         // Wait price lower for sale
-        (Number(ticks[i].price) <= signalMessageTradeStartPrice &&
-          signalMessageDirection === 'sell'))
+        (tickPrice <= signalMessageTradeStartPrice && isShort))
     ) {
       tradeStarted = true
       tradeStartDate = new Date(ticks[i].timestamp)
+      tradeStartDatePrice = tickPrice
     }
 
-    if (!highestPrice || Number(ticks[i].price) > highestPrice) {
-      highestPrice = Number(ticks[i].price)
+    if (!highestPrice || tickPrice > highestPrice) {
+      highestPrice = tickPrice
     }
 
-    if (!lowestPrice || Number(ticks[i].price) < lowestPrice) {
-      lowestPrice = Number(ticks[i].price)
+    if (!lowestPrice || tickPrice < lowestPrice) {
+      lowestPrice = tickPrice
     }
 
-    if (tradeStarted && Number(ticks[i].price) >= tradeTPExpectingPrice) {
+    if (
+      tradeStarted &&
+      ((tickPrice >= tradeTPExpectingPrice && isLong) ||
+        (tickPrice <= tradeTPExpectingPrice && isShort))
+    ) {
       isTPTriggered = true
       tradeTPTriggeredDate = new Date(ticks[i].timestamp)
       isTradeSuccessfullyFinished = true
       break
     }
 
-    if (tradeStarted && Number(ticks[i].price) <= tradeSLExpectingPrice) {
+    if (
+      tradeStarted &&
+      ((tickPrice <= tradeSLExpectingPrice && isLong) ||
+        (tickPrice >= tradeSLExpectingPrice && isShort))
+    ) {
       isSLTriggered = true
       tradeSLTriggeredDate = new Date(ticks[i].timestamp)
       isTradeSuccessfullyFinished = true
