@@ -4,7 +4,7 @@ import { BulkWriteOperation } from 'mongodb'
 import { Context, Extra } from 'telegraf'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 
-import { cryptoSignals } from '@/bots/cryptoSignals/config'
+import { cryptoSignals } from '@/bots/cryptoSignals/configs/cryptoSignals'
 import {
   HistoryPriceAnalyze,
   HistoryPriceAnalyzeModel,
@@ -35,7 +35,7 @@ import { wait } from '@/helpers/wait'
 import { signalsClient } from '@/integrations/telegram/client'
 import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { getChatHistory } from '@/integrations/telegram/getChatHistory'
-import { getTicks } from '@/marketApi/binance/api/getTicks'
+import { tradeByHistory } from '@/marketApi/binance/api/tradeByHistory/tradeByHistory'
 import { User } from '@/models'
 import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
@@ -456,7 +456,7 @@ export const generateReportByChannel = async ({
                 slDate,
                 isSkippedBecauseOfPeriod,
                 priceForStartDate,
-              } = await getTicks({
+              } = await tradeByHistory({
                 startTime: data.date * 1000,
                 tpPercentManual: takeProfitPercent,
                 slPercentManual: stopLossPercent,
