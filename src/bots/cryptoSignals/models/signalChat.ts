@@ -1,5 +1,7 @@
 import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
 
+import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
+
 @modelOptions({
   schemaOptions: {
     timestamps: true,
@@ -26,6 +28,17 @@ export class SignalChat {
 
   @prop({ required: false, default: false })
   monitoringEnabled?: boolean
+
+  updatedAt?: Date
+}
+
+export const getChatsWithConifg = async () => {
+  const channels = await SignalChatModel.find().sort({ title: 1 }).lean()
+  const channelsWithConfig = Object.keys(configByChannelId).map(Number)
+
+  const items = channels.filter((el) => channelsWithConfig.includes(el.chatId))
+
+  return items
 }
 
 export const SignalChatModel = getModelForClass(SignalChat)

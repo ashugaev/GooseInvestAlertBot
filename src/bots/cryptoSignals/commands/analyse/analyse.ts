@@ -28,7 +28,8 @@ export function setypAnalyseChannelCommand(bot: Telegraf<Context>) {
         if (
           processByUser?.userHaveActiveAnalysis &&
           new Date().getTime() - processByUser?.updatedAt.getTime() <
-            1000 * 60 * 60
+            1000 * 60 * 60 &&
+          !(process.env.NODE_ENV === 'development')
         ) {
           await ctx.reply(
             '😱 У тебя есть не завершенный анализ. Попробуй еще раз, после того как получишь отчет'

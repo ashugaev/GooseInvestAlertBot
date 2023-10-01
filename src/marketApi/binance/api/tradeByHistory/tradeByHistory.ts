@@ -21,7 +21,7 @@ interface GetTicksParams {
   signalMessageTPValue: number[]
   signalMessageSLValue: number
   signalMessageTradeStartPrice?: number
-  signalMessageDirection?: SignalType
+  signalMessageDirection: SignalType
 
   manualInputTPPercent: number
   manualInputSLPercent: number
@@ -40,7 +40,7 @@ interface GetTicksParams {
   manualInputPercentAsFallbackForLackOfSignalTPSL: boolean
 }
 
-interface GetTicksResult {
+export interface GetTicksResult {
   /**
    * All collected ticks
    */
@@ -76,15 +76,20 @@ interface GetTicksResult {
    */
   tradeStartDate: Date
   /**
-   * Price of ticker when signal came
+   * First tick after trade started
    */
   tradeStartDatePrice: number
+  /**
+   * First tick after messagte came
+   */
+  firstAfterMessagePrice: number
+
+  TPwasAutoCalculated: boolean
+  SLwasAutoCalculated: boolean
 }
 
 /**
- * @todo может быть кейс, когда signalMessageTime !== времени входа в сделку, по этому скрипт должен опреределять вход
- * @todo Check tradeTPExpectingPrice and tradeSLExpectingPrice
- * @todo Если есть startPrice то сначала ждем входа, потом уже проверяем tp и sl
+ * Торговля по истории из Binance
  */
 export const tradeByHistory = async ({
   signalMessageTime,
@@ -121,10 +126,13 @@ export const tradeByHistory = async ({
   let isStartPriceDetectedByDate = false
   let isSLTriggered = false
   let isTPTriggered = false
+  let TPwasAutoCalculated = false
+  let SLwasAutoCalculated = false
 
   // Trade trading start
   let tradeStartDate: Date = null
   let tradeStartDatePrice = null
+  let firstAfterMessagePrice = null
 
   // Trade result
   let tradeTPTriggeredDate = null
@@ -167,6 +175,10 @@ export const tradeByHistory = async ({
         lastFetchedId = params.fromId
       }
 
+      if (ticks.length && !firstAfterMessagePrice) {
+        firstAfterMessagePrice = Number(ticks[ticks.length - 1].price)
+      }
+
       if (
         ticks.length &&
         differenceInDays(
@@ -194,6 +206,7 @@ export const tradeByHistory = async ({
           manualInputPercentAsFallbackForLackOfSignalTPSL) ||
         manualInputPercentOverrideSignalPrice
       ) {
+        TPwasAutoCalculated = true
         tradeTPExpectingPrice =
           Number(tradeStartDatePrice) * (1 + manualInputTPPercent / 100)
       }
@@ -202,6 +215,7 @@ export const tradeByHistory = async ({
           manualInputPercentAsFallbackForLackOfSignalTPSL) ||
         manualInputPercentOverrideSignalPrice
       ) {
+        SLwasAutoCalculated = true
         tradeSLExpectingPrice =
           Number(tradeStartDatePrice) * (1 - manualInputSLPercent / 100)
       }
@@ -265,12 +279,19 @@ export const tradeByHistory = async ({
       log.info(
         `
         Ticks: ${i} 
-        Highest: ${highestPrice} 
+        Type: ${signalMessageDirection}
+        Trade Started: ${tradeStarted}
+        Trade Start Price: ${signalMessageTradeStartPrice}
+        Initial price: ${tradeStartDatePrice}
         Target TP: ${tradeTPExpectingPrice}
         Target SL: ${tradeSLExpectingPrice}
+        Current: ${tickPrice} 
+        Highest: ${highestPrice} 
         Lowest: ${lowestPrice} 
-        Current: ${ticks[i].price} 
-        Date: ${format(new Date(ticks[i].timestamp), 'dd.MM.yyyy HH:mm:ss')}`
+        Last Tick Date: ${format(
+          new Date(ticks[i].timestamp),
+          'dd.MM.yyyy HH:mm:ss'
+        )}`
       )
     }
 
@@ -292,5 +313,8 @@ export const tradeByHistory = async ({
     isSkippedBecauseOfPeriod,
     tradeStartDate,
     tradeStartDatePrice,
+    TPwasAutoCalculated,
+    SLwasAutoCalculated,
+    firstAfterMessagePrice,
   }
 }

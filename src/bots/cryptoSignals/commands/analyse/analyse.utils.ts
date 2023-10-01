@@ -14,6 +14,7 @@ import {
   SignalAiRecognizeModel,
 } from '@/bots/cryptoSignals/models/signalAiRecognize'
 import {
+  getChatsWithConifg,
   SignalChat,
   SignalChatModel,
 } from '@/bots/cryptoSignals/models/signalChat'
@@ -26,10 +27,7 @@ import {
   chatGptRequestHash,
   validateWithChatGPT,
 } from '@/features/signals/devochkiChannel/gpt'
-import {
-  ConfigForSignalChannel,
-  initialSignalValidation,
-} from '@/features/signals/devochkiChannel/handleMessage'
+import { initialSignalValidation } from '@/features/signals/devochkiChannel/handleMessage'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
 import { signalsClient } from '@/integrations/telegram/client'
@@ -39,25 +37,9 @@ import { tradeByHistory } from '@/marketApi/binance/api/tradeByHistory/tradeByHi
 import { User } from '@/models'
 import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
+import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
-// Move to db
-const configByChannelId: Record<string, ConfigForSignalChannel> = {
-  '-1001720000437': {
-    // directionRequired: true,
-    // tickerInBigLetters: true,
-    // tickerWithHash: false,
-    // priceRequired: false,
-  },
-  '-1001922990972': {
-    keyWords: ['Торговая пара', 'Точка входа'],
-  },
-  '-1001810513504': {
-    keyWords: ['СИГНАЛ'],
-  },
-  '-1001596060097': {
-    keyWords: ['Открываю'],
-  },
-}
+import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 
 function convertToCSV(data) {
   const rows = []
@@ -194,73 +176,81 @@ export const generateTableWithSignals = async (
   const transform = (value) =>
     value && value.length > maxWidth ? value.substring(0, maxWidth) : value
 
-  const rows = messages.map((message: Api.Message) => ({
-    // Данные из телеграмма
-    'TG | Channel': channel.title,
-    'TG | Message Time': format(
-      new Date(message.date * 1000),
-      'dd.MM.yyyy HH:mm:ss'
-    ),
-    'TG | Message': message.message,
-    // Данные извеченные из сигнала
-    'SIGNAL | Ticker': aiAnswerByMessageId[message.id]?.aiExtractedData?.ticker,
-    'SIGNAL | Trade Start Price':
-      aiAnswerByMessageId[message.id]?.aiExtractedData?.tradeStartPrice,
-    'SIGNAL | TP Price': aiAnswerByMessageId[message.id]?.aiExtractedData?.tp,
-    'SIGNAL | SL Price': aiAnswerByMessageId[message.id]?.aiExtractedData?.stop,
-    'SIGNAL | Volume': aiAnswerByMessageId[message.id]?.aiExtractedData?.volume,
-    'SIGNAL | Order Type':
-      aiAnswerByMessageId[message.id]?.aiExtractedData?.type,
-    'SIGNAL | Have Doubts':
-      aiAnswerByMessageId[message.id]?.aiExtractedData?.doubts === 'yes'
-        ? 'YES'
-        : aiAnswerByMessageId[message.id]?.aiExtractedData?.doubts === 'no'
-        ? 'NO'
-        : '',
+  const rows = messages
+    .map((message: Api.Message) => {
+      const aiAnswer = aiAnswerByMessageId[message.id]
+      const tradeRes = priceAnalysisByMessageId[message.id]
 
-    // Результаты срабатывания
-    'RESULT | Price when message sent':
-      priceAnalysisByMessageId[message.id]?.priceWhenMessageSent,
-    'RESULT | Trade start date': priceAnalysisByMessageId[message.id]?.startDate
-      ? format(
-          priceAnalysisByMessageId[message.id]?.startDate,
+      if (!aiAnswer || !tradeRes) {
+        return null
+      }
+
+      return {
+        // Данные из телеграмма
+        'TG | Channel': channel.title,
+        'TG | Message Time': format(
+          utcToZonedTime(new Date(message.date * 1000), 'UTC'),
           'dd.MM.yyyy HH:mm:ss'
-        )
-      : '',
-    'RESULT | SL Triggered': priceAnalysisByMessageId[message.id]?.slTriggered
-      ? '✅'
-      : '',
-    'RESULT | TP Triggered': priceAnalysisByMessageId[message.id]?.tpTriggered
-      ? '✅'
-      : '',
-    'RESULT | TP Triggered Date': priceAnalysisByMessageId[message.id]?.tpDate
-      ? format(
-          priceAnalysisByMessageId[message.id]?.tpDate,
-          'dd.MM.yyyy HH:mm:ss'
-        )
-      : '',
-    'RESULT | SL Triggered Date': priceAnalysisByMessageId[message.id]?.slDate
-      ? format(
-          priceAnalysisByMessageId[message.id]?.slDate,
-          'dd.MM.yyyy HH:mm:ss'
-        )
-      : '',
-    // Ввод юзера
-    'INPUT | Start Price By Message Date':
-      priceAnalysisByMessageId[message.id]?.isStartPriceDetectedByDate &&
-      priceAnalysisByMessageId[message.id]?.startPrice.toFixed(4),
-    'INPUT | TP Autocalculated Price':
-      (!aiAnswerByMessageId[message.id]?.aiExtractedData.tp &&
-        priceAnalysisByMessageId[message.id]?.tpPrice.toFixed(4)) ||
-      '',
-    'INPUT | SL Autocalculated Price':
-      (!aiAnswerByMessageId[message.id]?.aiExtractedData.stop &&
-        priceAnalysisByMessageId[message.id]?.slPrice.toFixed(4)) ||
-      '',
-    // AI
-    'AI Answer':
-      aiAnswerByMessageId[message.id.toString()]?.chatGptValidationMessage,
-  }))
+        ),
+        'TG | Message': message.message,
+        // Данные извеченные из сигнала
+        'SIGNAL | Ticker': aiAnswer?.aiExtractedData?.ticker,
+        'SIGNAL | Trade Start Price':
+          aiAnswer?.aiExtractedData?.tradeStartPrice,
+        'SIGNAL | TP Price': aiAnswer?.aiExtractedData?.tp,
+        'SIGNAL | SL Price': aiAnswer?.aiExtractedData?.stop,
+        'SIGNAL | Volume': aiAnswer?.aiExtractedData?.volume,
+        'SIGNAL | Order Type': aiAnswer?.aiExtractedData?.type,
+        'SIGNAL | Have Doubts':
+          aiAnswer?.aiExtractedData?.doubts === 'yes'
+            ? 'YES'
+            : aiAnswer?.aiExtractedData?.doubts === 'no'
+            ? 'NO'
+            : '',
+
+        // Результаты срабатывания
+        'RESULT | Trade finished': tradeRes?.isTradeSuccessfullyFinished,
+        'RESULT | Price when message sent': tradeRes?.firstAfterMessagePrice,
+        'RESULT | Trade start date': tradeRes?.tradeStartDate,
+        'RESULT | SL Triggered': tradeRes?.isSLTriggered ? '✅' : '',
+        'RESULT | TP Triggered': tradeRes?.isTPTriggered ? '✅' : '',
+        'RESULT | TP Triggered Date': tradeRes?.tradeTPTriggeredDate
+          ? format(
+              utcToZonedTime(new Date(tradeRes?.tradeTPTriggeredDate), 'UTC'),
+              'dd.MM.yyyy HH:mm:ss'
+            )
+          : '',
+        'RESULT | SL Triggered Date': tradeRes?.tradeSLTriggeredDate
+          ? format(
+              utcToZonedTime(tradeRes?.tradeSLTriggeredDate, 'UTC'),
+              'dd.MM.yyyy HH:mm:ss'
+            )
+          : '',
+        'RESULT | SL Autocalculated': tradeRes?.SLwasAutoCalculated
+          ? 'YES'
+          : 'NO',
+        'RESULT | TP Autocalculated': tradeRes?.TPwasAutoCalculated
+          ? 'YES'
+          : 'NO',
+        // Ввод юзера
+        'INPUT | TP Percent': tradeRes?.manualInputTPPercent,
+        'INPUT | SL Percent': tradeRes?.manualInputSLPercent,
+        'INPUT | Use manual TP/SL percent':
+          tradeRes?.manualInputPercentOverrideSignalPrice ? 'YES' : 'NO',
+        'INPUT | Ignore signals without TP/SL':
+          tradeRes?.ignoreSignalsWithoutTPSL ? 'YES' : 'NO',
+        'INPUT | Use manual TP/SL percent as fallback for lack of signal TP/SL':
+          tradeRes?.manualInputPercentAsFallbackForLackOfSignalTPSL
+            ? 'YES'
+            : 'NO',
+        'INPUT | SL Autocalculated Price':
+          (!aiAnswer?.aiExtractedData.stop && tradeRes?.slPrice.toFixed(4)) ||
+          '',
+        // AI
+        'AI Answer': aiAnswer?.chatGptValidationMessage,
+      }
+    })
+    .filter(Boolean)
 
   const csvString = Papa.unparse(rows)
 
@@ -281,7 +271,7 @@ export const generateReportByChannel = async ({
   ctx,
 }: GenerateReportByChannelParams) => {
   try {
-    const channels = await SignalChatModel.find().sort({ title: 1 }).lean()
+    const channels = await getChatsWithConifg()
     const channel = channels[channelInd - 1]
 
     const getMessageByStatus = (status: string, isDone?: boolean) =>
@@ -364,7 +354,8 @@ export const generateReportByChannel = async ({
     > = {}
 
     let i = 0
-    for (const data of messages) {
+    // FIXME: Remove hardcoded limit
+    for (const data of messages.slice(10, 12)) {
       try {
         let aiRes = ''
 
@@ -446,7 +437,7 @@ export const generateReportByChannel = async ({
             const manualInputPercentAsFallbackForLackOfSignalTPSL = false
 
             try {
-              const tradeRes =
+              const { ticks, ...tradeRes } =
                 (await tradeByHistory({
                   signalMessageTime: data.date * 1000,
                   signalMessageTPValue: tp,
@@ -458,28 +449,24 @@ export const generateReportByChannel = async ({
                   manualInputPercentOverrideSignalPrice,
                   ignoreSignalsWithoutTPSL,
                   manualInputPercentAsFallbackForLackOfSignalTPSL,
+                  signalMessageDirection: type,
                 })) ?? {}
 
               priceAnalysisByMessageId[data.id] = {
+                ...tradeRes,
                 chat: channel._id,
+
                 message: data.message,
                 messageId: data.id,
-                signalDate: new Date(data.date * 1000),
-                startPrice,
-                startDate,
+                signalMessageDate: new Date(data.date * 1000),
                 parsedData: newItem.aiExtractedData,
-                tpTriggered,
-                slTriggered,
-                tpPrice,
-                tpDate,
-                slPrice,
-                slDate,
-                isSkippedBecauseOfPeriod,
-                isStartPriceDetectedByDate,
-                priceWhenMessageSent: priceForStartDate,
+
+                // priceWhenMessageSent: priceForStartDate,
                 ignoreSignalsWithoutTPSL,
                 manualInputPercentAsFallbackForLackOfSignalTPSL,
                 manualInputPercentOverrideSignalPrice,
+                manualInputTPPercent: takeProfitPercent,
+                manualInputSLPercent: stopLossPercent,
               }
             } catch (e) {
               newItem.status = 'Error while getting price'
@@ -577,6 +564,9 @@ export const generateReportByChannel = async ({
     )
 
     const handledSignals = Object.values(priceAnalysisByMessageId)
+    const successfullyTraded = handledSignals.filter(
+      (el) => el?.isTradeSuccessfullyFinished
+    ).length
     const recognizedSignals = Object.values(aiAnswerByMessageId)
 
     await ctx.telegram.editMessageText(
@@ -593,19 +583,19 @@ export const generateReportByChannel = async ({
         
         Сообщений проверенно: ${messages.length}
         Распознанно сигналов: ${Object.values(aiAnswerByMessageId).length}
-        Обработано сигналов: ${handledSignals.length}
+        Успешно обработано сигналов: ${successfullyTraded}
         
         Сработало SL: ${
-          handledSignals.filter((el) => el.slTriggered).length
+          handledSignals.filter((el) => el.isSLTriggered).length
         } (${(
-        (handledSignals.filter((el) => el.slTriggered).length /
+        (handledSignals.filter((el) => el.isTPTriggered).length /
           handledSignals.length) *
         100
       ).toFixed(1)}%)
         Сработало TP: ${
-          handledSignals.filter((el) => el.tpTriggered).length
+          handledSignals.filter((el) => el.isSLTriggered).length
         } (${(
-        (handledSignals.filter((el) => el.tpTriggered).length /
+        (handledSignals.filter((el) => el.isTPTriggered).length /
           handledSignals.length) *
         100
       ).toFixed(1)}%)
@@ -645,6 +635,7 @@ export const generateReportByChannel = async ({
       await ctx.replyWithHTML('Не нашел ни одного сообщения')
     }
   } catch (e) {
+    log.error('Error while generating report', e)
     ctx.replyWithHTML('Error while generating report')
   } finally {
     await finishAnalysisForUser(ctx.from.id)

@@ -8,6 +8,7 @@ import {
   generateReportByChannel,
   updateSignalChannels,
 } from '@/bots/cryptoSignals/commands/analyse/analyse.utils'
+import { SignalChatModel } from '@/bots/cryptoSignals/models/signalChat'
 import { startAnalysisForUser } from '@/bots/cryptoSignals/models/userProcess'
 import { immediateStep, waitMessageStep } from '@/scenes'
 
@@ -19,7 +20,16 @@ const WizardScene = require('telegraf/scenes/wizard')
  */
 const first = immediateStep('analyse-start-scene', async (ctx: Context) => {
   await ctx.replyWithHTML('🔄 Обновляю список каналов...')
-  await updateSignalChannels()
+
+  const channel = await SignalChatModel.findOne()
+
+  if (
+    !channel ||
+    // was updated more than 1 day ago
+    channel.updatedAt.getTime() < new Date().getTime() - 1000 * 60 * 60 * 24
+  ) {
+    await updateSignalChannels()
+  }
 
   await channelsPagination.send(ctx, 0)
 

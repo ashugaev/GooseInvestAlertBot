@@ -1,3 +1,4 @@
+import { ConfigForSignalChannel } from '@/bots/cryptoSignals/configs/configByChat'
 import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import { logPrefixDevochki } from '@/features/signals/devochkiChannel/devochkiChannel.constants'
 import { validateWithChatGPT } from '@/features/signals/devochkiChannel/gpt'
@@ -14,14 +15,6 @@ const chatToNotify = -608497569
 
 const normalizeSignalMessage = (message: string): string =>
   message.replace(/\\n(.)/g, (_, symbol) => '. ' + symbol.toUpperCase()).trim()
-
-export interface ConfigForSignalChannel {
-  directionRequired?: boolean // AI
-  tickerInBigLetters?: boolean // Manual
-  tickerWithHash?: boolean // Manual
-  priceRequired?: boolean // Manual / AI
-  keyWords?: string[] // Manual
-}
 
 // TODO: Move to helpers in signals
 export const initialSignalValidation = (

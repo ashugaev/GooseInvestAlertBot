@@ -1,13 +1,44 @@
 import { getModelForClass, modelOptions, prop, Ref } from '@typegoose/typegoose'
 
 import { SignalChat } from '@/bots/cryptoSignals/models/signalChat'
+import { GetTicksResult } from '@/marketApi/binance/api/tradeByHistory/tradeByHistory'
 
 @modelOptions({
   schemaOptions: {
     timestamps: true,
   },
 })
-export class HistoryPriceAnalyze {
+export class HistoryPriceAnalyze implements Omit<GetTicksResult, 'ticks'> {
+  @prop()
+  isSLTriggered: boolean
+
+  @prop()
+  isTPTriggered: boolean
+
+  @prop()
+  isTradeSuccessfullyFinished: boolean
+
+  @prop()
+  signalMessageTradeStartPrice: number
+
+  @prop()
+  tradeTPExpectingPrice: number
+
+  @prop()
+  tradeSLExpectingPrice: number
+
+  @prop()
+  isNotEnougthDataForCheck: boolean
+
+  @prop()
+  tradeTPTriggeredDate: Date
+
+  @prop()
+  tradeSLTriggeredDate: Date
+
+  @prop()
+  tradeStartDate: Date
+
   @prop({ required: true, ref: () => SignalChat })
   chat: Ref<SignalChat>
 
@@ -21,22 +52,10 @@ export class HistoryPriceAnalyze {
   // aiAnswer: Ref<SignalAiRecognize>
 
   @prop({ required: true })
-  signalDate: Date
-
-  @prop({ required: true })
-  startPrice: number
-
-  @prop({ required: true })
-  startDate: Date
+  signalMessageDate: Date
 
   @prop({ required: true })
   parsedData: Record<any, any>
-
-  @prop({ required: true })
-  tpTriggered: boolean
-
-  @prop({ required: true })
-  slTriggered: boolean
 
   @prop({ required: true })
   tpPrice: number
@@ -63,12 +82,38 @@ export class HistoryPriceAnalyze {
    * Start price was found in signal message or not
    * If not, we can detect it by date of message
    */
+  @prop({ required: true })
   isStartPriceDetectedByDate: boolean
 
   /**
    * Price whet message sent
    */
-  priceWhenMessageSent: number
+  @prop({ required: true })
+  tradeStartDatePrice: number
+
+  @prop({ required: true })
+  ignoreSignalsWithoutTPSL: boolean
+
+  @prop({ required: true })
+  manualInputPercentAsFallbackForLackOfSignalTPSL: boolean
+
+  @prop({ required: true })
+  manualInputPercentOverrideSignalPrice: boolean
+
+  @prop({ required: true })
+  TPwasAutoCalculated: boolean
+
+  @prop({ required: true })
+  SLwasAutoCalculated: boolean
+
+  @prop({ required: true })
+  manualInputTPPercent: number
+
+  @prop({ required: true })
+  manualInputSLPercent: number
+
+  @prop({ required: true })
+  firstAfterMessagePrice: number
 }
 
 export const HistoryPriceAnalyzeModel = getModelForClass(HistoryPriceAnalyze)
