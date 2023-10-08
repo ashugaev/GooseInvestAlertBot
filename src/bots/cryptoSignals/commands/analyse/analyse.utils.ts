@@ -40,6 +40,11 @@ const { format } = require('date-fns')
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
+import {
+  generatePineScriptCode,
+  PointWithLabel,
+} from '@/bots/cryptoSignals/utils/generagePinescript'
+import { getTradingViewChartLink } from '@/bots/cryptoSignals/utils/getTradingViewChartLink'
 
 function convertToCSV(data) {
   const rows = []
@@ -185,47 +190,114 @@ export const generateTableWithSignals = async (
         return null
       }
 
+      const pineDots: PointWithLabel[] = [
+        // Сообщение
+        {
+          timestamp: new Date(message.date * 1000).getTime(),
+          label: 'Signal',
+          labelColor: 'color.gray',
+          type: 'dot',
+          price: tradeRes.firstAfterMessagePrice,
+        },
+        // Точка входа
+        {
+          timestamp: new Date(tradeRes?.tradeStartDate).getTime(),
+          price: tradeRes?.tradeStartDatePrice,
+          label: 'Start Trade',
+          labelColor: 'color.blue',
+          type: 'dot',
+        },
+      ]
+
+      if (tradeRes?.tradeSLExpectingPrice) {
+        pineDots.push({
+          price: tradeRes?.tradeSLExpectingPrice,
+          label: 'SL Line',
+          labelColor: 'color.red',
+          type: 'line',
+        })
+      }
+
+      if (tradeRes?.tradeTPExpectingPrice) {
+        pineDots.push({
+          price: tradeRes?.tradeTPExpectingPrice,
+          label: 'TP Line',
+          labelColor: 'color.green',
+          type: 'line',
+        })
+      }
+
+      if (tradeRes?.isTPTriggered) {
+        pineDots.push(
+          // TP
+          {
+            timestamp: new Date(tradeRes?.tradeTPTriggeredDate).getTime(),
+            price: tradeRes?.tradeTPExpectingPrice,
+            label: 'TP',
+            labelColor: 'color.green',
+            type: 'dot',
+          }
+        )
+      }
+
+      if (tradeRes?.isSLTriggered) {
+        pineDots.push(
+          // SL
+          {
+            timestamp: new Date(tradeRes?.tradeSLTriggeredDate).getTime(),
+            price: tradeRes?.tradeSLExpectingPrice,
+            label: 'SL',
+            labelColor: 'color.red',
+            type: 'dot',
+          }
+        )
+      }
+
+      const pineScriptString = generatePineScriptCode(pineDots)
+
       return {
         // Данные из телеграмма
-        'TG | Channel': channel.title,
-        'TG | Message Time': format(
-          utcToZonedTime(new Date(message.date * 1000), 'UTC'),
-          'dd.MM.yyyy HH:mm:ss'
-        ),
-        'TG | Message': message.message,
+        'TG | Channel': channel.title || '-',
+        'TG | Message Time':
+          format(
+            utcToZonedTime(new Date(message.date * 1000), 'UTC'),
+            'dd.MM.yyyy HH:mm:ss'
+          ) || '-',
+        'TG | Message': message.message || '-',
         // Данные извеченные из сигнала
-        'SIGNAL | Ticker': aiAnswer?.aiExtractedData?.ticker,
+        'SIGNAL | Ticker': aiAnswer?.aiExtractedData?.ticker || '-',
         'SIGNAL | Trade Start Price':
-          aiAnswer?.aiExtractedData?.tradeStartPrice,
-        'SIGNAL | TP Price': aiAnswer?.aiExtractedData?.tp,
-        'SIGNAL | SL Price': aiAnswer?.aiExtractedData?.stop,
-        'SIGNAL | Volume': aiAnswer?.aiExtractedData?.volume,
-        'SIGNAL | Order Type': aiAnswer?.aiExtractedData?.type,
+          aiAnswer?.aiExtractedData?.tradeStartPrice || '-',
+        'SIGNAL | TP Price': aiAnswer?.aiExtractedData?.tp || '-',
+        'SIGNAL | SL Price': aiAnswer?.aiExtractedData?.stop || '-',
+        'SIGNAL | Volume': aiAnswer?.aiExtractedData?.volume || '-',
+        'SIGNAL | Order Type': aiAnswer?.aiExtractedData?.type || '-',
         'SIGNAL | Have Doubts':
           aiAnswer?.aiExtractedData?.doubts === 'yes'
             ? 'YES'
             : aiAnswer?.aiExtractedData?.doubts === 'no'
             ? 'NO'
-            : '',
+            : '-',
 
         // Результаты срабатывания
-        'RESULT | Trade finished': tradeRes?.isTradeSuccessfullyFinished,
-        'RESULT | Price when message sent': tradeRes?.firstAfterMessagePrice,
-        'RESULT | Trade start date': tradeRes?.tradeStartDate,
-        'RESULT | SL Triggered': tradeRes?.isSLTriggered ? '✅' : '',
-        'RESULT | TP Triggered': tradeRes?.isTPTriggered ? '✅' : '',
+        'RESULT | Trade finished': tradeRes?.isTradeSuccessfullyFinished || '-',
+        'RESULT | Price when message sent':
+          tradeRes?.firstAfterMessagePrice || '-',
+        'RESULT | Trade start date': tradeRes?.tradeStartDate || '-',
+        'RESULT | SL Triggered': tradeRes?.isSLTriggered ? '✅' : '-',
+        'RESULT | TP Triggered': tradeRes?.isTPTriggered ? '✅' : '-',
         'RESULT | TP Triggered Date': tradeRes?.tradeTPTriggeredDate
           ? format(
               utcToZonedTime(new Date(tradeRes?.tradeTPTriggeredDate), 'UTC'),
               'dd.MM.yyyy HH:mm:ss'
             )
-          : '',
+          : '-',
         'RESULT | SL Triggered Date': tradeRes?.tradeSLTriggeredDate
           ? format(
               utcToZonedTime(tradeRes?.tradeSLTriggeredDate, 'UTC'),
               'dd.MM.yyyy HH:mm:ss'
             )
-          : '',
+          : '-',
         'RESULT | SL Autocalculated': tradeRes?.SLwasAutoCalculated
           ? 'YES'
           : 'NO',
@@ -233,8 +305,8 @@ export const generateTableWithSignals = async (
           ? 'YES'
           : 'NO',
         // Ввод юзера
-        'INPUT | TP Percent': tradeRes?.manualInputTPPercent,
-        'INPUT | SL Percent': tradeRes?.manualInputSLPercent,
+        'INPUT | TP Percent': tradeRes?.manualInputTPPercent || '-',
+        'INPUT | SL Percent': tradeRes?.manualInputSLPercent || '-',
         'INPUT | Use manual TP/SL percent':
           tradeRes?.manualInputPercentOverrideSignalPrice ? 'YES' : 'NO',
         'INPUT | Ignore signals without TP/SL':
@@ -244,10 +316,18 @@ export const generateTableWithSignals = async (
             ? 'YES'
             : 'NO',
         'INPUT | SL Autocalculated Price':
-          (!aiAnswer?.aiExtractedData.stop && tradeRes?.slPrice.toFixed(4)) ||
-          '',
+          (!aiAnswer?.aiExtractedData.stop && tradeRes?.slPrice?.toFixed(4)) ||
+          '-',
         // AI
-        'AI Answer': aiAnswer?.chatGptValidationMessage,
+        'AI Answer': aiAnswer?.chatGptValidationMessage || '-',
+        // DEBUG
+        'DEBUG | Chart Link': aiAnswer?.aiExtractedData?.ticker?.length
+          ? getTradingViewChartLink({
+              symbol: aiAnswer?.aiExtractedData?.ticker + 'USDT',
+              source: 'BINANCE',
+            })
+          : '-',
+        'DEBUG | Pine Script': pineScriptString || '-',
       }
     })
     .filter(Boolean)
@@ -355,7 +435,8 @@ export const generateReportByChannel = async ({
 
     let i = 0
     // FIXME: Remove hardcoded limit
-    for (const data of messages.slice(10, 12)) {
+    // .slice(0, 1)
+    for (const data of messages.slice(0, 8)) {
       try {
         let aiRes = ''
 
@@ -432,9 +513,10 @@ export const generateReportByChannel = async ({
             newItem.aiExtractedData.tradeStartPrice = level
 
             // TODO: Move to config
-            const manualInputPercentOverrideSignalPrice = false
+            const manualInputPercentOverrideSignalPrice = true
             const ignoreSignalsWithoutTPSL = false
             const manualInputPercentAsFallbackForLackOfSignalTPSL = false
+            const filterNotFinished = false
 
             try {
               const { ticks, ...tradeRes } =
@@ -468,6 +550,78 @@ export const generateReportByChannel = async ({
                 manualInputTPPercent: takeProfitPercent,
                 manualInputSLPercent: stopLossPercent,
               }
+
+              const tradeData = priceAnalysisByMessageId[data.id]
+
+              const chartlint = getTradingViewChartLink({
+                symbol: ticker + 'USDT',
+                source: 'BINANCE',
+              })
+
+              const pineDots: PointWithLabel[] = [
+                // Сообщение
+                {
+                  timestamp: new Date(tradeData.signalMessageDate).getTime(),
+                  label: 'Signal',
+                  labelColor: 'color.gray',
+                  type: 'dot',
+                  price: tradeData.firstAfterMessagePrice,
+                },
+                // Точка входа
+                {
+                  timestamp: new Date(tradeData?.tradeStartDate).getTime(),
+                  price: tradeData?.tradeStartDatePrice,
+                  label: 'Start Trade',
+                  labelColor: 'color.blue',
+                  type: 'dot',
+                },
+                {
+                  price: tradeData?.tradeSLExpectingPrice,
+                  label: 'SL Line',
+                  labelColor: 'color.red',
+                  type: 'line',
+                },
+                {
+                  price: tradeData?.tradeTPExpectingPrice,
+                  label: 'TP Line',
+                  labelColor: 'color.green',
+                  type: 'line',
+                },
+              ]
+
+              if (tradeData?.isTPTriggered) {
+                pineDots.push(
+                  // TP
+                  {
+                    timestamp: new Date(
+                      tradeData?.tradeTPTriggeredDate
+                    ).getTime(),
+                    price: tradeData?.tradeTPExpectingPrice,
+                    label: 'TP',
+                    labelColor: 'color.green',
+                    type: 'dot',
+                  }
+                )
+              }
+              if (tradeData?.isSLTriggered) {
+                pineDots.push(
+                  // SL
+                  {
+                    timestamp: new Date(
+                      tradeData?.tradeSLTriggeredDate
+                    ).getTime(),
+                    price: tradeData?.tradeSLExpectingPrice,
+                    label: 'SL',
+                    labelColor: 'color.red',
+                    type: 'dot',
+                  }
+                )
+              }
+
+              const script = generatePineScriptCode(pineDots)
+
+              // Place for debug pinescript
+              // debugger
             } catch (e) {
               newItem.status = 'Error while getting price'
             }

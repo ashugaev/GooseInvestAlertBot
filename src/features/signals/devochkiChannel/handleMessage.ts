@@ -37,7 +37,7 @@ export const initialSignalValidation = (
   if (config?.priceRequired) {
     patternsToCheck.push(pricePattern)
   }
-  if (config?.keyWords.length) {
+  if (config?.keyWords?.length) {
     patternsToCheck.push(...config.keyWords.map((word) => new RegExp(word)))
   }
 
