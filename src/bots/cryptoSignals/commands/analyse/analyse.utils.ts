@@ -713,7 +713,7 @@ export const generateReportByChannel = async ({
           handledSignals.filter((el) => el.SLwasAutoCalculated).length
         }
 
-        <b>Config</b>
+      <b>⚙️ Config</b>
         
         Свой TP/SL : ${
           config.manualInputPercentOverrideSignalPrice ? 'Да' : 'Нет'
