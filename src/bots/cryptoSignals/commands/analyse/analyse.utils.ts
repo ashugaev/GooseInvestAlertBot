@@ -41,6 +41,7 @@ import { AggregatedTrade } from 'binance-api-node'
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
+import { binanceAggTicksModel } from '@/bots/cryptoSignals/models/binanceAggTicks'
 import {
   generatePineScriptCode,
   PointWithLabel,
@@ -751,6 +752,7 @@ export const generateReportByChannel = async ({
 async function saveTicks(ticks: AggregatedTrade[]) {
   const bulkWrite = ticks.map((tick) => ({
     updateOne: {
+      upsert: true,
       filter: {
         aggId: tick.aggId,
         timestamp: tick.timestamp,
@@ -764,5 +766,9 @@ async function saveTicks(ticks: AggregatedTrade[]) {
     },
   }))
 
-  await HistoryPriceAnalyzeModel.bulkWrite(bulkWrite)
+  try {
+    await binanceAggTicksModel.bulkWrite(bulkWrite)
+  } catch (e) {
+    console.log('error while saving ticks')
+  }
 }

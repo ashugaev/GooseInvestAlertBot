@@ -45,21 +45,33 @@ export const getTicks = async ({
           aggId: { $gte: Number(fromId) },
         })
         .sort({ aggId: 1 })
+        .lean()
         .exec()
 
       // Проверяем неразрывность aggId
       for (let i = 0; i < allTicksFromId.length - 1; i++) {
-        if (allTicksFromId[i + 1].aggId - allTicksFromId[i].aggId !== 1) {
+        const diff = allTicksFromId[i + 1].aggId - allTicksFromId[i].aggId
+
+        if (diff !== 1) {
           newTicks = allTicksFromId.slice(0, i + 1)
           break
         }
+
+        // if last and no break - all ticks are ok
+        if (i === allTicksFromId.length - 2) {
+          newTicks = allTicksFromId
+        }
       }
+
+      console.log('getTicks from DB', newTicks.length)
     }
   }
 
   // Binance as a fallback
   if (!newTicks.length) {
     newTicks = await binance.aggTrades(params)
+  } else {
+    console.info('Use ticks from DB')
   }
 
   return newTicks
