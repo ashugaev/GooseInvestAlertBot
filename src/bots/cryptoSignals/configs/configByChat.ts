@@ -10,18 +10,34 @@ export const configByChannelId: Record<string, ConfigForSignalChannel> = {
     // tickerInBigLetters: true,
     // tickerWithHash: false,
     // priceRequired: false,
+    manualInputPercentOverrideSignalPrice: false,
+    ignoreSignalsWithoutTPSL: false,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+    removeNotFinished: true,
   },
   '-1001922990972': {
     name: 'CryptobatyaVIP',
     keyWords: ['Торговая пара', 'Точка входа'],
+    manualInputPercentOverrideSignalPrice: false,
+    ignoreSignalsWithoutTPSL: false,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+    removeNotFinished: true,
   },
   '-1001810513504': {
     name: 'Друг Артур',
     keyWords: ['СИГНАЛ'],
+    manualInputPercentOverrideSignalPrice: false,
+    ignoreSignalsWithoutTPSL: false,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+    removeNotFinished: true,
   },
   '-1001596060097': {
     // Dead
     keyWords: ['Открываю'],
+    manualInputPercentOverrideSignalPrice: false,
+    ignoreSignalsWithoutTPSL: false,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+    removeNotFinished: true,
   },
 }
 
@@ -32,4 +48,9 @@ export interface ConfigForSignalChannel {
   tickerWithHash?: boolean // Manual
   priceRequired?: boolean // Manual / AI
   keyWords?: string[] // Manual
+
+  manualInputPercentOverrideSignalPrice: boolean
+  ignoreSignalsWithoutTPSL: boolean
+  manualInputPercentAsFallbackForLackOfSignalTPSL: boolean
+  removeNotFinished: boolean
 }

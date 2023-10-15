@@ -365,7 +365,7 @@ export const generateReportByChannel = async ({
     let i = 0
     // FIXME: Remove hardcoded limit
     // .slice(0, 1)
-    for (const data of messages.slice(0, 8)) {
+    for (const data of messages.slice(0, 15)) {
       try {
         let aiRes = ''
 
@@ -441,11 +441,13 @@ export const generateReportByChannel = async ({
             newItem.aiExtractedData.ticker = ticker
             newItem.aiExtractedData.tradeStartPrice = level
 
-            // TODO: Move to config
-            const manualInputPercentOverrideSignalPrice = true
-            const ignoreSignalsWithoutTPSL = false
-            const manualInputPercentAsFallbackForLackOfSignalTPSL = false
-            const filterNotFinished = false
+            const channelConfig = configByChannelId[channel.chatId]
+
+            const {
+              manualInputPercentOverrideSignalPrice,
+              ignoreSignalsWithoutTPSL,
+              manualInputPercentAsFallbackForLackOfSignalTPSL,
+            } = channelConfig
 
             try {
               const { ticks, ...tradeRes } =
@@ -645,6 +647,9 @@ export const generateReportByChannel = async ({
     const successfullyTraded = handledSignals.filter(
       (el) => el?.isTradeSuccessfullyFinished
     ).length
+    const nonFinishedSignals = handledSignals.filter(
+      (el) => !el?.isTradeSuccessfullyFinished
+    ).length
     const recognizedSignals = Object.values(aiAnswerByMessageId)
 
     await ctx.telegram.editMessageText(
@@ -660,21 +665,24 @@ export const generateReportByChannel = async ({
         <b>📊 Отчет по каналу ${channel.title}</b>
         
         Сообщений проверенно: ${messages.length}
-        Распознанно сигналов: ${Object.values(aiAnswerByMessageId).length}
-        Успешно обработано сигналов: ${successfullyTraded}
+        Распознанно сигналов (AI): ${Object.values(aiAnswerByMessageId).length}
+        Проверено сигналов: ${handledSignals.length}
+        
+        Завершенных сделок: ${successfullyTraded}
+        Не завершенных сделок: ${nonFinishedSignals}
         
         Сработало SL: ${
           handledSignals.filter((el) => el.isSLTriggered).length
         } (${(
-        (handledSignals.filter((el) => el.isTPTriggered).length /
-          handledSignals.length) *
+        (handledSignals.filter((el) => el.isSLTriggered).length /
+          successfullyTraded) *
         100
       ).toFixed(1)}%)
         Сработало TP: ${
-          handledSignals.filter((el) => el.isSLTriggered).length
+          handledSignals.filter((el) => el.isTPTriggered).length
         } (${(
         (handledSignals.filter((el) => el.isTPTriggered).length /
-          handledSignals.length) *
+          successfullyTraded) *
         100
       ).toFixed(1)}%)
         
@@ -689,14 +697,11 @@ export const generateReportByChannel = async ({
           recognizedSignals.filter((el) => el.aiExtractedData.stop).length
         }
         
-        Сигналов где взяли свой TP или SL: ${
-          handledSignals.filter(
-            (el) =>
-              el.tpPrice !==
-                aiAnswerByMessageId[el.messageId].aiExtractedData.tp[0] ||
-              el.slPrice !==
-                aiAnswerByMessageId[el.messageId].aiExtractedData.stop
-          ).length
+        Сигналов где взяли свой TP: ${
+          handledSignals.filter((el) => el.TPwasAutoCalculated).length
+        }  
+        Сигналов где взяли свой SL: ${
+          handledSignals.filter((el) => el.SLwasAutoCalculated).length
         }
       `
       await ctx.replyWithHTML(summaryMessage)
