@@ -4,6 +4,7 @@ import { cryptoSignals } from '@/bots/cryptoSignals/configs/cryptoSignals'
 import { generateTradingViewTradeResults } from '@/bots/cryptoSignals/utils/generateTradingViewTradeResults'
 import { getTradingViewChartLink } from '@/bots/cryptoSignals/utils/getTradingViewChartLink'
 import { log } from '@/helpers'
+import { addPercent } from '@/helpers/addPercent'
 import { convertTimestampToLocalDate } from '@/helpers/time/convertTimestamp'
 import { getTicks } from '@/marketApi/binance/api/getTicks'
 import { SignalType } from '@/models/Signal'
@@ -222,11 +223,12 @@ export const tradeByHistory = async ({
       ) {
         TPwasAutoCalculated = true
 
-        tradeTPExpectingPrice = Number(
-          (
-            Number(tradeStartDatePrice) *
-            (1 + manualInputTPPercent / 100)
-          ).toFixed(4)
+        tradeTPExpectingPrice = addPercent(
+          Number(tradeStartDatePrice),
+          signalMessageDirection === 'buy'
+            ? manualInputTPPercent
+            : -manualInputTPPercent,
+          4
         )
       }
       // Recalculate SL by percent
@@ -237,11 +239,13 @@ export const tradeByHistory = async ({
         tradeStartDatePrice
       ) {
         SLwasAutoCalculated = true
-        tradeSLExpectingPrice = Number(
-          (
-            Number(tradeStartDatePrice) *
-            (1 - manualInputSLPercent / 100)
-          ).toFixed(4)
+
+        tradeSLExpectingPrice = addPercent(
+          tradeStartDatePrice,
+          signalMessageDirection === 'buy'
+            ? -manualInputSLPercent
+            : manualInputSLPercent,
+          4
         )
       }
     }

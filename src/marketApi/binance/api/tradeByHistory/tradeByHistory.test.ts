@@ -63,13 +63,39 @@ describe('tradeByHistory', () => {
   it('Trade with manualInputPercentAsFallbackForLackOfSignalTPSL', async () => {})
   it('Unfinished trade', async () => {})
 
+  it('Manual percent | Sell', async () => {
+    const params: GetTicksParams = {
+      ...baseParams,
+      signalMessageTradeStartPrice: 5.519,
+      signalMessageTPValue: [5.267],
+      signalMessageSLValue: 5.64,
+      signalMessageDirection: 'sell',
+      manualInputTPPercent: 1,
+      manualInputSLPercent: 1,
+      manualInputPercentOverrideSignalPrice: true,
+      signalMessageSymbol: 'FXS',
+      signalMessageTime: 1697104403000,
+    }
+
+    const result = await tradeByHistory(params)
+
+    expect(result.isTPTriggered).toBe(true)
+    expect(result.tradeTPExpectingPrice).toBe(5.4628)
+    expect(result.tradeSLExpectingPrice).toBe(5.5732)
+
+    expect(result).toBeDefined()
+  })
+
   it('DEBUG Place', async () => {
     const params: GetTicksParams = {
       ...baseParams,
-      signalMessageTradeStartPrice: 0.00664,
-      signalMessageTPValue: [0.007105],
-      signalMessageSLValue: 0.006435,
-      signalMessageDirection: 'buy',
+      signalMessageTradeStartPrice: 5.519,
+      signalMessageTPValue: [5.267],
+      signalMessageSLValue: 5.64,
+      signalMessageDirection: 'sell',
+      manualInputTPPercent: 1,
+      manualInputSLPercent: 1,
+      manualInputPercentOverrideSignalPrice: true,
     }
 
     const result = await tradeByHistory(params)
