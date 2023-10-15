@@ -23,17 +23,42 @@ export const configByChannelId: Record<string, ConfigForSignalChannel> = {
     manualInputPercentAsFallbackForLackOfSignalTPSL: false,
     removeNotFinished: true,
   },
-  '-1001810513504': {
-    name: 'Друг Артур',
-    keyWords: ['СИГНАЛ'],
+  '-1001129197833': {
+    name: 'Binance Trading (Free Signals)',
+    keyWords: ['BUY', 'SELL', 'USE SL'],
     manualInputPercentOverrideSignalPrice: false,
     ignoreSignalsWithoutTPSL: false,
     manualInputPercentAsFallbackForLackOfSignalTPSL: true,
     removeNotFinished: true,
   },
+  // '-1001810513504': {
+  //   name: 'Друг Артур',
+  //   keyWords: ['СИГНАЛ'],
+  //   manualInputPercentOverrideSignalPrice: false,
+  //   ignoreSignalsWithoutTPSL: false,
+  //   manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+  //   removeNotFinished: true,
+  // },
   '-1001596060097': {
     // Dead
     keyWords: ['Открываю'],
+    manualInputPercentOverrideSignalPrice: false,
+    ignoreSignalsWithoutTPSL: false,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+    removeNotFinished: true,
+  },
+  '-1001980195660': {
+    name: 'кодекс шнайдера',
+    keyWords: ['Вход', 'Тейки', 'Стоп'],
+    or: ['Long', 'Short'],
+    manualInputPercentOverrideSignalPrice: true,
+    ignoreSignalsWithoutTPSL: false,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+    removeNotFinished: true,
+  },
+  '-1001853603830': {
+    name: 'Богдан Галицкий',
+    keyWords: ['SHORT', 'LONG'],
     manualInputPercentOverrideSignalPrice: false,
     ignoreSignalsWithoutTPSL: false,
     manualInputPercentAsFallbackForLackOfSignalTPSL: true,
@@ -48,6 +73,7 @@ export interface ConfigForSignalChannel {
   tickerWithHash?: boolean // Manual
   priceRequired?: boolean // Manual / AI
   keyWords?: string[] // Manual
+  or?: string[] // Manual
 
   manualInputPercentOverrideSignalPrice: boolean
   ignoreSignalsWithoutTPSL: boolean

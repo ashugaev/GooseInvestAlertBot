@@ -95,6 +95,8 @@ export interface GetTicksResult {
   tradingViewPineScrpt: string
 
   signalMessageDate: Date
+
+  inputDataInvalid: boolean
 }
 
 /**
@@ -137,6 +139,7 @@ export const tradeByHistory = async ({
   let isTPTriggered = false
   let TPwasAutoCalculated = false
   let SLwasAutoCalculated = false
+  let inputDataInvalid = false
 
   // Trade trading start
   let tradeStartDate: Date = null
@@ -156,6 +159,24 @@ export const tradeByHistory = async ({
   const isShort = signalMessageDirection === 'sell'
   const isLong = signalMessageDirection === 'buy'
 
+  const isTPValid =
+    !signalMessageTradeStartPrice ||
+    !tradeTPExpectingPrice ||
+    (isShort
+      ? tradeTPExpectingPrice < signalMessageTradeStartPrice
+      : tradeTPExpectingPrice > signalMessageTradeStartPrice)
+
+  const isSLValid =
+    !signalMessageTradeStartPrice ||
+    !tradeSLExpectingPrice ||
+    (isShort
+      ? tradeSLExpectingPrice > signalMessageTradeStartPrice
+      : tradeSLExpectingPrice < signalMessageTradeStartPrice)
+
+  if (!isTPValid) {
+    inputDataInvalid = true
+    return null
+  }
   // Price wasn't sent in signal message
   if (!signalMessageTradeStartPrice && signalMessageTime) {
     isStartPriceDetectedByDate = true
@@ -367,5 +388,6 @@ export const tradeByHistory = async ({
     tradingViewChartlint,
     tradingViewPineScrpt,
     signalMessageDate,
+    inputDataInvalid,
   }
 }

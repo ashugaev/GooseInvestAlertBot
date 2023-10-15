@@ -120,6 +120,9 @@ export class HistoryPriceAnalyze implements Omit<GetTicksResult, 'ticks'> {
 
   @prop({ required: true })
   tradingViewPineScrpt: string
+
+  @prop({ required: true })
+  inputDataInvalid: boolean
 }
 
 export const HistoryPriceAnalyzeModel = getModelForClass(HistoryPriceAnalyze)

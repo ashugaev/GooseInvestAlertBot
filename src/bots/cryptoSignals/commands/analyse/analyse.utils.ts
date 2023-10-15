@@ -22,7 +22,10 @@ import {
   SignalMessage,
   SignalMessageModel,
 } from '@/bots/cryptoSignals/models/signalMessage'
-import { finishAnalysisForUser } from '@/bots/cryptoSignals/models/userProcess'
+import {
+  finishAnalysisForUser,
+  UserProcessModel,
+} from '@/bots/cryptoSignals/models/userProcess'
 import {
   chatGptRequestHash,
   validateWithChatGPT,
@@ -42,10 +45,6 @@ import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { binanceAggTicksModel } from '@/bots/cryptoSignals/models/binanceAggTicks'
-import {
-  generatePineScriptCode,
-  PointWithLabel,
-} from '@/bots/cryptoSignals/utils/generagePinescript'
 
 function convertToCSV(data) {
   const rows = []
@@ -97,6 +96,7 @@ export const updateSignalChannels = async () => {
     const normalized: SignalChat[] = chats.map((chat) => ({
       chatId: Number(chat.id),
       title: chat?.title,
+      chatUsername: chat.username,
       username: chat.username,
       clientId: Number(clientInfo.id),
       clientUsername: clientInfo.username,
@@ -235,10 +235,10 @@ export const generateTableWithSignals = async (
             )
           : '-',
         'RESULT | SL Autocalculated': tradeRes?.SLwasAutoCalculated
-          ? tradeRes?.tradeTPExpectingPrice
+          ? tradeRes?.tradeSLExpectingPrice
           : '-',
         'RESULT | TP Autocalculated': tradeRes?.TPwasAutoCalculated
-          ? tradeRes?.tradeSLExpectingPrice
+          ? tradeRes?.tradeTPExpectingPrice
           : '-',
         // Ввод юзера
         'INPUT | TP Percent': tradeRes?.manualInputTPPercent || '-',
@@ -489,70 +489,70 @@ export const generateReportByChannel = async ({
 
               const tradeData = priceAnalysisByMessageId[data.id]
 
-              const pineDots: PointWithLabel[] = [
-                // Сообщение
-                {
-                  timestamp: new Date(tradeData.signalMessageDate).getTime(),
-                  label: 'Signal',
-                  labelColor: 'color.gray',
-                  type: 'dot',
-                  price: tradeData.firstAfterMessagePrice,
-                },
-                // Точка входа
-                {
-                  timestamp: new Date(tradeData?.tradeStartDate).getTime(),
-                  price: tradeData?.tradeStartDatePrice,
-                  label: 'Start Trade',
-                  labelColor: 'color.blue',
-                  type: 'dot',
-                },
-                {
-                  price: tradeData?.tradeSLExpectingPrice,
-                  label: 'SL Line',
-                  labelColor: 'color.red',
-                  type: 'line',
-                },
-                {
-                  price: tradeData?.tradeTPExpectingPrice,
-                  label: 'TP Line',
-                  labelColor: 'color.green',
-                  type: 'line',
-                },
-              ]
-
-              if (tradeData?.isTPTriggered) {
-                pineDots.push(
-                  // TP
-                  {
-                    timestamp: new Date(
-                      tradeData?.tradeTPTriggeredDate
-                    ).getTime(),
-                    price: tradeData?.tradeTPExpectingPrice,
-                    label: 'TP',
-                    labelColor: 'color.green',
-                    type: 'dot',
-                  }
-                )
-              }
-              if (tradeData?.isSLTriggered) {
-                pineDots.push(
-                  // SL
-                  {
-                    timestamp: new Date(
-                      tradeData?.tradeSLTriggeredDate
-                    ).getTime(),
-                    price: tradeData?.tradeSLExpectingPrice,
-                    label: 'SL',
-                    labelColor: 'color.red',
-                    type: 'dot',
-                  }
-                )
-              }
-
-              const script = generatePineScriptCode(pineDots)
-
-              // Place for debug pinescript
-              // debugger
+              // const pineDots: PointWithLabel[] = [
+              //   // Сообщение
+              //   {
+              //     timestamp: new Date(tradeData.signalMessageDate).getTime(),
+              //     label: 'Signal',
+              //     labelColor: 'color.gray',
+              //     type: 'dot',
+              //     price: tradeData.firstAfterMessagePrice,
+              //   },
+              //   // Точка входа
+              //   {
+              //     timestamp: new Date(tradeData?.tradeStartDate).getTime(),
+              //     price: tradeData?.tradeStartDatePrice,
+              //     label: 'Start Trade',
+              //     labelColor: 'color.blue',
+              //     type: 'dot',
+              //   },
+              //   {
+              //     price: tradeData?.tradeSLExpectingPrice,
+              //     label: 'SL Line',
+              //     labelColor: 'color.red',
+              //     type: 'line',
+              //   },
+              //   {
+              //     price: tradeData?.tradeTPExpectingPrice,
+              //     label: 'TP Line',
+              //     labelColor: 'color.green',
+              //     type: 'line',
+              //   },
+              // ]
+              //
+              // if (tradeData?.isTPTriggered) {
+              //   pineDots.push(
+              //     // TP
+              //     {
+              //       timestamp: new Date(
+              //         tradeData?.tradeTPTriggeredDate
+              //       ).getTime(),
+              //       price: tradeData?.tradeTPExpectingPrice,
+              //       label: 'TP',
+              //       labelColor: 'color.green',
+              //       type: 'dot',
+              //     }
+              //   )
+              // }
+              // if (tradeData?.isSLTriggered) {
+              //   pineDots.push(
+              //     // SL
+              //     {
+              //       timestamp: new Date(
+              //         tradeData?.tradeSLTriggeredDate
+              //       ).getTime(),
+              //       price: tradeData?.tradeSLExpectingPrice,
+              //       label: 'SL',
+              //       labelColor: 'color.red',
+              //       type: 'dot',
+              //     }
+              //   )
+              // }
+              //
+              // const script = generatePineScriptCode(pineDots)
+              //
+              // // Place for debug pinescript
+              // // debugger
             } catch (e) {
               newItem.status = 'Error while getting price'
             }
@@ -669,6 +669,16 @@ export const generateReportByChannel = async ({
 
     const config = configByChannelId[channel.chatId]
 
+    const processInfo = await UserProcessModel.findOne({
+      userId: ctx.from.id,
+    })
+    const timediff = processInfo.updatedAt
+      ? (
+          (new Date().getTime() - processInfo.updatedAt.getTime()) /
+          1000
+        ).toFixed(0)
+      : 0
+
     if (bufferData.length > 0) {
       const summaryMessage = `
         <b>📊 Отчет по каналу ${channel.title}</b>
@@ -713,7 +723,7 @@ export const generateReportByChannel = async ({
           handledSignals.filter((el) => el.SLwasAutoCalculated).length
         }
 
-      <b>⚙️ Config</b>
+    <b>⚙️ Config</b>
         
         Свой TP/SL : ${
           config.manualInputPercentOverrideSignalPrice ? 'Да' : 'Нет'
@@ -727,6 +737,8 @@ export const generateReportByChannel = async ({
         Исключать из отчета не завершенные сделки : ${
           config.removeNotFinished ? 'Да' : 'Нет'
         }
+
+    ⏱️ Time: ${timediff}s
       `
       await ctx.replyWithHTML(summaryMessage)
       await ctx.replyWithDocument(
