@@ -1,3 +1,6 @@
+import { AggregatedTrade } from 'binance-api-node'
+
+import { binanceAggTicksModel } from '@/bots/cryptoSignals/models/binanceAggTicks'
 import { binance } from '@/marketApi/binance/utils/binance'
 
 export const getTicks = async ({
@@ -8,7 +11,7 @@ export const getTicks = async ({
   symbol: string
   fromId?: string
   startTime?: number
-}) => {
+}): Promise<AggregatedTrade[]> => {
   const params: {
     symbol: string
     fromId?: string
@@ -24,11 +27,40 @@ export const getTicks = async ({
     params.startTime = startTime
   }
 
+  let newTicks: AggregatedTrade[] = []
+
   if (fromId) {
     params.fromId = fromId
+
+    // Check if we have this tick in db
+    const foundTick = await binanceAggTicksModel.findOne({
+      aggId: Number(fromId),
+    })
+
+    // Fist checking DB cache
+    if (foundTick) {
+      const allTicksFromId = await binanceAggTicksModel
+        .find({
+          symbol: params.symbol,
+          aggId: { $gte: Number(fromId) },
+        })
+        .sort({ aggId: 1 })
+        .exec()
+
+      // Проверяем неразрывность aggId
+      for (let i = 0; i < allTicksFromId.length - 1; i++) {
+        if (allTicksFromId[i + 1].aggId - allTicksFromId[i].aggId !== 1) {
+          newTicks = allTicksFromId.slice(0, i + 1)
+          break
+        }
+      }
+    }
   }
 
-  const newTicks = await binance.aggTrades(params)
+  // Binance as a fallback
+  if (!newTicks.length) {
+    newTicks = await binance.aggTrades(params)
+  }
 
   return newTicks
 }

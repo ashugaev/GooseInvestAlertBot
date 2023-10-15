@@ -37,6 +37,7 @@ import { tradeByHistory } from '@/marketApi/binance/api/tradeByHistory/tradeByHi
 import { User } from '@/models'
 import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
+import { AggregatedTrade } from 'binance-api-node'
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
@@ -465,6 +466,9 @@ export const generateReportByChannel = async ({
                   signalMessageDirection: type,
                 })) ?? {}
 
+              // Don't await
+              saveTicks(ticks)
+
               priceAnalysisByMessageId[data.id] = {
                 ...tradeRes,
                 chat: channel._id,
@@ -598,7 +602,8 @@ export const generateReportByChannel = async ({
         },
       }))
 
-      await SignalAiRecognizeModel.bulkWrite(bulkUpdateAiAnswers)
+      // Don't await!
+      SignalAiRecognizeModel.bulkWrite(bulkUpdateAiAnswers)
     } catch (e) {
       log.error('Error while saving ai answers', e)
     }
@@ -623,7 +628,8 @@ export const generateReportByChannel = async ({
           },
         }))
 
-      await HistoryPriceAnalyzeModel.bulkWrite(bulkUpdatePriceAnalysis)
+      // Don't await!
+      HistoryPriceAnalyzeModel.bulkWrite(bulkUpdatePriceAnalysis)
     } catch (e) {
       log.error('Error while saving price analysis', e)
     }
@@ -740,4 +746,23 @@ export const generateReportByChannel = async ({
   } finally {
     await finishAnalysisForUser(ctx.from.id)
   }
+}
+
+async function saveTicks(ticks: AggregatedTrade[]) {
+  const bulkWrite = ticks.map((tick) => ({
+    updateOne: {
+      filter: {
+        aggId: tick.aggId,
+        timestamp: tick.timestamp,
+        symbol: tick.symbol,
+      },
+      update: {
+        $set: {
+          ...tick,
+        },
+      },
+    },
+  }))
+
+  await HistoryPriceAnalyzeModel.bulkWrite(bulkWrite)
 }
