@@ -44,7 +44,6 @@ import {
   generatePineScriptCode,
   PointWithLabel,
 } from '@/bots/cryptoSignals/utils/generagePinescript'
-import { getTradingViewChartLink } from '@/bots/cryptoSignals/utils/getTradingViewChartLink'
 
 function convertToCSV(data) {
   const rows = []
@@ -190,71 +189,6 @@ export const generateTableWithSignals = async (
         return null
       }
 
-      const pineDots: PointWithLabel[] = [
-        // Сообщение
-        {
-          timestamp: new Date(message.date * 1000).getTime(),
-          label: 'Signal',
-          labelColor: 'color.gray',
-          type: 'dot',
-          price: tradeRes.firstAfterMessagePrice,
-        },
-        // Точка входа
-        {
-          timestamp: new Date(tradeRes?.tradeStartDate).getTime(),
-          price: tradeRes?.tradeStartDatePrice,
-          label: 'Start Trade',
-          labelColor: 'color.blue',
-          type: 'dot',
-        },
-      ]
-
-      if (tradeRes?.tradeSLExpectingPrice) {
-        pineDots.push({
-          price: tradeRes?.tradeSLExpectingPrice,
-          label: 'SL Line',
-          labelColor: 'color.red',
-          type: 'line',
-        })
-      }
-
-      if (tradeRes?.tradeTPExpectingPrice) {
-        pineDots.push({
-          price: tradeRes?.tradeTPExpectingPrice,
-          label: 'TP Line',
-          labelColor: 'color.green',
-          type: 'line',
-        })
-      }
-
-      if (tradeRes?.isTPTriggered) {
-        pineDots.push(
-          // TP
-          {
-            timestamp: new Date(tradeRes?.tradeTPTriggeredDate).getTime(),
-            price: tradeRes?.tradeTPExpectingPrice,
-            label: 'TP',
-            labelColor: 'color.green',
-            type: 'dot',
-          }
-        )
-      }
-
-      if (tradeRes?.isSLTriggered) {
-        pineDots.push(
-          // SL
-          {
-            timestamp: new Date(tradeRes?.tradeSLTriggeredDate).getTime(),
-            price: tradeRes?.tradeSLExpectingPrice,
-            label: 'SL',
-            labelColor: 'color.red',
-            type: 'dot',
-          }
-        )
-      }
-
-      const pineScriptString = generatePineScriptCode(pineDots)
-
       return {
         // Данные из телеграмма
         'TG | Channel': channel.title || '-',
@@ -321,13 +255,8 @@ export const generateTableWithSignals = async (
         // AI
         'AI Answer': aiAnswer?.chatGptValidationMessage || '-',
         // DEBUG
-        'DEBUG | Chart Link': aiAnswer?.aiExtractedData?.ticker?.length
-          ? getTradingViewChartLink({
-              symbol: aiAnswer?.aiExtractedData?.ticker + 'USDT',
-              source: 'BINANCE',
-            })
-          : '-',
-        'DEBUG | Pine Script': pineScriptString || '-',
+        'DEBUG | Chart Link': tradeRes.tradingViewChartlint || '-',
+        'DEBUG | Pine Script': tradeRes.tradingViewPineScrpt || '-',
       }
     })
     .filter(Boolean)
@@ -552,11 +481,6 @@ export const generateReportByChannel = async ({
               }
 
               const tradeData = priceAnalysisByMessageId[data.id]
-
-              const chartlint = getTradingViewChartLink({
-                symbol: ticker + 'USDT',
-                source: 'BINANCE',
-              })
 
               const pineDots: PointWithLabel[] = [
                 // Сообщение

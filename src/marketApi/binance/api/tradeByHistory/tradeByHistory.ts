@@ -1,14 +1,17 @@
 import { AggregatedTrade } from 'binance-api-node'
 
 import { cryptoSignals } from '@/bots/cryptoSignals/configs/cryptoSignals'
+import { generateTradingViewTradeResults } from '@/bots/cryptoSignals/utils/generateTradingViewTradeResults'
+import { getTradingViewChartLink } from '@/bots/cryptoSignals/utils/getTradingViewChartLink'
 import { log } from '@/helpers'
+import { convertTimestampToLocalDate } from '@/helpers/time/convertTimestamp'
 import { getTicks } from '@/marketApi/binance/api/getTicks'
 import { SignalType } from '@/models/Signal'
 const { format, differenceInDays } = require('date-fns')
 
-interface GetTicksParams {
+export interface GetTicksParams {
   /**
-   * Врем выхода сигнала
+   * Время выхода сигнала
    */
   signalMessageTime: number
   /**
@@ -86,6 +89,9 @@ export interface GetTicksResult {
 
   TPwasAutoCalculated: boolean
   SLwasAutoCalculated: boolean
+
+  tradingViewChartlint: string
+  tradingViewPineScrpt: string
 }
 
 /**
@@ -151,13 +157,15 @@ export const tradeByHistory = async ({
   if (!signalMessageTradeStartPrice && signalMessageTime) {
     isStartPriceDetectedByDate = true
     tradeStarted = true
-    tradeStartDate = new Date(signalMessageTime)
+    tradeStartDate = convertTimestampToLocalDate(signalMessageTime)
   }
 
   let i = 0
   let lastFetchedId = null
 
   while (true) {
+    let tickDate = convertTimestampToLocalDate(ticks[i]?.timestamp)
+
     // if last
     if (i === ticks.length) {
       const params = ticks.length
@@ -182,8 +190,8 @@ export const tradeByHistory = async ({
       if (
         ticks.length &&
         differenceInDays(
-          new Date(ticks[ticks.length - 1].timestamp),
-          new Date(ticks[0].timestamp)
+          convertTimestampToLocalDate(ticks[ticks.length - 1]?.timestamp),
+          convertTimestampToLocalDate(ticks[0]?.timestamp)
         ) > cryptoSignals.maxDaysForHistoricalTrade
       ) {
         isSkippedBecauseOfPeriod = true
@@ -196,28 +204,43 @@ export const tradeByHistory = async ({
       })
       ticks.push(...newTicks)
 
+      tickDate = convertTimestampToLocalDate(ticks[i]?.timestamp)
+
       // Collect first tick price for the case when we start instantly
       if (tradeStartDate && !tradeStartDatePrice) {
         tradeStartDatePrice = Number(ticks[0].price)
       }
 
+      // Recalculate TP by percent
       if (
-        (!tradeTPExpectingPrice &&
+        ((!tradeTPExpectingPrice &&
           manualInputPercentAsFallbackForLackOfSignalTPSL) ||
-        manualInputPercentOverrideSignalPrice
+          manualInputPercentOverrideSignalPrice) &&
+        tradeStartDatePrice
       ) {
         TPwasAutoCalculated = true
-        tradeTPExpectingPrice =
-          Number(tradeStartDatePrice) * (1 + manualInputTPPercent / 100)
+
+        tradeTPExpectingPrice = Number(
+          (
+            Number(tradeStartDatePrice) *
+            (1 + manualInputTPPercent / 100)
+          ).toFixed(4)
+        )
       }
+      // Recalculate SL by percent
       if (
-        (!tradeSLExpectingPrice &&
+        ((!tradeSLExpectingPrice &&
           manualInputPercentAsFallbackForLackOfSignalTPSL) ||
-        manualInputPercentOverrideSignalPrice
+          manualInputPercentOverrideSignalPrice) &&
+        tradeStartDatePrice
       ) {
         SLwasAutoCalculated = true
-        tradeSLExpectingPrice =
-          Number(tradeStartDatePrice) * (1 - manualInputSLPercent / 100)
+        tradeSLExpectingPrice = Number(
+          (
+            Number(tradeStartDatePrice) *
+            (1 - manualInputSLPercent / 100)
+          ).toFixed(4)
+        )
       }
     }
 
@@ -240,7 +263,7 @@ export const tradeByHistory = async ({
         (tickPrice <= signalMessageTradeStartPrice && isShort))
     ) {
       tradeStarted = true
-      tradeStartDate = new Date(ticks[i].timestamp)
+      tradeStartDate = tickDate
       tradeStartDatePrice = tickPrice
     }
 
@@ -258,7 +281,7 @@ export const tradeByHistory = async ({
         (tickPrice <= tradeTPExpectingPrice && isShort))
     ) {
       isTPTriggered = true
-      tradeTPTriggeredDate = new Date(ticks[i].timestamp)
+      tradeTPTriggeredDate = tickDate
       isTradeSuccessfullyFinished = true
       break
     }
@@ -269,7 +292,7 @@ export const tradeByHistory = async ({
         (tickPrice >= tradeSLExpectingPrice && isShort))
     ) {
       isSLTriggered = true
-      tradeSLTriggeredDate = new Date(ticks[i].timestamp)
+      tradeSLTriggeredDate = tickDate
       isTradeSuccessfullyFinished = true
       break
     }
@@ -288,15 +311,34 @@ export const tradeByHistory = async ({
         Current: ${tickPrice} 
         Highest: ${highestPrice} 
         Lowest: ${lowestPrice} 
-        Last Tick Date: ${format(
-          new Date(ticks[i].timestamp),
-          'dd.MM.yyyy HH:mm:ss'
-        )}`
+        Last Tick Date: ${format(tickDate, 'dd.MM.yyyy HH:mm:ss')}`
       )
     }
 
     i++
   }
+
+  const signalMessageDate = convertTimestampToLocalDate(signalMessageTime)
+
+  const tradingViewPineScrpt = generateTradingViewTradeResults({
+    signalMessageDate,
+    tradeStartDate,
+    // @ts-ignore
+    signalMessageSymbol,
+    firstAfterMessagePrice,
+    tradeStartDatePrice,
+    tradeSLExpectingPrice,
+    tradeTPExpectingPrice,
+    isTPTriggered,
+    isSLTriggered,
+    tradeTPTriggeredDate,
+    tradeSLTriggeredDate,
+  })
+
+  const tradingViewChartlint = getTradingViewChartLink({
+    symbol: signalMessageSymbol + 'USDT',
+    source: 'BINANCE',
+  })
 
   return {
     ticks,
@@ -316,5 +358,7 @@ export const tradeByHistory = async ({
     TPwasAutoCalculated,
     SLwasAutoCalculated,
     firstAfterMessagePrice,
+    tradingViewChartlint,
+    tradingViewPineScrpt,
   }
 }

@@ -25,5 +25,5 @@
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": [".eslintrc.js", "src/**/*"]
+  "include": [".eslintrc.js", "src/**/*"],
 }

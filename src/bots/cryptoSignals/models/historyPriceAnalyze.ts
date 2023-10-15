@@ -114,6 +114,12 @@ export class HistoryPriceAnalyze implements Omit<GetTicksResult, 'ticks'> {
 
   @prop({ required: true })
   firstAfterMessagePrice: number
+
+  @prop({ required: true })
+  tradingViewChartlint: string
+
+  @prop({ required: true })
+  tradingViewPineScrpt: string
 }
 
 export const HistoryPriceAnalyzeModel = getModelForClass(HistoryPriceAnalyze)

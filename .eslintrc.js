@@ -69,5 +69,12 @@ module.exports = {
         'import/first': 0,
       },
     },
+    {
+      files: ['jest.config.js'],
+      parserOptions: {
+        project: './tsconfig.eslint.json',
+        disableTypeChecked: true, // отключаем проверку типов для этого файла
+      },
+    },
   ],
 }

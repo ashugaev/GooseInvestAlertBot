@@ -8,6 +8,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
+    "test": "jest",
     "lint": "npm run pretty && eslint --max-warnings 0 --ext ts,tsx,json src",
     "pretty": "prettier --check src",
     "lint:fix": "npm run pretty -- --write && eslint --max-warnings 0 --ext ts,tsx,json src --fix",
@@ -39,6 +40,7 @@
     ]
   },
   "devDependencies": {
+    "@types/jest": "29.5.5",
     "@typescript-eslint/eslint-plugin": "5.59.0",
     "@typescript-eslint/parser": "5.59.0",
     "concurrently": "5.2.0",
@@ -48,7 +50,9 @@
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-sort-imports-es6-autofix": "0.6.0",
+    "jest": "29.7.0",
     "nodemon": "2.0.4",
+    "ts-jest": "29.1.1",
     "typescript": "4.9.3"
   },
   "dependencies": {
