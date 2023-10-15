@@ -82,6 +82,34 @@ describe('tradeByHistory', () => {
     expect(result.isTPTriggered).toBe(true)
     expect(result.tradeTPExpectingPrice).toBe(5.4628)
     expect(result.tradeSLExpectingPrice).toBe(5.5732)
+    expect(result.TPwasAutoCalculated).toBe(true)
+    expect(result.TPwasAutoCalculated).toBe(true)
+
+    expect(result).toBeDefined()
+  })
+
+  it('Manual percent | Sell | 2', async () => {
+    const signalMessageTime = new Date('10.14.2023 15:33:54').getTime()
+    const params: GetTicksParams = {
+      ...baseParams,
+      signalMessageTradeStartPrice: 1.635,
+      signalMessageTPValue: [1.542],
+      signalMessageSLValue: 0.717,
+      signalMessageDirection: 'sell',
+      manualInputTPPercent: 1,
+      manualInputSLPercent: 2,
+      manualInputPercentOverrideSignalPrice: true,
+      signalMessageSymbol: 'RUNE',
+      signalMessageTime,
+    }
+
+    const result = await tradeByHistory(params)
+
+    expect(result.isSLTriggered).toBe(true)
+    expect(result.tradeTPExpectingPrice).toBe(1.6147)
+    expect(result.tradeSLExpectingPrice).toBe(1.6636)
+    expect(result.TPwasAutoCalculated).toBe(true)
+    expect(result.TPwasAutoCalculated).toBe(true)
 
     expect(result).toBeDefined()
   })

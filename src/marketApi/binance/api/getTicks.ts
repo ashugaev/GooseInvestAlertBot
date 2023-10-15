@@ -1,6 +1,5 @@
 import { AggregatedTrade } from 'binance-api-node'
 
-import { binanceAggTicksModel } from '@/bots/cryptoSignals/models/binanceAggTicks'
 import { binance } from '@/marketApi/binance/utils/binance'
 
 export const getTicks = async ({
@@ -32,10 +31,17 @@ export const getTicks = async ({
   if (fromId) {
     params.fromId = fromId
 
-    // Check if we have this tick in db
-    const foundTick = await binanceAggTicksModel.findOne({
-      aggId: Number(fromId),
-    })
+    /*
+    let foundTick: BinanceAggTicks | null = null
+
+    try {
+      // Check if we have this tick in db
+      foundTick = await binanceAggTicksModel.findOne({
+        aggId: Number(fromId),
+      })
+    } catch (e) {
+      console.error(e)
+    }
 
     // Fist checking DB cache
     if (foundTick) {
@@ -65,6 +71,8 @@ export const getTicks = async ({
 
       console.log('getTicks from DB', newTicks.length)
     }
+   
+     */
   }
 
   // Binance as a fallback

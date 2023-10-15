@@ -225,7 +225,7 @@ export const tradeByHistory = async ({
       ticks.push(...newTicks)
 
       if (ticks.length && !firstAfterMessagePrice) {
-        firstAfterMessagePrice = Number(ticks[ticks.length - 1].price)
+        firstAfterMessagePrice = Number(ticks[0].price)
       }
 
       tickDate = convertTimestampToLocalDate(ticks[i]?.timestamp)
@@ -233,41 +233,6 @@ export const tradeByHistory = async ({
       // Collect first tick price for the case when we start instantly
       if (tradeStartDate && !tradeStartDatePrice) {
         tradeStartDatePrice = Number(ticks[0].price)
-      }
-
-      // Recalculate TP by percent
-      if (
-        ((!tradeTPExpectingPrice &&
-          manualInputPercentAsFallbackForLackOfSignalTPSL) ||
-          manualInputPercentOverrideSignalPrice) &&
-        tradeStartDatePrice
-      ) {
-        TPwasAutoCalculated = true
-
-        tradeTPExpectingPrice = addPercent(
-          Number(tradeStartDatePrice),
-          signalMessageDirection === 'buy'
-            ? manualInputTPPercent
-            : -manualInputTPPercent,
-          4
-        )
-      }
-      // Recalculate SL by percent
-      if (
-        ((!tradeSLExpectingPrice &&
-          manualInputPercentAsFallbackForLackOfSignalTPSL) ||
-          manualInputPercentOverrideSignalPrice) &&
-        tradeStartDatePrice
-      ) {
-        SLwasAutoCalculated = true
-
-        tradeSLExpectingPrice = addPercent(
-          tradeStartDatePrice,
-          signalMessageDirection === 'buy'
-            ? -manualInputSLPercent
-            : manualInputSLPercent,
-          4
-        )
       }
     }
 
@@ -292,6 +257,41 @@ export const tradeByHistory = async ({
       tradeStarted = true
       tradeStartDate = tickDate
       tradeStartDatePrice = tickPrice
+    }
+
+    // Recalculate TP by percent
+    if (
+      ((!tradeTPExpectingPrice &&
+        manualInputPercentAsFallbackForLackOfSignalTPSL) ||
+        manualInputPercentOverrideSignalPrice) &&
+      tradeStartDatePrice
+    ) {
+      TPwasAutoCalculated = true
+
+      tradeTPExpectingPrice = addPercent(
+        Number(tradeStartDatePrice),
+        signalMessageDirection === 'buy'
+          ? manualInputTPPercent
+          : -manualInputTPPercent,
+        4
+      )
+    }
+    // Recalculate SL by percent
+    if (
+      ((!tradeSLExpectingPrice &&
+        manualInputPercentAsFallbackForLackOfSignalTPSL) ||
+        manualInputPercentOverrideSignalPrice) &&
+      tradeStartDatePrice
+    ) {
+      SLwasAutoCalculated = true
+
+      tradeSLExpectingPrice = addPercent(
+        tradeStartDatePrice,
+        signalMessageDirection === 'buy'
+          ? -manualInputSLPercent
+          : manualInputSLPercent,
+        4
+      )
     }
 
     if (!highestPrice || tickPrice > highestPrice) {
