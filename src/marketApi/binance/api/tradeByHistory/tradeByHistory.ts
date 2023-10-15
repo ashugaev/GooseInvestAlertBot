@@ -92,6 +92,8 @@ export interface GetTicksResult {
 
   tradingViewChartlint: string
   tradingViewPineScrpt: string
+
+  signalMessageDate: Date
 }
 
 /**
@@ -183,10 +185,6 @@ export const tradeByHistory = async ({
         lastFetchedId = params.fromId
       }
 
-      if (ticks.length && !firstAfterMessagePrice) {
-        firstAfterMessagePrice = Number(ticks[ticks.length - 1].price)
-      }
-
       if (
         ticks.length &&
         differenceInDays(
@@ -203,6 +201,10 @@ export const tradeByHistory = async ({
         ...params,
       })
       ticks.push(...newTicks)
+
+      if (ticks.length && !firstAfterMessagePrice) {
+        firstAfterMessagePrice = Number(ticks[ticks.length - 1].price)
+      }
 
       tickDate = convertTimestampToLocalDate(ticks[i]?.timestamp)
 
@@ -360,5 +362,6 @@ export const tradeByHistory = async ({
     firstAfterMessagePrice,
     tradingViewChartlint,
     tradingViewPineScrpt,
+    signalMessageDate,
   }
 }

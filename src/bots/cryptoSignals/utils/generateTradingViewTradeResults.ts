@@ -31,15 +31,18 @@ export const generateTradingViewTradeResults = (
       type: 'dot',
       price: tradeRes.firstAfterMessagePrice,
     },
-    // Точка входа
-    {
-      timestamp: tradeRes?.tradeStartDate.getTime(),
-      price: tradeRes?.tradeStartDatePrice,
+  ]
+
+  // Точка входа
+  if (tradeRes.tradeStartDate) {
+    pineDots.push({
+      timestamp: tradeRes.tradeStartDate.getTime(),
+      price: tradeRes.tradeStartDatePrice,
       label: 'Start Trade',
       labelColor: 'color.blue',
       type: 'dot',
-    },
-  ]
+    })
+  }
 
   if (tradeRes?.tradeSLExpectingPrice) {
     pineDots.push({

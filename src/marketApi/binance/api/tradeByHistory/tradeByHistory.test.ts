@@ -62,4 +62,18 @@ describe('tradeByHistory', () => {
 
   it('Trade with manualInputPercentAsFallbackForLackOfSignalTPSL', async () => {})
   it('Unfinished trade', async () => {})
+
+  it('DEBUG Place', async () => {
+    const params: GetTicksParams = {
+      ...baseParams,
+      signalMessageTradeStartPrice: 0.00664,
+      signalMessageTPValue: [0.007105],
+      signalMessageSLValue: 0.006435,
+      signalMessageDirection: 'buy',
+    }
+
+    const result = await tradeByHistory(params)
+
+    debugger
+  })
 })
