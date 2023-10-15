@@ -18,9 +18,9 @@ export const configByChannelId: Record<string, ConfigForSignalChannel> = {
   '-1001922990972': {
     name: 'Tyler Davis | Crypto Path',
     keyWords: ['Торговая пара', 'Точка входа'],
-    manualInputPercentOverrideSignalPrice: true,
+    manualInputPercentOverrideSignalPrice: false,
     ignoreSignalsWithoutTPSL: true,
-    manualInputPercentAsFallbackForLackOfSignalTPSL: true,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: false,
     removeNotFinished: true,
   },
   '-1001810513504': {

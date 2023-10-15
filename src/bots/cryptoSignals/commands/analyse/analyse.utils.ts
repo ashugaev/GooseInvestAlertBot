@@ -720,7 +720,6 @@ export const generateReportByChannel = async ({
         Исключать из отчета не завершенные сделки : ${
           config.removeNotFinished ? 'Да' : 'Нет'
         }
-      }
       `
       await ctx.replyWithHTML(summaryMessage)
       await ctx.replyWithDocument(
