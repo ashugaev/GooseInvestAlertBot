@@ -233,11 +233,11 @@ export const generateTableWithSignals = async (
             )
           : '-',
         'RESULT | SL Autocalculated': tradeRes?.SLwasAutoCalculated
-          ? 'YES'
-          : 'NO',
+          ? tradeRes?.tradeTPExpectingPrice
+          : '-',
         'RESULT | TP Autocalculated': tradeRes?.TPwasAutoCalculated
-          ? 'YES'
-          : 'NO',
+          ? tradeRes?.tradeSLExpectingPrice
+          : '-',
         // Ввод юзера
         'INPUT | TP Percent': tradeRes?.manualInputTPPercent || '-',
         'INPUT | SL Percent': tradeRes?.manualInputSLPercent || '-',
@@ -365,7 +365,7 @@ export const generateReportByChannel = async ({
     let i = 0
     // FIXME: Remove hardcoded limit
     // .slice(0, 1)
-    for (const data of messages.slice(0, 15)) {
+    for (const data of messages) {
       try {
         let aiRes = ''
 
@@ -660,6 +660,8 @@ export const generateReportByChannel = async ({
       Extra.HTML(true) as ExtraEditMessage
     )
 
+    const config = configByChannelId[channel.chatId]
+
     if (bufferData.length > 0) {
       const summaryMessage = `
         <b>📊 Отчет по каналу ${channel.title}</b>
@@ -703,6 +705,22 @@ export const generateReportByChannel = async ({
         Сигналов где взяли свой SL: ${
           handledSignals.filter((el) => el.SLwasAutoCalculated).length
         }
+
+        <b>Config</b>
+        
+        Свой TP/SL : ${
+          config.manualInputPercentOverrideSignalPrice ? 'Да' : 'Нет'
+        }
+        Игнорировать сигналы без TP/SL : ${
+          config.ignoreSignalsWithoutTPSL ? 'Да' : 'Нет'
+        }
+        Использовать свой TP/SL как fallback для сигналов без TP/SL : ${
+          config.manualInputPercentAsFallbackForLackOfSignalTPSL ? 'Да' : 'Нет'
+        }
+        Исключать из отчета не завершенные сделки : ${
+          config.removeNotFinished ? 'Да' : 'Нет'
+        }
+      }
       `
       await ctx.replyWithHTML(summaryMessage)
       await ctx.replyWithDocument(
