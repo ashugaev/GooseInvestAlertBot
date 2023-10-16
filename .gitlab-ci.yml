@@ -11,12 +11,21 @@ variables:
   DOCKER_DRIVER: overlay2
 
 stages:
+  - test
   # Делаем сборку
   - build
   # Генерим докер-образ и пушим в регистр
   - release
   # Заходим на сервер, обновляем и запускаем образ
   - deploy
+
+test:
+  stage: test
+  image: node:16-alpine
+  script:
+    - npm run test
+  except:
+    - master  # исключаем ветку master из этапа тестирования
 
 build:
   stage: build
