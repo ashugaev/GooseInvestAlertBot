@@ -44,6 +44,7 @@ import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { saveTicks } from '@/bots/cryptoSignals/models/binanceAggTicks'
+import { addPercent } from '@/helpers/addPercent'
 
 export const updateSignalChannels = async () => {
   try {
@@ -202,6 +203,7 @@ export const generateTableWithSignals = async (
         'RESULT | TP Autocalculated': tradeRes?.TPwasAutoCalculated
           ? tradeRes?.tradeTPExpectingPrice
           : '-',
+        'RESULT | Deposit change %': tradeRes?.depositChangePercent || '-',
         // Ввод юзера
         'INPUT | TP Percent': tradeRes?.manualInputTPPercent || '-',
         'INPUT | SL Percent': tradeRes?.manualInputSLPercent || '-',
@@ -574,9 +576,21 @@ export const generateReportByChannel = async ({
         ).toFixed(0)
       : 0
 
+    const finalDeposit = handledSignals.reduce((acc, el) => {
+      if (el.depositChangePercent) {
+        return addPercent(acc, el.depositChangePercent)
+      } else {
+        return acc
+      }
+    }, 100)
+
+    const depositChangePercent = (finalDeposit - 100).toFixed(2)
+
     if (bufferData.length > 0) {
       const summaryMessage = `
         <b>📊 Отчет по каналу ${channel.title}</b>
+        
+        Прибыль: ${depositChangePercent}%
         
         Сообщений проверенно: ${messages.length}
         Распознанно сигналов (AI): ${Object.values(aiAnswerByMessageId).length}

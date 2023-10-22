@@ -1,6 +1,7 @@
 import { AggregatedTrade } from 'binance-api-node'
 
 import { cryptoSignals } from '@/bots/cryptoSignals/configs/cryptoSignals'
+import { calculateProfit } from '@/bots/cryptoSignals/utils/calculateProfit'
 import { generateTradingViewTradeResults } from '@/bots/cryptoSignals/utils/generateTradingViewTradeResults'
 import { getTradingViewChartLink } from '@/bots/cryptoSignals/utils/getTradingViewChartLink'
 import { log } from '@/helpers'
@@ -97,6 +98,8 @@ export interface GetTicksResult {
   signalMessageDate: Date
 
   inputDataInvalid: boolean
+
+  depositChangePercent?: number
 }
 
 /**
@@ -367,7 +370,7 @@ export const tradeByHistory = async ({
     source: 'BINANCE',
   })
 
-  return {
+  const res: GetTicksResult = {
     ticks,
     isSLTriggered,
     isTPTriggered,
@@ -390,4 +393,10 @@ export const tradeByHistory = async ({
     signalMessageDate,
     inputDataInvalid,
   }
+
+  const depositChangePercent = calculateProfit(res)
+
+  res.depositChangePercent = depositChangePercent
+
+  return res
 }

@@ -3,4 +3,5 @@ export const cryptoSignals = {
   // Best signal folder
   folderId: 5,
   maxDaysForHistoricalTrade: 5,
+  riskPercentForTradingSimulation: 0.02,
 }

@@ -123,6 +123,9 @@ export class HistoryPriceAnalyze implements Omit<GetTicksResult, 'ticks'> {
 
   @prop({ required: true })
   inputDataInvalid: boolean
+
+  @prop({ required: true })
+  depositChangePercent: number
 }
 
 export const HistoryPriceAnalyzeModel = getModelForClass(HistoryPriceAnalyze)
