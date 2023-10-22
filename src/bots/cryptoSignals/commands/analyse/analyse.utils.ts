@@ -40,44 +40,10 @@ import { tradeByHistory } from '@/marketApi/binance/api/tradeByHistory/tradeByHi
 import { User } from '@/models'
 import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
-import { AggregatedTrade } from 'binance-api-node'
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
-import { binanceAggTicksModel } from '@/bots/cryptoSignals/models/binanceAggTicks'
-
-function convertToCSV(data) {
-  const rows = []
-
-  // Создаем строки CSV из данных
-  data.forEach((item) => {
-    const values = Object.values(item)
-    const escapedValues = values.map((value) => {
-      if (typeof value === 'string') {
-        return `"${value.replace(/"/g, '""')}"`
-      }
-      return value
-    })
-    rows.push(escapedValues.join(','))
-  })
-
-  // Объединяем строки в одну строку
-  return rows.join('\n')
-}
-
-// Ваши данные в формате массива объектов
-const yourData = [
-  { name: 'John', age: 30, city: 'New York' },
-  { name: 'Jane', age: 25, city: 'Los Angeles' },
-  // ... остальные данные
-]
-
-const csvString = convertToCSV(yourData)
-
-// Преобразуем CSV строку в буфер
-const buffer = Buffer.from(csvString, 'utf-8')
-
-// Теперь у вас есть буфер с данными в формате CSV
+import { saveTicks } from '@/bots/cryptoSignals/models/binanceAggTicks'
 
 export const updateSignalChannels = async () => {
   try {
@@ -178,10 +144,6 @@ export const generateTableWithSignals = async (
   aiAnswerByMessageId: Record<number, Partial<SignalAiRecognize>>,
   priceAnalysisByMessageId: Record<number, Partial<HistoryPriceAnalyze>>
 ): Promise<Buffer> => {
-  const maxWidth = 200
-  const transform = (value) =>
-    value && value.length > maxWidth ? value.substring(0, maxWidth) : value
-
   const rows = messages
     .map((message: Api.Message) => {
       const aiAnswer = aiAnswerByMessageId[message.id]
@@ -486,73 +448,6 @@ export const generateReportByChannel = async ({
                 manualInputTPPercent: takeProfitPercent,
                 manualInputSLPercent: stopLossPercent,
               }
-
-              const tradeData = priceAnalysisByMessageId[data.id]
-
-              // const pineDots: PointWithLabel[] = [
-              //   // Сообщение
-              //   {
-              //     timestamp: new Date(tradeData.signalMessageDate).getTime(),
-              //     label: 'Signal',
-              //     labelColor: 'color.gray',
-              //     type: 'dot',
-              //     price: tradeData.firstAfterMessagePrice,
-              //   },
-              //   // Точка входа
-              //   {
-              //     timestamp: new Date(tradeData?.tradeStartDate).getTime(),
-              //     price: tradeData?.tradeStartDatePrice,
-              //     label: 'Start Trade',
-              //     labelColor: 'color.blue',
-              //     type: 'dot',
-              //   },
-              //   {
-              //     price: tradeData?.tradeSLExpectingPrice,
-              //     label: 'SL Line',
-              //     labelColor: 'color.red',
-              //     type: 'line',
-              //   },
-              //   {
-              //     price: tradeData?.tradeTPExpectingPrice,
-              //     label: 'TP Line',
-              //     labelColor: 'color.green',
-              //     type: 'line',
-              //   },
-              // ]
-              //
-              // if (tradeData?.isTPTriggered) {
-              //   pineDots.push(
-              //     // TP
-              //     {
-              //       timestamp: new Date(
-              //         tradeData?.tradeTPTriggeredDate
-              //       ).getTime(),
-              //       price: tradeData?.tradeTPExpectingPrice,
-              //       label: 'TP',
-              //       labelColor: 'color.green',
-              //       type: 'dot',
-              //     }
-              //   )
-              // }
-              // if (tradeData?.isSLTriggered) {
-              //   pineDots.push(
-              //     // SL
-              //     {
-              //       timestamp: new Date(
-              //         tradeData?.tradeSLTriggeredDate
-              //       ).getTime(),
-              //       price: tradeData?.tradeSLExpectingPrice,
-              //       label: 'SL',
-              //       labelColor: 'color.red',
-              //       type: 'dot',
-              //     }
-              //   )
-              // }
-              //
-              // const script = generatePineScriptCode(pineDots)
-              //
-              // // Place for debug pinescript
-              // // debugger
             } catch (e) {
               newItem.status = 'Error while getting price'
             }
@@ -758,29 +653,5 @@ export const generateReportByChannel = async ({
     ctx.replyWithHTML('Error while generating report')
   } finally {
     await finishAnalysisForUser(ctx.from.id)
-  }
-}
-
-async function saveTicks(ticks: AggregatedTrade[]) {
-  const bulkWrite = ticks.map((tick) => ({
-    updateOne: {
-      upsert: true,
-      filter: {
-        aggId: tick.aggId,
-        timestamp: tick.timestamp,
-        symbol: tick.symbol,
-      },
-      update: {
-        $set: {
-          ...tick,
-        },
-      },
-    },
-  }))
-
-  try {
-    await binanceAggTicksModel.bulkWrite(bulkWrite)
-  } catch (e) {
-    console.log('error while saving ticks')
   }
 }
