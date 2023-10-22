@@ -3,6 +3,7 @@ export const botConfig = {
     // Turned off for development for now
     priceAlertBots: !(process.env.NODE_ENV === 'development'),
     cryptoSignalBots: true,
+    trackSignals: true,
   },
   featureFlags: {},
 }

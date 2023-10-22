@@ -27,6 +27,8 @@ import { removeScenes } from '@/commands/remove/remove.scenes'
 import { setupTest } from '@/commands/test/test'
 import { botConfig } from '@/config'
 import { setupCheckers } from '@/cron'
+import { retry } from '@/helpers'
+import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
@@ -120,6 +122,13 @@ if (botConfig.appFlags.priceAlertBots) {
     // Start all async tasks (cron and continuous)
     setupCheckers()
   })
+}
+
+if (botConfig.appFlags.trackSignals) {
+  /**
+   * Track chats feed
+   */
+  retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
 }
 
 if (botConfig.appFlags.cryptoSignalBots) {

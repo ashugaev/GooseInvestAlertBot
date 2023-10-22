@@ -104,6 +104,18 @@ export const defaultSignalCheckMessagesFilter =
     }
   }
 
+export const normalizeAndFilterMessages = (
+  messages: Api.Message[],
+  chat: SignalChat
+): Api.Message[] => {
+  return messages
+    .filter(defaultSignalCheckMessagesFilter(chat))
+    .map((data) => ({
+      ...data,
+      message: normalizeSignalMessage(data.message),
+    }))
+}
+
 export const fetchSignalChannelsMessages = async ({
   tillDate,
   client,
@@ -127,11 +139,7 @@ export const fetchSignalChannelsMessages = async ({
       tillDate,
     })
 
-    const filtered = messages.filter(defaultSignalCheckMessagesFilter(chat))
-    const normalized = filtered.map((data) => ({
-      ...data,
-      message: normalizeSignalMessage(data.message),
-    }))
+    const normalized = normalizeAndFilterMessages(messages)
 
     filteredAndNormilizedMessages.push(...normalized)
   }
