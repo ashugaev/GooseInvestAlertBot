@@ -131,10 +131,9 @@ export const tradeByHistory = async ({
 
   // No signals and forbidden fallback to percent or no data for fallback
   if (
-    (!manualInputPercentAsFallbackForLackOfSignalTPSL ||
-      !manualInputPercentAsFallbackForLackOfSignalTPSL) &&
-    (!signalMessageTPValue || !signalMessageSLValue) &&
-    !manualInputPercentOverrideSignalPrice
+    !manualInputPercentAsFallbackForLackOfSignalTPSL &&
+    !manualInputPercentOverrideSignalPrice &&
+    (!signalMessageTPValue || !signalMessageSLValue)
   ) {
     return null
   }
@@ -152,7 +151,7 @@ export const tradeByHistory = async ({
   let isTPTriggered = false
   let TPwasAutoCalculated = false
   let SLwasAutoCalculated = false
-  let inputDataInvalid = false
+  const inputDataInvalid = false
 
   // Trade trading start
   let tradeStartDate: Date = null
@@ -172,25 +171,25 @@ export const tradeByHistory = async ({
   const isShort = signalMessageDirection === 'sell'
   const isLong = signalMessageDirection === 'buy'
 
-  const isTPValid =
-    !signalMessageTradeStartPrice ||
-    !tradeTPExpectingPrice ||
-    (isShort
-      ? tradeTPExpectingPrice < signalMessageTradeStartPrice
-      : tradeTPExpectingPrice > signalMessageTradeStartPrice)
-
-  const isSLValid =
-    !signalMessageTradeStartPrice ||
-    !tradeSLExpectingPrice ||
-    (isShort
-      ? tradeSLExpectingPrice > signalMessageTradeStartPrice
-      : tradeSLExpectingPrice < signalMessageTradeStartPrice)
-
-  // FIXME: Possibly works wrong
-  if (!isTPValid || !isSLValid) {
-    inputDataInvalid = true
-    return null
-  }
+  // const isTPValid =
+  //   !signalMessageTradeStartPrice ||
+  //   !tradeTPExpectingPrice ||
+  //   (isShort
+  //     ? tradeTPExpectingPrice < signalMessageTradeStartPrice
+  //     : tradeTPExpectingPrice > signalMessageTradeStartPrice)
+  //
+  // const isSLValid =
+  //   !signalMessageTradeStartPrice ||
+  //   !tradeSLExpectingPrice ||
+  //   (isShort
+  //     ? tradeSLExpectingPrice > signalMessageTradeStartPrice
+  //     : tradeSLExpectingPrice < signalMessageTradeStartPrice)
+  //
+  // // FIXME: Possibly works wrong
+  // if (!isTPValid || !isSLValid) {
+  //   inputDataInvalid = true
+  //   return null
+  // }
   // Price wasn't sent in signal message
   if (!signalMessageTradeStartPrice && signalMessageTime) {
     isStartPriceDetectedByDate = true
@@ -275,8 +274,8 @@ export const tradeByHistory = async ({
 
     // Recalculate TP by percent
     if (
-      !tradeTPExpectingPrice &&
-      (manualInputPercentAsFallbackForLackOfSignalTPSL ||
+      ((!tradeTPExpectingPrice &&
+        manualInputPercentAsFallbackForLackOfSignalTPSL) ||
         manualInputPercentOverrideSignalPrice) &&
       tradeStartDatePrice
     ) {
@@ -292,8 +291,8 @@ export const tradeByHistory = async ({
     }
     // Recalculate SL by percent
     if (
-      !tradeSLExpectingPrice &&
-      (manualInputPercentAsFallbackForLackOfSignalTPSL ||
+      ((!tradeSLExpectingPrice &&
+        manualInputPercentAsFallbackForLackOfSignalTPSL) ||
         manualInputPercentOverrideSignalPrice) &&
       tradeStartDatePrice
     ) {

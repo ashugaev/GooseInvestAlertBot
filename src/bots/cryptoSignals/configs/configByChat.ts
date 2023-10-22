@@ -92,7 +92,7 @@ export const configByChannelId: Record<string, ConfigForSignalChannel> = {
   '-1001919602754': {
     name: 'Гурам Premium',
     keyWords: ['SHORT', 'LONG'],
-    manualInputPercentOverrideSignalPrice: false,
+    manualInputPercentOverrideSignalPrice: true,
     ignoreSignalsWithoutTPSL: false,
     manualInputPercentAsFallbackForLackOfSignalTPSL: false,
     removeNotFinished: true,
