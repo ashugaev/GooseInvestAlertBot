@@ -64,6 +64,23 @@ export const configByChannelId: Record<string, ConfigForSignalChannel> = {
     manualInputPercentAsFallbackForLackOfSignalTPSL: true,
     removeNotFinished: true,
   },
+  '-1001782535846': {
+    name: 'Master Of Binance',
+    futures: true,
+    keyWords: [],
+    manualInputPercentOverrideSignalPrice: false,
+    ignoreSignalsWithoutTPSL: true,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: false,
+    removeNotFinished: true,
+  },
+  '-1001616064098': {
+    name: 'GG-Shot',
+    keyWords: ['Short Entry', 'Long Entry'],
+    manualInputPercentOverrideSignalPrice: false,
+    ignoreSignalsWithoutTPSL: true,
+    manualInputPercentAsFallbackForLackOfSignalTPSL: false,
+    removeNotFinished: true,
+  },
 }
 
 export interface ConfigForSignalChannel {
@@ -74,6 +91,8 @@ export interface ConfigForSignalChannel {
   priceRequired?: boolean // Manual / AI
   keyWords?: string[] // Manual
   or?: string[] // Manual
+
+  futures?: boolean // Manual
 
   manualInputPercentOverrideSignalPrice: boolean
   ignoreSignalsWithoutTPSL: boolean

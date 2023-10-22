@@ -28,20 +28,23 @@ export const getChatHistory = async ({
   const allMessages = []
 
   let offsetId = 0
-  // let offsetDate = 0
 
   while (true) {
-    const result = await cl.invoke(
-      new Api.messages.GetHistory({
-        peer: nameOrId,
-        limit: batchSize,
-        // offsetDate: offsetDate,
-        offsetId: offsetId,
-      })
-    )
+    let messages = []
 
-    // @ts-ignore
-    const messages = result.messages
+    try {
+      const result = await cl.invoke(
+        new Api.messages.GetHistory({
+          peer: nameOrId,
+          limit: batchSize,
+          offsetId: offsetId,
+        })
+      )
+      // @ts-ignore
+      messages = result.messages
+    } catch (err) {
+      log.error('No access to chat anymore', nameOrId)
+    }
 
     if (messages.length === 0) {
       break
@@ -61,7 +64,6 @@ export const getChatHistory = async ({
     }
 
     offsetId = messages[messages.length - 1].id
-    // offsetDate = messages[messages.length - 1].date
 
     log.info('Fetched for:', nameOrId)
   }

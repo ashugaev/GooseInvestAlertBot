@@ -236,12 +236,14 @@ export interface GenerateReportByChannelParams {
   channelInd: number
   takeProfitPercent: number
   stopLossPercent: number
+  limitForAnalysis: number
   ctx: Context
 }
 
 export const generateReportByChannel = async ({
   channelInd,
   takeProfitPercent,
+  limitForAnalysis,
   stopLossPercent,
   ctx,
 }: GenerateReportByChannelParams) => {
@@ -329,9 +331,11 @@ export const generateReportByChannel = async ({
     > = {}
 
     let i = 0
-    // FIXME: Remove hardcoded limit
-    // .slice(0, 1)
-    for (const data of messages) {
+
+    const slicedMessages =
+      limitForAnalysis > 0 ? messages.slice(0, limitForAnalysis) : messages
+
+    for (const data of slicedMessages) {
       try {
         let aiRes = ''
 
@@ -464,7 +468,9 @@ export const generateReportByChannel = async ({
           chat.id,
           message_id,
           undefined,
-          getMessageByStatus(`Recognize and trade ${i}/${messages.length}`),
+          getMessageByStatus(
+            `Recognize and trade ${i}/${slicedMessages.length}`
+          ),
           Extra.HTML(true) as ExtraEditMessage
         )
         i++
@@ -592,7 +598,7 @@ export const generateReportByChannel = async ({
         
         Прибыль: ${depositChangePercent}%
         
-        Сообщений проверенно: ${messages.length}
+        Сообщений проверенно: ${slicedMessages.length}
         Распознанно сигналов (AI): ${Object.values(aiAnswerByMessageId).length}
         Проверено сигналов: ${handledSignals.length}
         

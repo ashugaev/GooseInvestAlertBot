@@ -54,6 +54,10 @@ const second = waitMessageStep(
   }
 )
 
+/*
+    Handle: TP
+    Ask: SL
+ */
 const third = waitMessageStep(
   'analyse_scene_choose_take_profit',
   (ctx, text, state) => {
@@ -67,10 +71,27 @@ const third = waitMessageStep(
   }
 )
 
+/*
+    Handle: SL
+    Ask: Limit
+ */
 const fourth = waitMessageStep(
   'analyse_scene_choose_stop_loss',
   async (ctx, text, state) => {
     state.stopLoss = text
+
+    ctx.replyWithHTML(
+      '🧮️ Сколько анализировать сигналов? Отправь 0 - если все'
+    )
+
+    return ctx.wizard.next()
+  }
+)
+
+const fives = waitMessageStep(
+  'analyse_scene_choose_limit',
+  async (ctx, text, state) => {
+    state.limit = text
 
     await startAnalysisForUser(ctx.from.id)
 
@@ -78,6 +99,7 @@ const fourth = waitMessageStep(
       channelInd: Number(state.channel),
       takeProfitPercent: Number(state.takeProfit),
       stopLossPercent: Number(state.stopLoss),
+      limitForAnalysis: Number(state.limit),
       ctx,
     })
 
@@ -90,5 +112,6 @@ export const analyseScene = new WizardScene(
   first,
   second,
   third,
-  fourth
+  fourth,
+  fives
 )
