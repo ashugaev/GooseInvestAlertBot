@@ -1,12 +1,14 @@
 import { Api } from 'telegram'
 import { NewMessage, NewMessageEvent } from 'telegram/events'
 
+import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 import { handleDevochkiChannelMessage } from '@/features/signals/devochkiChannel/handleMessage'
+import { handleSignalEvent } from '@/features/tradeBySignal/handleSignalEvent'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
-import { annClient, client } from '@/integrations/telegram/client'
+import { mainClient, signalsClient } from '@/integrations/telegram/client'
 import {
   callbacksByChatPurpose,
   TrackChatCallbacksParams,
@@ -120,7 +122,7 @@ export const pollingMessagesCheck = async () => {
     try {
       startIterationTime = Date.now()
 
-      const result = await client.invoke(
+      const result = await mainClient.invoke(
         new Api.messages.GetHistory({
           peer: pollingChat,
           limit: 2,
@@ -158,7 +160,7 @@ export const pollingMessagesCheck = async () => {
 
 export const setupEventHandlers = async () => {
   // Track chat events
-  client.addEventHandler(
+  mainClient.addEventHandler(
     handleEvent,
     new NewMessage({
       chats: trackChats,
@@ -166,10 +168,19 @@ export const setupEventHandlers = async () => {
   )
 
   // Track chat events
-  annClient.addEventHandler(
-    handleEvent,
+  // annClient.addEventHandler(
+  //   handleEvent,
+  //   new NewMessage({
+  //     chats: trackChatsAnn,
+  //   })
+  // )
+
+  // Tracks account with signals
+  signalsClient.addEventHandler(
+    handleSignalEvent,
     new NewMessage({
-      chats: trackChatsAnn,
+      // FIXME: Нужно сделать отдельный интерфейс и коллекцию для активации торговли
+      chats: Object.keys(configByChannelId),
     })
   )
 
@@ -179,7 +190,7 @@ export const setupEventHandlers = async () => {
 
 export const addNewEventHandler = async (username: string) => {
   // Track chat events
-  client.addEventHandler(
+  mainClient.addEventHandler(
     handleEvent,
     new NewMessage({
       chats: [username],

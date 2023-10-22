@@ -596,7 +596,9 @@ export const generateReportByChannel = async ({
       const summaryMessage = `
         <b>📊 Отчет по каналу ${channel.title}</b>
         
-        Прибыль: ${depositChangePercent}%
+        Прибыль (без комиссии, риск от депозита ${
+          cryptoSignals.riskPercentForTradingSimulation * 100
+        }%): ${depositChangePercent}%
         
         Сообщений проверенно: ${slicedMessages.length}
         Распознанно сигналов (AI): ${Object.values(aiAnswerByMessageId).length}

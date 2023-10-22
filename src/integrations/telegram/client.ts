@@ -22,7 +22,7 @@ const stringSession = new StringSession(SESSION_STRING)
 const stringSessionAnn = new StringSession(TELEGRAM_ANN_SESSION_STRING)
 const stringSessionSignals = new StringSession(TELEGRAM_SIGNALS_SESSION_STRING)
 
-export const client = new TelegramClient(
+export const mainClient = new TelegramClient(
   stringSession,
   Number(TELEGRAM_API_ID),
   TELEGRAM_API_HASH,
@@ -47,7 +47,7 @@ export const signalsClient = new TelegramClient(
     connectionRetries: 5,
   }
 )
-;[client, annClient, signalsClient].forEach((cl) => {
+;[mainClient, annClient, signalsClient].forEach((cl) => {
   // Есть риск того, что клиент не успеет запуститься до момента обращения к нему
   cl.start({
     phoneNumber: async () => '', // Using Session string only for server
@@ -62,7 +62,7 @@ export const signalsClient = new TelegramClient(
       console.log(err)
     },
   })
-    .then(async (client) => {
+    .then(async () => {
       log.info('Telegram client started')
     })
     .catch((err) => {

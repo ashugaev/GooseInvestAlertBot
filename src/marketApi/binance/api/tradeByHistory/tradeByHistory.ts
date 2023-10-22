@@ -23,8 +23,8 @@ export interface GetTicksParams {
   /**
    * Игнорировать TP, SL в сигнале и использовать свои
    */
-  signalMessageTPValue: number[]
-  signalMessageSLValue: number
+  signalMessageTPValue: number[] | null
+  signalMessageSLValue: number | null
   signalMessageTradeStartPrice?: number
   signalMessageDirection: SignalType
 
@@ -129,6 +129,16 @@ export const tradeByHistory = async ({
     return null
   }
 
+  // No signals and forbidden fallback to percent or no data for fallback
+  if (
+    (!manualInputPercentAsFallbackForLackOfSignalTPSL ||
+      !manualInputPercentAsFallbackForLackOfSignalTPSL) &&
+    (!signalMessageTPValue || !signalMessageSLValue) &&
+    !manualInputPercentOverrideSignalPrice
+  ) {
+    return null
+  }
+
   // Logs
   let highestPrice = null
   let lowestPrice = null
@@ -154,8 +164,8 @@ export const tradeByHistory = async ({
   let tradeSLTriggeredDate = null
 
   // Trade input
-  let tradeTPExpectingPrice = signalMessageTPValue[0]
-  let tradeSLExpectingPrice = signalMessageSLValue
+  let tradeTPExpectingPrice = signalMessageTPValue?.[0] || null
+  let tradeSLExpectingPrice = signalMessageSLValue || null
 
   let tradeStarted = false
 
@@ -176,7 +186,8 @@ export const tradeByHistory = async ({
       ? tradeSLExpectingPrice > signalMessageTradeStartPrice
       : tradeSLExpectingPrice < signalMessageTradeStartPrice)
 
-  if (!isTPValid) {
+  // FIXME: Possibly works wrong
+  if (!isTPValid || !isSLValid) {
     inputDataInvalid = true
     return null
   }
@@ -244,9 +255,9 @@ export const tradeByHistory = async ({
       break
     }
 
-    if (!tradeSLExpectingPrice || !tradeTPExpectingPrice) {
-      return null
-    }
+    // if (!tradeSLExpectingPrice || !tradeTPExpectingPrice) {
+    //   return null
+    // }
 
     const tickPrice = Number(ticks[i].price)
 
@@ -264,8 +275,8 @@ export const tradeByHistory = async ({
 
     // Recalculate TP by percent
     if (
-      ((!tradeTPExpectingPrice &&
-        manualInputPercentAsFallbackForLackOfSignalTPSL) ||
+      !tradeTPExpectingPrice &&
+      (manualInputPercentAsFallbackForLackOfSignalTPSL ||
         manualInputPercentOverrideSignalPrice) &&
       tradeStartDatePrice
     ) {
@@ -281,8 +292,8 @@ export const tradeByHistory = async ({
     }
     // Recalculate SL by percent
     if (
-      ((!tradeSLExpectingPrice &&
-        manualInputPercentAsFallbackForLackOfSignalTPSL) ||
+      !tradeSLExpectingPrice &&
+      (manualInputPercentAsFallbackForLackOfSignalTPSL ||
         manualInputPercentOverrideSignalPrice) &&
       tradeStartDatePrice
     ) {

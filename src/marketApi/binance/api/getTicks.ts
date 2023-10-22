@@ -1,5 +1,6 @@
 import { AggregatedTrade } from 'binance-api-node'
 
+import { BinanceAggTicks } from '@/bots/cryptoSignals/models/binanceAggTicks'
 import { binance } from '@/marketApi/binance/utils/binance'
 
 export const getTicks = async ({
@@ -31,48 +32,49 @@ export const getTicks = async ({
   if (fromId) {
     params.fromId = fromId
 
-    /*
-    let foundTick: BinanceAggTicks | null = null
+    const foundTick: BinanceAggTicks | null = null
 
-    try {
-      // Check if we have this tick in db
-      foundTick = await binanceAggTicksModel.findOne({
-        aggId: Number(fromId),
-      })
-    } catch (e) {
-      console.error(e)
-    }
+    // try {
+    //   // Check if we have this tick in db
+    //   foundTick = await binanceAggTicksModel.findOne({
+    //     aggId: Number(fromId),
+    //   })
+    // } catch (e) {
+    //   console.error(e)
+    // }
 
     // Fist checking DB cache
-    if (foundTick) {
-      const allTicksFromId = await binanceAggTicksModel
-        .find({
-          symbol: params.symbol,
-          aggId: { $gte: Number(fromId) },
-        })
-        .sort({ aggId: 1 })
-        .lean()
-        .exec()
-
-      // Проверяем неразрывность aggId
-      for (let i = 0; i < allTicksFromId.length - 1; i++) {
-        const diff = allTicksFromId[i + 1].aggId - allTicksFromId[i].aggId
-
-        if (diff !== 1) {
-          newTicks = allTicksFromId.slice(0, i + 1)
-          break
-        }
-
-        // if last and no break - all ticks are ok
-        if (i === allTicksFromId.length - 2) {
-          newTicks = allTicksFromId
-        }
-      }
-
-      console.log('getTicks from DB', newTicks.length)
-    }
-   
-     */
+    // if (foundTick) {
+    //   const allTicksFromId = await binanceAggTicksModel
+    //     .find({
+    //       symbol: params.symbol,
+    //       aggId: { $gte: Number(fromId) },
+    //     })
+    //     .sort({ aggId: 1 })
+    //     .limit(1000)
+    //     .lean()
+    //
+    //   debugger // check if it's sorted
+    //
+    //   // Проверяем неразрывность aggId
+    //   for (let i = 0; i < allTicksFromId.length - 1; i++) {
+    //     const diff = allTicksFromId[i + 1].aggId - allTicksFromId[i].aggId
+    //
+    //     if (diff !== 1) {
+    //       newTicks = allTicksFromId.slice(0, i + 1)
+    //       break
+    //     }
+    //
+    //     // if last and no break - all ticks are ok
+    //     if (i === allTicksFromId.length - 2) {
+    //       newTicks = allTicksFromId
+    //     }
+    //   }
+    //
+    //   debugger // check if it unbreakable
+    //
+    //   console.log('getTicks from DB', newTicks.length)
+    // }
   }
 
   // Binance as a fallback

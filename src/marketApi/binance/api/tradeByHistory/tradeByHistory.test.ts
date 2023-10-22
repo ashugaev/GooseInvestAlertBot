@@ -122,6 +122,44 @@ describe('tradeByHistory', () => {
     expect(result).toBeDefined()
   })
 
+  it('Manual percent | Sell | 3', async () => {
+    const params: GetTicksParams = {
+      ...baseParams,
+      signalMessageTime: 1693575726000,
+      signalMessageTradeStartPrice: 0.4815,
+      signalMessageTPValue: [0],
+      signalMessageSLValue: 0,
+      signalMessageDirection: 'sell',
+      manualInputTPPercent: 2,
+      manualInputSLPercent: 1,
+      manualInputPercentOverrideSignalPrice: true,
+      signalMessageSymbol: 'STX',
+    }
+
+    const result = await tradeByHistory(params)
+
+    expect(result.isSLTriggered).toBe(false)
+    expect(result.isTPTriggered).toBe(true)
+    expect(result.tradeTPExpectingPrice).toBe(0.4702)
+    expect(result.tradeSLExpectingPrice).toBe(0.4846)
+  })
+
+  it('Invalid data', async () => {
+    const params: GetTicksParams = {
+      ...baseParams,
+      signalMessageTradeStartPrice: 5.519,
+      signalMessageTPValue: null,
+      signalMessageSLValue: null,
+      signalMessageDirection: 'sell',
+      manualInputTPPercent: 1,
+      manualInputSLPercent: 1,
+    }
+
+    const result = await tradeByHistory(params)
+
+    expect(result).toBe(null)
+  })
+
   it.skip('DEBUG Place', async () => {
     const params: GetTicksParams = {
       ...baseParams,

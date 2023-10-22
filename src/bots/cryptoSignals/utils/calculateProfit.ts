@@ -9,12 +9,19 @@ export function calculateProfit(tradeData: TradeData): number {
   const potentialLostAmount = Math.abs(
     tradeData.tradeSLExpectingPrice - tradeData.signalMessageTradeStartPrice
   )
+
   const potentialProfitAmount = Math.abs(
     tradeData.tradeTPExpectingPrice - tradeData.signalMessageTradeStartPrice
   )
 
   if (tradeData.isTPTriggered) {
-    return (potentialProfitAmount / potentialLostAmount) * RISK_PERCENTAGE * 100
+    return Number(
+      (
+        (potentialProfitAmount / potentialLostAmount) *
+        RISK_PERCENTAGE *
+        100
+      ).toFixed(2)
+    )
   } else if (tradeData.isSLTriggered) {
     return RISK_PERCENTAGE * 100 * -1
   } else {
@@ -28,5 +35,4 @@ interface TradeData {
   signalMessageTradeStartPrice: number
   tradeTPExpectingPrice: number
   tradeSLExpectingPrice: number
-  isTradeSuccessfullyFinished: boolean
 }
