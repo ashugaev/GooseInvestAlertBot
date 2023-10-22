@@ -14,15 +14,18 @@ export const handleSignalEvent = async (event: NewMessageEvent) => {
   }
 }
 
-function handleMessage(message: Api.Message, channelId: string) {
+async function handleMessage(message: Api.Message, channelId: string) {
   // 1 Ручной валидатор
   // 2 ai валидатор
   // 3 Создание сделкив очереди
   // 4 Отправка сообщения в чат
 
   const chat = await SignalChatModel.findOne({
-    chatId: channelId,
+    chatId: Number(channelId),
   }).lean()
 
+  // If chat not configured it will be skipped
   const [normilizedMessage] = normalizeAndFilterMessages([message], chat)
+
+  debugger
 }
