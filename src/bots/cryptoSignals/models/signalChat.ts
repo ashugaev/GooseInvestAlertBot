@@ -1,6 +1,6 @@
 import { getModelForClass, modelOptions, prop } from '@typegoose/typegoose'
 
-import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
+import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 
 @modelOptions({
   schemaOptions: {
@@ -34,7 +34,7 @@ export class SignalChat {
 
 export const getChatsWithConifg = async () => {
   const channels = await SignalChatModel.find().sort({ title: 1 }).lean()
-  const channelsWithConfig = Object.keys(configByChannelId).map(Number)
+  const channelsWithConfig = Object.keys(monitorConfigByChannelId).map(Number)
 
   const items = channels.filter((el) => channelsWithConfig.includes(el.chatId))
 

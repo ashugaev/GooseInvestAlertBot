@@ -1,11 +1,19 @@
 import { cryptoSignals } from '@/bots/cryptoSignals/configs/cryptoSignals'
 
+interface TradeData {
+  isSLTriggered: boolean
+  isTPTriggered: boolean
+  signalMessageTradeStartPrice: number
+  tradeTPExpectingPrice: number
+  tradeSLExpectingPrice: number
+}
+
+const RISK_PERCENTAGE = cryptoSignals.riskPercentForTradingSimulation
+
 /**
  * Profit calc in percent, depending on rist percent
  */
 export function calculateProfit(tradeData: TradeData): number {
-  const RISK_PERCENTAGE = cryptoSignals.riskPercentForTradingSimulation
-
   const potentialLostAmount = Math.abs(
     tradeData.tradeSLExpectingPrice - tradeData.signalMessageTradeStartPrice
   )
@@ -27,12 +35,4 @@ export function calculateProfit(tradeData: TradeData): number {
   } else {
     return 0
   }
-}
-
-interface TradeData {
-  isSLTriggered: boolean
-  isTPTriggered: boolean
-  signalMessageTradeStartPrice: number
-  tradeTPExpectingPrice: number
-  tradeSLExpectingPrice: number
 }

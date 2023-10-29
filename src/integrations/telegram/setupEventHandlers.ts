@@ -1,6 +1,7 @@
 import { Api } from 'telegram'
 import { NewMessage, NewMessageEvent } from 'telegram/events'
 
+import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { SignalChatModel } from '@/bots/cryptoSignals/models/signalChat'
 import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
@@ -161,7 +162,8 @@ export const pollingMessagesCheck = async () => {
 export const setupEventHandlers = async () => {
   // Track chat events
   mainClient.addEventHandler(
-    handleEvent,
+    // handleEvent, // Legacy logic. Migrate this scenario to the new bot
+    handleSignalEvent,
     new NewMessage({
       chats: trackChats,
     })
@@ -176,14 +178,13 @@ export const setupEventHandlers = async () => {
   // )
 
   const chats = await SignalChatModel.find().lean()
+  const channelsToTrack = Object.keys(monitorConfigByChannelId)
 
   // Tracks account with signals
   signalsClient.addEventHandler(
     handleSignalEvent,
     new NewMessage({
-      // FIXME: Нужно сделать отдельный интерфейс и коллекцию для активации торговли
-      //  Пока трекаем все
-      chats: chats.map((chat) => chat.chatId.toString()),
+      chats: channelsToTrack,
     })
   )
 

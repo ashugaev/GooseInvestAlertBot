@@ -42,7 +42,10 @@ export const initialSignalValidation = (
   }
 
   // Filter trash
-  if (patternsToCheck.every((pattern) => !pattern.test(message))) {
+  if (
+    patternsToCheck.length &&
+    !patternsToCheck.every((pattern) => pattern.test(message))
+  ) {
     return false
   }
 

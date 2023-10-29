@@ -1,8 +1,6 @@
+import { tradeConfigByChannel } from '@/bots/cryptoSignals/configs/configByChat'
 import { detectorsByChatUsername } from '@/features/pumpDetect/detectors'
-import {
-  configByChannel,
-  logPrefix,
-} from '@/features/pumpDetect/pumpDetect.constants'
+import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import {
   kucoinFinishTrade,
   kucoinStartTrade,
@@ -31,7 +29,7 @@ export const handleMessage = async (params: TrackChatCallbacksParams) => {
   }
 
   const chatDetectors = detectorsByChatUsername[params.chatLinkName]
-  const chatConfig = configByChannel[params.chatLinkName]
+  const chatConfig = tradeConfigByChannel[params.chatLinkName]
 
   if (chatConfig.debugMessagesTracker) {
     sayToBoss({

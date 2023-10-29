@@ -1,31 +1,52 @@
 import { NewMessageEvent } from 'telegram/events'
 import { Api } from 'telegram/tl'
 
-import { normalizeAndFilterMessages } from '@/bots/cryptoSignals/commands/analyse/analyse.utils'
-import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
+import {
+  normalizeAndFilterMessages,
+  saveChatsToDB,
+} from '@/bots/cryptoSignals/commands/analyse/analyse.utils'
+import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { SignalChatModel } from '@/bots/cryptoSignals/models/signalChat'
 
-const channelsToTrack = Object.keys(configByChannelId)
+const channelsToTrack = Object.keys(monitorConfigByChannelId)
 
 export const handleSignalEvent = async (event: NewMessageEvent) => {
-  if (event.isChannel && channelsToTrack.includes(event.chatId.toString())) {
+  const idString = event.chatId.valueOf().toString()
+
+  if (
+    event.isChannel &&
+    (channelsToTrack.some((el) => el.includes(idString)) ||
+      // @ts-ignore
+      channelsToTrack.includes(event.message.chat?.username))
+  ) {
     // @ts-ignore
-    handleMessage(event.message, event.chatId.valueOf())
+    handleMessage(event.message, idString, event)
   }
 }
 
-async function handleMessage(message: Api.Message, channelId: string) {
+async function handleMessage(
+  message: Api.Message,
+  channelId: string,
+  event: NewMessageEvent
+) {
   // 1 Ручной валидатор
   // 2 ai валидатор
   // 3 Создание сделкив очереди
   // 4 Отправка сообщения в чат
 
-  const chat = await SignalChatModel.findOne({
+  let chat = await SignalChatModel.findOne({
     chatId: Number(channelId),
   }).lean()
 
+  if (!chat) {
+    const fetchedChat = await event.message.getChat()
+    await saveChatsToDB([fetchedChat])
+    chat = await SignalChatModel.findOne({
+      chatId: Number(channelId),
+    }).lean()
+  }
+
   // If chat not configured it will be skipped
   const [normilizedMessage] = normalizeAndFilterMessages([message], chat)
-
-  debugger
+  // Ai analyze messages
 }

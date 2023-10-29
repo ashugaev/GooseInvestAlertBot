@@ -42,7 +42,7 @@ import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
-import { configByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
+import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { saveTicks } from '@/bots/cryptoSignals/models/binanceAggTicks'
 import { addPercent } from '@/helpers/addPercent'
 
@@ -58,33 +58,44 @@ export const updateSignalChannels = async () => {
       client: signalsClient,
     })
 
-    const clientInfo = (await signalsClient.getMe()) as unknown as User
-
-    const normalized: SignalChat[] = chats.map((chat) => ({
-      chatId: Number(chat.id),
-      title: chat?.title,
-      chatUsername: chat.username,
-      username: chat.username,
-      clientId: Number(clientInfo.id),
-      clientUsername: clientInfo.username,
-    }))
-
-    const dataForBulkUpdate = normalized.map((data) => ({
-      updateOne: {
-        upsert: true,
-        filter: { chatId: data.chatId },
-        update: {
-          $set: {
-            ...data,
-          },
-        },
-      },
-    }))
-
-    await SignalChatModel.bulkWrite(dataForBulkUpdate)
+    await saveChatsToDB(chats)
   } catch (e) {
     log.error('Error while starting cryptoSignals bot', e)
   }
+}
+
+export const saveChatsToDB = async (chats) => {
+  // FIXME: Тут должен проставляться клиент динамически
+  const clientInfo = (await signalsClient.getMe()) as unknown as User
+
+  const getNormalizedChatId = (chat) =>
+    Number(chat.id.toString().startsWith('-100') ? chat.id : '-100' + chat.id)
+
+  const normalized: SignalChat[] = chats.map((chat) => ({
+    // In some cases we have shortened id
+    chatId: getNormalizedChatId(chat),
+    title: chat?.title,
+    chatUsername: chat?.username,
+    username: chat?.username,
+    clientId: Number(clientInfo?.id),
+    clientUsername: clientInfo?.username,
+  }))
+
+  debugger
+
+  const dataForBulkUpdate = normalized.map((data) => ({
+    updateOne: {
+      upsert: true,
+      filter: { chatId: data.chatId },
+      update: {
+        $set: {
+          ...data,
+        },
+      },
+    },
+  }))
+
+  await SignalChatModel.bulkWrite(dataForBulkUpdate)
 }
 
 export const normalizeSignalMessage = (message: string): string =>
@@ -95,7 +106,7 @@ export const defaultSignalCheckMessagesFilter =
     const text = normalizeSignalMessage(message.message)
     if (
       // TODO: Remove hardcoded channel id
-      !initialSignalValidation(text, configByChannelId[chat.chatId]) ||
+      !initialSignalValidation(text, monitorConfigByChannelId[chat.chatId]) ||
       text.length < 8
     ) {
       return false
@@ -113,7 +124,7 @@ export const normalizeAndFilterMessages = (
     .map((data) => ({
       ...data,
       message: normalizeSignalMessage(data.message),
-    }))
+    })) as Api.Message[]
 }
 
 export const fetchSignalChannelsMessages = async ({
@@ -139,7 +150,7 @@ export const fetchSignalChannelsMessages = async ({
       tillDate,
     })
 
-    const normalized = normalizeAndFilterMessages(messages)
+    const normalized = normalizeAndFilterMessages(messages, chat)
 
     filteredAndNormilizedMessages.push(...normalized)
   }
@@ -345,6 +356,13 @@ export const generateReportByChannel = async ({
 
     for (const data of slicedMessages) {
       try {
+        const {
+          aiAnswer,
+        {
+          ticker, level, tp, stop, type, doubts
+        }
+        } = parseSignalWithChatGpt() // TODO: Move ai logic here
+
         let aiRes = ''
 
         const chatGptResFromDb = await SignalAiRecognizeModel.findOne({
@@ -419,7 +437,7 @@ export const generateReportByChannel = async ({
             newItem.aiExtractedData.ticker = ticker
             newItem.aiExtractedData.tradeStartPrice = level
 
-            const channelConfig = configByChannelId[channel.chatId]
+            const channelConfig = monitorConfigByChannelId[channel.chatId]
 
             const {
               manualInputPercentOverrideSignalPrice,
@@ -578,7 +596,7 @@ export const generateReportByChannel = async ({
       Extra.HTML(true) as ExtraEditMessage
     )
 
-    const config = configByChannelId[channel.chatId]
+    const config = monitorConfigByChannelId[channel.chatId]
 
     const processInfo = await UserProcessModel.findOne({
       userId: ctx.from.id,
