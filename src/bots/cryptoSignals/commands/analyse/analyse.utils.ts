@@ -9,10 +9,7 @@ import {
   HistoryPriceAnalyze,
   HistoryPriceAnalyzeModel,
 } from '@/bots/cryptoSignals/models/historyPriceAnalyze'
-import {
-  SignalAiRecognize,
-  SignalAiRecognizeModel,
-} from '@/bots/cryptoSignals/models/signalAiRecognize'
+import { SignalAiRecognize } from '@/bots/cryptoSignals/models/signalAiRecognize'
 import {
   getChatsWithConifg,
   SignalChat,
@@ -38,7 +35,6 @@ const { format } = require('date-fns')
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
-import { saveTicks } from '@/bots/cryptoSignals/models/binanceAggTicks'
 import { parseSignalWithChatGpt } from '@/bots/cryptoSignals/utils/parseSignalWithChatGpt'
 import { addPercent } from '@/helpers/addPercent'
 
@@ -387,7 +383,8 @@ export const generateReportByChannel = async ({
               })) ?? {}
 
             // Don't await
-            saveTicks(ticks)
+            // TODO: Save ticks when selfhosted DB will be connected
+            // saveTicks(ticks)
 
             priceAnalysisByMessageId[data.id] = {
               ...tradeRes,
@@ -427,7 +424,7 @@ export const generateReportByChannel = async ({
       }
     }
 
-    let bulkUpdateAiAnswers: BulkWriteOperation<SignalAiRecognize>[] = []
+    const bulkUpdateAiAnswers: BulkWriteOperation<SignalAiRecognize>[] = []
 
     await ctx.telegram.editMessageText(
       chat.id,
@@ -436,31 +433,6 @@ export const generateReportByChannel = async ({
       getMessageByStatus(`Results saving in DB...`),
       Extra.HTML(true) as ExtraEditMessage
     )
-
-    try {
-      const aiAnswerByMessageIdArr = Object.values(aiAnswerByMessageId)
-      // Bulk update config
-      bulkUpdateAiAnswers = aiAnswerByMessageIdArr.map((data) => ({
-        updateOne: {
-          filter: {
-            messageId: data.messageId,
-            channelId: data.channelId,
-            promptHash: data.promptHash,
-          },
-          update: {
-            $set: {
-              ...data,
-            },
-          },
-          upsert: true,
-        },
-      }))
-
-      // Don't await!
-      SignalAiRecognizeModel.bulkWrite(bulkUpdateAiAnswers)
-    } catch (e) {
-      log.error('Error while saving ai answers', e)
-    }
 
     // Upload price analysis
     try {
