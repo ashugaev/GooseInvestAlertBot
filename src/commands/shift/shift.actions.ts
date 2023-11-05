@@ -1,3 +1,4 @@
+import { IAdditionalShiftConfig } from '@/commands/shift/shift.types'
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { getSourceMark } from '@/helpers/getSourceMark'
 import { getSymbolByTicker } from '@/helpers/getSymbolByTicker'
@@ -5,7 +6,8 @@ import { getSymbolByTicker } from '@/helpers/getSymbolByTicker'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
 import {
-  getInstrumentInfoByTicker,
+  getInstrumentByIdFromCache,
+  getInstrumentListDataByIds,
   getTimeShifts,
   TimeShiftModel,
 } from '../../models'
@@ -39,13 +41,17 @@ export const shiftAlertSettings = async (ctx) => {
       })
     )[0]
 
+    if (!shiftData && _id) {
+      return await ctx.editMessageText(i18n.t('ru', 'alertRemoved'))
+    }
+
     const tickerInfo = (
-      await getInstrumentInfoByTicker({ ticker: shiftData.ticker })
+      await getInstrumentListDataByIds([shiftData.tickerId])
     )[0]
 
     const timeframesObj = SHIFT_TIMEFRAMES
 
-    const shiftConfig = {
+    const shiftConfig: IAdditionalShiftConfig = {
       muted: typeof muted === 'number' ? Boolean(muted) : shiftData.muted,
       growAlerts:
         typeof growAlerts === 'number'
@@ -73,6 +79,7 @@ export const shiftAlertSettings = async (ctx) => {
         ticker: shiftData.name === shiftData.ticker ? null : shiftData.name,
         source: getSourceMark(tickerInfo),
         // Если брать последнюю цену, то сообщение сигнала будет не корректным, а цену срабатывания я не храню
+        // Можно хранить цену в стейте экшена/в базе/и в локальном кэше
         price: null,
         priceSymbol: getSymbolByTicker(tickerInfo.currency),
       }),
@@ -100,5 +107,34 @@ export const shiftAlertSettings = async (ctx) => {
   } catch (e) {
     ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(e)
+  }
+}
+
+// Delete in alert message
+export const shiftDeleteOne = async (ctx) => {
+  try {
+    const { id: _id } = JSON.parse(ctx.match[1])
+
+    const shiftData = await TimeShiftModel.findOne({ _id })
+    const tickerInfo = await getInstrumentByIdFromCache(shiftData.tickerId)
+
+    await ctx.editMessageText(
+      ctx.i18n.t('shift_delete_success', {
+        name: tickerInfo.name,
+        ticker: tickerInfo.ticker,
+        source: getSourceMark(tickerInfo),
+      }),
+      {
+        disable_web_page_preview: true,
+        parse_mode: 'HTML',
+      }
+    )
+
+    await shiftData.remove()
+    shiftsCache.update()
+  } catch (e) {
+    ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'), {
+      disable_web_page_preview: true,
+    })
   }
 }

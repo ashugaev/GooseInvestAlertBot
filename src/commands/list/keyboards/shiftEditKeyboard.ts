@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 
+import { IAdditionalShiftConfig } from '@/commands/shift/shift.types'
 import { shortenerCreateShort } from '@/helpers'
 
 import { Actions } from '../../../constants'
@@ -16,10 +17,11 @@ import { EKeyboardModes } from './instrumentPageKeyboard'
 export const shiftEditKeyboard = ({ page, shiftData }) => {
   let keys = []
 
-  const shiftConfig = {
+  const shiftConfig: IAdditionalShiftConfig = {
     muted: shiftData.muted,
     growAlerts: shiftData.growAlerts,
     fallAlerts: shiftData.fallAlerts,
+    // @ts-expect-error
     [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(shiftData._id),
     p: page,
   }

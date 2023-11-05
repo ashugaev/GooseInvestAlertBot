@@ -6,6 +6,7 @@ import { getTimeShifts, TimeShiftModel } from '../../../models'
 import { EKeyboardModes } from '../keyboards/instrumentPageKeyboard'
 import { showShiftsPage } from '../utils/showShiftsPage'
 
+// Delete in list command
 export const shiftDelete = commandWrapper(
   { availableForAdmins: true },
   async (ctx) => {
