@@ -40,4 +40,8 @@ export interface AddAlertPayload {
    * Объект созданного алерта из DB
    */
   createdItemsList?: PriceAlert[]
+  /**
+   * Признак того, что алерт создан как копия
+   */
+  copy?: boolean
 }

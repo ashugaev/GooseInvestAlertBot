@@ -24,7 +24,7 @@ export const alertDelete = commandWrapper(
       const alertId = shortenerGetFull(alertIdShort)
       const instrumentId = shortenerGetFull(tickerIdShort)
 
-      await removePriceAlert({ _id: alertId.toString() })
+      await removePriceAlert({ _id: alertId, removed: true })
       priceAlertCache.removeItemFromCache(alertId)
 
       const alerts = ctx.dbuser.adminMode

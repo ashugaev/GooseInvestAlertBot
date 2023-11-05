@@ -7,13 +7,16 @@ import { getInstrumentLink } from './getInstrumentLInk'
 // Minimal params: { source: EMarketDataSources }
 export const getSourceMark = (
   instrumentData: Partial<InstrumentsList>,
-  noLink?: boolean
+  noLink?: boolean,
+  fullName?: boolean
 ) => {
   const { source } = instrumentData
 
   if (!source) return null
 
-  let res = '[' + SOURCE_CONFIG[instrumentData.source].shortName + ']'
+  const config = SOURCE_CONFIG[source]
+
+  let res = '[' + (fullName ? config.fullName : config.shortName) + ']'
 
   if (!noLink) {
     const link = getInstrumentLink(instrumentData)

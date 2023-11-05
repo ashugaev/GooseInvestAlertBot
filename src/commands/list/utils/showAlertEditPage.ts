@@ -4,7 +4,7 @@ import { alertEditKeyboard } from '@/commands/list/keyboards/alertEditKeyboard'
 import { i18n } from '@/helpers/i18n'
 
 import { getSourceMark } from '../../../helpers/getSourceMark'
-import { symbolOrCurrency } from '../../../helpers/symbolOrCurrency'
+import { getSymbolByTicker } from '../../../helpers/getSymbolByTicker'
 import { getInstrumentByIdFromCache, PriceAlert } from '../../../models'
 
 interface ShowAlertEditPage {
@@ -31,7 +31,7 @@ export const showAlertEditPage = async ({
     symbol: alert.symbol,
     growth: Boolean(alert.greaterThen),
     price: alert.lowerThen || alert.greaterThen,
-    currency: symbolOrCurrency(alert.currency),
+    currency: getSymbolByTicker(alert.currency),
     message: alert.message,
     source: getSourceMark(instrumentInfo),
   })

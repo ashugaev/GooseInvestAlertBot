@@ -65,7 +65,16 @@ const removeAlerts = waitButtonClickStep(
     }
 
     if (type === 'lvl') {
-      n = (await PriceAlertModel.deleteMany({ user, chat: null })).n
+      const res = await PriceAlertModel.updateMany(
+        { user, chat: null, removed: false, triggered: false },
+        {
+          $set: {
+            removed: true,
+          },
+        }
+      )
+
+      n = res?.nModified ?? 0
     }
 
     await ctx.replyWithHTML(

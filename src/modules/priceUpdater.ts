@@ -49,8 +49,6 @@ export interface PriceUpdaterParams {
 
 let noPricesObject = {}
 
-export const kucoinDebugPrefix = '[Kucoin debug]'
-
 /**
  * Поддерживает кэш с актуальными ценами для источника
  */
@@ -86,24 +84,12 @@ export const setupPriceUpdater = async ({
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (source === EMarketDataSources.kucoin) {
-      log.info(kucoinDebugPrefix, 'main loop start')
-    }
-
     try {
       let sourceInstrumentsList = []
 
       // Instruments fetch and error handling
       try {
         sourceInstrumentsList = await getInstrumentsBySourceCache(source)
-
-        if (source === EMarketDataSources.kucoin) {
-          log.info(
-            kucoinDebugPrefix,
-            'sourceInstrumentsList',
-            sourceInstrumentsList.length
-          )
-        }
 
         if (!sourceInstrumentsList.length) {
           log.error(logPrefix, source, 'Нет инструментов в списке')
@@ -119,18 +105,10 @@ export const setupPriceUpdater = async ({
 
       const arrChunks = splitArray(sourceInstrumentsList, maxTickersForRequest)
 
-      if (source === EMarketDataSources.kucoin) {
-        log.info(kucoinDebugPrefix, 'arrChunks', arrChunks.length)
-      }
-
       console.time(source)
 
       for (let i = 0; i < arrChunks.length; i++) {
         const chunk = arrChunks[i]
-
-        if (source === EMarketDataSources.kucoin) {
-          log.info(kucoinDebugPrefix, 'chunk handle')
-        }
 
         // Делаем время между итерациями более предсказуемым учитывая время запроса
         const timeToWait =
@@ -150,16 +128,8 @@ export const setupPriceUpdater = async ({
 
         // Get prices for tickers
         try {
-          if (source === EMarketDataSources.kucoin) {
-            log.info(kucoinDebugPrefix, 'prices req')
-          }
-
           const pricesPromise = getPrices(tickerIds, chunk)
           prices = await timeoutPromise(pricesPromise, 60000)
-
-          if (source === EMarketDataSources.kucoin) {
-            log.info(kucoinDebugPrefix, 'prices res', prices.length)
-          }
 
           // No prices case
           if (prices?.length < tickerIds.length) {
@@ -174,20 +144,10 @@ export const setupPriceUpdater = async ({
             continue
           }
         } catch (e) {
-          if (source === EMarketDataSources.kucoin) {
-            console.log(kucoinDebugPrefix, 'Crash price update', e)
-          }
           onCatch?.(e)
           log.error(logPrefix, source, 'Update prices error', e)
           await wait(CRASH_WAIT_TIME)
-          if (source === EMarketDataSources.kucoin) {
-            console.log(kucoinDebugPrefix, 'Crash price update catch end')
-          }
           continue
-        }
-
-        if (source === EMarketDataSources.kucoin) {
-          console.log(kucoinDebugPrefix, 'Got prices and out of catch')
         }
 
         prices = dropOutInvalidPrices(prices)

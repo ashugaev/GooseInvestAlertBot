@@ -1,10 +1,16 @@
 import { Context, Telegraf } from 'telegraf'
 
+import { repeatAlertVariants } from '@/commands/alert/actions/repeat'
+import { repeatWithDifferentPrice } from '@/commands/alert/actions/repeatWithDifferentPrice'
+import { repeatWithSamePrice } from '@/commands/alert/actions/repeatWithSamePrice'
+import { ALERT_ACTIONS } from '@/commands/alert/alert.constants'
+import { triggerActionRegexp } from '@/helpers/triggerActionRegexp'
+
 import { addAlert } from '../../helpers/addAlert'
 import { commandWrapper } from '../../helpers/commandWrapper'
 import { i18n } from '../../helpers/i18n'
 import { log } from '../../helpers/log'
-import { getAlertsCountForUser, removePriceAlert } from '../../models'
+import { PriceAlertModel, removePriceAlert } from '../../models'
 import { addAlertScenario } from './scenarios/addAlertScenario'
 
 const logPrefix = '[ALERT COMMAND]'
@@ -14,8 +20,12 @@ export function setupAlert(bot: Telegraf<Context>) {
     const { text } = ctx.message
     const { id: user } = ctx.from
 
+    if (!user) {
+      throw new Error('User not found')
+    }
+
     const alertsLimit = ctx.limits.priceLevels
-    const userAlertsCount = await getAlertsCountForUser(user)
+    const userAlertsCount = await PriceAlertModel.find({ user }).count()
 
     if (userAlertsCount >= alertsLimit) {
       await ctx.replyWithHTML(
@@ -92,8 +102,23 @@ export function setupAlert(bot: Telegraf<Context>) {
   bot.command(['alert', 'add', 'a'], callback)
   bot.hears(i18n.t('ru', 'alert_button'), callback)
 
+  bot.action(triggerActionRegexp(ALERT_ACTIONS.repeat), repeatAlertVariants)
+  bot.action(
+    triggerActionRegexp(ALERT_ACTIONS.repeatSamePrice),
+    repeatWithSamePrice
+  )
+  bot.action(
+    triggerActionRegexp(ALERT_ACTIONS.repeatDifferentPrice),
+    repeatWithDifferentPrice
+  )
+
   async function removePriceAlertAndSendMessage({ user, symbol, ctx, chat }) {
-    const deletedCount = await removePriceAlert({ symbol, user, chat })
+    const deletedCount = await removePriceAlert({
+      symbol,
+      user,
+      chat,
+      triggered: true,
+    })
 
     if (deletedCount) {
       ctx.replyWithHTML(
