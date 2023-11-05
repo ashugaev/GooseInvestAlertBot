@@ -26,10 +26,6 @@ import {
   finishAnalysisForUser,
   UserProcessModel,
 } from '@/bots/cryptoSignals/models/userProcess'
-import {
-  chatGptRequestHash,
-  validateWithChatGPT,
-} from '@/features/signals/devochkiChannel/gpt'
 import { initialSignalValidation } from '@/features/signals/devochkiChannel/handleMessage'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
@@ -38,12 +34,12 @@ import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { getChatHistory } from '@/integrations/telegram/getChatHistory'
 import { tradeByHistory } from '@/marketApi/binance/api/tradeByHistory/tradeByHistory'
 import { User } from '@/models'
-import { SignalDoubts, SignalType } from '@/models/Signal'
 const { format } = require('date-fns')
 import utcToZonedTime from 'date-fns-tz/utcToZonedTime'
 
 import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { saveTicks } from '@/bots/cryptoSignals/models/binanceAggTicks'
+import { parseSignalWithChatGpt } from '@/bots/cryptoSignals/utils/parseSignalWithChatGpt'
 import { addPercent } from '@/helpers/addPercent'
 
 export const updateSignalChannels = async () => {
@@ -80,8 +76,6 @@ export const saveChatsToDB = async (chats) => {
     clientId: Number(clientInfo?.id),
     clientUsername: clientInfo?.username,
   }))
-
-  debugger
 
   const dataForBulkUpdate = normalized.map((data) => ({
     updateOne: {
@@ -356,137 +350,67 @@ export const generateReportByChannel = async ({
 
     for (const data of slicedMessages) {
       try {
-        const {
-          aiAnswer,
-        {
-          ticker, level, tp, stop, type, doubts
-        }
-        } = parseSignalWithChatGpt() // TODO: Move ai logic here
-
-        let aiRes = ''
-
-        const chatGptResFromDb = await SignalAiRecognizeModel.findOne({
-          messageId: Number(data.id),
-          channelId: Number(channel.chatId),
-          promptHash: chatGptRequestHash,
-        }).lean()
-
         const message = data.message
 
-        // Prev answer
-        if (chatGptResFromDb?.chatGptValidationMessage?.length) {
-          aiRes = chatGptResFromDb.chatGptValidationMessage
-        } else {
-          aiRes = await validateWithChatGPT(message)
-        }
-
-        const newItem: Partial<SignalAiRecognize> = {
-          channelId: channel.chatId,
-          message,
+        const aiRecognize = await parseSignalWithChatGpt({
+          messageText: message,
           messageId: data.id,
-          promptHash: chatGptRequestHash,
-          aiExtractedData: {},
-        }
+          channelId: channel.chatId,
+        })
 
-        aiAnswerByMessageId[data.id] = newItem
+        aiAnswerByMessageId[data.id] = aiRecognize
 
-        if (aiRes) {
-          newItem.chatGptValidationMessage = aiRes
+        if (aiRecognize) {
+          const channelConfig = monitorConfigByChannelId[channel.chatId]
 
-          let aiResArr
+          const {
+            manualInputPercentOverrideSignalPrice,
+            ignoreSignalsWithoutTPSL,
+            manualInputPercentAsFallbackForLackOfSignalTPSL,
+          } = channelConfig
 
           try {
-            aiResArr = JSON.parse(aiRes.replace(/'/g, '"'))
-          } catch (e) {
-            newItem.status = "Can't recognize chat gpt answer"
-          }
-
-          if (aiResArr.length) {
-            // eslint-disable-next-line prefer-const
-            let [ticker, level, tp, stop, type = 'buy', doubts]: [
-              string | null,
-              number | null,
-              number[] | null,
-              number | null,
-              SignalType | null,
-              SignalDoubts | null
-            ] = aiResArr
-
-            // Иногда chatGpt отдает num вместо array
-            if (Number(tp)) {
-              tp = [Number(tp)]
-            }
-
-            // Validate answer
-            if (
-              !ticker?.length ||
-              !(level > 0 || level === null) ||
-              !(tp?.length || level === null) ||
-              !(stop > 0 || stop === null) ||
-              !type?.match(/(buy|sell)/) ||
-              !doubts?.match(/(yes|no)/)
-            ) {
-              newItem.status = 'AI answer is invalid'
-              continue
-            }
-
-            newItem.aiExtractedData.doubts = doubts
-            newItem.aiExtractedData.type = type
-            newItem.aiExtractedData.stop = stop
-            newItem.aiExtractedData.tp = tp
-            newItem.aiExtractedData.ticker = ticker
-            newItem.aiExtractedData.tradeStartPrice = level
-
-            const channelConfig = monitorConfigByChannelId[channel.chatId]
-
-            const {
-              manualInputPercentOverrideSignalPrice,
-              ignoreSignalsWithoutTPSL,
-              manualInputPercentAsFallbackForLackOfSignalTPSL,
-            } = channelConfig
-
-            try {
-              const { ticks, ...tradeRes } =
-                (await tradeByHistory({
-                  signalMessageTime: data.date * 1000,
-                  signalMessageTPValue: tp,
-                  signalMessageSLValue: stop,
-                  signalMessageSymbol: ticker,
-                  signalMessageTradeStartPrice: level,
-                  manualInputTPPercent: takeProfitPercent,
-                  manualInputSLPercent: stopLossPercent,
-                  manualInputPercentOverrideSignalPrice,
-                  ignoreSignalsWithoutTPSL,
-                  manualInputPercentAsFallbackForLackOfSignalTPSL,
-                  signalMessageDirection: type,
-                })) ?? {}
-
-              // Don't await
-              saveTicks(ticks)
-
-              priceAnalysisByMessageId[data.id] = {
-                ...tradeRes,
-                chat: channel._id,
-
-                message: data.message,
-                messageId: data.id,
-                signalMessageDate: new Date(data.date * 1000),
-                parsedData: newItem.aiExtractedData,
-
-                // priceWhenMessageSent: priceForStartDate,
-                ignoreSignalsWithoutTPSL,
-                manualInputPercentAsFallbackForLackOfSignalTPSL,
-                manualInputPercentOverrideSignalPrice,
+            const { ticks, ...tradeRes } =
+              (await tradeByHistory({
+                signalMessageTime: data.date * 1000,
+                signalMessageTPValue: aiRecognize.aiExtractedData.tp,
+                signalMessageSLValue: aiRecognize.aiExtractedData.stop,
+                signalMessageSymbol: aiRecognize.aiExtractedData.ticker,
+                signalMessageTradeStartPrice:
+                  aiRecognize.aiExtractedData.tradeStartPrice,
                 manualInputTPPercent: takeProfitPercent,
                 manualInputSLPercent: stopLossPercent,
-              }
-            } catch (e) {
-              newItem.status = 'Error while getting price'
+                manualInputPercentOverrideSignalPrice,
+                ignoreSignalsWithoutTPSL,
+                manualInputPercentAsFallbackForLackOfSignalTPSL,
+                signalMessageDirection: aiRecognize.aiExtractedData.type,
+              })) ?? {}
+
+            // Don't await
+            saveTicks(ticks)
+
+            priceAnalysisByMessageId[data.id] = {
+              ...tradeRes,
+              chat: channel._id,
+
+              message: data.message,
+              messageId: data.id,
+              signalMessageDate: new Date(data.date * 1000),
+              parsedData: aiRecognize.aiExtractedData,
+
+              // priceWhenMessageSent: priceForStartDate,
+              ignoreSignalsWithoutTPSL,
+              manualInputPercentAsFallbackForLackOfSignalTPSL,
+              manualInputPercentOverrideSignalPrice,
+              manualInputTPPercent: takeProfitPercent,
+              manualInputSLPercent: stopLossPercent,
             }
+          } catch (e) {
+            aiRecognize.status = 'Error while getting price'
           }
         }
 
-        log.info('Saving ai answer', newItem)
+        log.info('Saving ai answer', aiRecognize.aiExtractedData)
       } catch (e) {
         log.error('Error while asking ai', e)
       } finally {
