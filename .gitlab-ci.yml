@@ -1,5 +1,3 @@
-# TODO: Сбилдить и запушить можно все пачкой через docker-compose
-
 # Кеширует папки между этапами
 cache:
   key: "$CI_BUILD_REF_NAME node:16-alpine"
