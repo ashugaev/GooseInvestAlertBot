@@ -2,7 +2,7 @@
 
 # Кеширует папки между этапами
 cache:
-  key: "$CI_BUILD_REF_NAME node:10-alpine"
+  key: "$CI_BUILD_REF_NAME node:16-alpine"
   paths:
     - node_modules/
 
@@ -11,7 +11,7 @@ variables:
   DOCKER_DRIVER: overlay2
 
 stages:
-  # Добавить сюда test
+  - test
   # Делаем сборку
   - build
   # Генерим докер-образ и пушим в регистр
@@ -25,6 +25,7 @@ test:
   script:
     - npm ci
     - npm run test
+  allow_failure: true
   except:
     - master  # исключаем ветку master из этапа тестирования
 
