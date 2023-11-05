@@ -99,5 +99,14 @@ export const getShiftConfigKeyboard = (
     ],
   ]
 
+  if (payload.d) {
+    buttons.push([
+      m.callbackButton(
+        i18n.t('ru', 'button_delete'),
+        createActionString(SHIFT_ACTIONS.deleteOne, { id: payload.d })
+      ),
+    ])
+  }
+
   return buttonsOnly ? buttons : m.inlineKeyboard(buttons)
 }

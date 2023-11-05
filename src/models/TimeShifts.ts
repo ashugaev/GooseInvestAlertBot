@@ -87,7 +87,7 @@ export const getTimeShifts = async ({
   user,
   chat,
   ...params
-}: Partial<TimeShift>): Promise<TimeShift[]> => {
+}: Partial<TimeShift>) => {
   if (!user && !chat && !params._id) {
     throw new Error('No user or chat or id in params')
   }

@@ -10,6 +10,7 @@ export const SHIFT_ACTIONS = {
   chooseSource: '88',
   additionalConfiguration: 'l4y5',
   alertSettings: 'lje',
+  deleteOne: 'dde',
 }
 
 export const SHIFT_MAX_PERCENT = 200

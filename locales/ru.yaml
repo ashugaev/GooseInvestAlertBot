@@ -221,6 +221,9 @@ priceCheckError: |
 unrecognizedError: |
   ❌ Неизвестная ошибка!
 
+alertRemoved: | 
+  ❌ Отслеживание было удалено
+
 # Buttons
 
 help_button: |
@@ -230,10 +233,10 @@ alert_button: |
   Добавить оповещение
 
 button_edit: |
-  Редактировать
+  ⚙️ Редактировать
 
 button_delete: |
-  Удалить
+  🗑️ Удалить
 
 # Days of week (первая цифра номер дня, вторая падеж)
 
@@ -342,12 +345,12 @@ grow: рост
 # Shift add (скорость изменения цены)
 
 shift_add_askSource: |
-    <b>⚡️ Отслеживания скорости изменения цены</b>
+    <b>⚡️ Скорость цены</b>
   
     📈 Выбери источник данных для мониторинга 👇
 
 shift_add_chooseTickers: |
-  <b>⚡️ Отслеживания скорости изменения цены</b>
+  <b>⚡️ Скорость цены</b>
 
   💁 Отправь список тикеров через пробел
 
@@ -364,12 +367,12 @@ shift_add_wrongTicker: |
    Оповещения будут добавлены только для <b>${tickers}</b>
 
 shift_add_chooseTimeframe: |
-  <b>⚡️ Отслеживания скорости изменения цены</b>
+  <b>⚡️ Скорость цены</b>
 
   🕒 Выбери время за которое будет отслеживаться скорость 👇
 
 shift_add_choosePercent: |
-  <b>⚡️ Отслеживания скорости изменения цены</b>
+  <b>⚡️ Скорость цены</b>
 
   <b>%</b> Отправь процент изменения цены при котором я пришлю тебе уведомление.
 
@@ -377,7 +380,7 @@ shift_add_error_maxPercent: |
   ❌ Это может быть любое число, не больше <b>${maxPercent}</b>
 
 shift_add_success: |
-  <b>⚡️ Отслеживания скорости изменения цены</b>
+  <b>⚡️ Скорость цены</b>
 
   ✅ Созданы уведомления при изменении цены больше чем на <b>${percent}%</b> за <b>${time}</b> для <b>${tickers}</b>
 
@@ -400,10 +403,17 @@ shift_add_button_unmute: Без звука
 # Shift alert (скорость изменения цены)
 
 shift_alert: |
-  ⚡️ Цена <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source} ${isGrow ? '↗️ <b>выросла</b>' : '↘️ <b>упала</b>'} больше чем на <b>${percent}%</b> за <b>${time}</b>${price ? ' и достигла уровня ' + '<b>' + price + priceSymbol + '</b>' : ''}
+  ⚡️ <b>Скорость цены</b>
+
+  Тикер: <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source}
+  Сигнал: ${isGrow ?'<b>Рост</b> ↗️' : ' <b>Падение</b> ↘️'} больше <b>${percent}%</b> за <b>${time}</b>
+  ${price ? 'Цена: <b>' + price + priceSymbol + '</b>' : ''}
 
 shift_alert_buttons_settings: |
-  Настроить
+  ⚙️ Изменить
+
+shift_delete_success: |
+  🗑 Удалил отслеживание скорости для <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source}
 
 # Pay
 
@@ -526,7 +536,7 @@ mytoken_deployError: |
   <code>${error}</code>
 
 mytoken_removeBtn: |
-  Удалить
+  🗑 Удалить
 
 mytoken_removed: |
   Бот деактивирован
