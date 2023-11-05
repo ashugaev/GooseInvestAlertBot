@@ -1,12 +1,15 @@
 import { Api } from 'telegram'
 import { NewMessage, NewMessageEvent } from 'telegram/events'
 
+import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
+import { SignalChatModel } from '@/bots/cryptoSignals/models/signalChat'
 import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 import { handleDevochkiChannelMessage } from '@/features/signals/devochkiChannel/handleMessage'
+import { handleSignalEvent } from '@/features/tradeBySignal/handleSignalEvent'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
-import { annClient, client } from '@/integrations/telegram/client'
+import { mainClient, signalsClient } from '@/integrations/telegram/client'
 import {
   callbacksByChatPurpose,
   TrackChatCallbacksParams,
@@ -120,7 +123,7 @@ export const pollingMessagesCheck = async () => {
     try {
       startIterationTime = Date.now()
 
-      const result = await client.invoke(
+      const result = await mainClient.invoke(
         new Api.messages.GetHistory({
           peer: pollingChat,
           limit: 2,
@@ -158,18 +161,30 @@ export const pollingMessagesCheck = async () => {
 
 export const setupEventHandlers = async () => {
   // Track chat events
-  client.addEventHandler(
-    handleEvent,
+  mainClient.addEventHandler(
+    // handleEvent, // Legacy logic. Migrate this scenario to the new bot
+    handleSignalEvent,
     new NewMessage({
       chats: trackChats,
     })
   )
 
   // Track chat events
-  annClient.addEventHandler(
-    handleEvent,
+  // annClient.addEventHandler(
+  //   handleEvent,
+  //   new NewMessage({
+  //     chats: trackChatsAnn,
+  //   })
+  // )
+
+  const chats = await SignalChatModel.find().lean()
+  const channelsToTrack = Object.keys(monitorConfigByChannelId)
+
+  // Tracks account with signals
+  signalsClient.addEventHandler(
+    handleSignalEvent,
     new NewMessage({
-      chats: trackChatsAnn,
+      chats: channelsToTrack,
     })
   )
 
@@ -179,7 +194,7 @@ export const setupEventHandlers = async () => {
 
 export const addNewEventHandler = async (username: string) => {
   // Track chat events
-  client.addEventHandler(
+  mainClient.addEventHandler(
     handleEvent,
     new NewMessage({
       chats: [username],

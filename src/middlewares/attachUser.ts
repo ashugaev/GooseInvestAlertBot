@@ -81,6 +81,7 @@ export async function attachUser(ctx: Context, next) {
     const wasKicked =
       // Bot was kicked from chat
       (ctx.updateSubTypes?.includes('left_chat_member') &&
+        // FIXME: ctx.goose.id - специфическая логика
         ctx.update.message?.left_chat_member.id === ctx.goose.id) ||
       // Bot was kicked from channel
       // @ts-ignore

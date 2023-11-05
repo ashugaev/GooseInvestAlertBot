@@ -15,9 +15,14 @@ export type SignalOrderType = 'market' | 'limit'
     timestamps: true,
   },
 })
+
+// TODO: Remove it
 export class Signal extends TimeStamps {
   @prop({ required: true })
   channel: ChannelsToTrack
+
+  @prop({ required: true })
+  channelId: number
 
   @prop({ required: true })
   message: string
@@ -25,6 +30,9 @@ export class Signal extends TimeStamps {
   @prop({ required: true })
   messageId: number
 
+  /**
+   * Any explaining string
+   */
   @prop({ required: true })
   status: string
 

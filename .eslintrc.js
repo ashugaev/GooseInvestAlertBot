@@ -31,6 +31,7 @@ module.exports = {
     'no-plusplus': 'off',
     'no-await-in-loop': 'off',
     'linebreak-style': 'off',
+    'no-constant-condition': 'off',
     'max-len': ['error', { code: 128 }],
     'class-methods-use-this': 0,
     'no-underscore-dangle': 0,
@@ -66,6 +67,13 @@ module.exports = {
       files: ['./src/app.ts'],
       rules: {
         'import/first': 0,
+      },
+    },
+    {
+      files: ['jest.config.js'],
+      parserOptions: {
+        project: './tsconfig.eslint.json',
+        disableTypeChecked: true, // отключаем проверку типов для этого файла
       },
     },
   ],

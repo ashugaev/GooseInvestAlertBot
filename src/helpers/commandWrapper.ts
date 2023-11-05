@@ -22,7 +22,8 @@ export function commandWrapper(
   callback: (ctx: Context) => Promise<void>
 ): Middleware<TelegrafContext> {
   return async (ctx) => {
-    if (!availableForAdmins && ctx.dbuser.adminMode) {
+    // TODO: Убрать специфическую логику от одного бота тут
+    if (!availableForAdmins && ctx.dbuser?.adminMode) {
       try {
         await ctx.replyWithHTML(ctx.i18n.t('adminMode_commandHidden'))
       } catch (e) {
@@ -31,15 +32,15 @@ export function commandWrapper(
       return
     }
 
-    if (bossOnly && ctx.dbuser.id !== Number(BOSS_TG_ID)) {
+    if (bossOnly && ctx.dbuser?.id !== Number(BOSS_TG_ID)) {
       return
     }
 
-    if (!availableForUsers && !ctx.dbuser.adminMode) {
+    if (!availableForUsers && !ctx.dbuser?.adminMode) {
       return
     }
 
-    if (ctx.dbuser.adminMode && !ctx.adminChatActive) {
+    if (ctx.dbuser?.adminMode && !ctx.adminChatActive) {
       await switchToAdminMode(ctx)
     }
 

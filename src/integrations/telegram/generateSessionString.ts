@@ -9,6 +9,8 @@ const {
   TELEGRAM_API_HASH,
   TELEGRAM_ANN_API_HASH,
   TELEGRAM_ANN_API_ID,
+  TELEGRAM_SIGNALS_API_ID,
+  TELEGRAM_SIGNALS_API_HASH,
 } = process.env
 
 const stringSession = new StringSession('')
@@ -22,8 +24,8 @@ const generateSessionString = async () => {
 
   const client = new TelegramClient(
     stringSession,
-    Number(TELEGRAM_ANN_API_ID),
-    TELEGRAM_ANN_API_HASH,
+    Number(TELEGRAM_SIGNALS_API_ID),
+    TELEGRAM_SIGNALS_API_HASH,
     {
       connectionRetries: 5,
     }

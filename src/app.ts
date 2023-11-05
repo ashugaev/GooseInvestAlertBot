@@ -1,6 +1,7 @@
 import 'module-alias/register'
 // Importing @sentry/tracing patches the global hub for tracing to work.
 import '@sentry/tracing'
+const TelegrafBot = require('telegraf')
 
 // Config dotenv
 import * as dotenv from 'dotenv'
@@ -11,8 +12,11 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
+import { Context, Telegraf } from 'telegraf'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
+import { setypAnalyseChannelCommand } from '@/bots/cryptoSignals/commands/analyse/analyse'
+import { analyseScene } from '@/bots/cryptoSignals/commands/analyse/analyse.scenes'
 import { setupAddChat } from '@/commands/addChat/addChat'
 import { addChatScenes } from '@/commands/addChat/addChat.scenes'
 import { setupAdmin } from '@/commands/admin/admin'
@@ -21,7 +25,10 @@ import { myTokenScenes } from '@/commands/mytoken/mytoken.scenes'
 import { setupRemove } from '@/commands/remove/remove'
 import { removeScenes } from '@/commands/remove/remove.scenes'
 import { setupTest } from '@/commands/test/test'
+import { botConfig } from '@/config'
 import { setupCheckers } from '@/cron'
+import { retry } from '@/helpers'
+import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
@@ -106,15 +113,55 @@ export const botInit = (bot) => {
   log.info(`Bot ${bot.context.goose.username} is up and running`)
 }
 
-bots.then((bots) => {
-  for (const bot of bots) {
-    botInit(bot)
-  }
+if (botConfig.appFlags.priceAlertBots) {
+  bots.then((bots) => {
+    for (const bot of bots) {
+      botInit(bot)
+    }
 
-  // Start all async tasks (cron and continuous)
-  setupCheckers()
-})
+    // Start all async tasks (cron and continuous)
+    setupCheckers()
+  })
+}
 
-process.on('uncaughtException', function (err) {
-  log.error('[UNHANDLED]', err)
-})
+if (botConfig.appFlags.trackSignals) {
+  /**
+   * Track chats feed
+   */
+  retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
+}
+
+if (botConfig.appFlags.cryptoSignalBots) {
+  // Start signals bot client
+  // TODO: Make separated
+  ;(async () => {
+    const signalsStage = new Stage([analyseScene])
+
+    const bot = new TelegrafBot(
+      process.env.TELEGRAM_SIGNALS_BOT_TOKEN
+    ) as Telegraf<Context>
+
+    // Ignore old messages
+    bot.use(checkTime)
+
+    const botInfo = await bot.telegram.getMe()
+    bot.context.goose = botInfo
+
+    // Attach user
+    // FIXME: Сейчас он слишком специфические для алерт бота
+    bot.use(attachUser)
+
+    bot.use(session())
+    bot.use(signalsStage.middleware())
+
+    setypAnalyseChannelCommand(bot)
+
+    // Start bot
+    bot.startPolling()
+    log.info(`Bot GOOSE SIGNALS is up and running`)
+  })()
+
+  process.on('uncaughtException', function (err) {
+    log.error('[UNHANDLED]', err)
+  })
+}

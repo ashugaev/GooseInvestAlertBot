@@ -1,0 +1,149 @@
+import { Context, Extra, Markup, Telegraf } from 'telegraf'
+import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
+
+import { commandWrapper } from '@/helpers/commandWrapper'
+import { triggerActionRegexp } from '@/helpers/triggerActionRegexp'
+import { paginationButtons } from '@/keyboards/paginationButtons'
+
+interface GetPaginationModuleParams {
+  page: number
+  items: {
+    id: number | string
+    title: string
+    [key: string]: any
+  }[]
+  // action: string
+  itemsPerPage?: number
+  title: string
+}
+
+export interface PaginationParams {
+  itemsPerPage: number
+  title: string
+  getItems: () => Promise<
+    { id: number | string; title: string; [key: string]: any }[]
+  >
+}
+
+export class Pagination {
+  itemsPerPage: number
+  title: string
+  getItems: () => Promise<{ id: number | string; title: string }[]>
+  actionKey: string
+  messageId?: number
+  bot?: Telegraf<Context>
+
+  constructor({ itemsPerPage, title, getItems }: PaginationParams) {
+    this.itemsPerPage = itemsPerPage
+    this.title = title
+    this.getItems = getItems
+  }
+
+  private generateActionKey() {
+    return Math.random().toString(36).substring(7)
+  }
+
+  /**
+   * Initial send keyboard
+   */
+  send = async (ctx: Context, page = 0) => {
+    const items = await this.getItems()
+
+    const text = getPaginationText({
+      page,
+      items,
+      itemsPerPage: this.itemsPerPage,
+      title: this.title,
+    })
+
+    const keyboard = Markup.inlineKeyboard([
+      paginationButtons({
+        itemsPerPage: this.itemsPerPage,
+        itemsLength: items.length,
+        // @ts-ignore
+        action: this.actionKey,
+        payload: {
+          p: page,
+        },
+      }),
+    ])
+
+    const message = await ctx.replyWithHTML(
+      text,
+      Extra.HTML(true).markup(keyboard) as ExtraEditMessage
+    )
+
+    this.messageId = message.message_id
+  }
+
+  async update(ctx: Context, page = 0) {
+    const items = await this.getItems()
+
+    const text = getPaginationText({
+      page,
+      items,
+      itemsPerPage: this.itemsPerPage,
+      title: this.title,
+    })
+
+    const keyboard = Markup.inlineKeyboard([
+      paginationButtons({
+        itemsPerPage: this.itemsPerPage,
+        itemsLength: items.length,
+        // @ts-ignore
+        action: this.actionKey,
+        payload: {
+          p: page,
+        },
+      }),
+    ])
+
+    await ctx.telegram.editMessageText(
+      ctx.chat.id,
+      this.messageId,
+      undefined,
+      text,
+      Extra.HTML(true).markup(keyboard) as ExtraEditMessage
+    )
+  }
+
+  private handleAction = commandWrapper(
+    { availableForAdmins: true, availableForUsers: true },
+    async (ctx) => {
+      const { p: page } = JSON.parse(ctx.match[1])
+
+      // Ignore old messages clicks
+      if (this.messageId !== ctx.callbackQuery.message.message_id) {
+        return
+      }
+
+      await this.update(ctx, page)
+    }
+  )
+
+  initActions({ bot }: { bot: Telegraf<Context> }) {
+    this.bot = bot
+    this.actionKey = this.generateActionKey()
+    this.bot.action(triggerActionRegexp(this.actionKey), this.handleAction)
+  }
+}
+
+export const getPaginationText = ({
+  page,
+  items,
+  itemsPerPage,
+  title,
+}: GetPaginationModuleParams) => {
+  let text = title + '\n\n'
+
+  const itemsByPage = items.slice(
+    page * itemsPerPage,
+    page * itemsPerPage + itemsPerPage
+  )
+
+  itemsByPage.forEach((item, i) => {
+    text += `${i + 1 + page * itemsPerPage}. ${item.title}\n\n`
+  })
+
+  return text
+}

@@ -13,24 +13,3 @@ export interface DetectorConfig {
   buyAmount: number
 }
 
-// @ts-ignore
-export const configByChannel: Record<ChannelsToTrack, DetectorConfig> = {
-  Whales_Pumping_Cryptocurrency: {
-    allowedUTCHours: null,
-    mustBeRoundHour: true,
-    debugMessagesTracker: false,
-    buyAmount: 10,
-  },
-  keklolkeklolkeklolkeklolkeklol: {
-    allowedUTCHours: null,
-    mustBeRoundHour: false,
-    debugMessagesTracker: true,
-    buyAmount: 0.11,
-  },
-  DefiUniverse: {
-    allowedUTCHours: null,
-    mustBeRoundHour: false,
-    debugMessagesTracker: false,
-    buyAmount: 0.11,
-  },
-}

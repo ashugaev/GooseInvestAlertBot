@@ -1,7 +1,20 @@
 import { Context, Telegraf } from 'telegraf'
+import { Api, TelegramClient } from 'telegram'
 
 import { botInit } from '@/app'
+import { wait } from '@/helpers/wait'
+import { signalsClient } from '@/integrations/telegram/client'
+import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { BotModel } from '@/models/Bot'
+import User = Api.User
+import {
+  SignalChat,
+  SignalChatModel,
+} from '@/bots/cryptoSignals/models/signalChat'
+import { log } from '@/helpers/log'
+import { getChatHistory } from '@/integrations/telegram/getChatHistory'
+import ChannelMessages = Api.messages.ChannelMessages
+import { initialSignalValidation } from '@/features/signals/devochkiChannel/handleMessage'
 const TelegrafBot = require('telegraf')
 
 // TODO: Log problems with multibot

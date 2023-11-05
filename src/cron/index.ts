@@ -1,7 +1,6 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
 import { log, retry } from '@/helpers'
-import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 import { binanceGetAllInstrumentsFutures } from '@/marketApi/binance/api/getAllInstrumentsFutures'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 import { getInstrumentsKucoin } from '@/marketApi/kucoin/getInstruments'
@@ -26,8 +25,6 @@ import { setupPriceUpdater, updateTickersList } from '../modules'
 import { copyAlerts } from './copyAlerts'
 import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
-
-const isDevMode = process.env.NODE_ENV === 'development'
 
 // Processed steps list
 export enum InitializationItem {
@@ -425,9 +422,4 @@ export const setupCheckers = () => {
    * Base health checks for bot
    */
   retry(async () => await startTests(), 10000, 'tests')
-
-  /**
-   * Track chats feed
-   */
-  retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
 }

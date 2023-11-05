@@ -35,6 +35,7 @@ export const callbacksByChatPurpose: Record<
 
 /**
  * Tracked chats list
+ * FIXME: Duplicate with SignalChat
  */
 export class TrackChat {
   @prop({ required: true })
