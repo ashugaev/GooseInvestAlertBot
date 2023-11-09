@@ -163,7 +163,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
           percent: shift.percent,
           isGrow,
           time: timeframeData.name_ru_plur,
-          ticker: tickerInfo.name === ticker ? null : tickerInfo.name,
+          ticker: tickerInfo.name === ticker ? null : tickerInfo.ticker,
           source: sourceLink,
           price: getLastPrice(tickerInfo.id, true),
           priceSymbol: getSymbolByTicker(tickerInfo.currency),
