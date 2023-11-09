@@ -76,7 +76,7 @@ export const shiftAlertSettings = async (ctx) => {
         percent: shiftData.percent,
         isGrow: Boolean(isGrow),
         time: timeframesObj[shiftData.timeframe].name_ru_plur,
-        ticker: shiftData.name === shiftData.ticker ? null : shiftData.name,
+        ticker: shiftData.name === shiftData.ticker ? null : shiftData.ticker,
         source: getSourceMark(tickerInfo),
         // Если брать последнюю цену, то сообщение сигнала будет не корректным, а цену срабатывания я не храню
         // Можно хранить цену в стейте экшена/в базе/и в локальном кэше
