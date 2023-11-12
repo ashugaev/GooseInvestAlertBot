@@ -68,6 +68,7 @@ export const chatGptRequestHash = createUniqueHash(
 // TODO: Проверка на рекламное сообщение
 // TODO: Классификация сигнала (корректировка/новый/закрытие)
 // TODO: Упоминание биржи
+// TODO: Проверки на то, что это фьючерсы
 export const validateWithChatGPT = async (message) => {
   try {
     const chat_completion = await openai.createChatCompletion(

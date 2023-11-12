@@ -17,6 +17,12 @@ import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
 import { setypAnalyseChannelCommand } from '@/bots/cryptoSignals/commands/analyse/analyse'
 import { analyseScene } from '@/bots/cryptoSignals/commands/analyse/analyse.scenes'
+import { setupTradeCommand } from '@/bots/cryptoSignals/commands/trade/trade'
+import { testScene } from '@/bots/cryptoSignals/commands/trade/trade'
+import {
+  askNewTradeChat,
+  tradeScenes,
+} from '@/bots/cryptoSignals/commands/trade/trade.scenes'
 import { setupAddChat } from '@/commands/addChat/addChat'
 import { addChatScenes } from '@/commands/addChat/addChat.scenes'
 import { setupAdmin } from '@/commands/admin/admin'
@@ -68,11 +74,13 @@ Sentry.init({
 })
 
 const stage = new Stage([
+  tradeScenes,
   statScenes,
   shiftScenes,
   removeScenes,
   myTokenScenes,
   addChatScenes,
+  testScene,
   ...commonScenes,
   ...alertScenes,
 ])
@@ -135,7 +143,10 @@ if (botConfig.appFlags.cryptoSignalBots) {
   // Start signals bot client
   // TODO: Make separated
   ;(async () => {
-    const signalsStage = new Stage([analyseScene])
+    const signalsStage = new Stage([
+      analyseScene,
+      askNewTradeChat.createScene(),
+    ])
 
     const bot = new TelegrafBot(
       process.env.TELEGRAM_SIGNALS_BOT_TOKEN
@@ -154,6 +165,7 @@ if (botConfig.appFlags.cryptoSignalBots) {
     bot.use(session())
     bot.use(signalsStage.middleware())
 
+    setupTradeCommand(bot)
     setypAnalyseChannelCommand(bot)
 
     // Start bot

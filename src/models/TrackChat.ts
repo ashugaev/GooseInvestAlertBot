@@ -4,7 +4,7 @@ import { handleMessage } from '@/features/pumpDetect/handleMessage'
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 import { EMarketDataSources } from '@/marketApi/types'
 
-export type TrackChatPurpose = 'signal' | 'news'
+export type TrackChatPurpose = 'signal' | 'pump'
 
 export interface TrackChatCallbacksParams {
   message: string | null
@@ -19,6 +19,7 @@ export interface TrackChatCallbacksParams {
   prevMessages?: TrackChatCallbacksParams[]
 }
 
+// Deprecated?
 export const callbacksByChatPurpose: Record<
   TrackChatPurpose,
   { message: (params: TrackChatCallbacksParams) => void }
@@ -26,9 +27,9 @@ export const callbacksByChatPurpose: Record<
   signal: {
     message: handleMessage,
   },
-  news: {
+  pump: {
     message: () => {
-      console.log('news message')
+      console.log('pupm message')
     },
   },
 }
@@ -37,21 +38,27 @@ export const callbacksByChatPurpose: Record<
  * Tracked chats list
  * FIXME: Duplicate with SignalChat
  */
-export class TrackChat {
+export class TradeByChat {
   @prop({ required: true })
-  username: string
+  chatId: string
 
-  @prop({ required: true, enum: ['pump', 'news'] })
+  @prop({ required: false, default: 'signal' })
   purpose: TrackChatPurpose
 
   /**
    * Which stock marked this chat created for
-   * Possibly only for pumps
+   * Potentially can be autodetected
    */
   @prop({ required: true, enum: EMarketDataSources })
   targetSource: EMarketDataSources
+
+  @prop({ required: true, type: () => Number, default: [] })
+  manualTP: number[]
+
+  @prop({ required: true, default: null })
+  manualSL: number
 }
 
-export const TrackChatModel = getModelForClass(TrackChat, {
+export const TradeByChatModel = getModelForClass(TradeByChat, {
   schemaOptions: { timestamps: true },
 })
