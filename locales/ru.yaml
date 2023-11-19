@@ -394,6 +394,8 @@ shift_add_overlimit: |
 
 shift_add_button_growAlert: Отслеживать рост
 
+shift_add_button_changePercent: ➗ Изменить процент
+
 shift_add_button_fallAlert: Отслеживать падение
 
 shift_add_button_mute: Со звуком
@@ -406,7 +408,7 @@ shift_alert: |
   ⚡️ <b>Скорость цены</b>
 
   Тикер: <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source}
-  Алерт: ${isGrow ?'<b>Рост</b> ↗️' : ' <b>Падение</b> ↘️'} больше <b>${percent}%</b> за <b>${time}</b>
+  Алерт: ${isGrow ?'<b>🟢 Рост</b> ↗️' : '<b>🔴 Падение</b> ↘️'} больше <b>${percent}%</b> за <b>${time}</b>
   ${price ? 'Цена: <b>' + price + priceSymbol + '</b>' : ''}
 
 shift_alert_buttons_settings: |
@@ -414,6 +416,9 @@ shift_alert_buttons_settings: |
 
 shift_delete_success: |
   🗑 Удалил отслеживание скорости для <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source}
+
+shift_perchent_changed: |
+  ✅ Процент изменен на <b>${percent}%</b>
 
 # Pay
 

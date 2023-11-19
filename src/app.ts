@@ -18,7 +18,6 @@ import { TinkoffInvestApi } from 'tinkoff-invest-api'
 import { setypAnalyseChannelCommand } from '@/bots/cryptoSignals/commands/analyse/analyse'
 import { analyseScene } from '@/bots/cryptoSignals/commands/analyse/analyse.scenes'
 import { setupTradeCommand } from '@/bots/cryptoSignals/commands/trade/trade'
-import { testScene } from '@/bots/cryptoSignals/commands/trade/trade'
 import {
   askNewTradeChat,
   tradeScenes,
@@ -44,7 +43,11 @@ import { setupLanguage } from './commands/language'
 import { setupList } from './commands/list/list'
 import { setupPay } from './commands/pay/pay'
 import { setupPrice } from './commands/price'
-import { setupShift, shiftScenes } from './commands/shift'
+import {
+  setupShift,
+  shiftScenes,
+  shiftSceneUpatePercent,
+} from './commands/shift'
 import { setupStart } from './commands/start'
 import { setupStat, statScenes } from './commands/stat'
 import { bots } from './helpers/bot'
@@ -80,7 +83,7 @@ const stage = new Stage([
   removeScenes,
   myTokenScenes,
   addChatScenes,
-  testScene,
+  shiftSceneUpatePercent,
   ...commonScenes,
   ...alertScenes,
 ])

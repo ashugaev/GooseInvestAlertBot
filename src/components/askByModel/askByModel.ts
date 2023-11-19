@@ -44,7 +44,7 @@ export interface AskByModelConfig<T> {
   result?: (data: Partial<T>) => string
   retryIfValidationError?: boolean
   autocreateItemInDB?: boolean
-  onSuccess?: () => void
+  onSuccess?: (ctx: Context, data: Partial<T>) => Promise<void>
 }
 
 export interface AskByModelField {
@@ -67,7 +67,17 @@ export interface AskByModelResult<T> {
 
 // TODO: To class
 // TODO: Remove document on crash/leave
+
+/**
+ * Usage:
+ * - Create instance in *.scenes.ts and configure it
+ * - Call init() inside command
+ * - Call createScene() inside new Stage()
+ * - Call startScene() when it's time to start scene
+ */
 export class AskByModel<T> {
+  collectedData: Partial<T> = {}
+
   // @ts-expect-error
   model: ReturnModelType<T>
   fields: AskByModelFields<T>
@@ -75,6 +85,10 @@ export class AskByModel<T> {
   sceneKey = null
   bot: Telegraf<Context>
   wizard: any
+  /**
+   * This filter shows this we want to update entity, not create a new one
+   */
+  updateFilter: Partial<T> = {}
 
   newDocument: Document<T> = null
 
@@ -89,7 +103,10 @@ export class AskByModel<T> {
     this.config = config
 
     // @ts-ignore
-    this.newDocument = new model(config.initialData || {})
+    this.collectedData = config.initialData || {}
+
+    // @ts-ignore
+    // this.newDocument = new model(config.initialData || {})
     // TODO: Add validation
     // this.newDocument.$isValid('kek')
   }
@@ -102,18 +119,25 @@ export class AskByModel<T> {
   }
 
   iteration = 0
+  questonAskedForField = null // Helping to understand if it's request iteration or answer validation
+  waitingAnswerType: 'immediate' | 'text' = 'immediate'
   private async sceneCallback(ctx) {
-    debugger
+    const allFiledsToCollect = Object.keys(this.fields)
+    const collectedFileds = Object.keys(this.collectedData)
 
-    const kek = {
-      0: 'fieldOne',
-      1: 'fieldTwo',
-      2: 'fieldThree',
+    const fieldsToCollect = allFiledsToCollect.filter(
+      (field) => !collectedFileds.includes(field)
+    )
+
+    if (!fieldsToCollect.length) {
+      return ctx.scene.leave()
     }
 
-    const val = kek[this.iteration]
+    const fieldConfig = this.fields[fieldsToCollect[0]](this.collectedData)
 
-    ctx.replyWithHTML(val)
+    ctx.replyWithHTML(fieldConfig.question)
+
+    this.questonAskedForField = fieldsToCollect[0]
 
     this.iteration++
 
@@ -128,7 +152,7 @@ export class AskByModel<T> {
 
     this.wizard = new WizardScene(
       this.sceneKey,
-      immediateStep('send token', this.sceneCallback)
+      immediateStep('send token', this.sceneCallback.bind(this))
     )
 
     return this.wizard
@@ -138,7 +162,15 @@ export class AskByModel<T> {
    *
    * Call it when it's time to start scene
    */
-  startScene(ctx: Context) {
+  startScene({
+    ctx,
+    updateFilter,
+  }: {
+    ctx: Context
+    updateFilter: Partial<T & { _id: string }>
+  }) {
+    this.updateFilter = updateFilter
+
     // @ts-ignore
     return ctx.scene.enter(this.sceneKey)
   }

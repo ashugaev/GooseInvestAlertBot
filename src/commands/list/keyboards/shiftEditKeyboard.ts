@@ -24,6 +24,8 @@ export const shiftEditKeyboard = ({ page, shiftData }) => {
     // @ts-expect-error
     [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(shiftData._id),
     p: page,
+    // FIXME: Выходит за лимиты экшена
+    // d: shiftData?._id,
   }
 
   const editKeyboard = getShiftConfigKeyboard(
