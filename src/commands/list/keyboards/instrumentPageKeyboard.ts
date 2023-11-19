@@ -40,15 +40,6 @@ export const instrumentPageKeyboard = (
 
   const isEditMode = keyboardMode === EKeyboardModes.edit
 
-  // Получаю кнопки пагинации (стрелки)
-  const paginatorButtons = paginationButtons({
-    itemsLength,
-    ...paginationButtonsConfig,
-  })
-
-  // Добавляем стрелки
-  keys.push(paginatorButtons)
-
   if (isEditMode) {
     const editListButtons = Array.from(new Array(itemsToShowLength)).map(
       (_, i) => {
@@ -61,7 +52,7 @@ export const instrumentPageKeyboard = (
         }
 
         return Markup.callbackButton(
-          getAlertNumberByPage({ i, page }).toString(),
+          '⚙️ ' + getAlertNumberByPage({ i, page }).toString(),
           createActionString(editNumberButtonsConfig.action, payload)
         )
       }
@@ -84,6 +75,15 @@ export const instrumentPageKeyboard = (
       ),
     ])
   }
+
+  // Получаю кнопки пагинации (стрелки)
+  const paginatorButtons = paginationButtons({
+    itemsLength,
+    ...paginationButtonsConfig,
+  })
+
+  // Добавляем стрелки
+  keys.push(paginatorButtons)
 
   if (symbol) {
     const backButtonAction = createActionString(Actions.list_instrumentsPage, {

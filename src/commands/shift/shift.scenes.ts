@@ -1,5 +1,6 @@
 import { Context } from 'telegraf'
 
+import { AskByModel } from '@/components/askByModel/askByModel'
 import { SOURCE_CONFIG } from '@/constants/sourceConfig'
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { chooseSourceKeyboard } from '@/keyboards/chooseSource'
@@ -31,6 +32,86 @@ import { IAdditionalShiftConfig } from './shift.types'
 
 const WizardScene = require('telegraf/scenes/wizard')
 const { set } = require('lodash')
+
+// FIXME: Turned off now
+export const updatePercent = new AskByModel<typeof TimeShift>(
+  TimeShiftModel,
+  {
+    percent: () => ({
+      type: 'number',
+      question: i18n.t('ru', 'shift_add_choosePercent'),
+    }),
+  },
+  {
+    // sceneName: TRADE_SCENE,
+    // askFields: ['kek'],
+    // successMessage: () => ,
+    onSuccess: async (ctx, state) => {
+      await ctx.replyWithHTML(
+        // @ts-ignore
+        i18n.t('ru', 'shift_perchent_changed', { percent: state.percent })
+      )
+    },
+  }
+)
+
+const askPercent = immediateStep(
+  'shift_update_percent_ask-percent',
+  async (ctx: Context) => {
+    await ctx.replyWithHTML(i18n.t('ru', 'shift_add_choosePercent'))
+
+    // @ts-ignore
+    return ctx.wizard.next()
+  }
+)
+
+const savePercent = waitMessageStep(
+  'shift_update_percent_save-percent',
+  async (ctx) => {
+    const { text: percent } = ctx.message
+
+    const intPercent = parseFloat(percent)
+
+    // Невалидное значение
+    if (!intPercent || percent > SHIFT_MAX_PERCENT) {
+      await ctx.replyWithHTML(
+        i18n.t('ru', 'shift_add_error_maxPercent', {
+          maxPercent: SHIFT_MAX_PERCENT,
+        })
+      )
+
+      return ctx.wizard.selectStep(ctx.wizard.cursor)
+    }
+
+    const { _id } = ctx.wizard.state
+
+    await TimeShiftModel.updateOne(
+      {
+        _id,
+      },
+      {
+        $set: {
+          percent: intPercent,
+        },
+      }
+    )
+
+    shiftsCache.update()
+
+    await ctx.replyWithHTML(
+      i18n.t('ru', 'shift_perchent_changed', { percent: intPercent })
+    )
+
+    // @ts-ignore
+    return ctx.scene.leave()
+  }
+)
+
+export const shiftSceneUpatePercent = new WizardScene(
+  SHIFT_SCENES.updatePercent,
+  askPercent,
+  savePercent
+)
 
 /**
  * Handle: -

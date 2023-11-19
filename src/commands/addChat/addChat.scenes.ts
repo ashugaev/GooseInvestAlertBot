@@ -1,8 +1,6 @@
 import { ADDCHAT_SCENE } from '@/commands/addChat/addChat.constants'
 import { i18n } from '@/helpers/i18n'
 import { addNewEventHandler } from '@/integrations/telegram/setupEventHandlers'
-import { EMarketDataSources } from '@/marketApi/types'
-import { TrackChatModel } from '@/models/TrackChat'
 import { immediateStep, waitMessageStep } from '@/scenes/wrappers'
 
 const WizardScene = require('telegraf/scenes/wizard')
@@ -28,13 +26,13 @@ const handleChatId = waitMessageStep(
   async (ctx, message, state) => {
     const username = ctx.message.text
 
-    await TrackChatModel.insertMany({
-      username,
-      // FIXME: Hardcoded for now
-      purpose: 'pump',
-      // FIXME: Hardcoded for now
-      targetSource: EMarketDataSources.kucoin,
-    })
+    // await TrackChatModel.insertMany({
+    //   username,
+    //   // FIXME: Hardcoded for now
+    //   purpose: 'pump',
+    //   // FIXME: Hardcoded for now
+    //   targetSource: EMarketDataSources.kucoin,
+    // })
     await ctx.replyWithHTML(
       i18n.t('ru', 'addChat_success', {
         // FIXME: Hardcoded for now

@@ -7,6 +7,8 @@ import {
 } from '@/bots/cryptoSignals/commands/analyse/analyse.utils'
 import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
 import { SignalChatModel } from '@/bots/cryptoSignals/models/signalChat'
+import { parseSignalWithChatGpt } from '@/bots/cryptoSignals/utils/parseSignalWithChatGpt'
+import { autotrader } from '@/modules/autotrader/autotrader'
 
 const channelsToTrack = Object.keys(monitorConfigByChannelId)
 
@@ -20,33 +22,53 @@ export const handleSignalEvent = async (event: NewMessageEvent) => {
       channelsToTrack.includes(event.message.chat?.username))
   ) {
     // @ts-ignore
-    handleMessage(event.message, idString, event)
+    handleMessage(event.message, Number(idString), event)
   }
 }
 
 async function handleMessage(
   message: Api.Message,
-  channelId: string,
+  channelId: number,
   event: NewMessageEvent
 ) {
-  // 1 Ручной валидатор
   // 2 ai валидатор
   // 3 Создание сделкив очереди
   // 4 Отправка сообщения в чат
 
+  if (!message.message?.length) {
+    return
+  }
+
   let chat = await SignalChatModel.findOne({
-    chatId: Number(channelId),
+    chatId: channelId,
   }).lean()
 
   if (!chat) {
     const fetchedChat = await event.message.getChat()
     await saveChatsToDB([fetchedChat])
     chat = await SignalChatModel.findOne({
-      chatId: Number(channelId),
+      chatId: channelId,
     }).lean()
   }
 
   // If chat not configured it will be skipped
-  const [normilizedMessage] = normalizeAndFilterMessages([message], chat)
+  const [normalizedMessage] = normalizeAndFilterMessages([message], chat)
+
+  if (!normalizedMessage?.message) {
+    return
+  }
+
   // Ai analyze messages
+  const aiRecognize = await parseSignalWithChatGpt({
+    messageText: normalizedMessage.message,
+    messageId: normalizedMessage.id,
+    channelId: channelId,
+  })
+
+  if (!aiRecognize) {
+    return
+  }
+
+  // @ts-expect-error
+  autotrader(aiRecognize)
 }

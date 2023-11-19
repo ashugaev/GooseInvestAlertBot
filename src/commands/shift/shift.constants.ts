@@ -2,6 +2,7 @@ import { EMarketDataSources } from '@/marketApi/types'
 
 export const SHIFT_SCENES = {
   add: 'add',
+  updatePercent: 'ggt',
 }
 
 // Рандомные симолы в экшене, что бы не выходить за лимит длины
@@ -11,6 +12,7 @@ export const SHIFT_ACTIONS = {
   additionalConfiguration: 'l4y5',
   alertSettings: 'lje',
   deleteOne: 'dde',
+  changePercent: 'ttc',
 }
 
 export const SHIFT_MAX_PERCENT = 200

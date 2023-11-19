@@ -20,4 +20,12 @@ export function setupShift(bot: Telegraf<Context>) {
   )
 
   bot.action(triggerActionRegexp(SHIFT_ACTIONS.deleteOne), shiftDeleteOne)
+  bot.action(triggerActionRegexp(SHIFT_ACTIONS.changePercent), async (ctx) => {
+    const { _id } = JSON.parse(ctx.match[1])
+
+    // @ts-ignore
+    await ctx.scene.enter(SHIFT_SCENES.updatePercent, {
+      _id,
+    })
+  })
 }

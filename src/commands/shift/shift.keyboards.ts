@@ -99,13 +99,24 @@ export const getShiftConfigKeyboard = (
     ],
   ]
 
+  // Иногда нет Id из-за лимитов экшена. Это нешится при переходе на стов в базе или шортификатор
   if (payload.d) {
-    buttons.push([
-      m.callbackButton(
-        i18n.t('ru', 'button_delete'),
-        createActionString(SHIFT_ACTIONS.deleteOne, { id: payload.d })
-      ),
-    ])
+    buttons.push(
+      [
+        m.callbackButton(
+          i18n.t('ru', 'shift_add_button_changePercent'),
+          createActionString(SHIFT_ACTIONS.changePercent, {
+            _id: payload.d,
+          })
+        ),
+      ],
+      [
+        m.callbackButton(
+          i18n.t('ru', 'button_delete'),
+          createActionString(SHIFT_ACTIONS.deleteOne, { id: payload.d })
+        ),
+      ]
+    )
   }
 
   return buttonsOnly ? buttons : m.inlineKeyboard(buttons)
