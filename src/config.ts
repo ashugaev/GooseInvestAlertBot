@@ -1,9 +1,7 @@
-import { isDev } from '@/marketApi/kucoin'
-
 export const botConfig = {
   appFlags: {
-    priceAlertBots: !isDev,
-    // priceAlertBots: true,
+    // priceAlertBots: !isDev,
+    priceAlertBots: true,
     cryptoSignalBots: true,
     trackSignals: true,
   },

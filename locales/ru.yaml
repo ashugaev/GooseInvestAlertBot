@@ -406,7 +406,7 @@ shift_alert: |
   ⚡️ <b>Скорость цены</b>
 
   Тикер: <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source}
-  Сигнал: ${isGrow ?'<b>Рост</b> ↗️' : ' <b>Падение</b> ↘️'} больше <b>${percent}%</b> за <b>${time}</b>
+  Алерт: ${isGrow ?'<b>Рост</b> ↗️' : ' <b>Падение</b> ↘️'} больше <b>${percent}%</b> за <b>${time}</b>
   ${price ? 'Цена: <b>' + price + priceSymbol + '</b>' : ''}
 
 shift_alert_buttons_settings: |
