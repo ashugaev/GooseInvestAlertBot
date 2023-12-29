@@ -25,7 +25,6 @@ import {
 } from '@/bots/cryptoSignals/models/userProcess'
 import { initialSignalValidation } from '@/features/signals/devochkiChannel/handleMessage'
 import { log } from '@/helpers'
-import { wait } from '@/helpers/wait'
 import { signalsClient } from '@/integrations/telegram/client'
 import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { getChatHistory } from '@/integrations/telegram/getChatHistory'
@@ -40,7 +39,7 @@ import { addPercent } from '@/helpers/addPercent'
 
 export const updateSignalChannels = async () => {
   try {
-    await wait(500)
+    // await wait(500)
 
     // const folders = await signalsClient.invoke(
     //   new Api.messages.GetDialogFilters(null)
