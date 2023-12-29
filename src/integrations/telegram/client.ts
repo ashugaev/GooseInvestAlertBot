@@ -31,14 +31,15 @@ export const mainClient = new TelegramClient(
   }
 )
 
-export const annClient = new TelegramClient(
-  stringSessionAnn,
-  Number(TELEGRAM_ANN_API_ID),
-  TELEGRAM_ANN_API_HASH,
-  {
-    connectionRetries: 5,
-  }
-)
+// export const annClient = new TelegramClient(
+//   stringSessionAnn,
+//   Number(TELEGRAM_ANN_API_ID),
+//   TELEGRAM_ANN_API_HASH,
+//   {
+//     connectionRetries: 5,
+//   }
+// )
+
 export const signalsClient = new TelegramClient(
   stringSessionSignals,
   Number(TELEGRAM_SIGNALS_API_ID),
@@ -47,7 +48,11 @@ export const signalsClient = new TelegramClient(
     connectionRetries: 5,
   }
 )
-;[mainClient, annClient, signalsClient].forEach((cl) => {
+;[
+  mainClient,
+  // annClient,
+  // signalsClient,
+].forEach((cl) => {
   // Есть риск того, что клиент не успеет запуститься до момента обращения к нему
   cl.start({
     phoneNumber: async () => '', // Using Session string only for server
@@ -66,6 +71,7 @@ export const signalsClient = new TelegramClient(
       log.info('Telegram client started')
     })
     .catch((err) => {
+      sayToBoss({ message: 'Signal client crashed' })
       log.error('Telegram client crashed', err)
     })
 })
