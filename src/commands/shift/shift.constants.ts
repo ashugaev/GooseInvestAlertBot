@@ -124,9 +124,9 @@ const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
   [EMarketDataSources.tinkoff]: {
     minTimeframeTime: 30000,
   },
-  [EMarketDataSources.yahoo]: {
-    minTimeframeTime: 3600000,
-  },
+  // [EMarketDataSources.yahoo]: {
+  //   minTimeframeTime: 3600000,
+  // },
   [EMarketDataSources.kucoin]: {
     minTimeframeTime: 60000,
   },
