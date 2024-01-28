@@ -211,6 +211,9 @@ export const addPriceAlerts = async (
   return items
 }
 
+/**
+ * Служебная ф-ция для внутренних оераций
+ */
 export async function getAllAlerts(): Promise<PriceAlert[]> {
   try {
     const alerts = await PriceAlertModel.find({})
@@ -314,8 +317,18 @@ export const alertByTickerIdFromCache = async (
 
   if (!alerts.length) {
     alerts = chat
-      ? await PriceAlertModel.find({ tickerId: tickerId, chat }).lean()
-      : await PriceAlertModel.find({ tickerId: tickerId, user }).lean()
+      ? await PriceAlertModel.find({
+          tickerId: tickerId,
+          chat,
+          triggered: false,
+          removed: false,
+        }).lean()
+      : await PriceAlertModel.find({
+          tickerId: tickerId,
+          user,
+          triggered: false,
+          removed: false,
+        }).lean()
   }
 
   return alerts

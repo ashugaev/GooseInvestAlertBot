@@ -1,8 +1,5 @@
 import axios from 'axios'
 
-import { EMarketInstrumentTypes, InstrumentsList } from '@/models'
-
-import { EMarketDataSources } from '../types'
 import { responseCache } from './currenciesListResponseCache'
 
 const NodeCache = require('node-cache')
@@ -90,60 +87,60 @@ export const getBaseCurrencies = async () => {
 /**
  * Playground https://app.currencyapi.com/request-playground
  */
-export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
-  const coinsList = await getBaseCurrencies()
-  const dataArr: CurrencyListApiResponseItem[] = Object.values(coinsList.data)
-  const dataForPopularCodes: CurrencyListApiResponseItem[] = popularCodes.map(
-    (code) => coinsList.data[code]
-  )
-
-  if (!dataArr) {
-    throw new Error('No data in currencies list')
-  }
-
-  const currencyPairs = dataArr.reduce<InstrumentsList[]>((acc, base) => {
-    dataForPopularCodes.forEach((quote) => {
-      if (base.code === quote.code) {
-        return
-      }
-
-      let ticker = base.code + quote.code
-
-      acc.push({
-        id: `currency_${ticker}`,
-        priceScale: null,
-        source: EMarketDataSources.yahoo,
-        name: base.name,
-        ticker: ticker,
-        type: EMarketInstrumentTypes.Currency,
-        currency: quote.code,
-        sourceSpecificData: {
-          symbol: quote.symbol,
-          baseAssetData: base,
-          quoteAssetData: quote,
-        },
-      })
-
-      ticker = quote.code + base.code
-
-      acc.push({
-        priceScale: null,
-        id: `currency_${ticker}`,
-        source: EMarketDataSources.yahoo,
-        name: quote.name,
-        ticker: ticker,
-        type: EMarketInstrumentTypes.Currency,
-        currency: base.code,
-        sourceSpecificData: {
-          symbol: base.symbol,
-          baseAssetData: quote,
-          quoteAssetData: base,
-        },
-      })
-    })
-
-    return acc
-  }, [])
-
-  return currencyPairs
-}
+// export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
+//   const coinsList = await getBaseCurrencies()
+//   const dataArr: CurrencyListApiResponseItem[] = Object.values(coinsList.data)
+//   const dataForPopularCodes: CurrencyListApiResponseItem[] = popularCodes.map(
+//     (code) => coinsList.data[code]
+//   )
+//
+//   if (!dataArr) {
+//     throw new Error('No data in currencies list')
+//   }
+//
+//   const currencyPairs = dataArr.reduce<InstrumentsList[]>((acc, base) => {
+//     dataForPopularCodes.forEach((quote) => {
+//       if (base.code === quote.code) {
+//         return
+//       }
+//
+//       let ticker = base.code + quote.code
+//
+//       // acc.push({
+//       //   id: `currency_${ticker}`,
+//       //   priceScale: null,
+//       //   source: EMarketDataSources.yahoo,
+//       //   name: base.name,
+//       //   ticker: ticker,
+//       //   type: EMarketInstrumentTypes.Currency,
+//       //   currency: quote.code,
+//       //   sourceSpecificData: {
+//       //     symbol: quote.symbol,
+//       //     baseAssetData: base,
+//       //     quoteAssetData: quote,
+//       //   },
+//       // })
+//
+//       ticker = quote.code + base.code
+//
+//     //   acc.push({
+//     //     priceScale: null,
+//     //     id: `currency_${ticker}`,
+//     //     source: EMarketDataSources.yahoo,
+//     //     name: quote.name,
+//     //     ticker: ticker,
+//     //     type: EMarketInstrumentTypes.Currency,
+//     //     currency: base.code,
+//     //     sourceSpecificData: {
+//     //       symbol: base.symbol,
+//     //       baseAssetData: quote,
+//     //       quoteAssetData: base,
+//     //     },
+//     //   })
+//     // })
+//
+//     return acc
+//   }, [])
+//
+//   return currencyPairs
+// }

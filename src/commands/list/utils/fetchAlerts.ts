@@ -16,7 +16,7 @@ interface FetchAlertsResult {
 }
 
 /**
- *  Получение алертов юзера и запись их в контекст
+ *  Получение активных алертов юзера и запись их в контекст
  */
 export const fetchAlerts = async ({
   ctx,
@@ -24,7 +24,10 @@ export const fetchAlerts = async ({
   noContextUpdate,
   ticker,
 }: IFetchAlertsParams): Promise<FetchAlertsResult> => {
-  const params: Partial<PriceAlert> = {}
+  const params: Partial<PriceAlert> = {
+    triggered: false,
+    removed: false,
+  }
 
   if (ctx.dbuser.adminMode) {
     params.chat = ctx.adminChatActive.id

@@ -3,7 +3,7 @@
  */
 
 import { getModelForClass, prop } from '@typegoose/typegoose'
-import { FilterQuery } from 'mongoose' // eslint-disable-line unused-imports/no-unused-imports
+import { FilterQuery } from 'mongoose'
 
 export class TimeShift {
   _id: string
