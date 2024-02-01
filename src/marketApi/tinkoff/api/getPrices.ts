@@ -19,8 +19,6 @@ export const getTinkoffPrices = async (
   ids: string[],
   tickersData
 ): Promise<TickerPrices> => {
-  console.log('ids', ids.length)
-
   // Api supports 3000 ids per request
   const idsChunks = chunks(ids, 2500)
 
