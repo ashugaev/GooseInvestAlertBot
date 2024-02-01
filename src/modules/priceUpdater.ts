@@ -129,7 +129,7 @@ export const setupPriceUpdater = async ({
         // Get prices for tickers
         try {
           const pricesPromise = getPrices(tickerIds, chunk)
-          prices = await timeoutPromise(pricesPromise, 60000)
+          prices = await timeoutPromise(pricesPromise, 100000)
 
           // No prices case
           if (prices?.length < tickerIds.length) {

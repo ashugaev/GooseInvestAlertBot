@@ -3,9 +3,10 @@
  */
 
 import { TickerPrices } from 'prices'
-import { GetLastPricesResponse } from 'tinkoff-invest-api/src/generated/marketdata'
+import { LastPrice } from 'tinkoff-invest-api/src/generated/marketdata'
 
 import { log } from '@/helpers'
+import { chunks } from '@/helpers/array/chunks'
 import { EMarketInstrumentTypes } from '@/models'
 
 import { tinkoffApi } from '../../../app'
@@ -18,17 +19,27 @@ export const getTinkoffPrices = async (
   ids: string[],
   tickersData
 ): Promise<TickerPrices> => {
-  const lastPrices: GetLastPricesResponse =
-    await tinkoffApi.marketdata.getLastPrices({ figi: ids })
+  // Api supports 3000 ids per request
+  const idsChunks = chunks(ids, 2500)
+
+  const lastPrices: LastPrice[] = []
+
+  for (let i = 0; i < idsChunks.length; i++) {
+    const idsChunk = idsChunks[i]
+    const response = await tinkoffApi.marketdata.getLastPrices({
+      figi: idsChunk,
+    })
+    lastPrices.push(...response.lastPrices)
+  }
 
   const pricesNormalizes = []
 
   // Cache for logs
   const noMinPriceIncrementNumber = []
 
-  for (let i = 0; i < lastPrices.lastPrices.length; i++) {
+  for (let i = 0; i < lastPrices.length; i++) {
     try {
-      const piceObj = lastPrices.lastPrices[i]
+      const piceObj = lastPrices[i]
       const { price, figi } = piceObj
 
       const item = tickersData.find((el) => el.sourceSpecificData.figi === figi)
