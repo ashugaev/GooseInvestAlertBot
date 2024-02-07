@@ -48,7 +48,7 @@ build:
 
 release_bot:
   stage: release
-  image: docker:24.0.9
+  image: docker:23.0.5
   only:
     - "master"
   except:
