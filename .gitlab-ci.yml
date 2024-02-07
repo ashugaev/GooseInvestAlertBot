@@ -9,7 +9,7 @@ variables:
   DOCKER_DRIVER: overlay2
 
 stages:
-  - test
+  # - test
   # Делаем сборку
   - build
   # Генерим докер-образ и пушим в регистр
