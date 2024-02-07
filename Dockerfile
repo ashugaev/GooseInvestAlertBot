@@ -29,7 +29,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm i --legacy-peer-deps
+RUN npm ci
 
 # for debugging
 RUN apt-get update && apt-get install nano curl -y
