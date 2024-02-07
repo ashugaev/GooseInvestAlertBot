@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:18
 
 # Args useless for now because of building inside gitlab ci outside of docker
 ARG TELEGRAM_TOKEN
@@ -30,9 +30,10 @@ WORKDIR /app
 COPY . .
 
 RUN npm ci
+RUN npm run build
 
 # for debugging
-RUN apt-get update && apt-get install nano curl -y
+RUN apt update && apt install nano curl -y
 
 # start programm
 CMD npm start
