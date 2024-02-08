@@ -29,14 +29,14 @@ stages:
 
 build:
   stage: build
-  image: node:18-alpine
+  image: node:18.13.0
   only:
     - master
   except:
     - schedules
   script:
-    - npm ci
-    - npm run build
+    # - npm ci
+    #  npm run build
     # Пишет энвы на сервер
     - chmod +x setup_env.sh
     - ./setup_env.sh
