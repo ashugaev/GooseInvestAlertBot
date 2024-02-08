@@ -1,20 +1,13 @@
 import { Context, Telegraf } from 'telegraf'
-import { Api, TelegramClient } from 'telegram'
+import { Api } from 'telegram'
 
 import { botInit } from '@/app'
-import { wait } from '@/helpers/wait'
-import { signalsClient } from '@/integrations/telegram/client'
-import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { BotModel } from '@/models/Bot'
 import User = Api.User
-import {
-  SignalChat,
-  SignalChatModel,
-} from '@/bots/cryptoSignals/models/signalChat'
+
 import { log } from '@/helpers/log'
-import { getChatHistory } from '@/integrations/telegram/getChatHistory'
 import ChannelMessages = Api.messages.ChannelMessages
-import { initialSignalValidation } from '@/features/signals/devochkiChannel/handleMessage'
+import * as tt from 'telegraf/typings/telegram-types'
 const TelegrafBot = require('telegraf')
 
 // TODO: Log problems with multibot
@@ -36,7 +29,18 @@ export const bots = (async () => {
 
   // Update me info
   for (const bot of res) {
-    const botInfo = await bot.telegram.getMe()
+    let botInfo: tt.User
+
+    try {
+      botInfo = await bot.telegram.getMe()
+    } catch (e) {
+      if (e.code === 401) {
+        // Deactivate bot here. It means token not valid
+      }
+      log.error('Bot error', e)
+      continue
+    }
+
     bot.context.goose = botInfo
   }
 
