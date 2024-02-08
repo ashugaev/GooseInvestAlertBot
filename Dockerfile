@@ -29,8 +29,8 @@ WORKDIR /app
 
 COPY . .
 
-#RUN npm ci
-#RUN npm run build
+RUN npm ci
+RUN npm run build
 
 # For debugging
 RUN apt update && apt install nano curl -y
