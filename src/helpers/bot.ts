@@ -1,20 +1,12 @@
 import { Context, Telegraf } from 'telegraf'
-import { Api, TelegramClient } from 'telegram'
+import { Api } from 'telegram'
 
 import { botInit } from '@/app'
-import { wait } from '@/helpers/wait'
-import { signalsClient } from '@/integrations/telegram/client'
-import { getBotsAndChannels } from '@/integrations/telegram/getAvailableChats'
 import { BotModel } from '@/models/Bot'
 import User = Api.User
-import {
-  SignalChat,
-  SignalChatModel,
-} from '@/bots/cryptoSignals/models/signalChat'
+
 import { log } from '@/helpers/log'
-import { getChatHistory } from '@/integrations/telegram/getChatHistory'
 import ChannelMessages = Api.messages.ChannelMessages
-import { initialSignalValidation } from '@/features/signals/devochkiChannel/handleMessage'
 const TelegrafBot = require('telegraf')
 
 // TODO: Log problems with multibot
@@ -25,19 +17,32 @@ export const bots = (async () => {
     new TelegrafBot(process.env.TELEGRAM_TOKEN) as Telegraf<Context>,
   ]
 
+  try {
+    const botInf = await res[0].telegram.getMe()
+    res[0].context.goose = botInf
+  } catch (e) {
+    log.error('Bot error', e)
+  }
+
   const customBots = await BotModel.find()
 
   // Add custom bots
   for (const botData of customBots) {
     const bot = new TelegrafBot(botData.tgToken) as Telegraf<Context>
     bot.context.promotedByUerId = botData.userId
-    res.push(bot)
-  }
 
-  // Update me info
-  for (const bot of res) {
-    const botInfo = await bot.telegram.getMe()
-    bot.context.goose = botInfo
+    try {
+      const botInfo = await bot.telegram.getMe()
+      bot.context.goose = botInfo
+
+      res.push(bot)
+    } catch (e) {
+      if (e.code === 401) {
+        // Deactivate bot here. It means token not valid
+      }
+      log.error('Bot error', e)
+      continue
+    }
   }
 
   return res
