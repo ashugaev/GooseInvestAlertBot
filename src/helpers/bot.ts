@@ -7,7 +7,6 @@ import User = Api.User
 
 import { log } from '@/helpers/log'
 import ChannelMessages = Api.messages.ChannelMessages
-import * as tt from 'telegraf/typings/telegram-types'
 const TelegrafBot = require('telegraf')
 
 // TODO: Log problems with multibot
@@ -18,21 +17,25 @@ export const bots = (async () => {
     new TelegrafBot(process.env.TELEGRAM_TOKEN) as Telegraf<Context>,
   ]
 
+  try {
+    const botInf = await res[0].telegram.getMe()
+    res[0].context.goose = botInf
+  } catch (e) {
+    log.error('Bot error', e)
+  }
+
   const customBots = await BotModel.find()
 
   // Add custom bots
   for (const botData of customBots) {
     const bot = new TelegrafBot(botData.tgToken) as Telegraf<Context>
     bot.context.promotedByUerId = botData.userId
-    res.push(bot)
-  }
-
-  // Update me info
-  for (const bot of res) {
-    let botInfo: tt.User
 
     try {
-      botInfo = await bot.telegram.getMe()
+      const botInfo = await bot.telegram.getMe()
+      bot.context.goose = botInfo
+
+      res.push(bot)
     } catch (e) {
       if (e.code === 401) {
         // Deactivate bot here. It means token not valid
@@ -40,8 +43,6 @@ export const bots = (async () => {
       log.error('Bot error', e)
       continue
     }
-
-    bot.context.goose = botInfo
   }
 
   return res
