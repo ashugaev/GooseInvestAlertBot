@@ -36,12 +36,12 @@ export class User {
 }
 
 // Get User model
-const UserModel = getModelForClass(User, {
+export const UserModel = getModelForClass(User, {
   schemaOptions: { timestamps: true },
 })
 
 // Get or create user
-export async function findUser(id: string | number, botId) {
+export async function findOrCreateUser(id: string | number, botId) {
   let user = await UserModel.findOne({ id }).lean()
   if (!user) {
     try {
@@ -74,4 +74,18 @@ export const toUserMode = async (ctx: Context) => {
     { $set: { adminMode: false, adminModeChatId: null } }
   )
   ctx.dbuser = await UserModel.findOne({ id: ctx.from.id }).lean()
+}
+
+export const grantPremium = async (id: number | string) => {
+  await UserModel.update(
+    { id },
+    {
+      $set: {
+        limits: {
+          priceLevels: 9999,
+          shifts: 9999,
+        },
+      },
+    }
+  )
 }

@@ -48,7 +48,11 @@ export const sendTriggeredAlert = async (
       }
     )
     .then(async () => {
-      await removePriceAlert({ _id: alert._id, chat: alert.chat, triggered: true })
+      await removePriceAlert({
+        _id: alert._id,
+        chat: alert.chat,
+        triggered: true,
+      })
     })
     .catch(async (e) => {
       if (
@@ -58,7 +62,11 @@ export const sendTriggeredAlert = async (
           e.description === 'Forbidden: user is deactivated') ||
         (e.code === 400 && e.description === 'Bad Request: chat not found')
       ) {
-        await removePriceAlert({ _id: alert._id, chat: alert.chat, removed: true })
+        await removePriceAlert({
+          _id: alert._id,
+          chat: alert.chat,
+          removed: true,
+        })
         log.info('Алерт удален из-за блокировки юзером', alert)
       } else {
         log.error('Ошибка отправки сообщения юзеру', e)

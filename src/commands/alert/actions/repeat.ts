@@ -1,7 +1,7 @@
 import { triggeredAlertKeyboad } from '@/commands/alert/keyboards/triggeredAlert'
 import { alertMessage } from '@/commands/alert/messages/alert'
 import { commandWrapper } from '@/helpers/commandWrapper'
-import {getInstrumentByIdFromCache, priceAlertCache, PriceAlertModel} from '@/models'
+import { getInstrumentByIdFromCache, PriceAlertModel } from '@/models'
 
 export const repeatAlertVariants = commandWrapper(
   { availableForAdmins: true },

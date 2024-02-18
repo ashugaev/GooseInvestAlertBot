@@ -1,6 +1,6 @@
 import { Middleware } from 'telegraf'
 
-import { findUser } from '@/models'
+import { findOrCreateUser } from '@/models'
 import { getUserChats } from '@/models/Chat'
 
 import { addAnalyticsToReply, chb_m } from './analytics'
@@ -15,7 +15,7 @@ export function sceneWrapper(
   return async (ctx) => {
     try {
       if (!ctx.dbuser) {
-        const dbuser = await findUser(ctx.from.id, ctx.goose.id)
+        const dbuser = await findOrCreateUser(ctx.from.id, ctx.goose.id)
         ctx.dbuser = dbuser
         if (dbuser.adminMode) {
           ctx.adminChats = await getUserChats(ctx.from.id)
