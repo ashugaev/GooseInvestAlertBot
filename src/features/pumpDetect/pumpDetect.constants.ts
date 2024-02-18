@@ -1,5 +1,3 @@
-import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
-
 require('dotenv').config()
 
 const isTestMode = process.env.NODE_ENV === 'development'
@@ -12,4 +10,3 @@ export interface DetectorConfig {
   debugMessagesTracker: boolean
   buyAmount: number
 }
-

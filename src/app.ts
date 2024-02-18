@@ -24,6 +24,8 @@ import {
 } from '@/bots/cryptoSignals/commands/trade/trade.scenes'
 import { setupAddChat } from '@/commands/addChat/addChat'
 import { addChatScenes } from '@/commands/addChat/addChat.scenes'
+import { setupAddPremium } from '@/commands/addPremium/addPremium'
+import { premiumScenes } from '@/commands/addPremium/addPremium.scenes'
 import { setupAdmin } from '@/commands/admin/admin'
 import { setupMyToken } from '@/commands/mytoken/mytoken'
 import { myTokenScenes } from '@/commands/mytoken/mytoken.scenes'
@@ -84,6 +86,7 @@ const stage = new Stage([
   myTokenScenes,
   addChatScenes,
   shiftSceneUpatePercent,
+  premiumScenes,
   ...commonScenes,
   ...alertScenes,
 ])
@@ -117,6 +120,7 @@ export const botInit = (bot) => {
   setupMyToken(bot)
   setupAddChat(bot)
   setupTest(bot)
+  setupAddPremium(bot)
 
   // Start bot
   bot.startPolling()

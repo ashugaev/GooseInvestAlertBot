@@ -5,7 +5,7 @@ import { createOrUpdateChat } from '@/models/Chat'
 import { Limits } from '@/types/limits'
 
 import { log } from '../helpers/log'
-import { findUser } from '../models'
+import { findOrCreateUser } from '../models'
 
 const logPrefix = '[attachUser]'
 
@@ -56,7 +56,7 @@ export async function attachUser(ctx: Context, next) {
 
     // chat or private
     if (from?.id) {
-      const dbuser = await findUser(from.id, ctx.goose.id)
+      const dbuser = await findOrCreateUser(from.id, ctx.goose.id)
       ctx.dbuser = dbuser
     }
 
