@@ -62,6 +62,8 @@ import { commonScenes } from './scenes'
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
 
+import '@/marketApi/tinkoff/api/getVolumes'
+
 export const tinkoffApi = new TinkoffInvestApi({
   token: process.env.STOCKS_API_TOKEN,
 })

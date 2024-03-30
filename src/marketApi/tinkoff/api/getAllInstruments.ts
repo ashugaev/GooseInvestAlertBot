@@ -77,6 +77,11 @@ export const tinkoffGetAllInstruments = async () => {
 
     const normalizedInstrumentsArray = allInstruments.map(normalizeTinkoffItem)
 
+    const websocketArr = normalizedInstrumentsArray.map((el) => ({
+      figi: el.id,
+      interval: 'SUBSCRIPTION_INTERVAL_ONE_MINUTE',
+    }))
+
     return normalizedInstrumentsArray
   } catch (e) {
     log.error('Ошибка получения списка иструментов:', e)
