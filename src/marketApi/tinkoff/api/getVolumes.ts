@@ -5,8 +5,19 @@ import {
 
 import { tinkoffApi } from '@/app'
 import { wait } from '@/helpers/wait'
+import { volumesModelCache } from '@/models/Volumes'
+import { getCandleCreatedTime } from '@/helpers'
+import { ESfhitTimeframes, SHIFT_TIMEFRAMES } from '@/commands/shift'
 
-export const getVolumes = async () => {
+/**
+ * - Getting volumes event
+ * - Checking if candle is already esists
+ * - If exists - updating it, if not - creating new
+ *
+ * TODO
+ * - How to track more than 100 items
+ */
+export const tinkoffVolumesUpdater = async (): Promise<Record<string, number>> => {
   /*
   - получить инструменты
   - проирерироваться и по каждому и получить последнюю дневную/недельную
@@ -14,8 +25,8 @@ export const getVolumes = async () => {
   - сделать алгоритм триггера
    */
   try {
-    await wait(2000)
-
+    // await wait(2000)
+    //
     const res = await tinkoffApi.marketdata.getCandles({
       figi: 'TCS00A105WZ4',
       interval: CandleInterval.CANDLE_INTERVAL_DAY,
@@ -25,15 +36,20 @@ export const getVolumes = async () => {
 
     debugger
 
+    const timeframeInWebsocket = ESfhitTimeframes['1M']
+
     const unsubscribe = await tinkoffApi.stream.market.candles(
       {
-        instruments: getConfigs(),
+        instruments: getConfigs().slice(0, 300),
         waitingClose: false,
       },
       (data) => {
-        if (data.figi === 'BBG00PBZNWM4') {
-          console.log('Candle', data.volume, data.high, data.low, data.close)
-        }
+        volumesModelCache.volumeSignal({
+          timeframe: timeframeInWebsocket,
+          amount: data.volume,
+          tickerId: data.figi,
+          candleCreatedTime: data.time.getTime(),
+        })
       }
     )
 
@@ -53,8 +69,6 @@ export const getVolumes = async () => {
     debugger
   }
 }
-
-getVolumes()
 
 function getConfigs() {
   return [
@@ -14678,5 +14692,5 @@ function getConfigs() {
       figi: 'FUTFLOT03250',
       interval: SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
     },
-  ].slice(0, 100)
+  ]
 }

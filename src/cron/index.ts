@@ -25,6 +25,7 @@ import { setupPriceUpdater, updateTickersList } from '../modules'
 import { copyAlerts } from './copyAlerts'
 import { saveFuturesMargin } from './saveFuturesMargin/saveFuturesMargin'
 import { setupShiftsChecker } from './shiftsChecker'
+import { tinkoffVolumesUpdater } from '@/marketApi/tinkoff/api/getVolumes'
 
 // Processed steps list
 export enum InitializationItem {
@@ -417,6 +418,9 @@ export const setupCheckers = () => {
    * Мониторинг достижения уровней
    */
   retry(async () => await setupPriceChecker(), 10000, 'setupPriceChecker')
+
+
+  retry(async () => await tinkoffVolumesUpdater(), 10000, 'tinkoffVolumesUpdater')
 
   /**
    * Base health checks for bot
