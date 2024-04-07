@@ -1,5 +1,6 @@
 import { ReturnModelType } from '@typegoose/typegoose'
 import { AnyParamConstructor } from '@typegoose/typegoose/lib/types'
+import { BulkWriteOperation } from 'mongodb'
 
 import { log } from '@/helpers/log'
 import { wait } from '@/helpers/wait'
@@ -19,6 +20,7 @@ export class ModelCache<Item> {
   Model: ReturnModelType<Item & AnyParamConstructor<any>> = null
   logPref = '[MODEL CACHE]'
   filters: Partial<Item> = {}
+  uploadQueue: BulkWriteOperation<Item>[] = []
 
   /**
    * @todo: Fetch filterx from db
@@ -43,6 +45,40 @@ export class ModelCache<Item> {
 
   async init() {
     this.setupUpdater()
+    this.setupUploadQueue()
+  }
+
+  /**
+   * Add item to upload queue
+   */
+  addItemToQueue(item: BulkWriteOperation<Item>) {
+    this.uploadQueue.push(item)
+  }
+
+  /**
+   * Items will be updated in bulk every 1 minute
+   */
+  async setupUploadQueue() {
+    while (true) {
+      if (!this.uploadQueue.length) {
+        await wait(1000 * 60) // 1 min
+        continue
+      }
+
+      try {
+        await this.Model.bulkWrite(this.uploadQueue)
+
+        // Need to avaid the case when items are not in this.items or queue
+        // @ts-expect-error
+        const items = await this.Model.find(this.filters).lean()
+        this.items = items as unknown as Item[]
+        this.needToBeUpdated = false
+
+        this.uploadQueue = []
+      } catch (e) {
+        log.error(this.logPref, 'Failed to upload items', e)
+      }
+    }
   }
 
   async setupUpdater() {
@@ -58,6 +94,7 @@ export class ModelCache<Item> {
       try {
         inProgress = true
 
+        // Items also fetching in `setupUploadQueue`
         // @ts-expect-error
         const items = await this.Model.find(this.filters).lean()
 
