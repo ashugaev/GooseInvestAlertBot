@@ -7,6 +7,9 @@ import { ModelCache } from '@/helpers/modelCache'
 
 const logPrefix = '[VOLUMES MODEL]'
 
+/**
+ * Stores volumes by timeperiod
+ */
 export class Volumes {
   @prop({ require: true })
   timeframe: ESfhitTimeframes
@@ -24,13 +27,13 @@ export class Volumes {
 export const VolumesModel = getModelForClass(Volumes)
 
 class VolumesCache extends ModelCache<Volumes> {
-   volumeSignal(item: Volumes) {
-      // Check if exists
-      // Update all levels of candles
-   }
+  volumeSignal(item: Volumes) {
+    // Check if exists
+    // Update all levels of candles
+  }
 }
 
- export const volumesModelCache = new VolumesCache({
+export const volumesModelCache = new VolumesCache({
   Model: VolumesModel,
   logPref: logPrefix,
 })

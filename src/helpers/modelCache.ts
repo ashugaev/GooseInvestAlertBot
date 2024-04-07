@@ -1,27 +1,36 @@
 import { ReturnModelType } from '@typegoose/typegoose'
-import { wait } from '@/helpers/wait'
-import { log } from '@/helpers/log'
 import { AnyParamConstructor } from '@typegoose/typegoose/lib/types'
 
-export interface ModelCacheParams {
+import { log } from '@/helpers/log'
+import { wait } from '@/helpers/wait'
+
+export interface ModelCacheParams<Item> {
   Model: ReturnModelType<any>
   autoUdatePeriod?: number
   logPref: string
+  filters?: Partial<Item>
 }
 
 export class ModelCache<Item> {
-  items = []
+  items: Item[] = []
   isReady = false
   needToBeUpdated = true // allows to enforce update
   autoUdatePeriod = 1000 * 60 * 3
   Model: ReturnModelType<Item & AnyParamConstructor<any>> = null
   logPref = '[MODEL CACHE]'
+  filters: Partial<Item> = {}
 
   /**
    * @todo: Fetch filterx from db
    */
-  constructor({ autoUdatePeriod, Model, logPref }: ModelCacheParams) {
+  constructor({
+    autoUdatePeriod,
+    Model,
+    logPref,
+    filters = {},
+  }: ModelCacheParams<Item>) {
     this.logPref = logPref || this.logPref
+    this.filters = filters
     this.Model = Model
     this.autoUdatePeriod = autoUdatePeriod || this.autoUdatePeriod
 
@@ -49,7 +58,8 @@ export class ModelCache<Item> {
       try {
         inProgress = true
 
-        const items = await this.Model.find().lean()
+        // @ts-expect-error
+        const items = await this.Model.find(this.filters).lean()
 
         this.items = items as unknown as Item[]
         this.needToBeUpdated = false

@@ -4,37 +4,69 @@ import {
 } from 'tinkoff-invest-api/cjs/generated/marketdata'
 
 import { tinkoffApi } from '@/app'
-import { wait } from '@/helpers/wait'
-import { volumesModelCache } from '@/models/Volumes'
-import { getCandleCreatedTime } from '@/helpers'
 import { ESfhitTimeframes, SHIFT_TIMEFRAMES } from '@/commands/shift'
+import { log } from '@/helpers'
+import { wait } from '@/helpers/wait'
+import { EMarketDataSources } from '@/marketApi/types'
+import { getInstrumentsBySourceCache, InstrumentsList } from '@/models'
+import { volumesAlertCache } from '@/models/VolumeAlert'
+import { volumesModelCache } from '@/models/Volumes'
 
-/**
- * - Getting volumes event
- * - Checking if candle is already esists
- * - If exists - updating it, if not - creating new
- *
- * TODO
- * - How to track more than 100 items
- */
-export const tinkoffVolumesUpdater = async (): Promise<Record<string, number>> => {
-  /*
-  - получить инструменты
-  - проирерироваться и по каждому и получить последнюю дневную/недельную
-  - обновить свои локальные свечи (используя алгоритм шифтов)
-  - сделать алгоритм триггера
-   */
+const logPrefix = '[TINKOFF VOLUMES UPDATER]'
+
+const getPrioritizedVolumeInstruments = async (): Promise<{
+  socketInstruments: InstrumentsList[]
+  manualCheckInstruments: InstrumentsList[]
+}> => {
+  const allAlerts = volumesAlertCache.items.filter(
+    (item) => item.source === EMarketDataSources.tinkoff
+  )
+  const allInstruments = await getInstrumentsBySourceCache(
+    EMarketDataSources.tinkoff
+  )
+
+  // Что бы избежать постоянной переподписки
+  const alertsCountByInstrumentId = allAlerts.reduce<Record<string, number>>(
+    (acc, alert) => {
+      if (!acc[alert.tickerId]) {
+        acc[alert.tickerId] = 0
+      }
+
+      acc[alert.tickerId]++
+
+      return acc
+    },
+    {}
+  )
+
+  const sortedByPopularity = allInstruments.sort((a, b) => {
+    return alertsCountByInstrumentId[b.id] - alertsCountByInstrumentId[a.id]
+  })
+
+  const socketInstruments = sortedByPopularity.slice(0, 300)
+  const manualCheckInstruments = sortedByPopularity.slice(300)
+
+  return {
+    socketInstruments,
+    manualCheckInstruments,
+  }
+}
+
+let prevWebsocketsInstrumentsStr = ''
+
+const startWebsocket = async (instruments) => {
+  const instrumentsStr = instruments.map((el) => el.id).join('')
+
+  // If input the same - return
+  if (prevWebsocketsInstrumentsStr === instrumentsStr) {
+    return
+  } else {
+    prevWebsocketsInstrumentsStr = instrumentsStr
+  }
+
   try {
-    // await wait(2000)
-    //
-    const res = await tinkoffApi.marketdata.getCandles({
-      figi: 'TCS00A105WZ4',
-      interval: CandleInterval.CANDLE_INTERVAL_DAY,
-      from: new Date('2024-02-24T00:00:00.000Z'),
-      to: new Date('2024-03-24T00:00:00.000Z'),
-    })
-
-    debugger
+    const MySubscriptions = await tinkoffApi.stream.market.getMySubscriptions()
+    // TODO: Получить все элементы тут и отписаться перед созданием новых
 
     const timeframeInWebsocket = ESfhitTimeframes['1M']
 
@@ -53,20 +85,109 @@ export const tinkoffVolumesUpdater = async (): Promise<Record<string, number>> =
       }
     )
 
-    tinkoffApi.stream.market.on('error', (error) =>
+    tinkoffApi.stream.market.on('error', (error) => {
       console.log('stream error', error)
-    )
-    tinkoffApi.stream.market.on('close', (error) =>
+      startWebsocket(instruments)
+    })
+
+    tinkoffApi.stream.market.on('close', (error) => {
       console.log('stream closed, reason:', error)
-    )
+      startWebsocket(instruments)
+    })
 
-    const MySubscriptions = await tinkoffApi.stream.market.getMySubscriptions()
-
+    // TODO: Console loca with count
     debugger
-
-    return null
   } catch (e) {
-    debugger
+    log.error(logPrefix, 'Error in websocket', e)
+  }
+}
+
+/**
+ * 1 Получаю все инструменты асинхронно
+
+ * 2 Выбираю самые популярные топ 300 (список будет обновляться раз в сутки)
+ * 3 Создаю массив для того что будет проверяться в цикле почтучно
+ * 4 Вызываю обновление свечи каждый раз когда есть апдейт
+ * 5 Сигналы будет генерировать модель Volumes
+ */
+export const tinkoffVolumesUpdater = async (): Promise<
+  Record<string, number>
+> => {
+  /*
+  - получить инструменты
+  - проирерироваться и по каждому и получить последнюю дневную/недельную
+  - обновить свои локальные свечи (используя алгоритм шифтов)
+  - сделать алгоритм триггера
+   */
+
+  // TODO: Remove this wrapper when it will be ready
+
+  // Большой цикл содержит больше вычисление и является оптимизацией
+  while (true) {
+    try {
+      const { socketInstruments, manualCheckInstruments } =
+        await getPrioritizedVolumeInstruments()
+
+      if (!socketInstruments.length) {
+        wait(1000)
+        continue
+      }
+
+      startWebsocket(socketInstruments)
+
+      const startTime = Date.now()
+      const workTime = 1000 * 60 * 2
+      const finishTime = startTime + workTime
+
+      // Optimal interval in the case if bot will be broken for a few hours
+      const timeframe = ESfhitTimeframes['5M']
+      const candlesToRequest = 100 // TODO: Find biggest available value
+      const candleTime = SHIFT_TIMEFRAMES[timeframe].lifetime
+      const allCandlesTime = candlesToRequest * candleTime
+
+      let i = 0
+      let marketOpen = false
+      // The small loop only makes the request itself without extra computations and fetching data from the database
+      // New alerts will start working after 2 min
+      // Limit: 300rpm
+      while (Date.now() < finishTime) {
+        try {
+          const item = manualCheckInstruments[i]
+          // Get all possible candles because quota per req
+          const res = await tinkoffApi.marketdata.getCandles({
+            figi: item.id,
+            interval: CandleInterval.CANDLE_INTERVAL_5_MIN,
+            from: new Date(new Date().getTime() - allCandlesTime),
+            to: new Date(),
+          })
+
+          if (res.candles.length) {
+            marketOpen = true
+          }
+
+          res.candles.forEach((candle) => {
+            volumesModelCache.volumeSignal({
+              timeframe: timeframe,
+              amount: candle.volume,
+              tickerId: item.id,
+              candleCreatedTime: candle.time.getTime(),
+            })
+          })
+
+          i = i >= manualCheckInstruments.length ? 0 : i + 1
+        } catch (e) {
+          log.error(logPrefix, 'Small cycle failing', e)
+          await wait(500)
+        }
+      }
+
+      if (!marketOpen) {
+        await wait(1000 * 60 * 5)
+      }
+    } catch (e) {
+      log.error(logPrefix, 'Big cycle failing', e)
+      await wait(500)
+    }
   }
 }
 

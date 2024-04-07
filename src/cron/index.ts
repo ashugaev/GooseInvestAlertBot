@@ -419,8 +419,11 @@ export const setupCheckers = () => {
    */
   retry(async () => await setupPriceChecker(), 10000, 'setupPriceChecker')
 
-
-  retry(async () => await tinkoffVolumesUpdater(), 10000, 'tinkoffVolumesUpdater')
+  retry(
+    async () => await tinkoffVolumesUpdater(),
+    10000,
+    'tinkoffVolumesUpdater'
+  )
 
   /**
    * Base health checks for bot
