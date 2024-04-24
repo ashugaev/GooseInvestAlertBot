@@ -66,6 +66,8 @@ export class ModelCache<Item> {
       }
 
       try {
+        // clear before upload to be sure that we don't erased some items in the queue
+        this.uploadQueue = []
         await this.Model.bulkWrite(this.uploadQueue)
 
         // Need to avaid the case when items are not in this.items or queue
@@ -73,8 +75,6 @@ export class ModelCache<Item> {
         const items = await this.Model.find(this.filters).lean()
         this.items = items as unknown as Item[]
         this.needToBeUpdated = false
-
-        this.uploadQueue = []
       } catch (e) {
         log.error(this.logPref, 'Failed to upload items', e)
       }
