@@ -29,7 +29,7 @@ export const VolumesModel = getModelForClass(Volumes)
  */
 class VolumesCache extends ModelCache<Volumes> {
   get volumesById(): Record<string, Volumes[]> {
-    const allItems = [...this.items, ...this.uploadQueue.map((el) => el.update)]
+    // const allItems = [...this.items, ...this.uploadQueue.map((el) => el.update)]
 
     /**
      * res = {
@@ -53,23 +53,22 @@ class VolumesCache extends ModelCache<Volumes> {
   }
 
   /**
-   * For now works with smallest timeframe only available for instrument
+   * Do not handle duplicates
    */
-  volumeSignal(item: Volumes) {
-    const allItems = [...this.items, ...this.uploadQueue.map((el) => el.update)]
-
-    const candleAlreadyExists = allItems.find(
-      (i) =>
-        i.timeframe === item.timeframe &&
-        i.tickerId === item.tickerId &&
-        i.candleCreatedTime === item.candleCreatedTime
-    )
-
-    if (candleAlreadyExists) {
-      candleAlreadyExists.update.volume = item.amount
-    } else {
-    }
-
+  volumeSignal(items: Volumes[]) {
+    // const allItems = [...this.items, ...this.uploadQueue.map((el) => el.update)]
+    //
+    // const candleAlreadyExists = allItems.find(
+    //   (i) =>
+    //     i.timeframe === item.timeframe &&
+    //     i.tickerId === item.tickerId &&
+    //     i.candleCreatedTime === item.candleCreatedTime
+    // )
+    //
+    // if (candleAlreadyExists) {
+    //   candleAlreadyExists.update.volume = item.amount
+    // } else {
+    // }
     // let prevItem = this.items.find(
     //   (i) =>
     //     i.timeframe === item.timeframe &&

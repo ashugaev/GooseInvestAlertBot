@@ -230,6 +230,7 @@ export const tinkoffVolumesUpdater = async (): Promise<
           }
 
           res.candles.forEach((candle) => {
+            // @ts-expect-error FIXME it's broken
             const candles = generatedCandles(candle)
 
             volumesModelCache.volumeSignal(candles)
