@@ -2,4 +2,5 @@
 export enum Limits {
   priceLevels = 100,
   shifts = 30,
+  volumes = 30,
 }

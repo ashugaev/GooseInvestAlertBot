@@ -64,6 +64,8 @@ const session = require('telegraf/session')
 
 import '@/marketApi/tinkoff/api/getVolumes'
 
+import { volumeScenes } from '@/commands/volumes/volumes.scenes'
+
 export const tinkoffApi = new TinkoffInvestApi({
   token: process.env.STOCKS_API_TOKEN,
 })
@@ -89,6 +91,7 @@ const stage = new Stage([
   addChatScenes,
   shiftSceneUpatePercent,
   premiumScenes,
+  volumeScenes,
   ...commonScenes,
   ...alertScenes,
 ])

@@ -10,6 +10,7 @@ export interface ModelCacheParams<Item> {
   autoUdatePeriod?: number
   logPref: string
   filters?: Partial<Item>
+  customFind?: any
 }
 
 export class ModelCache<Item> {
@@ -21,6 +22,7 @@ export class ModelCache<Item> {
   logPref = '[MODEL CACHE]'
   filters: Partial<Item> = {}
   uploadQueue: BulkWriteOperation<Item>[] = []
+  customFind
 
   /**
    * @todo: Fetch filterx from db
@@ -30,11 +32,13 @@ export class ModelCache<Item> {
     Model,
     logPref,
     filters = {},
+    customFind,
   }: ModelCacheParams<Item>) {
     this.logPref = logPref || this.logPref
     this.filters = filters
     this.Model = Model
     this.autoUdatePeriod = autoUdatePeriod || this.autoUdatePeriod
+    this.customFind = customFind
 
     this.init()
   }
@@ -71,14 +75,22 @@ export class ModelCache<Item> {
         await this.Model.bulkWrite(this.uploadQueue)
 
         // Need to avaid the case when items are not in this.items or queue
-        // @ts-expect-error
-        const items = await this.Model.find(this.filters).lean()
+        const items = await this.fetch()
         this.items = items as unknown as Item[]
         this.needToBeUpdated = false
       } catch (e) {
         log.error(this.logPref, 'Failed to upload items', e)
       }
     }
+  }
+
+  async fetch() {
+    const res = this.customFind
+      ? this.customFind(this.filters)
+      : // @ts-expect-error
+        this.Model.find(this.filters).lean()
+
+    return res
   }
 
   async setupUpdater() {
@@ -95,8 +107,7 @@ export class ModelCache<Item> {
         inProgress = true
 
         // Items also fetching in `setupUploadQueue`
-        // @ts-expect-error
-        const items = await this.Model.find(this.filters).lean()
+        const items = await this.fetch()
 
         this.items = items as unknown as Item[]
         this.needToBeUpdated = false

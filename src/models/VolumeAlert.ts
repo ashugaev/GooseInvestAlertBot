@@ -1,6 +1,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
+
 import { ModelCache } from '@/helpers/modelCache'
-import { Volumes, VolumesModel } from '@/models/Volumes'
 import { EMarketDataSources } from '@/marketApi/types'
 
 export type VolumesMonitoringFormula = 'sma' | 'max'

@@ -9,6 +9,9 @@ export class UserLimits {
 
   @prop({ required: false, default: Limits.shifts })
   shifts: number
+
+  @prop({ required: false, default: Limits.volumes })
+  volumes: number
 }
 
 export class User {
