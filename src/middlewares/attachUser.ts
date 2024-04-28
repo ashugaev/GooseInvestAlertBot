@@ -41,6 +41,12 @@ export async function updateLimits(ctx: Context) {
   })
   if (premium || userHadExtendedLimits) {
     ctx.premium = true
+
+    // Бесконечные лимиты
+    // Дальше нужно будет убрать хардкод и смотреть на boolean флаг premium
+    ctx.limits.priceLevels = 9999
+    ctx.limits.shifts = 9999
+    ctx.limits.volumes = 9999
   }
 
   return

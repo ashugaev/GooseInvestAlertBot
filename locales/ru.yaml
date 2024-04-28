@@ -263,8 +263,6 @@ alerts_overlimit: |
 
   Удали ненужные мониторинги через команду /list
 
-  Если это не подходит и нужно больше, пиши @ashugaev 🧙‍♂️
-
 # Shift
 
 stat_add_startScene: |
@@ -385,13 +383,9 @@ shift_add_success: |
 shift_add_overlimit-less-tickers: |
   Максимальное количество мониторингов данного типа <b>${limit}</b>. 
   Можешь создать еще не больше <b>${availableCount}</b>
-  
-  Чтобы получить больше, напиши @ashugaev
 
 shift_add_overlimit: |
   ❌ Ты достиг лимита для данного типа мониторингов в <b>${limit}шт</b>
-  
-  Чтобы получить больше, напиши @ashugaev
 
 shift_add_button_growAlert: Отслеживать рост
 
@@ -455,7 +449,9 @@ pay_pending: |
 
 pay_error: |
     ❌ Ошибка оплаты
-  
+
+pay_showDetails: |
+  🚀 Снять лимиты
 
 # Remove alerts
 

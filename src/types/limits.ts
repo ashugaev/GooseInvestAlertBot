@@ -1,6 +1,7 @@
 // Используется только тут. Экспортить лимиты из ctx.limits
 export enum Limits {
-  priceLevels = 100,
+  // FIXME: debug. Revert it
+  priceLevels = 1,
   shifts = 30,
   volumes = 30,
 }

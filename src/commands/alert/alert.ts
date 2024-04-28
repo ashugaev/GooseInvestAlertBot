@@ -5,6 +5,7 @@ import { repeatWithDifferentPrice } from '@/commands/alert/actions/repeatWithDif
 import { repeatWithSamePrice } from '@/commands/alert/actions/repeatWithSamePrice'
 import { ALERT_ACTIONS } from '@/commands/alert/alert.constants'
 import { triggerActionRegexp } from '@/helpers/triggerActionRegexp'
+import { premiumDetailsButton } from '@/keyboards/premiumDetailsButton'
 
 import { addAlert } from '../../helpers/addAlert'
 import { commandWrapper } from '../../helpers/commandWrapper'
@@ -29,7 +30,12 @@ export function setupAlert(bot: Telegraf<Context>) {
 
     if (userAlertsCount >= alertsLimit) {
       await ctx.replyWithHTML(
-        ctx.i18n.t('alerts_overlimit', { limit: alertsLimit })
+        ctx.i18n.t('alerts_overlimit', { limit: alertsLimit }),
+        {
+          reply_markup: {
+            inline_keyboard: [[premiumDetailsButton]],
+          },
+        }
       )
       return
     }

@@ -3,6 +3,7 @@ import { Context } from 'telegraf'
 import { VOLUME_SCENES } from '@/commands/volumes/volumes.constants'
 import { i18n } from '@/helpers/i18n'
 import { chooseSourceKeyboard } from '@/keyboards/chooseSource'
+import { premiumDetailsButton } from '@/keyboards/premiumDetailsButton'
 import { VolumeAlertModel } from '@/models/VolumeAlert'
 import { immediateStep } from '@/scenes'
 const WizardScene = require('telegraf/scenes/wizard')
@@ -29,7 +30,12 @@ export const volumeScenes = new WizardScene(
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_overlimit', {
           limit,
-        })
+        }),
+        {
+          reply_markup: {
+            inline_keyboard: [[premiumDetailsButton]],
+          },
+        }
       )
 
       // @ts-ignore

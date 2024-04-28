@@ -20,6 +20,7 @@ export const TARIFFS = [
 ]
 
 export const PAY_ACTIONS = {
+  start: 'lkv1',
   generatePaymentLink: 'k4kh',
   checkPayment: 'vkvk',
 }
