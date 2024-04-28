@@ -9,18 +9,30 @@ export class PremiumPayment {
   userId: number
 
   /**
-   * Когда была оплата
+   * Когда был выставлен счет
    */
   @prop({ required: true })
   issueDate: Date
+
+  @prop({ required: true })
+  amount: number
+
+  @prop({ required: true })
+  subscriptionType: string
 
   /**
    * Время когда была оплачена подписка
    */
   @prop({ required: false })
   paidDate: Date
+
+  @prop({ required: true })
+  paymentId: string
+
+  @prop({ required: true })
+  monthsCount: number
 }
 
-export const PremiumModel = getModelForClass(PremiumPayment, {
+export const PremiumPaymentModel = getModelForClass(PremiumPayment, {
   schemaOptions: { timestamps: true },
 })

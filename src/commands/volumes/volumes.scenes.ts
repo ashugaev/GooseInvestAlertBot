@@ -8,6 +8,9 @@ import { immediateStep } from '@/scenes'
 const WizardScene = require('telegraf/scenes/wizard')
 const { set } = require('lodash')
 
+/**
+ * FIXME: Поставить лими на кол-во алертов за единицу времени
+ */
 export const volumeScenes = new WizardScene(
   VOLUME_SCENES.add,
   /**
@@ -45,13 +48,13 @@ export const volumeScenes = new WizardScene(
 
     // @ts-ignore
     return ctx.wizard.next()
-  }),
+  })
   /**
    * Choose source
    */
-  source,
-  timeframe,
-  formula,
-  tickers,
-  alertsConfig
+  // source,
+  // timeframe,
+  // formula,
+  // tickers,
+  // alertsConfig
 )

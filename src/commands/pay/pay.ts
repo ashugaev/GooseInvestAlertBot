@@ -2,7 +2,7 @@ import { Context, Telegraf } from 'telegraf'
 
 import { commandWrapper } from '../../helpers/commandWrapper'
 import { triggerActionRegexp } from '../../helpers/triggerActionRegexp'
-import { generatePaymentLinkAction } from './actions.pay'
+import { checkPaymentAction, generatePaymentLinkAction } from './actions.pay'
 import { PAY_ACTIONS } from './pay.constants'
 import { payPricesKeyboard } from './pay.keyboards'
 
@@ -23,4 +23,6 @@ export function setupPay(bot: Telegraf<Context>) {
     triggerActionRegexp(PAY_ACTIONS.generatePaymentLink),
     generatePaymentLinkAction
   )
+
+  bot.action(triggerActionRegexp(PAY_ACTIONS.checkPayment), checkPaymentAction)
 }

@@ -57,7 +57,6 @@ import { setupI18N } from './helpers/i18n'
 import { log } from './helpers/log'
 import { attachUser } from './middlewares/attachUser'
 import { checkTime } from './middlewares/checkTime'
-import { configureAnalytics } from './middlewares/configureAnalytics'
 import { commonScenes } from './scenes'
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
@@ -105,7 +104,7 @@ export const botInit = (bot) => {
   // Attach user
   bot.use(attachUser)
   // send analytics for commands
-  bot.use(configureAnalytics)
+  // bot.use(configureAnalytics)
 
   // Setup localization
   setupI18N(bot)

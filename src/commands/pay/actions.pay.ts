@@ -1,9 +1,11 @@
-import { Context } from 'telegraf'
+import { Context, Markup } from 'telegraf'
 
-import { log } from '@/helpers'
+import { createActionString, log } from '@/helpers'
+import { PremiumPaymentModel } from '@/models/PremiumPayment'
+import { checkConibaseInvoice } from '@/paymentApi/coinbase/checkInvoice'
 
 import { createCoinbaseInvoice } from '../../paymentApi/coinbase/createInvoice'
-import { TARIFFS } from './pay.constants'
+import { PAY_ACTIONS, TARIFFS } from './pay.constants'
 
 const LOG_PREFIX = '[PAY ACTION]'
 
@@ -15,7 +17,7 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
 
     const invoiceData = await createCoinbaseInvoice({
       customerName: ctx.from.username,
-      customerId: ctx.from.id,
+      customerId: ctx.from.id.toString(),
       paymentDescription: paymentData.buttonText,
       amount: paymentData.price,
     })
@@ -30,11 +32,30 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
               text: ctx.i18n.t('pay_link_button'),
             },
           ],
+          [
+            Markup.callbackButton(
+              'Проверить оплату',
+              createActionString(PAY_ACTIONS.checkPayment, {})
+            ),
+          ],
         ],
       },
+    })
+
+    await PremiumPaymentModel.create({
+      userId: ctx.from.id,
+      amount: paymentData.price,
+      paymentId: invoiceData.id,
+      issueDate: new Date(),
+      subscriptionType: paymentData.buttonText,
+      monthsCount: paymentData.monthsCount,
     })
   } catch (e) {
     await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(LOG_PREFIX, e)
   }
+}
+
+export const checkPaymentAction = async (ctx: Context) => {
+  checkConibaseInvoice(ctx)
 }

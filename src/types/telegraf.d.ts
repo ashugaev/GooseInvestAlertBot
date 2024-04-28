@@ -52,6 +52,10 @@ declare module 'telegraf' {
      * Used who deployed this bot
      */
     promotedByUerId
+    /**
+     * Premium status
+     */
+    premium: boolean
   }
 
   export interface Composer<TContext extends Context> {

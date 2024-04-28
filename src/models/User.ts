@@ -87,6 +87,7 @@ export const grantPremium = async (id: number | string) => {
         limits: {
           priceLevels: 9999,
           shifts: 9999,
+          volumes: 9999,
         },
       },
     }
