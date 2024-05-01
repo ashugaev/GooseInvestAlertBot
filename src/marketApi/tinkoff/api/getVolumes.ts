@@ -37,8 +37,21 @@ const TINK_CANDLES_LIFETIME: Record<
   week: 7 * 24 * 60 * 60 * 1000,
 }
 
+// Optimal interval in the case if bot will be broken for a few hours
+// FIXME: Revert to 1min after debug
+const TIMEFRAME = ESfhitTimeframes['1H']
+
+// @ts-expect-error
+const myTimeframeToTink: Record<CandleInterval, ESfhitTimeframes> = {
+  [CandleInterval.CANDLE_INTERVAL_1_MIN]: ESfhitTimeframes['1MIN'],
+  [CandleInterval.CANDLE_INTERVAL_5_MIN]: ESfhitTimeframes['5MIN'],
+  [CandleInterval.CANDLE_INTERVAL_15_MIN]: ESfhitTimeframes['15MIN'],
+  [CandleInterval.CANDLE_INTERVAL_HOUR]: ESfhitTimeframes['1H'],
+  [CandleInterval.CANDLE_INTERVAL_DAY]: ESfhitTimeframes['1D'],
+}
+
 const tinkCandleToMy = (candle: Candle): Volumes => ({
-  timeframe: ESfhitTimeframes['1M'],
+  timeframe: TIMEFRAME,
   amount: candle.volume,
   tickerId: candle.figi,
   candleCreatedTime: candle.time.getTime(),
@@ -104,7 +117,7 @@ const getPrioritizedVolumeInstruments = async (): Promise<{
   const allInstruments = await getInstrumentsBySourceCache(
     EMarketDataSources.tinkoff
   )
-
+  // FIXME: Test prioritization
   const alertsCountByInstrumentId = allAlerts.reduce<Record<string, number>>(
     (acc, alert) => {
       if (!acc[alert.tickerId]) {
@@ -152,7 +165,7 @@ const startWebsocket = async (instruments) => {
       {
         instruments: instruments.map((el) => ({
           figi: el.id,
-          interval: CandleInterval.CANDLE_INTERVAL_1_MIN,
+          interval: myTimeframeToTink[TIMEFRAME],
         })),
         waitingClose: false,
       },
@@ -197,22 +210,22 @@ export const tinkoffVolumesUpdater = async (): Promise<
       startWebsocket(socketInstruments)
 
       const startTime = Date.now()
-      const workTime = 1000 * 60 * 2
+      const workTime = 1000 * 60 * 2 // 2 min
       const finishTime = startTime + workTime
 
-      // Optimal interval in the case if bot will be broken for a few hours
-      const timeframe = ESfhitTimeframes['5M']
-      const candlesToRequest = 100 // TODO: Find biggest available value
-      const candleTime = SHIFT_TIMEFRAMES[timeframe].lifetime
+      // const candlesToRequest = 100 // TODO: Find biggest available value
+      // FIXME: Revert to 100 after debug
+      const candlesToRequest = 50 // TODO: Find biggest available value
+      const candleTime = SHIFT_TIMEFRAMES[TIMEFRAME].lifetime
       const allCandlesTime = candlesToRequest * candleTime
 
       let i = 0
-      let marketOpen = false
+      // const marketOpen = false
 
       let timer = new Date().getTime()
 
       // The small loop only makes the request itself without extra computations and fetching data from the database
-      // New alerts will start working after 2 min
+      // New alerts will start working after 'workTime'
       // Limit tink: 300rpm
       while (Date.now() < finishTime) {
         try {
@@ -220,21 +233,30 @@ export const tinkoffVolumesUpdater = async (): Promise<
           // Get all possible candles because quota per req
           const res = await tinkoffApi.marketdata.getCandles({
             figi: item.id,
-            interval: CandleInterval.CANDLE_INTERVAL_1_MIN,
+            interval: myTimeframeToTink[TIMEFRAME],
             from: new Date(new Date().getTime() - allCandlesTime),
             to: new Date(),
           })
 
-          if (res.candles.length) {
-            marketOpen = true
+          // IF market is closed - skip and wait
+          if (!res.candles.length) {
+            // FIXME: Revert after debug
+            // await wait(1000 * 60 * 5) // 5 min
+            continue
           }
 
-          res.candles.forEach((candle) => {
-            // @ts-expect-error FIXME it's broken
-            const candles = generatedCandles(candle)
+          // FIXME: Тут ошибка, я не должен генерить по каждой свече все остальные. Только по последней
+          // res.candles.forEach((candle) => {
+          //   // @ts-expect-error FIXME it's broken
+          //   const candles = generatedCandles(candle)
+          //
+          //   volumesModelCache.volumeSignal(candles)
+          // })
 
-            volumesModelCache.volumeSignal(candles)
-          })
+          // FIXME: Проверить тип
+          //   @ts-expect-error
+          const candles = generatedCandles(res.candles[res.candles.length - 1])
+          volumesModelCache.volumeSignal(candles)
 
           if (i >= manualCheckInstruments.length) {
             i = 0
@@ -249,13 +271,12 @@ export const tinkoffVolumesUpdater = async (): Promise<
             i++
           }
         } catch (e) {
+          if (Number(e.ratelimitRemaining) === 0) {
+            await wait(1000 * 30)
+          }
           log.error(logPrefix, 'Small cycle failing', e)
           await wait(500)
         }
-      }
-
-      if (!marketOpen) {
-        await wait(1000 * 60 * 5)
       }
     } catch (e) {
       log.error(logPrefix, 'Big cycle failing', e)
