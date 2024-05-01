@@ -3,6 +3,7 @@
     "rootDir": "src",
     "module": "Node16",
     "target": "esnext",
+    "sourceMap": true,
     "lib": [
       "es2015"
     ],
