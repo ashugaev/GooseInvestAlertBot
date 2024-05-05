@@ -21,9 +21,15 @@ export enum EMarketInstrumentTypes {
   Future = 'Future',
 }
 
-const instrumentsByIdCache = new NodeCache()
-const instrumentsByTickerCache = new NodeCache()
-const instrumentsBySourceCache = new NodeCache()
+const instrumentsByIdCache = new NodeCache({
+  stdTTL: 1000 * 60 * 60 * 24,
+})
+const instrumentsByTickerCache = new NodeCache({
+  stdTTL: 1000 * 60 * 60 * 24,
+})
+const instrumentsBySourceCache = new NodeCache({
+  stdTTL: 1000 * 60 * 60 * 24,
+})
 
 /**
  * Нормализованный элемент бумаги/монеты

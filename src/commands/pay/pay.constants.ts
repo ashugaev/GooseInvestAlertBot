@@ -1,21 +1,20 @@
 export const TARIFFS = [
   {
-    price: 7,
-    text: 'Месячная оплата',
-    buttonText: '7$ - 1 месяц',
-  },
-  {
     price: 15,
     text: 'Квартальная оплата',
     buttonText: '15$ - 3 месяца',
+    monthsCount: 3,
   },
   {
-    price: 35,
+    price: 40,
     text: 'Годовая оплата',
-    buttonText: '45$ - 1 год',
+    buttonText: '40$ - 1 год',
+    monthsCount: 12,
   },
 ]
 
 export const PAY_ACTIONS = {
+  start: 'lkv1',
   generatePaymentLink: 'k4kh',
+  checkPayment: 'vkvk',
 }

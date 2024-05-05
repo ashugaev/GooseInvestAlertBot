@@ -3,7 +3,6 @@ import { Middleware } from 'telegraf'
 import { findOrCreateUser } from '@/models'
 import { getUserChats } from '@/models/Chat'
 
-import { addAnalyticsToReply, chb_m } from './analytics'
 import { i18n } from './i18n'
 import { log } from './log'
 
@@ -15,8 +14,10 @@ export function sceneWrapper(
   return async (ctx) => {
     try {
       if (!ctx.dbuser) {
+        // FIXME: Reuse 'attachUser' middleware here
         const dbuser = await findOrCreateUser(ctx.from.id, ctx.goose.id)
         ctx.dbuser = dbuser
+
         if (dbuser.adminMode) {
           ctx.adminChats = await getUserChats(ctx.from.id)
           ctx.adminChatActive =
@@ -28,8 +29,8 @@ export function sceneWrapper(
       }
 
       // FIXME: Добавить другой инстремент аналитики
-      addAnalyticsToReply(ctx)
-      chb_m({ ctx, intent })
+      // addAnalyticsToReply(ctx)
+      // chb_m({ ctx, intent })
 
       await callback(ctx)
     } catch (e) {

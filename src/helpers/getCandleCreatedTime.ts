@@ -28,7 +28,7 @@ const getFirstDayOfMonth = () => {
  * Округляет текущее время до lifetime
  * В результате получаем время старта свечи
  */
-export const getCandleCreatedTime = ({ timeframe, lifetime }) => {
+export const getCandleCreatedTime = ({ timeframe, lifetime }): number => {
   const currentTime = new Date().getTime()
 
   let time

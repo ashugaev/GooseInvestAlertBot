@@ -4,6 +4,7 @@ import { AskByModel } from '@/components/askByModel/askByModel'
 import { SOURCE_CONFIG } from '@/constants/sourceConfig'
 import { shiftsCache } from '@/cron/shiftsChecker'
 import { chooseSourceKeyboard } from '@/keyboards/chooseSource'
+import { premiumDetailsButton } from '@/keyboards/premiumDetailsButton'
 import {
   immediateStep,
   waitButtonClickStep,
@@ -123,6 +124,8 @@ const startShiftAddScene = immediateStep(
     // Добавлено уже у юзера
     const userShiftsCount = await getTimeShiftsCount({
       user: ctx.from.id,
+      chat: ctx.adminChatActive?.id,
+      botId: ctx.goose.id,
     })
 
     // Лимиты для этого юзера
@@ -137,7 +140,12 @@ const startShiftAddScene = immediateStep(
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_overlimit', {
           limit: shiftsLimitForUser,
-        })
+        }),
+        {
+          reply_markup: {
+            inline_keyboard: [[premiumDetailsButton]],
+          },
+        }
       )
 
       // @ts-ignore
@@ -237,7 +245,12 @@ const shiftAddChooseTickers = waitMessageStep(
         i18n.t('ru', 'shift_add_overlimit-less-tickers', {
           availableCount: shiftsLimitForUser - userShiftsCount,
           limit: shiftsLimitForUser,
-        })
+        }),
+        {
+          reply_markup: {
+            inline_keyboard: [[premiumDetailsButton]],
+          },
+        }
       )
 
       return ctx.wizard.selectStep(ctx.wizard.cursor)

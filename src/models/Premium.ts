@@ -22,8 +22,14 @@ export class Premium {
    */
   @prop({ required: false })
   marketingSource: string
+
+  @prop({ required: false })
+  chatId: number
+
+  @prop({ required: false })
+  botId: number
 }
 
 export const PremiumModel = getModelForClass(Premium, {
-  schemaOptions: { timestamps: true },
+  schemaOptions: { timestamps: true, collection: 'premium' },
 })

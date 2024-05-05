@@ -3,11 +3,11 @@
     "rootDir": "src",
     "module": "Node16",
     "target": "esnext",
+    "sourceMap": true,
     "lib": [
       "es2015"
     ],
     "moduleResolution": "node",
-    "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {

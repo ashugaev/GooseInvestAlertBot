@@ -57,10 +57,15 @@ import { setupI18N } from './helpers/i18n'
 import { log } from './helpers/log'
 import { attachUser } from './middlewares/attachUser'
 import { checkTime } from './middlewares/checkTime'
-import { configureAnalytics } from './middlewares/configureAnalytics'
 import { commonScenes } from './scenes'
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
+
+import '@/marketApi/tinkoff/api/getVolumes'
+
+import { volumeScenes } from '@/commands/volumes/volumes.scenes'
+import { subscriptionPaymentCheckerAdd } from '@/cron/subscriptionPayment/subscriptionPayment'
+import { commandWrapper } from '@/helpers/commandWrapper'
 
 export const tinkoffApi = new TinkoffInvestApi({
   token: process.env.STOCKS_API_TOKEN,
@@ -87,11 +92,12 @@ const stage = new Stage([
   addChatScenes,
   shiftSceneUpatePercent,
   premiumScenes,
+  volumeScenes,
   ...commonScenes,
   ...alertScenes,
 ])
 
-export const botInit = (bot) => {
+export const botInit = (bot: Telegraf<any>) => {
   bot.use(session())
   bot.use(stage.middleware())
 
@@ -100,7 +106,7 @@ export const botInit = (bot) => {
   // Attach user
   bot.use(attachUser)
   // send analytics for commands
-  bot.use(configureAnalytics)
+  // bot.use(configureAnalytics)
 
   // Setup localization
   setupI18N(bot)
@@ -121,6 +127,29 @@ export const botInit = (bot) => {
   setupAddChat(bot)
   setupTest(bot)
   setupAddPremium(bot)
+
+  // Listen crypto transaction code
+  // TODO: Move to component
+  bot.hears(
+    // e046c2bb63fa65a4a3d94228fd8fd87e1fb0c2ffa3780ef722846c532c326b0a
+    new RegExp('^([A-Fa-f0-9]{64})$'),
+    commandWrapper(
+      {
+        availableForAdmins: true,
+        availableForUsers: true,
+        bossOnly: false,
+      },
+      async (ctx) => {
+        if (!ctx.update.message.text) return
+
+        subscriptionPaymentCheckerAdd({
+          userId: ctx.from.id,
+          transactionId: ctx.update.message.text,
+          ctx,
+        })
+      }
+    )
+  )
 
   // Start bot
   bot.startPolling()

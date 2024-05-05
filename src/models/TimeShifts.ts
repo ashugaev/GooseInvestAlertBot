@@ -79,9 +79,11 @@ export const TimeShiftModel = getModelForClass(TimeShift, {
   schemaOptions: { timestamps: true },
 })
 
-type GetTimeshiftsParams =
-  | { user: number | string; chat?: number | string }
-  | { chat: number | string; user?: number | string }
+type GetTimeshiftsParams = {
+  user: number | string
+  chat?: number | string
+  botId: number
+}
 
 export const getTimeShifts = async ({
   user,
@@ -114,16 +116,20 @@ export const getTimeShifts = async ({
 export const getTimeShiftsCount = async ({
   user,
   chat,
+  botId,
 }: GetTimeshiftsParams): Promise<number> => {
-  let shiftsCount = null
-
-  if (chat) {
-    shiftsCount = await TimeShiftModel.find({ chat }).count()
-  } else if (user) {
-    shiftsCount = await TimeShiftModel.find({ user }).count()
-  } else {
+  if (!user && !chat) {
     throw new Error('No user or chat')
   }
+
+  const params = {
+    botId,
+    user,
+  }
+
+  chat && (params['chat'] = chat)
+
+  const shiftsCount = await TimeShiftModel.find(params).count()
 
   return shiftsCount
 }

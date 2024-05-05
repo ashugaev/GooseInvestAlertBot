@@ -1,6 +1,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 import { Context } from 'telegraf'
 
+import { PremiumModel } from '@/models/Premium'
 import { Limits } from '@/types/limits'
 
 export class UserLimits {
@@ -9,6 +10,9 @@ export class UserLimits {
 
   @prop({ required: false, default: Limits.shifts })
   shifts: number
+
+  @prop({ required: false, default: Limits.volumes })
+  volumes: number
 }
 
 export class User {
@@ -41,6 +45,7 @@ export const UserModel = getModelForClass(User, {
 })
 
 // Get or create user
+// FIXME: Делать одной операцией создание нового юзера через upsert
 export async function findOrCreateUser(id: string | number, botId) {
   let user = await UserModel.findOne({ id }).lean()
   if (!user) {
@@ -50,6 +55,17 @@ export async function findOrCreateUser(id: string | number, botId) {
         adminMode: false,
         botId,
       }).save()
+
+      // Grant 2weeks premium
+      // KEEP ASYNC
+      PremiumModel.create({
+        userId: id,
+        chatId: null,
+        botId,
+        isTrial: true,
+        end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 2 weeks
+        start: new Date(),
+      })
     } catch (err) {
       user = await UserModel.findOne({ id }).lean()
     }
@@ -76,6 +92,7 @@ export const toUserMode = async (ctx: Context) => {
   ctx.dbuser = await UserModel.findOne({ id: ctx.from.id }).lean()
 }
 
+// ручная выдача
 export const grantPremium = async (id: number | string) => {
   await UserModel.update(
     { id },
@@ -84,6 +101,7 @@ export const grantPremium = async (id: number | string) => {
         limits: {
           priceLevels: 9999,
           shifts: 9999,
+          volumes: 9999,
         },
       },
     }

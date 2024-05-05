@@ -1,21 +1,23 @@
+import { COINBASE_URL, CONIBASE_HEADERS } from '@/paymentApi/coinbase/index'
+
 const axios = require('axios')
 
 interface CreateCoinbaseInvoiceParams {
   amount: number
   currency?: string
-  customerId: number
+  customerId: string
   customerName: string
   paymentDescription: string
   paymentName?: string
 }
 
 export const createCoinbaseInvoice = async ({
-  currency = 'rub',
+  currency = 'usd',
   customerName,
   customerId,
   amount,
   paymentDescription,
-  paymentName = 'Безграничный доступ к функционалу бота @GooseInvestAlert',
+  paymentName = 'Снятие ограничений с бота',
 }: CreateCoinbaseInvoiceParams) => {
   const requestData = JSON.stringify({
     local_price: {
@@ -33,13 +35,8 @@ export const createCoinbaseInvoice = async ({
 
   const config = {
     method: 'post',
-    url: 'https://api.commerce.coinbase.com/charges',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'X-CC-Api-Key': process.env.COINBASE_TOKEN,
-      'X-CC-Version': '2018-03-22',
-    },
+    url: `${COINBASE_URL}/charges`,
+    headers: CONIBASE_HEADERS,
     data: requestData,
   }
 

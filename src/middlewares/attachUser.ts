@@ -2,6 +2,7 @@ import { Context } from 'telegraf'
 
 import { switchToAdminMode, switchToPrivateMode } from '@/helpers/adminMode'
 import { createOrUpdateChat } from '@/models/Chat'
+import { PremiumModel } from '@/models/Premium'
 import { Limits } from '@/types/limits'
 
 import { log } from '../helpers/log'
@@ -13,6 +14,11 @@ const logPrefix = '[attachUser]'
 export async function updateLimits(ctx: Context) {
   ctx.limits = ctx.dbuser.limits
 
+  // Значит я ставил юзеру руками повышенную квоту. Считаем его премиумом
+  // FIXME: Сделать миграцию этих юзеров на премиум и удалить это условие
+  const userHadExtendedLimits =
+    ctx.dbuser.limits?.priceLevels > Limits.priceLevels
+
   if (!ctx.limits) {
     ctx.limits = Limits
   }
@@ -23,6 +29,24 @@ export async function updateLimits(ctx: Context) {
 
   if (!ctx.limits.priceLevels) {
     ctx.limits.priceLevels = Limits.priceLevels
+  }
+
+  if (!ctx.limits.volumes) {
+    ctx.limits.priceLevels = Limits.volumes
+  }
+
+  const premium = await PremiumModel.findOne({
+    userId: ctx.dbuser.id,
+    end: { $gte: new Date() },
+  })
+  if (premium || userHadExtendedLimits) {
+    ctx.premium = true
+
+    // Бесконечные лимиты
+    // Дальше нужно будет убрать хардкод и смотреть на boolean флаг premium
+    ctx.limits.priceLevels = 9999
+    ctx.limits.shifts = 9999
+    ctx.limits.volumes = 9999
   }
 
   return
