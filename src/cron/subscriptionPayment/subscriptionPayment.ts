@@ -1,7 +1,8 @@
 import { TelegrafContext } from 'telegraf/typings/context'
 
+import { i18n } from '@/helpers/i18n'
 import { tronScanCheckTransaction } from '@/integrations/tronscan'
-import { PremiumPaymentModel } from '@/models/PremiumPayment'
+import { PremiumPaymentRequestModel } from '@/models/PremiumPayment'
 
 export const subscriptionPaymentCheckerAdd = async ({
   userId,
@@ -15,7 +16,7 @@ export const subscriptionPaymentCheckerAdd = async ({
   const transaction = await tronScanCheckTransaction(transactionId)
 
   // Getting the last payment request
-  const paymentData = await PremiumPaymentModel.findOne({
+  const paymentData = await PremiumPaymentRequestModel.findOne({
     userId,
   })
 
@@ -29,16 +30,19 @@ export const subscriptionPaymentCheckerAdd = async ({
       (transfer) =>
         transfer.to_address === process.env.TRONSCAN_WALLET_ADDRESS &&
         Number(transfer.amount_str) / 1e6 >= paymentData.amount &&
-        paymentData.issueDate.getTime() >=
+        paymentData.issueDate.getTime() <=
           new Date(transaction.timestamp).getTime()
     ) || false
 
   if (!isValid) {
-    ctx.replyWithHTML('Не могу найти такую транзакцию')
+    ctx.replyWithHTML(i18n.t('ru', 'pay_cant_find'))
     return
   }
 
+  ctx.replyWithHTML('🔄 Транзакция найдена. Жду пока она подтвердится')
+
   // Добавим и будем ждать смены статуса
   paymentData.paymentId = transactionId
+  paymentData.paymentIdAddedDate = new Date()
   await paymentData.save()
 }

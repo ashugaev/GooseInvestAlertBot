@@ -4,12 +4,12 @@ import { Context } from 'telegraf'
 
 import { log } from '@/helpers'
 import { PremiumModel } from '@/models/Premium'
-import { PremiumPaymentModel } from '@/models/PremiumPayment'
+import { PremiumPaymentRequestModel } from '@/models/PremiumPayment'
 import { COINBASE_URL, CONIBASE_HEADERS } from '@/paymentApi/coinbase/index'
 
 export const checkConibaseInvoice = async (ctx: Context) => {
   try {
-    const chargesForUser = await PremiumPaymentModel.find({
+    const chargesForUser = await PremiumPaymentRequestModel.find({
       userId: ctx.from.id,
       issueDate: { $gt: addMonths(new Date(), -1) },
     })

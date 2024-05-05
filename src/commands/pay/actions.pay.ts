@@ -1,7 +1,7 @@
 import { Context } from 'telegraf'
 
 import { log } from '@/helpers'
-import { PremiumPaymentModel } from '@/models/PremiumPayment'
+import { PremiumPaymentRequestModel } from '@/models/PremiumPayment'
 import { checkConibaseInvoice } from '@/paymentApi/coinbase/checkInvoice'
 
 import { TARIFFS } from './pay.constants'
@@ -49,14 +49,14 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
       })
     )
 
-    await PremiumPaymentModel.create({
+    await PremiumPaymentRequestModel.create({
       userId: ctx.from.id,
       amount: paymentData.price,
       // paymentId: invoiceData.id,
       issueDate: new Date(),
       subscriptionType: paymentData.buttonText,
       monthsCount: paymentData.monthsCount,
-      botId: ctx.botInfo.id,
+      botId: ctx.goose.id,
       chatId: ctx.adminChatActive?.id,
     })
   } catch (e) {

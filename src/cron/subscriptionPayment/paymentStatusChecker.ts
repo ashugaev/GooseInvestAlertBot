@@ -5,14 +5,14 @@ import { i18n } from '@/helpers/i18n'
 import { wait } from '@/helpers/wait'
 import { tronScanCheckTransaction } from '@/integrations/tronscan'
 import { PremiumModel } from '@/models/Premium'
-import { PremiumPaymentModel } from '@/models/PremiumPayment'
+import { PremiumPaymentRequestModel } from '@/models/PremiumPayment'
 
 const TRANSACTION_CHECK_INTERVAL = 1000 * 30 // 30 seconds
 const TRANSACTION_LIFETIME = 1000 * 60 * 60 * 2 // 2 hour
 
 export const paymentStatusChecker = async () => {
   while (true) {
-    const transactionsWithHash = await PremiumPaymentModel.find({
+    const transactionsWithHash = await PremiumPaymentRequestModel.find({
       paymentId: { $ne: null }, // есть хеш транзакции
       paidDate: null, // не подтверждена оплата
       cancelDate: null, // транзакция не протухла
@@ -23,7 +23,7 @@ export const paymentStatusChecker = async () => {
         const bot = await getBot(transaction.botId)
 
         if (
-          Date.now() - transaction.issueDate.getTime() >
+          Date.now() - transaction.paymentIdAddedDate.getTime() >
           TRANSACTION_LIFETIME
         ) {
           transaction.cancelDate = new Date()
@@ -35,6 +35,8 @@ export const paymentStatusChecker = async () => {
               hash: transaction.paymentId,
             })
           )
+
+          continue
         }
 
         // Проверяем статус транзакции
@@ -65,7 +67,7 @@ export const paymentStatusChecker = async () => {
           })
 
           // Cancel other user requests
-          await PremiumPaymentModel.updateMany(
+          await PremiumPaymentRequestModel.updateMany(
             {
               userId: transaction.userId,
               paidDate: null,

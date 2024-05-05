@@ -4,7 +4,7 @@ import { getModelForClass, prop } from '@typegoose/typegoose'
 /**
  * Данные о подписке на бота
  */
-export class PremiumPayment {
+export class PremiumPaymentRequest {
   @prop({ required: true, unique: false })
   userId: number
 
@@ -46,8 +46,17 @@ export class PremiumPayment {
 
   @prop({ required: false })
   chatId: number
+
+  /**
+   * Юзер прислал хеш транзакции
+   */
+  @prop({ required: false })
+  paymentIdAddedDate?: Date
 }
 
-export const PremiumPaymentModel = getModelForClass(PremiumPayment, {
-  schemaOptions: { timestamps: true },
-})
+export const PremiumPaymentRequestModel = getModelForClass(
+  PremiumPaymentRequest,
+  {
+    schemaOptions: { timestamps: true, collection: 'premium-payments-request' },
+  }
+)
