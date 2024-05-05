@@ -25,5 +25,5 @@ export class Premium {
 }
 
 export const PremiumModel = getModelForClass(Premium, {
-  schemaOptions: { timestamps: true },
+  schemaOptions: { timestamps: true, collection: 'premium' },
 })

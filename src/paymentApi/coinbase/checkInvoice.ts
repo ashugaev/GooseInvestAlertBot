@@ -33,6 +33,7 @@ export const checkConibaseInvoice = async (ctx: Context) => {
 
         // Вообще это не значит, что платеж прошел, статус может быть и error
         if (hasPayments) {
+          // Paid date can be based on payment status change or data from coinbase
           charge.paidDate = new Date()
           await charge.save()
           isTherePaidCharge = true
