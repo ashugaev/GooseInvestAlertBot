@@ -92,6 +92,7 @@ export const toUserMode = async (ctx: Context) => {
   ctx.dbuser = await UserModel.findOne({ id: ctx.from.id }).lean()
 }
 
+// ручная выдача
 export const grantPremium = async (id: number | string) => {
   await UserModel.update(
     { id },
