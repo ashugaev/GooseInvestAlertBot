@@ -16,11 +16,12 @@ const sendPayMessage = async (ctx: Context) => {
 }
 
 export function setupPay(bot: Telegraf<Context>) {
-  commandWrapper({ availableForAdmins: false }, async (ctx) => {
-    await sendPayMessage(ctx)
-  })
-
-  bot.command(['pay', 'subscription'])
+  bot.command(
+    ['pay', 'subscription'],
+    commandWrapper({ availableForAdmins: false }, async (ctx) => {
+      await sendPayMessage(ctx)
+    })
+  )
 
   bot.action(triggerActionRegexp(PAY_ACTIONS.start), sendPayMessage)
 
