@@ -1,9 +1,8 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 import { ESfhitTimeframes } from '@/commands/shift'
-import { ModelCache } from '@/helpers/modelCache'
-import setTimeout = jest.setTimeout
 import { log } from '@/helpers'
+import { ModelCache } from '@/helpers/modelCache'
 import { wait } from '@/helpers/wait'
 
 const logPrefix = '[VOLUMES MODEL]'
