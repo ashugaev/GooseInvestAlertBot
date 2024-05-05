@@ -45,7 +45,7 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
     await ctx.replyWithHTML(
       ctx.i18n.t('pay_transfer', {
         amount: paymentData.price,
-        address: process.env.BOSS_WALLET_ADDRESS,
+        address: process.env.TRONSCAN_WALLET_ADDRESS,
       })
     )
 
