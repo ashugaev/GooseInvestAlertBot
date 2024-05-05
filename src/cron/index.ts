@@ -1,5 +1,6 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
+import { paymentStatusChecker } from '@/cron/subscriptionPayment/paymentStatusChecker'
 import { log, retry } from '@/helpers'
 import { binanceGetAllInstrumentsFutures } from '@/marketApi/binance/api/getAllInstrumentsFutures'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
@@ -428,4 +429,6 @@ export const setupCheckers = () => {
    * Base health checks for bot
    */
   retry(async () => await startTests(), 10000, 'tests')
+
+  retry(async () => await paymentStatusChecker(), 10000, 'paymentStatusChecker')
 }

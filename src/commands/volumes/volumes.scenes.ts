@@ -17,7 +17,7 @@ export const volumeScenes = new WizardScene(
   /**
    * Initial
    */
-  immediateStep('shift_add_start-scene', async (ctx: Context) => {
+  immediateStep('volumes_add_start-scene', async (ctx: Context) => {
     const currentAlertsCount = await VolumeAlertModel.find({
       user: ctx.from.id,
     }).count()

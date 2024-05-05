@@ -2,6 +2,8 @@
 export enum Limits {
   // FIXME: debug. Revert it
   priceLevels = 1,
-  shifts = 30,
-  volumes = 30,
+  // FIXME: debug. Revert it
+  shifts = 1,
+  // FIXME: debug. Revert it
+  volumes = 1,
 }

@@ -124,6 +124,8 @@ const startShiftAddScene = immediateStep(
     // Добавлено уже у юзера
     const userShiftsCount = await getTimeShiftsCount({
       user: ctx.from.id,
+      chat: ctx.adminChatActive?.id,
+      botId: ctx.goose.id,
     })
 
     // Лимиты для этого юзера

@@ -26,11 +26,26 @@ export class PremiumPayment {
   @prop({ required: false })
   paidDate: Date
 
-  @prop({ required: true })
+  /**
+   * Used only with payment systems
+   */
+  @prop({ required: false })
   paymentId: string
 
   @prop({ required: true })
   monthsCount: number
+
+  @prop({ required: true })
+  botId: number
+
+  /**
+   * Time when paymend was canceled in transaction validation failed
+   */
+  @prop({ required: false })
+  cancelDate: Date
+
+  @prop({ required: false })
+  chatId: number
 }
 
 export const PremiumPaymentModel = getModelForClass(PremiumPayment, {
