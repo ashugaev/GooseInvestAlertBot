@@ -4,6 +4,8 @@ import { i18n } from '@/helpers/i18n'
 import { tronScanCheckTransaction } from '@/integrations/tronscan'
 import { PremiumPaymentRequestModel } from '@/models/PremiumPayment'
 
+const TRONSCAN_WALLET_ADDRESS = process.env.TRONSCAN_WALLET_ADDRESS
+
 export const subscriptionPaymentCheckerAdd = async ({
   userId,
   transactionId,
@@ -29,7 +31,7 @@ export const subscriptionPaymentCheckerAdd = async ({
   const isValid =
     transaction?.trc20TransferInfo?.some(
       (transfer) =>
-        transfer.to_address === process.env.TRONSCAN_WALLET_ADDRESS &&
+        transfer.to_address === TRONSCAN_WALLET_ADDRESS &&
         Number(transfer.amount_str) / 1e6 >= paymentData.amount &&
         paymentData.issueDate.getTime() <=
           new Date(transaction.timestamp).getTime()
