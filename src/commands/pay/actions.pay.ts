@@ -8,6 +8,8 @@ import { TARIFFS } from './pay.constants'
 
 const LOG_PREFIX = '[PAY ACTION]'
 
+const TRONSCAN_WALLET_ADDRESS = process.env.TRONSCAN_WALLET_ADDRESS
+
 export const generatePaymentLinkAction = async (ctx: Context) => {
   try {
     const { i } = JSON.parse(ctx.match[1])
@@ -45,7 +47,7 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
     await ctx.replyWithHTML(
       ctx.i18n.t('pay_transfer', {
         amount: paymentData.price,
-        address: process.env.TRONSCAN_WALLET_ADDRESS,
+        address: TRONSCAN_WALLET_ADDRESS,
       })
     )
 
