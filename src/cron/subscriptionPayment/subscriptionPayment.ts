@@ -22,6 +22,7 @@ export const subscriptionPaymentCheckerAdd = async ({
 
   if (!paymentData) {
     console.info('user sent transaction number without requesting payment')
+    ctx.replyWithHTML(i18n.t('ru', 'pay_no_invoice'))
     return
   }
 

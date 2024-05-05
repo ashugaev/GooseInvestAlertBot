@@ -1,12 +1,5 @@
 export const TARIFFS = [
   {
-    // FIXME: Remove this before release
-    price: 1,
-    text: 'test',
-    buttonText: '1$ - test',
-    monthsCount: 1,
-  },
-  {
     price: 15,
     text: 'Квартальная оплата',
     buttonText: '15$ - 3 месяца',
