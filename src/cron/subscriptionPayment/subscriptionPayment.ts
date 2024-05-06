@@ -20,6 +20,9 @@ export const subscriptionPaymentCheckerAdd = async ({
   // Getting the last payment request
   const paymentData = await PremiumPaymentRequestModel.findOne({
     userId,
+    cancelDate: null,
+    paidDate: null,
+    paymentId: null,
   })
 
   if (!paymentData) {
@@ -28,13 +31,29 @@ export const subscriptionPaymentCheckerAdd = async ({
     return
   }
 
+  // Check if hash was used
+  const data = await PremiumPaymentRequestModel.findOne({
+    paymentId: transactionId,
+  })
+
+  if (data) {
+    ctx.replyWithHTML(i18n.t('ru', 'pay_hash_used'))
+    return
+  }
+
+  // Diff less or equal 1 day
+  const isDateCorrect =
+    Math.abs(
+      paymentData.issueDate.getDate() -
+        new Date(transaction.timestamp).getDate()
+    ) <= 1
+
   const isValid =
     transaction?.trc20TransferInfo?.some(
       (transfer) =>
         transfer.to_address === TRONSCAN_WALLET_ADDRESS &&
         Number(transfer.amount_str) / 1e6 >= paymentData.amount &&
-        paymentData.issueDate.getTime() <=
-          new Date(transaction.timestamp).getTime()
+        isDateCorrect
     ) || false
 
   if (!isValid) {

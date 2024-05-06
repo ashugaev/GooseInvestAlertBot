@@ -51,7 +51,7 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
       })
     )
 
-    await PremiumPaymentRequestModel.create({
+    const res = await PremiumPaymentRequestModel.create({
       userId: ctx.from.id,
       amount: paymentData.price,
       // paymentId: invoiceData.id,
@@ -61,6 +61,19 @@ export const generatePaymentLinkAction = async (ctx: Context) => {
       botId: ctx.goose.id,
       chatId: ctx.adminChatActive?.id,
     })
+
+    // Cancel others
+    await PremiumPaymentRequestModel.updateMany(
+      {
+        _id: { $ne: res._id },
+        userId: ctx.from.id,
+        paidDate: null,
+        cancelDate: null,
+      },
+      {
+        cancelDate: new Date(),
+      }
+    )
   } catch (e) {
     await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
     log.error(LOG_PREFIX, e)
