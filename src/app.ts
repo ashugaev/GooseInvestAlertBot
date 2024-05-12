@@ -63,6 +63,7 @@ const session = require('telegraf/session')
 
 import '@/marketApi/tinkoff/api/getVolumes'
 
+import { setupVolumes } from '@/commands/volumes/volumes'
 import { volumeScenes } from '@/commands/volumes/volumes.scenes'
 import { subscriptionPaymentCheckerAdd } from '@/cron/subscriptionPayment/subscriptionPayment'
 import { commandWrapper } from '@/helpers/commandWrapper'
@@ -127,6 +128,7 @@ export const botInit = (bot: Telegraf<any>) => {
   setupAddChat(bot)
   setupTest(bot)
   setupAddPremium(bot)
+  setupVolumes(bot)
 
   // Listen crypto transaction code
   // TODO: Move to component

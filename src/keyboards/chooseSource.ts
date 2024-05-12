@@ -1,13 +1,22 @@
 import { Markup } from 'telegraf'
 
-import { SHIFT_ACTIONS } from '@/commands/shift'
 import { SOURCE_CONFIG } from '@/constants/sourceConfig'
 import { createActionString } from '@/helpers'
 import { EMarketDataSources } from '@/marketApi/types'
 
-export const chooseSourceKeyboard = () => {
+export const chooseSourceKeyboard = (
+  action: string,
+  filterBy?: EMarketDataSources[]
+) => {
   const keys = []
-  const sources = Object.keys(EMarketDataSources)
+  const sources = Object.keys(EMarketDataSources).filter(
+    (source: EMarketDataSources) => {
+      if (filterBy) {
+        return filterBy.includes(source)
+      }
+      return true
+    }
+  )
 
   while (sources.length) {
     const firstRowElement = sources.shift()
@@ -19,7 +28,7 @@ export const chooseSourceKeyboard = () => {
       row.push(
         Markup.callbackButton(
           SOURCE_CONFIG[firstRowElement].fullName,
-          createActionString(SHIFT_ACTIONS.chooseSource, {
+          createActionString(action, {
             source: firstRowElement,
           })
         )
@@ -30,7 +39,7 @@ export const chooseSourceKeyboard = () => {
       row.push(
         Markup.callbackButton(
           SOURCE_CONFIG[secondRowElement].fullName,
-          createActionString(SHIFT_ACTIONS.chooseSource, {
+          createActionString(action, {
             source: secondRowElement,
           })
         )

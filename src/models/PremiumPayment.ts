@@ -3,6 +3,9 @@ import { getModelForClass, prop } from '@typegoose/typegoose'
 
 /**
  * Данные о подписке на бота
+ *
+ * TODO: Создавать на этаме показа сообщения о подписке
+ *  Отмечать кол-во показов сообщения и триггер показапы
  */
 export class PremiumPaymentRequest {
   @prop({ required: true, unique: false })
