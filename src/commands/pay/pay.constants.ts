@@ -1,15 +1,15 @@
 export const TARIFFS = [
+  // {
+  //   price: 15,
+  //   text: 'Квартальная оплата',
+  //   buttonText: '15$ - 3 месяца',
+  //   monthsCount: 3,
+  // },
   {
-    price: 15,
-    text: 'Квартальная оплата',
-    buttonText: '15$ - 3 месяца',
-    monthsCount: 3,
-  },
-  {
-    price: 40,
+    price: 20,
     text: 'Годовая оплата',
-    buttonText: '40$ - 1 год',
-    monthsCount: 12,
+    buttonText: '20$ - 1 год',
+    monthsCount: 20,
   },
 ]
 
