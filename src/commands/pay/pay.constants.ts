@@ -8,7 +8,7 @@ export const TARIFFS = [
   {
     price: 20,
     text: 'Годовая оплата',
-    buttonText: '20$ - 1 год',
+    buttonText: 'Оплатить 20$ за 1 год',
     monthsCount: 12,
   },
 ]
