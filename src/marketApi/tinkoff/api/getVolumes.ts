@@ -1,5 +1,8 @@
 import { CandleResolution } from '@tinkoff/invest-openapi-js-sdk/build/domain'
-import { CandleInterval } from 'tinkoff-invest-api/cjs/generated/marketdata'
+import {
+  CandleInterval,
+  SubscriptionInterval,
+} from 'tinkoff-invest-api/cjs/generated/marketdata'
 import { Candle } from 'tinkoff-invest-api/src/generated/marketdata'
 
 import { tinkoffApi } from '@/app'
@@ -39,15 +42,26 @@ const TINK_CANDLES_LIFETIME: Record<
 
 // Optimal interval in the case if bot will be broken for a few hours
 // FIXME: Revert to 1min after debug
-const TIMEFRAME = ESfhitTimeframes['1H']
+const TIMEFRAME = ESfhitTimeframes['1M']
 
 // @ts-expect-error
-const myTimeframeToTink: Record<CandleInterval, ESfhitTimeframes> = {
-  [CandleInterval.CANDLE_INTERVAL_1_MIN]: ESfhitTimeframes['1MIN'],
-  [CandleInterval.CANDLE_INTERVAL_5_MIN]: ESfhitTimeframes['5MIN'],
-  [CandleInterval.CANDLE_INTERVAL_15_MIN]: ESfhitTimeframes['15MIN'],
-  [CandleInterval.CANDLE_INTERVAL_HOUR]: ESfhitTimeframes['1H'],
-  [CandleInterval.CANDLE_INTERVAL_DAY]: ESfhitTimeframes['1D'],
+const timeframeTySubscriptionTimeframe: Record<
+  CandleInterval,
+  SubscriptionInterval
+> = {
+  [CandleInterval.CANDLE_INTERVAL_1_MIN]:
+    SubscriptionInterval.SUBSCRIPTION_INTERVAL_ONE_MINUTE,
+  [CandleInterval.CANDLE_INTERVAL_5_MIN]:
+    SubscriptionInterval.SUBSCRIPTION_INTERVAL_FIVE_MINUTES,
+}
+
+// @ts-expect-error
+const myTimeframeToTink: Record<ESfhitTimeframes, CandleInterval> = {
+  [ESfhitTimeframes['1M']]: CandleInterval.CANDLE_INTERVAL_1_MIN,
+  [ESfhitTimeframes['5M']]: CandleInterval.CANDLE_INTERVAL_5_MIN,
+  [ESfhitTimeframes['15M']]: CandleInterval.CANDLE_INTERVAL_15_MIN,
+  [ESfhitTimeframes['1H']]: CandleInterval.CANDLE_INTERVAL_HOUR,
+  [ESfhitTimeframes['1D']]: CandleInterval.CANDLE_INTERVAL_DAY,
 }
 
 const tinkCandleToMy = (candle: Candle): Volumes => ({
@@ -63,47 +77,62 @@ const tinkCandleToMy = (candle: Candle): Volumes => ({
  * 3 Если это создание новой то пошлет увеличение объемов по всем свечам и создание этой свечи
  */
 const generatedCandles = (data: Candle): Volumes[] => {
-  const isNewTimeframe = lastCreatedTimeById[data.figi] !== data.time.getTime()
+  try {
+    const figi = data.figi
 
-  lastCreatedTimeById[data.figi] = data.time.getTime()
+    if (!figi) {
+      throw new Error('No figi in data')
+    }
 
-  // Update input candle
-  candlesCache[data.figi][data.interval] = tinkCandleToMy(data)
+    const isNewTimeframe = lastCreatedTimeById[figi] !== data.time.getTime()
 
-  if (isNewTimeframe) {
-    // Use only timeframes bigger than input timeframe
-    const timeframesToUpdate = Object.values(SHIFT_TIMEFRAMES).filter(
-      (el) =>
-        el.lifetime >= TINK_CANDLES_LIFETIME[data.interval] &&
-        el.lifetime !== TINK_CANDLES_LIFETIME[data.interval] // Exclude current candle
-    )
+    lastCreatedTimeById[figi] = data.time.getTime()
 
-    timeframesToUpdate.forEach((timeframe) => {
-      const prevValue = candlesCache[data.figi][timeframe.timeframe]
+    // Update input candle
+    const normCandle = tinkCandleToMy(data)
+    if (!candlesCache[figi]) {
+      candlesCache[figi] = {}
+    }
+    candlesCache[figi][data.interval] = normCandle
 
-      const calculatedCandleCreateTime = getCandleCreatedTime(timeframe)
-      // Check if new candle must be created
-      const needIncrement = calculatedCandleCreateTime <= data.time.getTime()
+    if (isNewTimeframe) {
+      // Use only timeframes bigger than input timeframe
+      const timeframesToUpdate = Object.values(SHIFT_TIMEFRAMES).filter(
+        (el) =>
+          el.lifetime >= TINK_CANDLES_LIFETIME[data.interval] &&
+          el.lifetime !== TINK_CANDLES_LIFETIME[data.interval] // Exclude current candle
+      )
 
-      const volumesValue = needIncrement
-        ? prevValue.amount + data.volume
-        : data.volume
+      timeframesToUpdate.forEach((timeframe) => {
+        const prevValue = candlesCache[figi][timeframe.timeframe]
 
-      const newCandle: Volumes = {
-        timeframe: timeframe.timeframe as ESfhitTimeframes,
-        amount: volumesValue,
-        tickerId: data.figi,
-        candleCreatedTime: calculatedCandleCreateTime,
-      }
+        const calculatedCandleCreateTime = getCandleCreatedTime(timeframe)
+        // Check if new candle must be created
+        const needIncrement = calculatedCandleCreateTime <= data.time.getTime()
 
-      candlesCache[data.figi][timeframe.timeframe] = newCandle
-    })
+        const volumesValue = needIncrement
+          ? prevValue.amount + data.volume
+          : data.volume
 
-    // Return all candles
-    return Object.values(candlesCache[data.figi])
-  } else {
-    // Return only updated candle
-    return [candlesCache[data.figi][data.interval]]
+        const newCandle: Volumes = {
+          timeframe: timeframe.timeframe as ESfhitTimeframes,
+          amount: volumesValue,
+          tickerId: figi,
+          candleCreatedTime: calculatedCandleCreateTime,
+        }
+
+        candlesCache[figi][timeframe.timeframe] = newCandle
+      })
+
+      // Return all candles
+      return Object.values(candlesCache[figi])
+    } else {
+      // Return only updated candle
+      return [candlesCache[figi][data.interval]]
+    }
+  } catch (e) {
+    log.error(logPrefix, 'Error in generatedCandles', e)
+    return []
   }
 }
 
@@ -172,6 +201,7 @@ const startWebsocket = async (instruments) => {
       (data) => {
         const candles = generatedCandles(data)
 
+        // FIXME: Handle exceptions
         volumesModelCache.volumeSignal(candles)
       }
     )
@@ -214,8 +244,9 @@ export const tinkoffVolumesUpdater = async (): Promise<
       const finishTime = startTime + workTime
 
       // const candlesToRequest = 100 // TODO: Find biggest available value
-      // FIXME: Revert to 100 after debug
-      const candlesToRequest = 50 // TODO: Find biggest available value
+      // FIXME: Revert to 100 (?) after debug
+      //  может стоит оставить меньше потому что нагрузка на базу будет неадекватной
+      const candlesToRequest = 20 // TODO: Find biggest available value
       const candleTime = SHIFT_TIMEFRAMES[TIMEFRAME].lifetime
       const allCandlesTime = candlesToRequest * candleTime
 
@@ -239,6 +270,7 @@ export const tinkoffVolumesUpdater = async (): Promise<
           })
 
           // IF market is closed - skip and wait
+          // TODO: Сделать так бот спал, если у всех не было новых свечей
           if (!res.candles.length) {
             // FIXME: Revert after debug
             // await wait(1000 * 60 * 5) // 5 min
@@ -253,10 +285,16 @@ export const tinkoffVolumesUpdater = async (): Promise<
           //   volumesModelCache.volumeSignal(candles)
           // })
 
-          // FIXME: Проверить тип
-          //   @ts-expect-error
-          const candles = generatedCandles(res.candles[res.candles.length - 1])
-          volumesModelCache.volumeSignal(candles)
+          const resNorm: Candle[] = res.candles.map((candle) => ({
+            ...candle,
+            figi: item.id,
+            interval: timeframeTySubscriptionTimeframe[TIMEFRAME],
+          }))
+
+          for (const candle of resNorm) {
+            const candles = generatedCandles(candle)
+            await volumesModelCache.volumeSignal(candles)
+          }
 
           if (i >= manualCheckInstruments.length) {
             i = 0

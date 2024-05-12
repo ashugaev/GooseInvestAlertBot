@@ -155,7 +155,7 @@ const startShiftAddScene = immediateStep(
     // Спрашиваем биржу
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_askSource'), {
       reply_markup: {
-        ...chooseSourceKeyboard(),
+        ...chooseSourceKeyboard(SHIFT_ACTIONS.chooseSource),
       },
     })
 

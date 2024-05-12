@@ -11,19 +11,4 @@ export function setupVolumes(bot: Telegraf<Context>) {
       await ctx.scene.enter(VOLUME_SCENES.add)
     })
   )
-
-  // bot.action(
-  //   triggerActionRegexp(SHIFT_ACTIONS.alertSettings),
-  //   shiftAlertSettings
-  // )
-  //
-  // bot.action(triggerActionRegexp(SHIFT_ACTIONS.deleteOne), shiftDeleteOne)
-  // bot.action(triggerActionRegexp(SHIFT_ACTIONS.changePercent), async (ctx) => {
-  //   const { _id } = JSON.parse(ctx.match[1])
-  //
-  //   // @ts-ignore
-  //   await ctx.scene.enter(SHIFT_SCENES.updatePercent, {
-  //     _id,
-  //   })
-  // })
 }

@@ -127,6 +127,7 @@ export const botInit = (bot: Telegraf<any>) => {
   setupAddChat(bot)
   setupTest(bot)
   setupAddPremium(bot)
+  // setupVolumes(bot)
 
   // Listen crypto transaction code
   // TODO: Move to component
