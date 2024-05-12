@@ -8,7 +8,6 @@ import { getInstrumentsKucoin } from '@/marketApi/kucoin/getInstruments'
 import { getPricesKucoin } from '@/marketApi/kucoin/getPrices'
 import { lbankGetInstruments } from '@/marketApi/lbank/getInstruments'
 import { lbankGetPrices } from '@/marketApi/lbank/getPrices'
-import { tinkoffVolumesUpdater } from '@/marketApi/tinkoff/api/getVolumes'
 import { startTests } from '@/tests/indes'
 
 import { startCronJob } from '../helpers/startCronJob'
@@ -420,11 +419,11 @@ export const setupCheckers = () => {
    */
   retry(async () => await setupPriceChecker(), 10000, 'setupPriceChecker')
 
-  retry(
-    async () => await tinkoffVolumesUpdater(),
-    10000,
-    'tinkoffVolumesUpdater'
-  )
+  // retry(
+  //   async () => await tinkoffVolumesUpdater(),
+  //   10000,
+  //   'tinkoffVolumesUpdater'
+  // )
 
   /**
    * Base health checks for bot

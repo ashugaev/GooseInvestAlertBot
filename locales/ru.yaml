@@ -483,7 +483,7 @@ pay_transfer: |
   Адрес (кликни, что бы скопировать): 
   <code>${address}</code>
   
-  После оплаты пришли сюда <b>Transaction ID (Hash)</b>
+  После оплаты пришли в чат с ботом <b>Transaction ID (Hash)</b>
 
 pay_link_button: |
   Оплатить
