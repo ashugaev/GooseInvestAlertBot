@@ -125,6 +125,8 @@ const generatedCandles = (data: Volumes): Volumes[] => {
         const needIncrement =
           calculatedCandleCreateTime <= data.candleCreatedTime
 
+        // FIXME: Это не правильная логика
+        //  Нужно добавлять объемы к последней свече но минимальной которую я отслеживаю (1M)
         const volumesValue = needIncrement
           ? (prevValue?.amount || 0) + data.amount
           : data.amount
