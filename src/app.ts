@@ -34,9 +34,8 @@ import { removeScenes } from '@/commands/remove/remove.scenes'
 import { setupTest } from '@/commands/test/test'
 import { botConfig } from '@/config'
 import { setupCheckers } from '@/cron'
-import { retry } from '@/helpers'
-import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 
+// import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
 import { setupHelp } from './commands/help'
@@ -173,7 +172,7 @@ if (botConfig.appFlags.trackSignals) {
   /**
    * Track chats feed
    */
-  retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
+  // retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
 }
 
 if (botConfig.appFlags.cryptoSignalBots) {

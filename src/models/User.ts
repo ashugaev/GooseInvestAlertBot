@@ -93,17 +93,20 @@ export const toUserMode = async (ctx: Context) => {
 }
 
 // ручная выдача
-export const grantPremium = async (id: number | string) => {
-  await UserModel.update(
-    { id },
-    {
-      $set: {
-        limits: {
-          priceLevels: 9999,
-          shifts: 9999,
-          volumes: 9999,
-        },
-      },
-    }
-  )
+export const grantPremium = async (
+  id: number | string,
+  days: number,
+  botId: number
+) => {
+  const end = new Date(Date.now() + 1000 * 60 * 60 * 24 * days)
+
+  await PremiumModel.create({
+    userId: id,
+    chatId: null,
+    botId,
+    isTrial: true,
+    reason: 'manual',
+    end,
+    start: new Date(),
+  })
 }

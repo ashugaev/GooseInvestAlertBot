@@ -14,8 +14,14 @@ export class Premium {
   @prop({ required: true })
   start: Date
 
+  /**
+   * @deprecated Use reason
+   */
   @prop({ required: false })
   isTrial: boolean
+
+  @prop({ required: false })
+  reason: 'manual' | 'trial' | 'pay'
 
   /**
    * Откуда пришел юзер, какие-то теги или еще что-то

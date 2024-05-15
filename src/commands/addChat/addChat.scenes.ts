@@ -1,6 +1,5 @@
 import { ADDCHAT_SCENE } from '@/commands/addChat/addChat.constants'
 import { i18n } from '@/helpers/i18n'
-import { addNewEventHandler } from '@/integrations/telegram/setupEventHandlers'
 import { immediateStep, waitMessageStep } from '@/scenes/wrappers'
 
 const WizardScene = require('telegraf/scenes/wizard')
@@ -42,7 +41,7 @@ const handleChatId = waitMessageStep(
       })
     )
 
-    await addNewEventHandler(username)
+    // await addNewEventHandler(username)
 
     return ctx.scene.leave()
   }

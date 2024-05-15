@@ -22,14 +22,14 @@ const stringSession = new StringSession(SESSION_STRING)
 const stringSessionAnn = new StringSession(TELEGRAM_ANN_SESSION_STRING)
 const stringSessionSignals = new StringSession(TELEGRAM_SIGNALS_SESSION_STRING)
 
-export const mainClient = new TelegramClient(
-  stringSession,
-  Number(TELEGRAM_API_ID),
-  TELEGRAM_API_HASH,
-  {
-    connectionRetries: 5,
-  }
-)
+// export const mainClient = new TelegramClient(
+//   stringSession,
+//   Number(TELEGRAM_API_ID),
+//   TELEGRAM_API_HASH,
+//   {
+//     connectionRetries: 5,
+//   }
+// )
 
 // export const annClient = new TelegramClient(
 //   stringSessionAnn,
@@ -49,7 +49,7 @@ export const signalsClient = new TelegramClient(
   }
 )
 ;[
-  mainClient,
+  // mainClient,
   // annClient,
   // signalsClient,
 ].forEach((cl) => {

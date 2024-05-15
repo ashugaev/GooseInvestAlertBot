@@ -63,22 +63,32 @@ export class ModelCache<Item> {
    * Items will be updated in bulk every 1 minute
    */
   async setupUploadQueue() {
+    let lastUpdate = 0
+
     while (true) {
-      if (!this.uploadQueue.length) {
+      const readyToUpdate = Date.now() - lastUpdate < 1000 * 60
+
+      if (!this.uploadQueue.length || readyToUpdate) {
         await wait(1000 * 60) // 1 min
         continue
+      } else {
+        lastUpdate = Date.now()
       }
+
+      const queue = this.uploadQueue
 
       try {
         // clear before upload to be sure that we don't erased some items in the queue
         this.uploadQueue = []
-        await this.Model.bulkWrite(this.uploadQueue)
+        await this.Model.bulkWrite(queue)
 
         // Need to avaid the case when items are not in this.items or queue
         const items = await this.fetch()
         this.items = items as unknown as Item[]
         this.needToBeUpdated = false
       } catch (e) {
+        // Вернем свечи которые не добавились
+        this.uploadQueue.push(...queue)
         log.error(this.logPref, 'Failed to upload items', e)
       }
     }
