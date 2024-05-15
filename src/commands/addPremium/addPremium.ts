@@ -5,7 +5,7 @@ import { commandWrapper } from '@/helpers/commandWrapper'
 
 export function setupAddPremium(bot: Telegraf<Context>) {
   bot.command(
-    ['premium'],
+    ['premium', 'vip'],
     commandWrapper(
       { bossOnly: true, availableForAdmins: false },
       async (ctx) => {

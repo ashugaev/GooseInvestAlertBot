@@ -34,9 +34,8 @@ import { removeScenes } from '@/commands/remove/remove.scenes'
 import { setupTest } from '@/commands/test/test'
 import { botConfig } from '@/config'
 import { setupCheckers } from '@/cron'
-import { retry } from '@/helpers'
-import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 
+// import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
 import { setupHelp } from './commands/help'
@@ -63,6 +62,7 @@ const session = require('telegraf/session')
 
 import '@/marketApi/tinkoff/api/getVolumes'
 
+import { setupVolumes } from '@/commands/volumes/volumes'
 import { volumeScenes } from '@/commands/volumes/volumes.scenes'
 import { subscriptionPaymentCheckerAdd } from '@/cron/subscriptionPayment/subscriptionPayment'
 import { commandWrapper } from '@/helpers/commandWrapper'
@@ -127,7 +127,7 @@ export const botInit = (bot: Telegraf<any>) => {
   setupAddChat(bot)
   setupTest(bot)
   setupAddPremium(bot)
-  // setupVolumes(bot)
+  setupVolumes(bot)
 
   // Listen crypto transaction code
   // TODO: Move to component
@@ -173,7 +173,7 @@ if (botConfig.appFlags.trackSignals) {
   /**
    * Track chats feed
    */
-  retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
+  // retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
 }
 
 if (botConfig.appFlags.cryptoSignalBots) {

@@ -1,7 +1,6 @@
 import { TRADE_SCENE } from '@/bots/cryptoSignals/commands/trade/trade.constants'
 import { AskByModel } from '@/components/askByModel/askByModel'
 import { i18n } from '@/helpers/i18n'
-import { addNewEventHandler } from '@/integrations/telegram/setupEventHandlers'
 import { EMarketDataSources } from '@/marketApi/types'
 import { TradeByChat, TradeByChatModel } from '@/models/TrackChat'
 import { immediateStep, waitMessageStep } from '@/scenes/wrappers'
@@ -65,7 +64,7 @@ const handleChatId = waitMessageStep(
       })
     )
 
-    await addNewEventHandler(username)
+    // await addNewEventHandler(username)
 
     return ctx.scene.leave()
   }

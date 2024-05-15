@@ -1,15 +1,9 @@
 import { Api } from 'telegram'
-import { NewMessage, NewMessageEvent } from 'telegram/events'
+import { NewMessageEvent } from 'telegram/events'
 
-import { monitorConfigByChannelId } from '@/bots/cryptoSignals/configs/configByChat'
-import { SignalChatModel } from '@/bots/cryptoSignals/models/signalChat'
-import { logPrefix } from '@/features/pumpDetect/pumpDetect.constants'
 import { ChannelsToTrack } from '@/features/pumpDetect/pumpDetect.types'
 import { handleDevochkiChannelMessage } from '@/features/signals/devochkiChannel/handleMessage'
-import { handleSignalEvent } from '@/features/tradeBySignal/handleSignalEvent'
 import { log } from '@/helpers'
-import { wait } from '@/helpers/wait'
-import { mainClient, signalsClient } from '@/integrations/telegram/client'
 import {
   callbacksByChatPurpose,
   TrackChatCallbacksParams,
@@ -109,95 +103,95 @@ const pollingChat = null
 /**
  * Need for analysing history of messages
  */
-export const pollingMessagesCheck = async () => {
-  const delayBetweenRequests = 1000
-  let startIterationTime = 0
-  let lastHandledMessageId = 0
+// export const pollingMessagesCheck = async () => {
+//   const delayBetweenRequests = 1000
+//   let startIterationTime = 0
+//   let lastHandledMessageId = 0
+//
+//   if (!pollingChat) {
+//     return
+//   }
+//
+//   // eslint-disable-next-line no-constant-condition
+//   while (true) {
+//     try {
+//       startIterationTime = Date.now()
+//
+//       const result = await mainClient.invoke(
+//         new Api.messages.GetHistory({
+//           peer: pollingChat,
+//           limit: 2,
+//         })
+//       )
+//
+//       // @ts-ignore
+//       const lastMessage = result.messages[0]
+//       const lastMessageId = lastMessage.id
+//       const lastMessageText = lastMessage.message
+//       const lastMessageDate = new Date(lastMessage.date * 1000)
+//
+//       if (lastHandledMessageId !== lastMessageId) {
+//         log.info(
+//           logPrefix,
+//           'Polling test. Delay in message fetch in sec: ',
+//           (Date.now() - lastMessageDate.getTime()) / 1000
+//         )
+//         log.info(logPrefix, 'Text: ', lastMessageText)
+//
+//         // @ts-ignore
+//         handleMessage(lastMessage, result.messages.slice(1), pollingChat)
+//
+//         lastHandledMessageId = lastMessageId
+//       }
+//
+//       // Round iteration time to 1 sec
+//       const delay = delayBetweenRequests - (Date.now() - startIterationTime)
+//       delay > 0 && (await wait(delay))
+//     } catch (e) {
+//       log.error(logPrefix, 'Polling test errro', e)
+//     }
+//   }
+// }
 
-  if (!pollingChat) {
-    return
-  }
+// export const setupEventHandlers = async () => {
+//   // Track chat events
+//   mainClient.addEventHandler(
+//     // handleEvent, // Legacy logic. Migrate this scenario to the new bot
+//     handleSignalEvent,
+//     new NewMessage({
+//       chats: trackChats,
+//     })
+//   )
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    try {
-      startIterationTime = Date.now()
+// Track chat events
+// annClient.addEventHandler(
+//   handleEvent,
+//   new NewMessage({
+//     chats: trackChatsAnn,
+//   })
+// )
 
-      const result = await mainClient.invoke(
-        new Api.messages.GetHistory({
-          peer: pollingChat,
-          limit: 2,
-        })
-      )
-
-      // @ts-ignore
-      const lastMessage = result.messages[0]
-      const lastMessageId = lastMessage.id
-      const lastMessageText = lastMessage.message
-      const lastMessageDate = new Date(lastMessage.date * 1000)
-
-      if (lastHandledMessageId !== lastMessageId) {
-        log.info(
-          logPrefix,
-          'Polling test. Delay in message fetch in sec: ',
-          (Date.now() - lastMessageDate.getTime()) / 1000
-        )
-        log.info(logPrefix, 'Text: ', lastMessageText)
-
-        // @ts-ignore
-        handleMessage(lastMessage, result.messages.slice(1), pollingChat)
-
-        lastHandledMessageId = lastMessageId
-      }
-
-      // Round iteration time to 1 sec
-      const delay = delayBetweenRequests - (Date.now() - startIterationTime)
-      delay > 0 && (await wait(delay))
-    } catch (e) {
-      log.error(logPrefix, 'Polling test errro', e)
-    }
-  }
-}
-
-export const setupEventHandlers = async () => {
-  // Track chat events
-  mainClient.addEventHandler(
-    // handleEvent, // Legacy logic. Migrate this scenario to the new bot
-    handleSignalEvent,
-    new NewMessage({
-      chats: trackChats,
-    })
-  )
-
-  // Track chat events
-  // annClient.addEventHandler(
-  //   handleEvent,
-  //   new NewMessage({
-  //     chats: trackChatsAnn,
-  //   })
-  // )
-
-  const chats = await SignalChatModel.find().lean()
-  const channelsToTrack = Object.keys(monitorConfigByChannelId)
-
-  // Tracks account with signals
-  signalsClient.addEventHandler(
-    handleSignalEvent,
-    new NewMessage({
-      chats: channelsToTrack,
-    })
-  )
-
-  // Polling for debug hooks
-  pollingMessagesCheck()
-}
-
-export const addNewEventHandler = async (username: string) => {
-  // Track chat events
-  mainClient.addEventHandler(
-    handleEvent,
-    new NewMessage({
-      chats: [username],
-    })
-  )
-}
+//   const chats = await SignalChatModel.find().lean()
+//   const channelsToTrack = Object.keys(monitorConfigByChannelId)
+//
+//   // Tracks account with signals
+//   signalsClient.addEventHandler(
+//     handleSignalEvent,
+//     new NewMessage({
+//       chats: channelsToTrack,
+//     })
+//   )
+//
+//   // Polling for debug hooks
+//   pollingMessagesCheck()
+// }
+//
+// export const addNewEventHandler = async (username: string) => {
+//   // Track chat events
+//   mainClient.addEventHandler(
+//     handleEvent,
+//     new NewMessage({
+//       chats: [username],
+//     })
+//   )
+// }
