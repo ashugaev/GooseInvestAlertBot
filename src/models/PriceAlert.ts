@@ -4,6 +4,8 @@ import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
 const ObjectId = require('mongodb').ObjectId
 
+import { TelegrafContext } from 'telegraf/typings/context'
+
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes } from './InstrumentsList'
 
@@ -172,13 +174,24 @@ class PriceAlertCache {
     return this.items.filter((item) => item.chat === chat)
   }
 
-  byTickerId(tickerId: string, user?: number, chat?: number): PriceAlert[] {
+  byTickerId(
+    tickerId: string,
+    botId: number,
+    user?: number,
+    chat?: number
+  ): PriceAlert[] {
     return chat
       ? this.items.filter(
-          (item) => item.tickerId === tickerId && item.chat === chat
+          (item) =>
+            item.tickerId === tickerId &&
+            item.chat === chat &&
+            item.botId === botId
         )
       : this.items.filter(
-          (item) => item.tickerId === tickerId && item.user === user
+          (item) =>
+            item.tickerId === tickerId &&
+            item.user === user &&
+            item.botId === botId
         )
   }
 
@@ -303,14 +316,16 @@ interface GetAlertsCountForUserParams {
 export const alertByTickerIdFromCache = async (
   tickerId: string,
   user: number | null,
-  chat: number
+  chat: number,
+  ctx: TelegrafContext
 ): Promise<PriceAlert[]> => {
   let alerts = []
+  const botId = ctx.goose.id
 
   if (chat) {
-    alerts = priceAlertCache.byTickerId(tickerId, undefined, chat)
+    alerts = priceAlertCache.byTickerId(tickerId, botId, undefined, chat)
   } else if (user) {
-    alerts = priceAlertCache.byTickerId(tickerId, user)
+    alerts = priceAlertCache.byTickerId(tickerId, botId, user)
   } else {
     throw new Error('User or chat is not defined')
   }
