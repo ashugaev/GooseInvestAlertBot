@@ -4,8 +4,15 @@ import {
   REMOVE_ACTIONS,
   REMOVE_SCENE,
 } from '@/commands/remove/remove.constants'
+import { shiftsCache } from '@/cron/shiftsChecker'
 import { createActionString } from '@/helpers'
-import { PriceAlertModel, TimeShiftModel } from '@/models'
+import {
+  PriceAlert,
+  priceAlertCache,
+  PriceAlertModel,
+  TimeShift,
+  TimeShiftModel,
+} from '@/models'
 import { immediateStep, waitButtonClickStep } from '@/scenes/wrappers'
 
 import { i18n } from '../../helpers/i18n'
@@ -60,19 +67,47 @@ const removeAlerts = waitButtonClickStep(
     let n = 0
 
     if (type === 'shift') {
-      // FIXME: Support chat
-      n = (await TimeShiftModel.deleteMany({ user, chat: null })).n
+      const params: Partial<TimeShift> = {
+        botId: ctx.goose.id,
+      }
+
+      // Chat
+      if (ctx.dbuser.adminMode) {
+        params.chat = ctx.adminChatActive.id
+      }
+      // User
+      else {
+        params.user = user
+        params.chat = null
+      }
+
+      n = (await TimeShiftModel.deleteMany(params)).n
+      shiftsCache.update()
     }
 
     if (type === 'lvl') {
-      const res = await PriceAlertModel.updateMany(
-        { user, chat: null, removed: false, triggered: false },
-        {
-          $set: {
-            removed: true,
-          },
-        }
-      )
+      const params: Partial<PriceAlert> = {
+        botId: ctx.goose.id,
+        removed: false,
+        triggered: false,
+      }
+
+      // Chat
+      if (ctx.dbuser.adminMode) {
+        params.chat = ctx.adminChatActive.id
+      }
+      // User
+      else {
+        params.user = user
+        params.chat = null
+      }
+
+      const res = await PriceAlertModel.updateMany(params, {
+        $set: {
+          removed: true,
+        },
+      })
+      priceAlertCache.update()
 
       n = res?.nModified ?? 0
     }

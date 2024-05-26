@@ -6,7 +6,7 @@ import { commandWrapper } from '@/helpers/commandWrapper'
 export function setupRemove(bot: Telegraf<Context>) {
   bot.command(
     ['remove', 'r'],
-    commandWrapper({ availableForAdmins: false }, async (ctx) => {
+    commandWrapper({ availableForAdmins: true }, async (ctx) => {
       // @ts-ignore
       await ctx.scene.enter(REMOVE_SCENE)
     })

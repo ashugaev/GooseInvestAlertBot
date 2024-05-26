@@ -32,7 +32,8 @@ export const alertsForInstrument = commandWrapper(
       const alerts = await alertByTickerIdFromCache(
         selectedTickerId,
         ctx.from.id,
-        ctx.dbuser.adminModeChatId
+        ctx.dbuser.adminModeChatId,
+        ctx
       )
 
       await showInstrumentPage({

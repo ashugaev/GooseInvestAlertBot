@@ -27,6 +27,7 @@ export const fetchAlerts = async ({
   const params: Partial<PriceAlert> = {
     triggered: false,
     removed: false,
+    botId: ctx.goose.id,
   }
 
   if (ctx.dbuser.adminMode) {
