@@ -379,7 +379,7 @@ export const setupCheckers = () => {
   retry(
     async () => {
       await setupPriceUpdater({
-        minTimeBetweenRequests: 0,
+        minTimeBetweenRequests: 10000,
         getPrices: bybitGetPrices,
         source: EMarketDataSources.bybit,
         jobKey: InitializationItem.BYBIT_PRICES,
