@@ -1,4 +1,5 @@
-import { SymbolInfo } from 'bybit-api'
+// @ts-expect-error
+import { CategoryCursorListV5, InstrumentInfoV5Mapping } from 'bybit-api'
 
 import { log } from '@/helpers/log'
 import { EMarketDataSources } from '@/marketApi/types'
@@ -9,23 +10,23 @@ import { byBitApi } from './api'
 
 const logPrefix = '[BYBIT GET ALL INSTRUMENTS]'
 
-const normalizeItem = (item: SymbolInfo): InstrumentsList => {
-  const {
-    alias,
-    name,
-    price_scale: priceScale,
-    quote_currency: quoteCurrency,
-  } = item
+const normalizeItem = (
+  item: CategoryCursorListV5<InstrumentInfoV5Mapping['spot'], 'spot'>['list'][0]
+): InstrumentsList => {
+  const { symbol, lotSizeFilter, quoteCoin: quoteCurrency } = item
+
+  const quotePrecision = lotSizeFilter.quotePrecision
+  const decimalPlaces = quotePrecision.split('.')[1].length
 
   const result = {
-    id: `bybit_${alias}`,
+    id: `bybit_${symbol}`,
     source: EMarketDataSources.bybit,
     currency: quoteCurrency,
-    name,
-    ticker: alias,
+    name: symbol,
+    ticker: symbol,
     type: EMarketInstrumentTypes.Crypto,
     sourceSpecificData: item,
-    priceScale,
+    priceScale: decimalPlaces,
   }
 
   return result
@@ -33,9 +34,11 @@ const normalizeItem = (item: SymbolInfo): InstrumentsList => {
 
 export const bybitGetAllInstruments = async () => {
   try {
-    const { result } = await byBitApi.getSymbols()
+    const { result } = await byBitApi.getInstrumentsInfo({
+      category: 'spot',
+    })
 
-    const normalizedInstrumentsArray = result.map(normalizeItem)
+    const normalizedInstrumentsArray = result.list.map(normalizeItem)
 
     return normalizedInstrumentsArray
   } catch (e) {
