@@ -23,30 +23,42 @@ const WizardScene = require('telegraf/scenes/wizard')
  * Handle: -
  * Ask: Alerts type
  * */
-const chooseAlertsType = immediateStep('choose alerts type', async (ctx) => {
-  await ctx.replyWithHTML(i18n.t('ru', 'remove_chooseAlertsType'), {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          // eslint-disable-next-line max-len
-          Markup.callbackButton(
-            i18n.t('ru', 'remove_chooseAlertsType_shift'),
-            createActionString(REMOVE_ACTIONS.chooseSource, { type: 'shift' })
-          ),
-        ],
-        [
-          // eslint-disable-next-line max-len
-          Markup.callbackButton(
-            i18n.t('ru', 'remove_chooseAlertsType_lvl'),
-            createActionString(REMOVE_ACTIONS.chooseSource, { type: 'lvl' })
-          ),
-        ],
-      ],
-    },
-  })
+const chooseAlertsType = immediateStep(
+  'choose alerts type',
+  async (ctx, state) => {
+    const { ticker } = state
 
-  return ctx.wizard.next()
-})
+    await ctx.replyWithHTML(
+      i18n.t('ru', 'remove_chooseAlertsType', {
+        ticker,
+      }),
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              // eslint-disable-next-line max-len
+              Markup.callbackButton(
+                i18n.t('ru', 'remove_chooseAlertsType_shift'),
+                createActionString(REMOVE_ACTIONS.chooseSource, {
+                  type: 'shift',
+                })
+              ),
+            ],
+            [
+              // eslint-disable-next-line max-len
+              Markup.callbackButton(
+                i18n.t('ru', 'remove_chooseAlertsType_lvl'),
+                createActionString(REMOVE_ACTIONS.chooseSource, { type: 'lvl' })
+              ),
+            ],
+          ],
+        },
+      }
+    )
+
+    return ctx.wizard.next()
+  }
+)
 
 /**
  * Handle: Результат выбора типа алертов
@@ -55,8 +67,9 @@ const chooseAlertsType = immediateStep('choose alerts type', async (ctx) => {
 const removeAlerts = waitButtonClickStep(
   REMOVE_ACTIONS.chooseSource,
   'shift_add_choose-source',
-  async (ctx, actionsPayload, state) => {
+  async (ctx, actionsPayload, state = {}) => {
     const { type } = actionsPayload
+    const { ticker } = state
     const { id: user } = ctx.from
 
     if (!user) {
@@ -69,6 +82,10 @@ const removeAlerts = waitButtonClickStep(
     if (type === 'shift') {
       const params: Partial<TimeShift> = {
         botId: ctx.goose.id,
+      }
+
+      if (ticker) {
+        params.ticker = ticker
       }
 
       // Chat
@@ -100,6 +117,10 @@ const removeAlerts = waitButtonClickStep(
       else {
         params.user = user
         params.chat = null
+      }
+
+      if (ticker) {
+        params.symbol = ticker
       }
 
       const res = await PriceAlertModel.updateMany(params, {
