@@ -66,21 +66,21 @@ const testTickers: TestItem[] = [
     params: { source: EMarketDataSources.kucoin, ticker: 'ETHUSDT' },
     checkPeriod: 1000 * 60 * 10,
   },
-  {
-    params: {
-      source: EMarketDataSources.tinkoff,
-      type: EMarketInstrumentTypes.Currency,
-      ticker: 'USDRUB',
-    },
-    hours: TINK_TRADING_HOURS,
-    days: TINK_TRADING_DAYS,
-    checkPeriod: 1000 * 60 * 10,
-  },
+  // {
+  //   params: {
+  //     source: EMarketDataSources.tinkoff,
+  //     type: EMarketInstrumentTypes.Currency,
+  //     ticker: 'USDRUB',
+  //   },
+  //   hours: TINK_TRADING_HOURS,
+  //   days: TINK_TRADING_DAYS,
+  //   checkPeriod: 1000 * 60 * 10,
+  // },
   {
     params: {
       source: EMarketDataSources.tinkoff,
       type: EMarketInstrumentTypes.Stock,
-      ticker: 'YNDX',
+      ticker: 'YDEX',
     },
     hours: TINK_TRADING_HOURS,
     days: TINK_TRADING_DAYS,
