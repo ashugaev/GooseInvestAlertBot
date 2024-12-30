@@ -1,20 +1,26 @@
 export const TARIFFS = [
   {
-    price: 15,
-    text: '3 месяца',
-    buttonText: '15$ - 3 месяца',
+    price: 1,
+    text: '1 месяц',
+    buttonText: '5$ - 1 месяц',
+    monthsCount: 1,
+  },
+  {
+    price: 12,
+    text: '12$ - 3 месяца (4$ в мес)',
+    buttonText: '12$ - 3 месяца (4$ в мес)',
     monthsCount: 3,
+  },
+  {
+    price: 18,
+    text: '18$ - 6 месяцев  (3$ в мес)',
+    buttonText: '18$ - 6 месяцев  (3$ в мес)',
+    monthsCount: 6,
   },
   {
     price: 24,
-    text: '6 месяцев  (-20%)',
-    buttonText: '24$ - 6 месяцев  (-20%)',
-    monthsCount: 3,
-  },
-  {
-    price: 36,
-    text: 'Год (-40%)',
-    buttonText: '36$ - 1 rод (-40%)',
+    text: '24$ - 1 rод (2$ в мес)',
+    buttonText: '24$ - 1 rод (2$ в мес)',
     monthsCount: 12,
   },
 ]
