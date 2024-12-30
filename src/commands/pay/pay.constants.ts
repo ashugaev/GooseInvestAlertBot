@@ -1,7 +1,7 @@
 export const TARIFFS = [
   {
-    price: 1,
-    text: '1 месяц',
+    price: 5,
+    text: '5$ - 1 месяц',
     buttonText: '5$ - 1 месяц',
     monthsCount: 1,
   },
