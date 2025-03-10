@@ -63,7 +63,7 @@ export async function findOrCreateUser(id: string | number, botId) {
         chatId: null,
         botId,
         isTrial: true,
-        end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 2 weeks (temporarily 30 days)
+        end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 2 weeks (temporarily 30 days)
         start: new Date(),
       })
     } catch (err) {
