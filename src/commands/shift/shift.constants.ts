@@ -35,6 +35,8 @@ export enum ESfhitTimeframes {
   '1H' = '1H',
   '6H' = '6H',
   '1D' = '1D',
+  '2D' = '2D',
+  '3D' = '3D',
   '1W' = '1W',
 }
 
@@ -102,6 +104,18 @@ export const SHIFT_TIMEFRAMES: Record<ESfhitTimeframes, ShiftTimeframe> = {
     name_ru: '1 день',
     lifetime: 86400000,
     name_ru_plur: '1 день',
+  },
+  '2D': {
+    timeframe: '2D',
+    name_ru: '2 дня',
+    lifetime: 172800000,
+    name_ru_plur: '2 дня',
+  },
+  '3D': {
+    timeframe: '3D',
+    name_ru: '3 дня',
+    lifetime: 259200000,
+    name_ru_plur: '3 дня',
   },
   '1W': {
     timeframe: '1W',
