@@ -11,18 +11,18 @@ export const TARIFFS = [
     buttonText: '12$ - 3 месяца (4$ в мес)',
     monthsCount: 3,
   },
-  {
-    price: 18,
-    text: '18$ - 6 месяцев  (3$ в мес)',
-    buttonText: '18$ - 6 месяцев  (3$ в мес)',
-    monthsCount: 6,
-  },
-  {
-    price: 24,
-    text: '24$ - 1 rод (2$ в мес)',
-    buttonText: '24$ - 1 rод (2$ в мес)',
-    monthsCount: 12,
-  },
+  // {
+  //   price: 18,
+  //   text: '18$ - 6 месяцев  (3$ в мес)',
+  //   buttonText: '18$ - 6 месяцев  (3$ в мес)',
+  //   monthsCount: 6,
+  // },
+  // {
+  //   price: 24,
+  //   text: '24$ - 1 rод (2$ в мес)',
+  //   buttonText: '24$ - 1 rод (2$ в мес)',
+  //   monthsCount: 12,
+  // },
 ]
 
 export const PAY_ACTIONS = {
