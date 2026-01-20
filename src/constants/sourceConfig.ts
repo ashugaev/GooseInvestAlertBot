@@ -13,10 +13,6 @@ export const SOURCE_CONFIG: Record<EMarketDataSources, SourceConfig> = {
     fullName: 'Tinkoff',
     shortName: 'TNKF',
   },
-  [EMarketDataSources.coingecko]: {
-    fullName: 'Coingecko',
-    shortName: 'COINGECKO',
-  },
   [EMarketDataSources.binance]: {
     fullName: 'Binance',
     shortName: 'BINANCE',

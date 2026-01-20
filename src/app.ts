@@ -1,6 +1,5 @@
 import 'module-alias/register'
 // Importing @sentry/tracing patches the global hub for tracing to work.
-import '@sentry/tracing'
 const TelegrafBot = require('telegraf')
 
 // Config dotenv
@@ -10,7 +9,6 @@ import * as path from 'path'
 // Строка должна быть выше импорта файлов с переменными окружения
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
-import * as Sentry from '@sentry/node'
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { Context, Telegraf } from 'telegraf'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
@@ -76,11 +74,11 @@ const secretToken = process.env.STOCKS_API_TOKEN
 
 export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
-Sentry.init({
-  dsn: process.env.SENTRY_URL,
-  // Процент транзакций, которые будут отправлены в Sentry
-  tracesSampleRate: 1.0,
-})
+// Sentry.init({
+//   dsn: process.env.SENTRY_URL,
+//   // Процент транзакций, которые будут отправлены в Sentry
+//   tracesSampleRate: 1.0,
+// })
 
 const stage = new Stage([
   tradeScenes,

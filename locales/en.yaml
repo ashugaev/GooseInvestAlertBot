@@ -47,7 +47,7 @@ help: |
   <b>Quote sources</b>
   
   Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
-  Cryptocurrencies - <a href="https://www.coingecko.com/en">CoinGecko</a>, <a href="https://www.binance.com/en/markets">Binance</a >
+  Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
   Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
   
   All questions and wishes can be written to Goose's chat: @GooseInvestAlertChat 🦢️️
@@ -64,7 +64,7 @@ start: |
   <b>Support tools</b>
   
   Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
-  Cryptocurrencies - <a href="https://www.coingecko.com/en">CoinGecko</a>, <a href="https://www.binance.com/en/markets">Binance</a >
+  Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
   Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
   
   The delay can be 1-3 minutes
@@ -104,7 +104,7 @@ alertErrorUnexistedSymbol: |
   <b>Supported tools</b>
   
   Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
-  Cryptocurrencies - <a href="https://www.coingecko.com/en">CoinGecko</a>, <a href="https://www.binance.com/en/markets">Binance</a >
+  Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
   Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
 
 alertCreated: |

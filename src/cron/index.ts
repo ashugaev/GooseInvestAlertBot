@@ -17,8 +17,6 @@ import {
   getBinancePricesFutures,
 } from '../marketApi/binance/api/getPrices'
 import { bybitGetAllInstruments } from '../marketApi/bybit/getInstruments'
-import { coingeckoGetAllInstruments } from '../marketApi/coingecko/api/getAllInstruments'
-import { coingeckoGetLastPriceById } from '../marketApi/coingecko/api/getLastPriceById'
 import { tinkoffGetAllInstruments } from '../marketApi/tinkoff/api/getAllInstruments'
 import { getTinkoffPrices } from '../marketApi/tinkoff/api/getPrices'
 import { EMarketDataSources } from '../marketApi/types'
@@ -33,7 +31,6 @@ export enum InitializationItem {
   TINKOFF_TICKERS = 'TINKOFF_TICKERS',
   BINANCE_TICKERS = 'BINANCE_TICKERS',
   BINANCE_FUTURES_TICKERS = 'BINANCE_FUTURES_TICKERS',
-  COINGECKO_TICKERS = 'COINGECKO_TICKERS',
   YAHOO_TICKERS = 'YAHOO_TICKERS',
   BYBIT_TICKERS = 'BYBIT_TICKERS',
   KUCOIN_TICKERS = 'KUCOIN_TICKERS',
@@ -43,7 +40,6 @@ export enum InitializationItem {
   BINANCE_PRICES = 'BINANCE_PRICES',
   BINANCE_FUTURES_PRICES = 'BINANCE_FUTURES_PRICES',
   YAHOO_PRICES = 'YAHOO_PRICES',
-  COINGECKO_PRICES = 'COINGECKO_PRICES',
   BYBIT_PRICES = 'BYBIT_PRICES',
   KUCOIN_PRICES = 'KUCOIN_PRICES',
   LBANK_PRICES = 'LBANK_PRICES',
@@ -55,7 +51,6 @@ export const appInitStatuses: InitializationItem[] = []
 const isInstrumentsListUpdated = () => {
   return [
     InitializationItem.TINKOFF_TICKERS,
-    InitializationItem.COINGECKO_TICKERS,
     InitializationItem.BINANCE_TICKERS,
     InitializationItem.BINANCE_FUTURES_TICKERS,
     // InitializationItem.YAHOO_TICKERS,
@@ -67,7 +62,6 @@ const isInstrumentsListUpdated = () => {
 const isAllPricesUpdated = () => {
   return [
     InitializationItem.TINKOFF_PRICES,
-    InitializationItem.COINGECKO_PRICES,
     InitializationItem.BINANCE_PRICES,
     InitializationItem.BINANCE_FUTURES_PRICES,
     // InitializationItem.YAHOO_PRICES,
@@ -174,23 +168,6 @@ export const setupCheckers = () => {
     period: '0 0 * * *',
     executeBeforeInit: true,
     jobKey: InitializationItem.LBANK_TICKERS,
-  })
-
-  /**
-   * Update COINGECKO tickers list
-   */
-  startCronJob({
-    name: 'Update Coingecko tickers list',
-    callback: updateTickersList({
-      getList: coingeckoGetAllInstruments,
-      source: EMarketDataSources.coingecko,
-      minTickersCount: 6000,
-    }),
-    callbackArgs: [],
-    // Раз в день в 0 часов или при деплое
-    period: '0 0 * * *',
-    executeBeforeInit: true,
-    jobKey: InitializationItem.COINGECKO_TICKERS,
   })
 
   /**
@@ -333,25 +310,6 @@ export const setupCheckers = () => {
   //   'setupPriceUpdater for yahoo'
   // )
 
-  /**
-   * COINGECKO prices updater
-   *
-   * QUOTA: 20 calls/min
-   * @see https://www.coingecko.com/en/api/pricing
-   */
-  retry(
-    async () => {
-      await setupPriceUpdater({
-        minTimeBetweenRequests: 4000,
-        getPrices: coingeckoGetLastPriceById,
-        source: EMarketDataSources.coingecko,
-        maxTickersForRequest: 500,
-        jobKey: InitializationItem.COINGECKO_PRICES,
-      })
-    },
-    10000,
-    'setupPriceUpdater for COINGECKO'
-  )
   /**
    * Lbank prices updater
    *

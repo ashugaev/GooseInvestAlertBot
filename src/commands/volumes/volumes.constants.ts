@@ -25,10 +25,6 @@ export const VOLUME_SOURCES_CONFIG: Record<
     minTimeframeTime: 5000,
     enabled: false,
   },
-  [EMarketDataSources.coingecko]: {
-    minTimeframeTime: 3600000,
-    enabled: false,
-  },
   [EMarketDataSources.tinkoff]: {
     minTimeframeTime: 30000,
     enabled: true,

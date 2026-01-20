@@ -132,9 +132,6 @@ const SHIFT_SOURCES_CONFIG: Record<EMarketDataSources, ShiftTimeframeConfig> = {
   [EMarketDataSources.bybit]: {
     minTimeframeTime: 5000,
   },
-  [EMarketDataSources.coingecko]: {
-    minTimeframeTime: 3600000,
-  },
   [EMarketDataSources.tinkoff]: {
     minTimeframeTime: 30000,
   },
