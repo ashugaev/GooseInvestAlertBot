@@ -1,11 +1,9 @@
 import { EMarketInstrumentTypes } from '@/models'
 
-import { ICoingecoSpecificBaseData } from './coingecko/types'
 import { ITinkoffSpecificBaseData } from './tinkoff/types'
 
 export enum EMarketDataSources {
   tinkoff = 'tinkoff',
-  coingecko = 'coingecko',
   binance = 'binance',
   binanceFuture = 'binanceFuture',
   /**
@@ -25,7 +23,7 @@ export interface IBaseInstrumentData {
   name: string
   source: EMarketDataSources
   type: EMarketInstrumentTypes
-  sourceSpecificData: ICoingecoSpecificBaseData | ITinkoffSpecificBaseData
+  sourceSpecificData: ITinkoffSpecificBaseData
 }
 
 export interface IMarketDataSourcesConfig {

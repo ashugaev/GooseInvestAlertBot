@@ -95,14 +95,6 @@ const testTickers: TestItem[] = [
   //   params: { source: EMarketDataSources.yahoo, ticker: 'EURUSD' },
   //   checkPeriod: 1000 * 60 * 90
   // },
-  {
-    params: { source: EMarketDataSources.coingecko, ticker: 'ETH' },
-    checkPeriod: 1000 * 60 * 60,
-  },
-  {
-    params: { source: EMarketDataSources.coingecko, ticker: 'BTC' },
-    checkPeriod: 1000 * 60 * 60,
-  },
 ]
 
 export const testPriceUpdater = async () => {

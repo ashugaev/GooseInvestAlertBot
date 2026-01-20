@@ -2,7 +2,6 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstruments'
-import { ICoingecoSpecificBaseData } from '../marketApi/coingecko/types'
 import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList'
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources } from '../marketApi/types'
@@ -41,7 +40,7 @@ const instrumentsBySourceCache = new NodeCache({
 export class InstrumentsList {
   /**
    * id содержит разные поля в зависимости от source
-   * для крипты это id coingecke
+   * для крипты это id биржи
    * для бумаг это figi
    */
   @prop({ required: true, unique: true })
@@ -68,7 +67,6 @@ export class InstrumentsList {
 
   @prop({ required: true })
   sourceSpecificData:
-    | ICoingecoSpecificBaseData
     | ITinkoffSpecificBaseData
     | BinanceSourceSpecificData
     | CurrencyApiSpecificData
