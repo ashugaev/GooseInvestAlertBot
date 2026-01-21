@@ -48,7 +48,6 @@ help: |
   
   Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
   Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
-  Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
   
   All questions and wishes can be written to Goose's chat: @GooseInvestAlertChat 🦢️️
   
@@ -65,7 +64,6 @@ start: |
   
   Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
   Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
-  Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
   
   The delay can be 1-3 minutes
   
@@ -105,7 +103,6 @@ alertErrorUnexistedSymbol: |
   
   Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
   Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
-  Currencies - <a href="https://finance.yahoo.com/currencies">Yahoo</a>
 
 alertCreated: |
   🦢 When is the price <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} will reach ${onePrice ? 'level' : 'each level'} <b>${price}</b>, I\'ll let you know!
