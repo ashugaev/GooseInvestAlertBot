@@ -5,6 +5,7 @@ import { BinanceSourceSpecificData } from '../marketApi/binance/api/getAllInstru
 import { CurrencyApiSpecificData } from '../marketApi/currencyConverter/getList'
 import { ITinkoffSpecificBaseData } from '../marketApi/tinkoff/types'
 import { EMarketDataSources } from '../marketApi/types'
+import { waitForMongoConnection } from '@/db/mongoose'
 import NodeCache from 'node-cache'
 import { SymbolInfo } from 'bybit-api'
 import { log, retryForever } from '@/helpers'
@@ -96,9 +97,11 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
  */
 // eslint-disable-next-line
 ;(async function autoUpdateInstrumentsListCache() {
-  const items: InstrumentsList[] = await retryForever(
-    async () => await InstrumentsListModel.find().lean()
-  )
+  const items: InstrumentsList[] = await retryForever(async () => {
+    await waitForMongoConnection('autoUpdateInstrumentsListCache')
+
+    return await InstrumentsListModel.find().lean()
+  })
 
   const cacheItemsById = items.map((item) => ({
     key: item.id,
@@ -155,6 +158,8 @@ export async function getInstrumentInfoByTicker({
     params.source = source
   }
 
+  await waitForMongoConnection('getInstrumentInfoByTicker')
+
   const result: InstrumentsList[] = await InstrumentsListModel.find(
     params
   ).lean()
@@ -168,6 +173,8 @@ export async function getInstrumentListDataByIds(ids: string[]) {
       $in: ids,
     },
   }
+
+  await waitForMongoConnection('getInstrumentListDataByIds')
 
   const result: InstrumentsList[] = await InstrumentsListModel.find(
     params
@@ -189,6 +196,8 @@ export async function getInstrumentsBySourceCache(
     instrumentsBySourceCache.get(source)
 
   if (!allInstrumentsBySource) {
+    await waitForMongoConnection('getInstrumentsBySourceCache')
+
     const result: InstrumentsList[] = await InstrumentsListModel.find(
       params
     ).lean()
@@ -213,6 +222,8 @@ export const getInstrumentByIdFromCache = async (
   let res = instrumentsByIdCache.get(id)
 
   if (!res && !noReqToDb) {
+    await waitForMongoConnection('getInstrumentByIdFromCache')
+
     res = (await InstrumentsListModel.find({ id }).lean())[0]
   }
 
@@ -232,6 +243,8 @@ export const getInstrumentByTickerFromCache = async (
   ) as InstrumentsList[]
 
   if (!res?.length && !noReqToDb) {
+    await waitForMongoConnection('getInstrumentByTickerFromCache')
+
     res = await InstrumentsListModel.find({ ticker }).lean()
   }
 

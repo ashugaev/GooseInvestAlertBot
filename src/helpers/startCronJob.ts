@@ -1,3 +1,5 @@
+import { isMongoReady } from '@/db/mongoose'
+
 import { InitializationItem } from '../cron'
 import { retry } from './retry'
 import { retryUntilTrue } from './retryUntilTrue'
@@ -9,8 +11,8 @@ const { log } = require('./log')
 interface StartCronJobParams {
   name: string
   period: string
-  callback: (argsArr?: any[]) => void | Promise<void>
-  callbackArgs: any[]
+  callback: (...args: unknown[]) => void | Promise<void>
+  callbackArgs?: unknown[]
   /**
    * Перед тем как делать задачу для крона выполнит callback
    */
@@ -30,28 +32,25 @@ export const startCronJob = ({
 }: StartCronJobParams) => {
   const onTickFunction = async () => {
     try {
-      await retryUntilTrue(isReadyToStart, name)
+      await retryUntilTrue(
+        () => (isReadyToStart ? isReadyToStart() : true) && isMongoReady(),
+        name
+      )
 
-      callbackArgs
-        ? // eslint-disable-next-line
-          retry(
-            async () => {
-              await callback.apply(null, callbackArgs)
-              setJobKey(jobKey)
-            },
-            60000,
-            'cron job ' + name,
-            5
-          )
-        : retry(
-            async () => {
-              await callback()
-              setJobKey(jobKey)
-            },
-            60000,
-            'cron job ' + name,
-            5
-          )
+      retry(
+        async () => {
+          if (callbackArgs?.length) {
+            await callback(...callbackArgs)
+          } else {
+            await callback()
+          }
+
+          setJobKey(jobKey)
+        },
+        60000,
+        'cron job ' + name,
+        5
+      )
     } catch (e) {
       log.error('Cron job error', e)
     }

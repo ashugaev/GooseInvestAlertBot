@@ -1,4 +1,10 @@
+import * as fs from 'fs'
 import * as log4js from 'log4js'
+import * as path from 'path'
+
+const logsDir = path.resolve(process.cwd(), 'logs')
+
+fs.mkdirSync(logsDir, { recursive: true })
 
 /**
  * @fixme: Do this for NODE_EVN === 'production' only instead of my logfiles
@@ -8,7 +14,7 @@ log4js.configure({
   appenders: {
     logfile: {
       type: 'file',
-      filename: 'logs/logfile.log',
+      filename: path.join(logsDir, 'logfile.log'),
       maxLogSize: 10 * 1024 * 1024, // 10MB
       backups: 10,
     },

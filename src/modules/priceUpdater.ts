@@ -1,5 +1,6 @@
 import { TickerPrices } from 'prices'
 
+import { waitForMongoConnection } from '@/db/mongoose'
 import { dropOutInvalidPrices } from '@/helpers'
 import { setJobKey } from '@/helpers/setJobKey'
 import { splitArray } from '@/helpers/splitArray'
@@ -84,6 +85,8 @@ export const setupPriceUpdater = async ({
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
+    await waitForMongoConnection()
+
     try {
       let sourceInstrumentsList = []
 
@@ -158,7 +161,7 @@ export const setupPriceUpdater = async ({
           continue
         }
 
-        const cacheData = prices.map(([ticker, price, tickerId]) => ({
+        const cacheData = prices.map(([, price, tickerId]) => ({
           key: tickerId,
           val: price,
         }))
