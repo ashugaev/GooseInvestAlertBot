@@ -1,14 +1,6 @@
-const mongoose = require('mongoose')
+import { ensureMongoConnection } from '@/db/mongoose'
 
-// Connect to mongoose
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  connectTimeoutMS: 100000,
-  socketTimeoutMS: 100000,
-})
-
-mongoose.set('useCreateIndex', true)
+void ensureMongoConnection('models init', { crashOnFailure: true })
 
 // Export models
 export * from './CopyPriceAlerts'

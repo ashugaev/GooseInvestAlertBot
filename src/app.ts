@@ -62,6 +62,7 @@ import '@/marketApi/tinkoff/api/getVolumes'
 
 import { volumeScenes } from '@/commands/volumes/volumes.scenes'
 import { subscriptionPaymentCheckerAdd } from '@/cron/subscriptionPayment/subscriptionPayment'
+import { waitForMongoConnectionOrCrash } from '@/db/mongoose'
 import { commandWrapper } from '@/helpers/commandWrapper'
 
 export const tinkoffApi = new TinkoffInvestApi({
@@ -94,7 +95,7 @@ const stage = new Stage([
   ...alertScenes,
 ])
 
-export const botInit = (bot: Telegraf<any>) => {
+export const botInit = (bot: Telegraf<Context>) => {
   bot.use(session())
   bot.use(stage.middleware())
 
@@ -156,7 +157,8 @@ export const botInit = (bot: Telegraf<any>) => {
 }
 
 if (botConfig.appFlags.priceAlertBots) {
-  bots.then((bots) => {
+  bots.then(async (bots) => {
+    await waitForMongoConnectionOrCrash('app bootstrap')
     for (const bot of bots) {
       botInit(bot)
     }
@@ -177,6 +179,8 @@ if (botConfig.appFlags.cryptoSignalBots) {
   // Start signals bot client
   // TODO: Make separated
   ;(async () => {
+    await waitForMongoConnectionOrCrash('signals app bootstrap')
+
     const signalsStage = new Stage([
       analyseScene,
       askNewTradeChat.createScene(),

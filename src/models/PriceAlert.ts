@@ -1,10 +1,9 @@
 import { getModelForClass, pre, prop } from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
+import { TelegrafContext } from 'telegraf/typings/context'
 
+import { waitForMongoConnection } from '@/db/mongoose'
 import { log } from '@/helpers'
 import { wait } from '@/helpers/wait'
-const ObjectId = require('mongodb').ObjectId
-
-import { TelegrafContext } from 'telegraf/typings/context'
 
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes } from './InstrumentsList'
@@ -135,6 +134,8 @@ class PriceAlertCache {
       }
 
       try {
+        await waitForMongoConnection('price alerts cache updater')
+
         const items = await PriceAlertModel.find({
           removed: false,
           triggered: false,
@@ -295,22 +296,18 @@ export async function updateAlert({
 }: {
   _id: string
   data: { message: string }
-}): Promise<any> {
+}): Promise<{ nModified: number }> {
   // eslint-disable-next-line
   return await new Promise(async (rs, rj) => {
     try {
       const result = await PriceAlertModel.update({ _id }, { $set: data })
       priceAlertCache.update()
 
-      rs(result)
+      rs(result as { nModified: number })
     } catch (e) {
       rj(e)
     }
   })
-}
-
-interface GetAlertsCountForUserParams {
-  user: number
 }
 
 export const alertByTickerIdFromCache = async (

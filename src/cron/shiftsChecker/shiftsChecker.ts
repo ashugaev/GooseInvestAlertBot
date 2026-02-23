@@ -1,4 +1,5 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
+import { waitForMongoConnection } from '@/db/mongoose'
 import { retryForever } from '@/helpers'
 
 import { fnTimeAsync } from '../../helpers/fnTime'
@@ -39,9 +40,11 @@ class ShiftCandlesUpdater {
   isReady = false
 
   init = async () => {
-    const data = await retryForever(
-      async () => await ShiftCandleModel.find().lean()
-    )
+    const data = await retryForever(async () => {
+      await waitForMongoConnection('shifts candles init')
+
+      return await ShiftCandleModel.find().lean()
+    })
     const obj: ShiftCandlesNormalized = data.reduce((acc, item) => {
       if (!item.tickerId || !item.timeframe) {
         log.error(
@@ -66,6 +69,8 @@ class ShiftCandlesUpdater {
     while (true) {
       if (this.candlesUpdateConfig.length) {
         try {
+          await waitForMongoConnection('shifts candles bulk update')
+
           await ShiftCandleModel.bulkWrite(this.candlesUpdateConfig)
           this.candlesUpdateConfig = []
         } catch (e) {
@@ -142,6 +147,8 @@ class ShiftsUpdater {
       }
 
       try {
+        await waitForMongoConnection('shifts cache updater')
+
         const data = await TimeShiftModel.find().lean()
         this.shifts = data as unknown as TimeShift[]
         this.needToBeUpdated = false
@@ -218,7 +225,7 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
               continue
             }
 
-            const candle: any = candlesCache.getOne(tickerId, timeframe)
+            const candle = candlesCache.getOne(tickerId, timeframe)
             const timeframeData = SHIFT_TIMEFRAMES[shift.timeframe]
 
             const updatedCandle = updateCandle({

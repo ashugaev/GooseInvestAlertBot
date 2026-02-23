@@ -1,6 +1,6 @@
 name: English
 help: |
-  To add an alert, send the command /alert
+  🦢 To add an alert, send the command /alert
   
   The price is always set in the format PP.KK (where PP are integers and KK are decimals).
   
@@ -8,10 +8,13 @@ help: |
   
   /alert, /a - Price level achievement monitor
   /shift, /s - Price speed monitoring
-  /stat - Subscribe to statistics for yesterday
   /list - List of all monitors
-  /price YNDX - I'll tell you the current price by ticker
+  /list btc - List of all monitors for ticker btc
+  /price YNDX — I'll tell you the current price by ticker
+  /remove, /r — Bulk removal of notifications
+  /r BTCUSDT — Bulk removal by ticker
   /help - Goose will send this message again
+  /admin - Admin mode for managing chats and connecting your own bot to Goose
   
   <b>Add monitoring with one command</b>
   
@@ -37,37 +40,26 @@ help: |
   
   In the command menu, you can view, edit and delete any monitoring.
   
-  <b>Statistics collection</b>
+  <b>Admin mode /admin</b>
   
-  Statistics are collected in the evening after the trading day for stocks and funds only.
-  The notification will come the next day at the time you choose when subscribing to statistics.
-  
-  To unsubscribe from statistics, send the /stat command again
+  Add the bot to your chat with administrator rights to see it in admin mode. When you switch to it, you'll be able to configure notifications for each of your groups.
   
   <b>Quote sources</b>
   
   Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
-  Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
+  Cryptocurrencies - Almost all major exchanges and aggregators
   
-  All questions and wishes can be written to Goose's chat: @GooseInvestAlertChat 🦢️️
-  
-  Order bot development: @ashugaev 🧙‍♂️
+  Support chat 🦢: @GooseInvestAlertChat
+  Order bot improvements or buy it: @ashugaev 🧙‍♂️
 
 start: |
   🦢 Nice to see you ${first_name}!
   
-  🔔 Add your first alert with /alert or /add
+  🔔 Add price level tracking with /alert command
+  ⚡️ Add price speed tracking with /shift command
+  😎 Connect your own bot to Goose or channel in /admin command
   
-  Use /help to see a list of all commands
-  
-  <b>Support tools</b>
-  
-  Securities - <a href="https://www.tinkoff.ru/invest/stocks/">Tinkoff</a>
-  Cryptocurrencies - <a href="https://www.binance.com/en/markets">Binance</a>
-  
-  The delay can be 1-3 minutes
-  
-  All questions and wishes can be written to Goose's chat: @GooseInvestAlertChat 🦢️️
+  /help to see a list of all commands
 
 alertErrorInvalidFormat: |
   ❌ Incorrect input!
@@ -120,13 +112,13 @@ alertMessageUpdateError: |
 
 language: Please select a language.
 
-language_selected: <b>Bot</b> now speaks Russian.
+language_selected: <b>Bot</b> now speaks English.
 
 priceCheckerErrorCantFind: |
   ❌ Notification error for <b>${symbol}</b> for price <b>${price}</b>. Tool not found. I delete it.
 
 priceChecker_triggeredAlert: |
-  🔔 Price <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${greaterThen ? '↗️ <b>increase</b>' : '↘️ <b>fall</b>'} to target <b>${price}${currency ? currency : ''}</b> ${link ? '<a href="' + link + '">[graph]</a>' : ''}
+  🔔 Price <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${link} ${greaterThen ? '↗️ <b>increased</b>' : '↘️ <b>fell</b>'} to target <b>${price}${currency ? currency : ''}</b>
   
   ${message ? '💬 <b>Your comment:</b>\n<i>' + message + '</i>' : ''}
 
@@ -136,11 +128,11 @@ alertList_titles: |
   🔔 Subscriptions to achieve price levels. Select a ticker to view the list of alerts ${empty ? '\n\n<b>🧹No active followers</b>' : ''}${empty ? '\n\nUse /add to add' : ''}
 
 alertList_page: |
-  🔔 Alert list for: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''} ${link ? '<a href="' + link + '">[graph]</a>' : ''}
+  🔔 Alert list for: <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${price ? '<b>' + price + '</b>' : ''}${currency ? '<b>' + currency + '</b>' : ''}
   
   ${list}
   
-  ${showEditMessage ? 'Select number to edit' : ''}
+  ${showEditMessage ? 'Select number to edit 👇' : ''}
 
 alertList_item: |
   ${number}. ${growth ? '↗️ <b>Rise</b>' : '↘️ <b>Fall</b>' } to <b>${price}${currency ? currency : ''}</b>
@@ -165,7 +157,7 @@ alertListErrorInvalidFormat: |
   To see the full list of commands and get more information, send the command /help
 
 alertsList_editOne: |
-  <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${growth ? '↗️ <b>rising</b>' : '↘️ <b>falling</b>' } to <b>${price}${currency ? currency : ''}</b> ${link ? '<a href="' + link + '">[graph]</a>' : ''}
+  <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} ${source} - ${growth ? '↗️ <b>rising</b>' : '↘️ <b>falling</b>' } to <b>${price}${currency ? currency : ''}</b>
   
   ${message ? '\n<b>Comment:</b>\n<i>' + message + '</i>' : ''}
 
@@ -186,10 +178,10 @@ alertsList_shifts_list: |
   ${(showEditMessage && !empty) ? 'Select number to edit' : ''}
 
 alertsList_shifts_listItem: |
-  ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} - ${growthOnly ? '↗️ <b>growth</b>' : ''}${fallOnly ? '↘️ <b>fall</b>' : ''}${change ? '↕️ <b>change</b>' : ''} by <b>${percent}%</b> in <b>${time}</b>
+  ${number}. <b>${name}</b>${(ticker !== name) ? ' (' + ticker + ')' : ''} ${link} — ${growthOnly ? '↗️ <b>growth</b>' : ''}${fallOnly ? '↘️ <b>fall</b>' : ''}${change ? '↕️ <b>change</b>' : ''} by <b>${percent}%</b> in <b>${time}</b>
 
 alertsList_shifts_editOne: |
-  <b>${name}</b> (${ticker}) - ${growthOnly ? '↗️ <b>growth</b>' : ''}${fallOnly ? '↘️ <b>fall</b>' : ''}${change ? '↕️ <b>change</b>' : ''} by <b>${percent}%</b> in <b>${time}</b>
+  <b>${name}</b> (${ticker}) ${link} — ${growthOnly ? '↗️ <b>growth</b>' : ''}${fallOnly ? '↘️ <b>fall</b>' : ''}${change ? '↕️ <b>change</b>' : ''} by <b>${percent}%</b> in <b>${time}</b>
 
 # Alert add
 
@@ -213,8 +205,13 @@ alert_choose_between_duplicates: |
 
 ### PRICE
 
-price: |
-  Price <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - <b>${price}${currency ? currency : ''} ${source ? source : ''}</b>
+price: |  
+  🟡  Price <b>${ticker}</b> on different exchanges
+  
+  ${list}
+
+price_row: |
+  ${source} <b>${name}</b>${(symbol && symbol !== name) ? " (" + symbol + ")" : ''} - ${price ? price + ' ' + currency : '❌'}
 
 priceInvalidFormat: |
   ❌ Incorrect input!
@@ -233,19 +230,22 @@ priceCheckError: |
 unrecognizedError: |
   ❌ Unknown error!
 
+alertRemoved: | 
+  ❌ Tracking was removed
+
 #Buttons
 
 help_button: |
-  Teams
+  Commands
 
 alert_button: |
   Add Alert
 
 button_edit: |
-  Edit
+  ⚙️ Edit
 
 button_delete: |
-  Delete
+  🗑️ Delete
 
 # Days of week (first digit is day number, second case)
 
@@ -267,11 +267,7 @@ days_0_2: Sunday
 #Limits
 
 alerts_overlimit: |
-  🛑 You have reached the limit of ${limit} alerts
-  
-  Delete unnecessary monitors via the /list command
-  
-  If this does not fit and you need more, write to @ashugaev 🧙‍♂️
+  🛑 You have reached the alert limit: ${limit}
 
 # Shift
 
@@ -285,7 +281,7 @@ stat_add_startScene: |
 shift_add_setPercentError: |
   ❌ Incorrect input. Try again.
   
-  Send an integer greater than 0
+  Need to send an integer greater than 0
 
 shift_add_setDays: |
   Send the number of days for which the change will be tracked (from 1 to 30)
@@ -304,7 +300,7 @@ shift_add_setTimeError: |
   🕒 Send in 24-hour format (0-23) with one digit the hour I will send the alert
 
 shift_add_created: |
-  🦢 Done! Created daily alerts for price changes for <b>${days}</b> by <b>${percent}%</b> and more, which will be sent to you at <b>${time}</b> .
+  🦢 Done! Created daily alerts for price changes for <b>${days}</b> by <b>${percent}%</b> and more, which will be sent to you at <b>${time}</b>.
 
 shift_invalidFormat: |
   ❌ Incorrect input!
@@ -313,23 +309,21 @@ shift_invalidFormat: |
 
 shift_overlimit: |
   🛑 You have reached the limit of ${limit} for this type of monitoring
-  
-   If this does not fit and you need more, write to @ashugaev 🧙‍♂️
 
 # shift show
 
 shift_show: |
-  🔝 You have set up daily alerts for price changes for <b>${days}</b> by <b>${percent}%</b> and more, which will be sent to you at <b>${time}< /b>.
+  🔝 You have set up daily alerts for price changes for <b>${days}</b> by <b>${percent}%</b> and more, which will be sent to you at <b>${time}</b>.
 
 # Shift alert
 
 shift_alert_message: |
   ${dayOfWeek ? "📊 Statistics for <b>" + dayOfWeek + "</b>" : ''}
   
-  🔝 <b>TOP-${itemsPerCategory}</b> securities by trading volume that changed their price by more than <b>${percent}%</b> for <b>${days}</b>
+  🔝 <b>TOP-${itemsPerCategory}</b> securities by trading volume that changed their price by more than <b>${percent}%</b> in <b>${days}</b>
 
 shift_alert_message_stock: |
-  <b>Promotions</b>
+  <b>Stocks</b>
   
   ${list}
 
@@ -344,7 +338,7 @@ shift_alert_message_bond: |
   ${list}
 
 shift_alert_message_item: |
-  - ${name} (${ticker}) - ${action} per ${percent} <a href="${link}">[chart]</a>
+  - ${name} (${ticker}) ${link} - ${action} by ${percent}
 
 # Individual words
 
@@ -386,7 +380,7 @@ shift_add_choosePercent: |
   <b>%</b> Send me the price change percentage at which I will send you a notification.
 
 shift_add_error_maxPercent: |
-  ❌ It must be an integer, not greater than <b>${maxPercent}</b>
+  ❌ It can be any number, not greater than <b>${maxPercent}</b>
 
 shift_add_success: |
   <b>⚡️ Price change rate tracking</b>
@@ -396,49 +390,249 @@ shift_add_success: |
   ⚙️ More settings 👇
 
 shift_add_overlimit-less-tickers: |
-  The maximum number of monitors of this type is <b>${limit}</b>. You can create no more than <b>${availableCount}</b>
+  The maximum number of monitors of this type is <b>${limit}</b>. 
+  You can create no more than <b>${availableCount}</b>
 
 shift_add_overlimit: |
-  ❌ You have reached the limit for this type of monitoring in <b>${limit}pcs</b>
+  ❌ You have reached the limit for this type of monitoring: <b>${limit} pcs</b>
 
 shift_add_button_growAlert: Track growth
 
 shift_add_button_fallAlert: Detect falls
 
+shift_add_button_changePercent: ➗ Change percentage
+
 shift_add_button_mute: With sound
 
 shift_add_button_unmute: Mute
 
+# Volumes
+
+volume_add_askSource: |
+  <b>📊 Volumes</b>
+  
+  📈 Choose the data source to monitor 👇
+
+volume_add_chooseTickers: |
+  <b>📊 Volumes</b>
+
+  💁 Send a list of tickers separated by a space
+
+  For example: <b>eth btc doge</b>
+
+volume_add_chooseTimeframe: |
+  <b>📊 Volumes</b>
+
+  🕒 Choose the time period for calculations 👇
+
+volume_candles_number: |
+  <b>📊 Volumes</b>
+
+  🔢 Send the number of last candles that will be used in calculations
+
+volume_percent: |
+  <b>📊 Volumes</b>
+
+  🔢 Send the percentage deviation at which I will send you a notification
+
+volume_formula: |
+  <b>📊 Volumes</b>
+
+  🔢 Choose the formula for calculating average volume
+
+volume_add_success: |
+  <b>📊 Volumes</b>
+
+  ✅ Created notifications when price changes by more than <b>${percent}%</b> for <b>${time}</b> for <b>${tickers}</b>
+
+  ⚙️ Additional settings 👇
+
 # Shift alert (speed of price change)
 
 shift_alert: |
-  ⚡️ Price <b>${name}</b> (${ticker}) ${source} ${isGrow ? '↗️ <b>increased</b>' : '↘️ <b>fell</b>'} more than <b>${percent}%</b> in <b>${time}</b >
+  ⚡️ <b>Price speed</b>
+
+  Ticker: <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source}
+  Alert: ${isGrow ?'<b>🟢 Growth</b> ↗️' : '<b>🔴 Fall</b> ↘️'} more than <b>${percent}%</b> in <b>${time}</b>
+  ${price ? 'Price: <b>' + price + priceSymbol + '</b>' : ''}
 
 shift_alert_buttons_settings: |
-  Tune
+  ⚙️ Change
+
+shift_delete_success: |
+  🗑 Removed speed tracking for <b>${name}</b>${ticker ? ' (' + ticker + ')' : ''} ${source}
+
+shift_perchent_changed: |
+  ✅ Percentage changed to <b>${percent}%</b>
 
 #Pay
 
 pay: |
   👋 Since you saw this message, then apparently you have reached the limits that are set in the bot for free use. This means that you are no longer just a novice trader, but a serious player who wants to get the most out of the bot 🚀
   
-  🤖 Goose regularly helps thousands of users earn money, allowing them not to miss profitable deals for more than 2 years, but Goose also sometimes needs support
+  🤖 Goose regularly helps thousands of users earn money, allowing them not to miss profitable deals for more than 3 years, but Goose also sometimes needs support
   
   🏆 After payment you will receive:
     - Unlimited number of alerts for price levels
-    - Unlimited Price Speed Tracking
-    - More exchanges to choose from
-    - Volume monitoring (⏳ coming soon)
-    - Price speed monitoring on small timeframes (⏳ coming soon)
-    - Custom Market Report Builder (⏳ coming soon)
-    - Receive reports several times a day and for an arbitrary period (⏳ coming soon)
+    - Unlimited price speed tracking
+    - Unlimited volume alerts
+    - Small timeframes for monitoring
+    - Ability to request a new feature in the bot
   
-  There are no automatic deductions, so you can pay for a longer period, or take a lifetime subscription right away
+  🏦 Payment in crypto
+  💸 No automatic deductions
+  💳 To pay with a card <a href="https://t.me/ashugaev">write me a PM</a>
   
-  Payment so far only in cryptocurrency, to pay with a card <a href="https://t.me/ashugaev">write me a PM</a> (lifetime subscription only)
+  💬 If you have questions, feel free to <a href="https://t.me/GooseInvestAlertChat">write to the chat</a>
 
 pay_link: |
-  Follow the link for payment
+  👇 Follow the link for payment
+
+pay_transfer: |
+  💎 Send <b>${amount} USDT</b> on <b>TRC-20</b> network (excluding commission)
+  
+  Address (click to copy): 
+  <code>${address}</code>
+  
+  After payment, send <b>Transaction ID (Hash)</b> to the bot chat
 
 pay_link_button: |
   Pay
+
+pay_hash_used: |
+  ❌ This hash has already been used
+
+pay_no_invoice: |
+  ❌ Can't find payment request
+  
+  Create it by selecting a plan via /pay command
+
+pay_success: |
+    🎉 Subscription payment successful! Thanks for your support! 🚀
+
+pay_timeout: |
+    😔 Can't validate transaction: <code>${hash}</code>
+  
+    To retry payment, repeat the request via /pay command
+  
+    If you paid but the bot doesn't see the transaction, write to @ashugaev
+
+pay_cant_find: |
+  😔 Can't validate transaction, try again. 
+  
+  If this doesn't help, write to @ashugaev
+
+pay_pending: |
+    🔄 Payment was not received
+
+pay_error: |
+    ❌ Payment error
+
+pay_showDetails: |
+  🚀 Remove limits
+
+# Remove alerts
+
+remove_chooseAlertsType: |
+  🗑️ <b>Bulk removal of notifications${ticker ? ' for ticker ' + ticker : ''}</b>
+  
+  Choose the type of notifications you want to remove 👇
+  
+  ❗ All notifications will be deleted permanently
+
+remove_chooseAlertsType_shift: |
+  ⚡️ Price speed  
+
+remove_chooseAlertsType_lvl: |
+  🔔 Price levels
+
+remove_chooseAlertsType_success: |
+  🗑️ Removed notifications - ${n}
+
+# Admin mode
+adminMode_noChats: |
+  🤷 Add the bot to your chat to get access to <b>admin mode</b>
+
+adminMode_commandHidden: |
+  🤷 This command is not available in <b>admin mode</b>
+  
+  /admin - exit admin mode
+
+adminMode_on: |
+  🧑‍💻 <b>Admin mode</b> enabled
+  
+  If you have questions, check /help
+
+adminMode_activeChatChanged: |
+  🔄 Switched to managing: <b>${title}</b>
+
+admin_removedChat: |
+  🗑 Removed ${channel ? 'channel' : 'chat'} <b>${title}</b>
+
+adminMode_off: |
+  👋 <b>Admin mode</b> disabled
+
+adminHelp: |
+  <b>Commands</b>
+  
+  Some features are not yet available for admin mode (but will be soon)
+  
+  /shift, /s - Price speed monitoring
+  /alert, /a - Price level achievement monitor
+  /mytoken - Link/edit your bot to access Goose functionality
+  /admin - Exit admin mode
+  
+  <b>Permissions</b>
+  
+  For a channel, admin rights with message sending permission are sufficient
+  
+  For a chat, admin is not required. It's enough to have message sending permission.
+  
+  <b>If chat/channel is not visible in the bot</b>
+  
+  You can try triggering any of the events the bot listens to
+  - Send a new message
+  - Change bot permissions
+  - Remove and add the bot again
+  - Run /admin command again
+  
+  If this doesn't help - contact Goose support chat: @GooseInvestAlertChat 🦢️️
+
+admin_helloChat: |
+  👋 Hello everyone! I'm a bot that monitors stocks and cryptocurrencies.
+  
+  1️⃣ All admins have access to notification settings. To do this, switch to admin mode with /admin command.
+  2️⃣ You can see the full list of my features with /help command
+  3️⃣ All commands work only in private messages. Messages sent to the chat I <b>do not process</b>.
+
+admin_newChat: |
+  🙌 Added new ${channel ? 'channel' : 'chat'} <b>${title}</b>
+  
+  Switch to <b>admin mode</b> with /admin command to configure notifications for it
+
+mytoken_ask: |
+  🥷 Send the bot token received from @BotFather
+  
+mytoken_deploystart: |
+  🚜 Starting bot deployment
+
+mytoken_info: |
+  ⚙️ Your bot, for working with Goose @${bot}
+
+mytoken_deployError: |
+  😱 Bot deployment error
+  
+  <code>${error}</code>
+
+mytoken_removeBtn: |
+  🗑 Remove
+
+mytoken_removed: |
+  Bot deactivated
+
+# Chats tracker
+addChat_enterChatId: |
+  📝 Enter the <b>username</b> of the chat or channel you want to track
+
+addChat_success: |
+  🙌 Added new ${channel ? 'channel' : 'chat'} <b>${title}</b>

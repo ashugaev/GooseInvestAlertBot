@@ -69,16 +69,24 @@ const CONFIG: Config[] = [
 ]
 
 export const testAlertsTriggered = async () => {
-  const botId = (await bots[0]).goose.id
+  const botId = (await bots)?.[0]?.context?.goose?.id
+
+  if (!botId) {
+    log.error(`${logPrefix} Skip alerts triggered test: bot is not initialized`)
+    return
+  }
+
+  if (!TEST_USER_ID) {
+    log.error(
+      `${logPrefix} Skip alerts triggered test: TEST_USER_TG_ID is not set`
+    )
+    return
+  }
 
   for (let i = 0; i < CONFIG.length; i++) {
     const itemConfig = CONFIG[i]
 
     const check = async () => {
-      if (!TEST_USER_ID) {
-        throw new Error('TEST_USER_TG_ID is not set')
-      }
-
       try {
         // Skip if outside hours
         if (itemConfig.hours) {
@@ -111,6 +119,7 @@ export const testAlertsTriggered = async () => {
             message:
               logPrefix + ` 😱 No price for ${itemConfig.priceAlert.tickerId}}`,
           })
+          return
         }
 
         // Clear alerts for this ticker to be sure
@@ -138,26 +147,30 @@ export const testAlertsTriggered = async () => {
 
         // Wait than check if one of alerts is triggered
         setTimeout(async () => {
-          // Atleast one of alerts must be triggered
-          const newAlertsById = await PriceAlertModel.find({
-            tickerId: itemConfig.priceAlert.tickerId,
-            user: TEST_USER_ID,
-          })
-          const newAlertsCountById = newAlertsById.length
-
-          if (newAlertsCountById === 2) {
-            await sayToBoss({
-              message:
-                logPrefix +
-                ` 😱 Alerts is not working for ${itemConfig.priceAlert.tickerId}`,
+          try {
+            // Atleast one of alerts must be triggered
+            const newAlertsById = await PriceAlertModel.find({
+              tickerId: itemConfig.priceAlert.tickerId,
+              user: TEST_USER_ID,
             })
-          }
+            const newAlertsCountById = newAlertsById.length
 
-          // Clear alerts for this ticker
-          await PriceAlertModel.remove({
-            tickerId: itemConfig.priceAlert.tickerId,
-            user: TEST_USER_ID,
-          })
+            if (newAlertsCountById === 2) {
+              await sayToBoss({
+                message:
+                  logPrefix +
+                  ` 😱 Alerts is not working for ${itemConfig.priceAlert.tickerId}`,
+              })
+            }
+
+            // Clear alerts for this ticker
+            await PriceAlertModel.remove({
+              tickerId: itemConfig.priceAlert.tickerId,
+              user: TEST_USER_ID,
+            })
+          } catch (error) {
+            log.error('Alerts triggered test timeout check crash', error)
+          }
         }, itemConfig.checkAfter)
       } catch (e) {
         log.error('Price test crash', e)
