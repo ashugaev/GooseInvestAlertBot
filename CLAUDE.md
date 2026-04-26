@@ -44,7 +44,8 @@ locales/            # i18n strings
 ## Lint / Test
 - `npm run lint` — Prettier + ESLint (`--max-warnings 0`). `lint:fix` for auto-fixes.
 - ESLint highlights: no semicolons (`@typescript-eslint/semi: never`), `max-len: 128`, `simple-import-sort`, `unused-imports`, `no-relative-import-paths` — always import via `@/…`, not `../../`.
-- `npm test` — Jest. Tests under `src/tests/` are manual probes, not a CI suite; treat them as scratch unless extending them.
+- `npm test` — Jest. The legacy probes under `src/tests/` are manual scratch — leave them alone.
+- **Required: any code you add or modify must be covered by Jest unit tests next to the source (`*.test.ts`).** Keep tests pure: no live Mongo, no live network, no transitive imports of `src/app.ts`. If the touched function has heavy collaborators (mongoose models, Telegraf, axios), extract a pure dep-injected helper into its own file and test that helper. Run `npx jest --testPathPattern='<your files>'` before declaring done.
 
 ## Conventions
 - New TS files: no semicolons, single quotes, sorted imports, alias paths only.

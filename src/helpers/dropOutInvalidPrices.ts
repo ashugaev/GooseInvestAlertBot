@@ -13,7 +13,13 @@ export const dropOutInvalidPrices = (prices: TickerPrices) => {
   )
 
   if (result.length !== prices.length) {
-    log.error(logPrefix, 'Prices partially invalid')
+    log.error(
+      logPrefix,
+      'Prices partially invalid',
+      prices.length - result.length,
+      '/',
+      prices.length
+    )
   }
 
   return result

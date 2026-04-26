@@ -4,6 +4,7 @@ import { waitForMongoConnection } from '@/db/mongoose'
 import { dropOutInvalidPrices } from '@/helpers'
 import { setJobKey } from '@/helpers/setJobKey'
 import { splitArray } from '@/helpers/splitArray'
+import { createOncePerInterval } from '@/helpers/throttleLog'
 import { timeoutPromise } from '@/helpers/timeoutPromise'
 import { EMarketDataSources } from '@/marketApi/types'
 import { getInstrumentsBySourceCache, InstrumentsList } from '@/models'
@@ -16,7 +17,6 @@ import { wait } from '../helpers/wait'
 
 const logPrefix = '[PRICE UPDATER]'
 const CRASH_WAIT_TIME = 30000
-const lastUpdateTime = {}
 
 export interface PriceUpdaterParams {
   /**
@@ -50,6 +50,14 @@ export interface PriceUpdaterParams {
 
 let noPricesObject = {}
 
+// Heartbeat: ровно один INFO раз в минуту на источник, чтобы по логам было
+// видно «жив ли binance», но не 70 строк в минуту.
+const heartbeat = createOncePerInterval(60_000)
+// Watchdog: если источник не апдейтится дольше STALE_THRESHOLD — 1 ERROR.
+const STALE_THRESHOLD_MS = 120_000
+const lastSuccessAt: Record<string, number> = {}
+const staleAlerted: Record<string, boolean> = {}
+
 /**
  * Поддерживает кэш с актуальными ценами для источника
  */
@@ -63,6 +71,23 @@ export const setupPriceUpdater = async ({
   onCatch,
 }: PriceUpdaterParams) => {
   await retryUntilTrue(isReadyToStart, 'Price updater for: ' + source)
+
+  // Watchdog: если источник не апдейтился дольше порога — пишем 1 ERROR
+  // (повторно не дублируем, пока не восстановится).
+  setInterval(() => {
+    const last = lastSuccessAt[source]
+    if (!last) return
+    const ageMs = Date.now() - last
+    if (ageMs > STALE_THRESHOLD_MS && !staleAlerted[source]) {
+      staleAlerted[source] = true
+      log.error(
+        logPrefix,
+        source,
+        'stale, no successful update for',
+        Math.round(ageMs / 1000) + 's'
+      )
+    }
+  }, 30_000)
 
   // Check every N min ticker without price
   setInterval(() => {
@@ -119,7 +144,6 @@ export const setupPriceUpdater = async ({
           (new Date().getTime() - lastIterationStartTime)
 
         if (timeToWait > 0) {
-          log.info(logPrefix, source, 'waiting', timeToWait)
           await wait(timeToWait)
         }
 
@@ -174,20 +198,17 @@ export const setupPriceUpdater = async ({
         }
       }
 
-      log.info(logPrefix + 'Price cache update END ' + source)
-
-      const currentTime = new Date().getTime()
-      lastUpdateTime[source] &&
-        log.info(
-          logPrefix,
-          source,
-          'Time betweed updates ' +
-            ((currentTime - lastUpdateTime[source]) / 1000).toString() +
-            's'
-        )
-      lastUpdateTime[source] = new Date().getTime()
-
       setJobKey(jobKey)
+
+      const now = Date.now()
+      lastSuccessAt[source] = now
+      if (staleAlerted[source]) {
+        log.info(logPrefix, source, 'recovered after stale')
+        staleAlerted[source] = false
+      }
+      if (heartbeat(source)) {
+        log.info(logPrefix, source, 'heartbeat ok')
+      }
 
       console.timeEnd(source)
     } catch (e) {

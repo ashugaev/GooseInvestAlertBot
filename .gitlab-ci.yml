@@ -9,7 +9,7 @@ variables:
   DOCKER_DRIVER: overlay2
 
 stages:
-  # - test
+  - test
   # Делаем сборку
   - build
   # Генерим докер-образ и пушим в регистр
@@ -17,15 +17,18 @@ stages:
   # Заходим на сервер, обновляем и запускаем образ
   - deploy
 
-#test:
-#  stage: test
-#  image: node:16-alpine
-#  script:
-#    - npm ci
-#    - npm run test
-#  allow_failure: true
-#  except:
-#    - master  # исключаем ветку master из этапа тестирования
+# Блокирующий тестовый стейдж: запускается на каждом MR и на master.
+# allow_failure НЕ ставим — тесты обязаны быть зелёными перед мерджем.
+test:
+  stage: test
+  image: node:18.13.0
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "master"
+  script:
+    - npm ci
+    - npm run build
+    - npm test -- --ci
 
 build:
   stage: build

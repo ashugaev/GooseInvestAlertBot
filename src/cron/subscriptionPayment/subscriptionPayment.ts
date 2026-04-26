@@ -6,6 +6,19 @@ import { PremiumPaymentRequestModel } from '@/models/PremiumPayment'
 
 const TRONSCAN_WALLET_ADDRESS = process.env.TRONSCAN_WALLET_ADDRESS
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Раньше сравнивались дни месяца через `Date#getDate()`, что давало
+ * ложное «pay_cant_find» на стыке месяцев и при любом смещении больше
+ * 1-го числа. Считаем по абсолютной разности в миллисекундах.
+ */
+export const isPaymentDateWithinOneDay = (
+  issueDate: Date,
+  transactionTimestampMs: number
+): boolean =>
+  Math.abs(issueDate.getTime() - transactionTimestampMs) <= ONE_DAY_MS
+
 export const subscriptionPaymentCheckerAdd = async ({
   userId,
   transactionId,
@@ -41,12 +54,10 @@ export const subscriptionPaymentCheckerAdd = async ({
     return
   }
 
-  // Diff less or equal 1 day
-  const isDateCorrect =
-    Math.abs(
-      paymentData.issueDate.getDate() -
-        new Date(transaction.timestamp).getDate()
-    ) <= 1
+  const isDateCorrect = isPaymentDateWithinOneDay(
+    paymentData.issueDate,
+    transaction.timestamp
+  )
 
   const isValid =
     transaction?.trc20TransferInfo?.some(

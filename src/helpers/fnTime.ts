@@ -24,7 +24,7 @@ export const fnTimeAsync = async (fn: () => Promise<any>, logText: string) => {
 
   const secondsPast = (new Date().getTime() - startTime) / 1000
 
-  if (secondsPast > 0.1) {
+  if (secondsPast > 1) {
     log.info(logText, '. Time: ', secondsPast.toString() + 's')
   }
 

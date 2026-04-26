@@ -93,44 +93,82 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
 })
 
 /**
- * Auto apdate all data structures for instruments list
+ * Готовность `instrumentsByIdCache` / `instrumentsByTickerCache`. До первой
+ * успешной загрузки `priceChecker` слепой (см. `setupPriceChecker`).
+ * Любая логика, читающая кеш через `getInstrumentByIdFromCache(..., noReqToDb=true)`,
+ * должна гейтиться этим флагом, иначе на холодном старте 100% алертов фейлятся.
  */
-// eslint-disable-next-line
-;(async function autoUpdateInstrumentsListCache() {
-  const items: InstrumentsList[] = await retryForever(async () => {
-    await waitForMongoConnection('autoUpdateInstrumentsListCache')
+let instrumentsByIdCacheReady = false
+export const isInstrumentsByIdCacheReady = (): boolean =>
+  instrumentsByIdCacheReady
 
-    return await InstrumentsListModel.find().lean()
-  })
+interface BulkSetCache {
+  mset: (data: { key: string; val: unknown }[]) => boolean
+}
 
-  const cacheItemsById = items.map((item) => ({
-    key: item.id,
-    val: item,
-  }))
-  instrumentsByIdCache.mset(cacheItemsById)
+/**
+ * Чистая функция: раскладывает items по двум кешам. Вынесено для unit-тестов.
+ */
+export const populateInstrumentsCaches = (
+  items: Pick<InstrumentsList, 'id' | 'ticker'>[],
+  byIdCache: BulkSetCache,
+  byTickerCache: BulkSetCache
+): void => {
+  const cacheItemsById = items
+    .filter((item) => typeof item.id === 'string' && item.id.length > 0)
+    .map((item) => ({ key: item.id, val: item }))
+  byIdCache.mset(cacheItemsById)
 
-  const objByTicker = items.reduce<Record<string, InstrumentsList[]>>(
-    (acc, item) => {
-      if (acc[item.ticker]) {
-        acc[item.ticker].push(item)
-      } else {
-        acc[item.ticker] = [item]
-      }
-
-      return acc
-    },
-    {}
-  )
+  const objByTicker = items.reduce<Record<string, unknown[]>>((acc, item) => {
+    if (!item.ticker) return acc
+    if (acc[item.ticker]) {
+      acc[item.ticker].push(item)
+    } else {
+      acc[item.ticker] = [item]
+    }
+    return acc
+  }, {})
 
   const cacheByTicker = Object.entries(objByTicker).map(([key, val]) => ({
     key,
     val,
   }))
-  instrumentsByTickerCache.mset(cacheByTicker)
+  byTickerCache.mset(cacheByTicker)
+}
 
-  log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
+/**
+ * Auto update all data structures for instruments list
+ */
+const REFRESH_INTERVAL_MS = 1000 * 60 * 60 * 3 // 3 hours
+const FAILED_RETRY_MS = 60 * 1000 // 1 min after crash, чтобы priceChecker не висел 3h
+// eslint-disable-next-line
+;(async function autoUpdateInstrumentsListCache() {
+  let nextDelayMs = REFRESH_INTERVAL_MS
+  try {
+    const items: InstrumentsList[] = await retryForever(async () => {
+      await waitForMongoConnection('autoUpdateInstrumentsListCache')
 
-  setTimeout(autoUpdateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
+      return await InstrumentsListModel.find().lean()
+    })
+
+    populateInstrumentsCaches(
+      items,
+      instrumentsByIdCache,
+      instrumentsByTickerCache
+    )
+    instrumentsByIdCacheReady = true
+
+    log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
+  } catch (e) {
+    // Раньше падение между find() и log.info уходило в unhandledRejection и
+    // оставляло кеш пустым навсегда. Логируем и идём на быстрый ретрай —
+    // если кеш ещё не загружался ни разу, priceChecker висит на гейте,
+    // и ждать 3 часа значит держать алерты в простое всё это время.
+    nextDelayMs = FAILED_RETRY_MS
+    log.error('[autoUpdateInstrumentsListCache] Cache load crashed', e)
+  } finally {
+    setTimeout(autoUpdateInstrumentsListCache, nextDelayMs)
+  }
 })()
 
 // eslint-disable-next-line max-len
