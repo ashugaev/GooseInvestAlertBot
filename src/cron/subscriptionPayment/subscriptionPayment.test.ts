@@ -19,8 +19,8 @@ describe('isPaymentDateWithinOneDay', () => {
   })
 
   it('regression: works across month boundary (was broken with getDate())', () => {
-    // 1 февраля → 31 января (12 часов разницы) — старая реализация получала
-    // |1 - 31| = 30 и отвергала валидную оплату.
+    // Feb 1 -> Jan 31 (12 hours apart) — the old implementation computed
+    // |1 - 31| = 30 and rejected the valid payment.
     const issue = new Date('2026-02-01T00:00:00Z')
     const txTs = new Date('2026-01-31T12:00:00Z').getTime()
     expect(isPaymentDateWithinOneDay(issue, txTs)).toBe(true)

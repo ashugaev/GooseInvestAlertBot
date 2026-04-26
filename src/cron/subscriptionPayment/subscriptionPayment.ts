@@ -9,9 +9,9 @@ const TRONSCAN_WALLET_ADDRESS = process.env.TRONSCAN_WALLET_ADDRESS
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
 
 /**
- * Раньше сравнивались дни месяца через `Date#getDate()`, что давало
- * ложное «pay_cant_find» на стыке месяцев и при любом смещении больше
- * 1-го числа. Считаем по абсолютной разности в миллисекундах.
+ * Previously the check compared days of month via `Date#getDate()`, which
+ * produced a bogus "pay_cant_find" across month boundaries and for any
+ * delay greater than 1 calendar day. Compare absolute millisecond delta.
  */
 export const isPaymentDateWithinOneDay = (
   issueDate: Date,

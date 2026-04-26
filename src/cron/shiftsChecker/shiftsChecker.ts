@@ -17,8 +17,8 @@ import {
 
 const logPrefix = '[CANDLES UPDATER]'
 
-// Заголовки итерации не несут новой информации между циклами — пишем не
-// чаще чем раз в 5 минут.
+// Iteration headers carry no new information between cycles — emit at most
+// once every 5 minutes.
 const heartbeat = createOncePerInterval(5 * 60_000)
 
 interface ShiftCandlesNormalized {
@@ -260,8 +260,8 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
           }
         }
 
-        // Логируем «Checked shifts» только если что-то заметно отстаёт —
-        // в норме все алерты обрабатываются за итерацию.
+        // Log "Checked shifts" only if we noticeably fell behind — under
+        // normal load all alerts are processed within a single iteration.
         if (candlesChecked < shiftsCache.get.length * 0.9) {
           log.info(
             logPrefix,

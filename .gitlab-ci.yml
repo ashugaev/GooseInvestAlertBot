@@ -17,8 +17,8 @@ stages:
   # Заходим на сервер, обновляем и запускаем образ
   - deploy
 
-# Блокирующий тестовый стейдж: запускается на каждом MR и на master.
-# allow_failure НЕ ставим — тесты обязаны быть зелёными перед мерджем.
+# Blocking test stage: runs on every MR and on master.
+# Do NOT set allow_failure — tests must be green before merge.
 test:
   stage: test
   image: node:18.13.0

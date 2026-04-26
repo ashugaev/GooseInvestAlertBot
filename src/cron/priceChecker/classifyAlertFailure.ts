@@ -1,12 +1,12 @@
 /**
- * Классификация причины, по которой алерт не удалось проверить.
- * Pure: без mongoose, без сети — только три входа и enum на выходе.
+ * Classify why an alert could not be evaluated.
+ * Pure: no mongoose, no network — three inputs and an enum out.
  */
 export enum AlertFailureBucket {
   NoInstrument = 'noInstrument',
   NoPrice = 'noPrice',
   InvalidPrice = 'invalidPrice',
-  Error = 'error', // непредвиденное исключение
+  Error = 'error', // unexpected exception
 }
 
 export interface AlertFailureInputs {
@@ -42,8 +42,8 @@ export const emptyBuckets = (): FailureBuckets => ({
 })
 
 /**
- * Считает топ-N tickerId внутри бакета (по числу алертов).
- * Используется в логах, чтобы видеть «какие именно тикеры мертвы».
+ * Counts the top-N tickerIds inside a bucket (by number of alerts).
+ * Used in logs so we can see which exact tickers are dead.
  */
 export const topTickersInBucket = (
   bucket: string[],

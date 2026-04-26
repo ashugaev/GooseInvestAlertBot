@@ -50,10 +50,11 @@ export interface PriceUpdaterParams {
 
 let noPricesObject = {}
 
-// Heartbeat: ровно один INFO раз в минуту на источник, чтобы по логам было
-// видно «жив ли binance», но не 70 строк в минуту.
+// Heartbeat: exactly one INFO per minute per source, so the logs show
+// whether e.g. binance is alive without producing 70 lines per minute.
 const heartbeat = createOncePerInterval(60_000)
-// Watchdog: если источник не апдейтится дольше STALE_THRESHOLD — 1 ERROR.
+// Watchdog: if a source has not updated for longer than STALE_THRESHOLD,
+// emit one ERROR.
 const STALE_THRESHOLD_MS = 120_000
 const lastSuccessAt: Record<string, number> = {}
 const staleAlerted: Record<string, boolean> = {}
@@ -72,8 +73,8 @@ export const setupPriceUpdater = async ({
 }: PriceUpdaterParams) => {
   await retryUntilTrue(isReadyToStart, 'Price updater for: ' + source)
 
-  // Watchdog: если источник не апдейтился дольше порога — пишем 1 ERROR
-  // (повторно не дублируем, пока не восстановится).
+  // Watchdog: if a source has not updated past the threshold, emit one
+  // ERROR (no duplicates until it recovers).
   setInterval(() => {
     const last = lastSuccessAt[source]
     if (!last) return

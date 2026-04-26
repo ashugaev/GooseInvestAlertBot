@@ -7,8 +7,8 @@ import { InstrumentsList } from '@/models'
 
 const logPrefix = '[GET LBANK PRICES]'
 
-// Дедуп: набор отсутствующих тикеров обычно стабилен (делистинги), не пишем
-// одно и то же сообщение каждый цикл.
+// Dedup: the set of missing tickers is usually stable (delistings), so don't
+// write the same message every cycle.
 const dedupNotFound = createDedupByKey()
 
 export interface LbankPriceItem {

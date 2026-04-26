@@ -93,10 +93,11 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
 })
 
 /**
- * Готовность `instrumentsByIdCache` / `instrumentsByTickerCache`. До первой
- * успешной загрузки `priceChecker` слепой (см. `setupPriceChecker`).
- * Любая логика, читающая кеш через `getInstrumentByIdFromCache(..., noReqToDb=true)`,
- * должна гейтиться этим флагом, иначе на холодном старте 100% алертов фейлятся.
+ * Readiness of `instrumentsByIdCache` / `instrumentsByTickerCache`. Until
+ * the first successful load `priceChecker` is blind (see
+ * `setupPriceChecker`). Any code reading the cache via
+ * `getInstrumentByIdFromCache(..., noReqToDb=true)` must gate on this flag,
+ * otherwise on a cold start 100% of alerts fail.
  */
 let instrumentsByIdCacheReady = false
 export const isInstrumentsByIdCacheReady = (): boolean =>
@@ -107,7 +108,7 @@ interface BulkSetCache {
 }
 
 /**
- * Чистая функция: раскладывает items по двум кешам. Вынесено для unit-тестов.
+ * Pure function: lays out items into both caches. Extracted for unit tests.
  */
 export const populateInstrumentsCaches = (
   items: Pick<InstrumentsList, 'id' | 'ticker'>[],
@@ -140,7 +141,7 @@ export const populateInstrumentsCaches = (
  * Auto update all data structures for instruments list
  */
 const REFRESH_INTERVAL_MS = 1000 * 60 * 60 * 3 // 3 hours
-const FAILED_RETRY_MS = 60 * 1000 // 1 min after crash, чтобы priceChecker не висел 3h
+const FAILED_RETRY_MS = 60 * 1000 // 1 min after crash so priceChecker does not stall for 3h
 // eslint-disable-next-line
 ;(async function autoUpdateInstrumentsListCache() {
   let nextDelayMs = REFRESH_INTERVAL_MS
@@ -160,10 +161,10 @@ const FAILED_RETRY_MS = 60 * 1000 // 1 min after crash, чтобы priceChecker 
 
     log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
   } catch (e) {
-    // Раньше падение между find() и log.info уходило в unhandledRejection и
-    // оставляло кеш пустым навсегда. Логируем и идём на быстрый ретрай —
-    // если кеш ещё не загружался ни разу, priceChecker висит на гейте,
-    // и ждать 3 часа значит держать алерты в простое всё это время.
+    // Previously a crash between find() and log.info would escape into
+    // unhandledRejection and leave the cache empty forever. Log and retry
+    // quickly — if the cache has never loaded, priceChecker is blocked on
+    // the gate, and waiting 3 hours means alerts are idle the whole time.
     nextDelayMs = FAILED_RETRY_MS
     log.error('[autoUpdateInstrumentsListCache] Cache load crashed', e)
   } finally {

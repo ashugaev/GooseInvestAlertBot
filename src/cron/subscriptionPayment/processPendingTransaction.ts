@@ -31,8 +31,9 @@ export interface ProcessTransactionDeps {
 }
 
 /**
- * Обработка одной заявки на оплату. Вынесено для тестируемости и чтобы
- * сбой на одной транзакции (например, 5xx Tronscan) не клал весь цикл.
+ * Process a single pending payment request. Extracted for testability and
+ * so a failure on one transaction (e.g. a Tronscan 5xx) does not take down
+ * the whole loop.
  */
 export const processPendingTransaction = async (
   transaction: PaymentTransaction,

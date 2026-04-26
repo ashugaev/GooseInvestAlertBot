@@ -1,6 +1,6 @@
 /**
- * Сводка для логов вместо per-ticker записи.
- * Возвращает null, если бакет пустой или меньше порога.
+ * Log summary instead of per-ticker entries.
+ * Returns null if the bucket is empty or below the threshold.
  */
 export interface TickerSummary {
   count: number

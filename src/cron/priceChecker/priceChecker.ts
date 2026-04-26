@@ -27,8 +27,8 @@ const itemsCheckTime = 500
 // Avoid duplicates
 const trigeredCache = new Set<string>()
 
-// Сводный лог по бакетам — раз в минуту, чтобы видеть распределение
-// (noInstrument / noPrice / invalidPrice / error) и топ битых тикеров.
+// Aggregated bucket log — once per minute, so we can see the distribution
+// (noInstrument / noPrice / invalidPrice / error) and the top dead tickers.
 const failureSummaryHeartbeat = createOncePerInterval(60_000)
 
 export const setupPriceChecker = async () => {
@@ -36,9 +36,9 @@ export const setupPriceChecker = async () => {
     () => priceAlertCache.isReady,
     logPrefix + ' setupPriceChecker'
   )
-  // Без этого гейта на холодном старте instrumentsByIdCache ещё пуст
-  // (autoUpdateInstrumentsListCache грузит ~5–8 минут), и каждый алерт
-  // получает !instrumentData → 100% failure-spam, пока кеш не подъедет.
+  // Without this gate, on cold start instrumentsByIdCache is still empty
+  // (autoUpdateInstrumentsListCache takes ~5–8 minutes), and every alert
+  // gets !instrumentData -> 100% failure-spam until the cache loads.
   await retryUntilTrue(
     isInstrumentsByIdCacheReady,
     logPrefix + ' setupPriceChecker waits instruments cache'
@@ -62,9 +62,10 @@ export const setupPriceChecker = async () => {
         for (let i = 0; i < priceAlertCache.get.length; i++) {
           const alert: PriceAlert = priceAlertCache.get[i]
           if (!alert) continue
-          // tag собираем внутри try — некоторые алерты в кеше встречались
-          // без user/tickerId; иначе бросок ушёл бы в outer SUPERCRASH-ветку
-          // и завалил всю итерацию из-за одного битого документа.
+          // Build `tag` inside try — some cached alerts have shown up without
+          // user/tickerId, and otherwise the throw would escape into the
+          // outer SUPERCRASH branch and tank the whole iteration over one
+          // bad document.
           let tag = ''
           try {
             tag = alert.tickerId + ':' + alert.user.toString()
@@ -112,7 +113,7 @@ export const setupPriceChecker = async () => {
             }
           } catch (e) {
             buckets[AlertFailureBucket.Error].push(tag)
-            log.error(logPrefix, 'Ошибка обработки алертов', tag, e)
+            log.error(logPrefix, 'Failed to process alert', tag, e)
           }
         }
 

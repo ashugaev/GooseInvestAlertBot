@@ -1,15 +1,15 @@
 /**
- * Маленькие чистые помощники для усмирения шумных логов.
+ * Small pure helpers for taming noisy logs.
  *
- * Используются там, где «событие» повторяется каждый цикл, а полезен либо
- * редкий heartbeat, либо только сам факт изменения состояния.
+ * Used where an event repeats every cycle, but only an occasional heartbeat
+ * or a transition signal is actually useful.
  */
 
 /**
- * Возвращает функцию-предикат: `true` не чаще, чем раз в `intervalMs`
- * (для каждого ключа отдельно). Если ключ не задан — общий счётчик.
+ * Returns a predicate: `true` at most once per `intervalMs` per key
+ * (separate counter per key). Without a key, a single shared counter is used.
  *
- * Пример: log liveness раз в минуту на источник цен.
+ * Example: log liveness once per minute per price source.
  */
 export const createOncePerInterval = (intervalMs: number) => {
   const lastAt: Record<string, number> = {}
@@ -24,9 +24,8 @@ export const createOncePerInterval = (intervalMs: number) => {
 }
 
 /**
- * Возвращает функцию-предикат: `true` только когда переданный ключ
- * (например, отсортированный список «отсутствующих тикеров») отличается
- * от прошлого вызова.
+ * Returns a predicate: `true` only when the supplied key (e.g. a sorted
+ * list of "missing tickers") differs from the previous call.
  */
 export const createDedupByKey = () => {
   let lastKey = ''

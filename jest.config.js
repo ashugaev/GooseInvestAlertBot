@@ -7,11 +7,11 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  // Берём только *.test.ts — иначе jest по дефолту цепляет файлы вида
-  // `test.ts` / `test.js`, которые в этом репо являются ad-hoc скриптами,
-  // а не тестами (src/commands/test, src/integrations/google, …).
+  // Match only *.test.ts — by default jest also picks up plain `test.ts` /
+  // `test.js` files which in this repo are ad-hoc scripts, not real tests
+  // (src/commands/test, src/integrations/google, ...).
   testMatch: ['<rootDir>/src/**/*.test.ts'],
-  // Manual probes, требуют живой сети/Mongo. CLAUDE.md: «leave them alone».
+  // Manual probes, require live network / Mongo. CLAUDE.md: "leave them alone".
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/',

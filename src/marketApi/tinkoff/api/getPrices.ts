@@ -121,8 +121,9 @@ export const getTinkoffPrices = async (
     )
   }
 
-  // Шумные «Can't generate price data» (часто 6+ постоянных тикеров с нулевой
-  // ценой каждый цикл) сворачиваем в одну строку с примерами.
+  // Collapse the noisy "Can't generate price data" stream (often 6+
+  // permanently zero-priced tickers per cycle) into a single line with
+  // a count and a sample.
   const cantGenerateSummary = summarizeFailedTickers(cantGenerateIds)
   if (cantGenerateSummary) {
     log.error(

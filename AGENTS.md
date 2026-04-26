@@ -3,7 +3,7 @@
 ## Scope & Safety
 - Keep this file lean — only what an agent can't derive from code, ESLint, or standard conventions.
 - `CLAUDE.md` and `AGENTS.md` are mirrors. Any change to one must be reflected in the other in the same commit.
-- Communicate with the user in Russian; code, comments, identifiers, and commit messages stay in English.
+- Communicate with the user in Russian; code, comments, identifiers, log messages, and commit messages stay in English. **Required**: any new code/comment/log you add is in English. If you touch a file or block that still has Russian text in code (comments, log strings, identifiers), translate that text to English in the same change — opportunistic but mandatory whenever you're already editing nearby. User-facing strings (Telegram replies, locales/) are exempt; their translations live under `locales/`.
 
 ## Repository Structure
 ```

@@ -1,6 +1,6 @@
 dist
 node_modules
-# tsconfig.json исключает *.test.ts из компиляции, поэтому
-# type-aware парсер ESLint на них падает. Тесты валидируются через tsc/jest.
+# tsconfig.json excludes *.test.ts from compilation, so the type-aware
+# ESLint parser fails on them. Tests are validated via tsc / jest instead.
 **/*.test.ts
 **/*.spec.ts
