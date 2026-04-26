@@ -103,39 +103,9 @@ let instrumentsByIdCacheReady = false
 export const isInstrumentsByIdCacheReady = (): boolean =>
   instrumentsByIdCacheReady
 
-interface BulkSetCache {
-  mset: (data: { key: string; val: unknown }[]) => boolean
-}
-
-/**
- * Pure function: lays out items into both caches. Extracted for unit tests.
- */
-export const populateInstrumentsCaches = (
-  items: Pick<InstrumentsList, 'id' | 'ticker'>[],
-  byIdCache: BulkSetCache,
-  byTickerCache: BulkSetCache
-): void => {
-  const cacheItemsById = items
-    .filter((item) => typeof item.id === 'string' && item.id.length > 0)
-    .map((item) => ({ key: item.id, val: item }))
-  byIdCache.mset(cacheItemsById)
-
-  const objByTicker = items.reduce<Record<string, unknown[]>>((acc, item) => {
-    if (!item.ticker) return acc
-    if (acc[item.ticker]) {
-      acc[item.ticker].push(item)
-    } else {
-      acc[item.ticker] = [item]
-    }
-    return acc
-  }, {})
-
-  const cacheByTicker = Object.entries(objByTicker).map(([key, val]) => ({
-    key,
-    val,
-  }))
-  byTickerCache.mset(cacheByTicker)
-}
+// Re-export for backwards compat with anything that imported from here.
+export { populateInstrumentsCaches } from './instrumentsCacheLayout'
+import { populateInstrumentsCaches } from './instrumentsCacheLayout'
 
 /**
  * Auto update all data structures for instruments list

@@ -1,4 +1,4 @@
-import { populateInstrumentsCaches } from '@/models/InstrumentsList'
+import { populateInstrumentsCaches } from '@/models/instrumentsCacheLayout'
 
 const makeCache = () => {
   const calls: { key: string; val: unknown }[][] = []
