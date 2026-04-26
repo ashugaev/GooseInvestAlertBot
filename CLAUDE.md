@@ -69,3 +69,4 @@ locales/            # i18n strings
 - Branch names: short, kebab-case, descriptive (e.g. `add-volume-alerts`). The repo has no enforced prefix scheme.
 - One feature per PR. Don't merge while CI is red — fix the failure even if it predates your branch.
 - Commit messages and PR descriptions in English; user-facing comms in Russian.
+- All GitLab interactions go through the official `glab` CLI (installed at `~/.local/bin/glab`, authed via `$GITLAB_TOKEN` from `~/.zshrc`). Use `glab mr view`, `glab mr merge`, `glab ci status`, `glab ci view`, `glab ci trace` rather than raw `curl` to the GitLab REST API. Drop down to `curl -H "PRIVATE-TOKEN: $GITLAB_TOKEN"` only when `glab` lacks the specific endpoint.
