@@ -1,1 +1,62 @@
-/home/alek/projects/tradebot/spur.yml
+projects:
+  tb:
+    path: .
+    defaultBranch: master
+    sessionPrefix: goose
+    codexArgs:
+      - -c
+      - 'model_reasoning_effort="high"'
+      - -c
+      - 'service_tier="fast"'
+      - --enable
+      - fast_mode
+    preflight:
+      prompt: "Choose a branch name based on the project's branch naming conventions."
+    symlinks:
+      - CLAUDE.md
+      - AGENTS.md
+      - .agents
+      - .claude
+      - node_modules
+      - .env
+      - spur.yml
+      - .codex
+      - .cursor
+    workspaceAccess:
+      items:
+        - label: Cursor
+          kind: copy
+          value: "cursor --remote ssh-remote+${SPUR_SIDECAR_PUBLIC_HOST} ${worktreePathShell}"
+        - label: Web IDE
+          kind: link
+          value: "${SPUR_VSCODE_WEB_URL}/?folder=${worktreePathUrl}"
+    sidecars:
+      dev:
+        # Telegram bot — long-polling, no inbound port required.
+        # nvm-managed node; absolute nvm.sh path because $HOME differs inside sidecar.
+        command: 'bash -c "source /home/alek/.nvm/nvm.sh && nvm use --silent 20 && npm run dev:watch"'
+        autoStart: false
+    spawn:
+      steps:
+        - "run /manager"
+    sources:
+      gh:
+        type: github
+        intervalMs: 60000
+        runOnStart: false
+    triggers:
+      gh-changes-requested:
+        source: gh
+        event: github:changes_requested
+        send:
+          interrupt: false
+      gh-ci-failed:
+        source: gh
+        event: github:ci_failed
+        send:
+          interrupt: false
+      gh-comment:
+        source: gh
+        event: github:comment
+        send:
+          interrupt: false
