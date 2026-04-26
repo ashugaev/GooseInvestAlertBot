@@ -3,7 +3,7 @@
 ## Scope & Safety
 - Keep this file lean — only what an agent can't derive from code, ESLint, or standard conventions.
 - `CLAUDE.md` and `AGENTS.md` are mirrors. Any change to one must be reflected in the other in the same commit.
-- Communicate with the user in Russian; code, comments, identifiers, and commit messages stay in English.
+- Communicate with the user in Russian; code, comments, identifiers, log messages, and commit messages stay in English. **Required**: any new code/comment/log you add is in English. If you touch a file or block that still has Russian text in code (comments, log strings, identifiers), translate that text to English in the same change — opportunistic but mandatory whenever you're already editing nearby. User-facing strings (Telegram replies, locales/) are exempt; their translations live under `locales/`.
 
 ## Repository Structure
 ```
@@ -44,7 +44,8 @@ locales/            # i18n strings
 ## Lint / Test
 - `npm run lint` — Prettier + ESLint (`--max-warnings 0`). `lint:fix` for auto-fixes.
 - ESLint highlights: no semicolons (`@typescript-eslint/semi: never`), `max-len: 128`, `simple-import-sort`, `unused-imports`, `no-relative-import-paths` — always import via `@/…`, not `../../`.
-- `npm test` — Jest. Tests under `src/tests/` are manual probes, not a CI suite; treat them as scratch unless extending them.
+- `npm test` — Jest. The legacy probes under `src/tests/` are manual scratch — leave them alone.
+- **Required: any code you add or modify must be covered by Jest unit tests next to the source (`*.test.ts`).** Keep tests pure: no live Mongo, no live network, no transitive imports of `src/app.ts`. If the touched function has heavy collaborators (mongoose models, Telegraf, axios), extract a pure dep-injected helper into its own file and test that helper. Run `npx jest --testPathPattern='<your files>'` before declaring done.
 
 ## Conventions
 - New TS files: no semicolons, single quotes, sorted imports, alias paths only.
@@ -68,3 +69,4 @@ locales/            # i18n strings
 - Branch names: short, kebab-case, descriptive (e.g. `add-volume-alerts`). The repo has no enforced prefix scheme.
 - One feature per PR. Don't merge while CI is red — fix the failure even if it predates your branch.
 - Commit messages and PR descriptions in English; user-facing comms in Russian.
+- All GitLab interactions go through the official `glab` CLI (installed at `~/.local/bin/glab`, authed via `$GITLAB_TOKEN` from `~/.zshrc`). Use `glab mr view`, `glab mr merge`, `glab ci status`, `glab ci view`, `glab ci trace` rather than raw `curl` to the GitLab REST API. Drop down to `curl -H "PRIVATE-TOKEN: $GITLAB_TOKEN"` only when `glab` lacks the specific endpoint.

@@ -7,6 +7,7 @@ import { LastPrice } from 'tinkoff-invest-api/src/generated/marketdata'
 
 import { log } from '@/helpers'
 import { chunks } from '@/helpers/array/chunks'
+import { summarizeFailedTickers } from '@/marketApi/tinkoff/api/summarizeFailedTickers'
 import { EMarketInstrumentTypes } from '@/models'
 
 import { tinkoffApi } from '../../../app'
@@ -36,6 +37,7 @@ export const getTinkoffPrices = async (
 
   // Cache for logs
   const noMinPriceIncrementNumber = []
+  const cantGenerateIds: string[] = []
 
   for (let i = 0; i < lastPrices.length; i++) {
     try {
@@ -99,23 +101,37 @@ export const getTinkoffPrices = async (
           tickerId,
         ])
       } else {
-        log.error(
-          logPrefix + " Can't generate price data from:",
-          priceNormalized,
-          tickerId,
-          item
-        )
+        cantGenerateIds.push(tickerId)
       }
     } catch (e) {
       log.error(logPrefix, 'Error in getTinkoffPrices', e)
     }
   }
 
-  if (noMinPriceIncrementNumber.length > 150) {
+  const noMinSummary = summarizeFailedTickers(noMinPriceIncrementNumber, {
+    minCount: 150,
+  })
+  if (noMinSummary) {
     log.error(
       logPrefix,
       'No minPriceIncrementNumber or minPriceIncrementAmountNumber for',
-      noMinPriceIncrementNumber.length
+      noMinSummary.count,
+      'sample:',
+      noMinSummary.sample
+    )
+  }
+
+  // Collapse the noisy "Can't generate price data" stream (often 6+
+  // permanently zero-priced tickers per cycle) into a single line with
+  // a count and a sample.
+  const cantGenerateSummary = summarizeFailedTickers(cantGenerateIds)
+  if (cantGenerateSummary) {
+    log.error(
+      logPrefix,
+      "Can't generate price data, count:",
+      cantGenerateSummary.count,
+      'sample:',
+      cantGenerateSummary.sample
     )
   }
 

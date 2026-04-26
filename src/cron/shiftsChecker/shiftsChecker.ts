@@ -1,6 +1,7 @@
 import { SHIFT_TIMEFRAMES } from '@/commands/shift'
 import { waitForMongoConnection } from '@/db/mongoose'
 import { retryForever } from '@/helpers'
+import { createOncePerInterval } from '@/helpers/throttleLog'
 
 import { fnTimeAsync } from '../../helpers/fnTime'
 import { getLastPrice } from '../../helpers/getLastPrice'
@@ -15,6 +16,10 @@ import {
 } from './shiftChecker.utils'
 
 const logPrefix = '[CANDLES UPDATER]'
+
+// Iteration headers carry no new information between cycles — emit at most
+// once every 5 minutes.
+const heartbeat = createOncePerInterval(5 * 60_000)
 
 interface ShiftCandlesNormalized {
   [key: string]: ShiftCandle
@@ -194,16 +199,17 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
           return // skip iteration
         }
 
-        log.info(logPrefix, 'checking shifts', shiftsCache.get.length)
         const candlesToCheck = shiftsCache.get.reduce((acc, el) => {
           acc[getCandleKey(el.tickerId, el.timeframe)] = true
           return acc
         }, {})
-        log.info(
-          logPrefix,
-          'candles to check',
-          Object.keys(candlesToCheck).length
-        )
+        if (heartbeat()) {
+          log.info(
+            logPrefix,
+            'heartbeat shifts=' + shiftsCache.get.length,
+            'candles=' + Object.keys(candlesToCheck).length
+          )
+        }
 
         let noPriceCount = 0
         let candlesChecked = 0
@@ -254,13 +260,17 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
           }
         }
 
-        log.info(
-          logPrefix,
-          'Checked shifts',
-          candlesChecked,
-          '/',
-          shiftsCache.get.length
-        )
+        // Log "Checked shifts" only if we noticeably fell behind — under
+        // normal load all alerts are processed within a single iteration.
+        if (candlesChecked < shiftsCache.get.length * 0.9) {
+          log.info(
+            logPrefix,
+            'Checked shifts',
+            candlesChecked,
+            '/',
+            shiftsCache.get.length
+          )
+        }
 
         if (noPriceCount > 0) {
           if (noPriceCount > 100) {

@@ -1,10 +1,15 @@
 import { TickerPrices } from 'prices'
 
 import { log } from '@/helpers'
+import { createDedupByKey } from '@/helpers/throttleLog'
 import { lbankRequest } from '@/marketApi/lbank/index'
 import { InstrumentsList } from '@/models'
 
 const logPrefix = '[GET LBANK PRICES]'
+
+// Dedup: the set of missing tickers is usually stable (delistings), so don't
+// write the same message every cycle.
+const dedupNotFound = createDedupByKey()
 
 export interface LbankPriceItem {
   symbol: string
@@ -48,8 +53,11 @@ export const lbankGetPrices = async (
     return acc
   }, [])
 
-  if (notFoundItems.length) {
+  const notFoundKey = notFoundItems.slice().sort().join(',')
+  if (notFoundItems.length && dedupNotFound(notFoundKey)) {
     log.info(logPrefix, 'Not found items:', notFoundItems)
+  } else if (!notFoundItems.length) {
+    dedupNotFound('')
   }
 
   return pricesNormilized

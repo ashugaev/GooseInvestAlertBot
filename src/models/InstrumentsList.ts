@@ -93,44 +93,53 @@ export const InstrumentsListModel = getModelForClass(InstrumentsList, {
 })
 
 /**
- * Auto apdate all data structures for instruments list
+ * Readiness of `instrumentsByIdCache` / `instrumentsByTickerCache`. Until
+ * the first successful load `priceChecker` is blind (see
+ * `setupPriceChecker`). Any code reading the cache via
+ * `getInstrumentByIdFromCache(..., noReqToDb=true)` must gate on this flag,
+ * otherwise on a cold start 100% of alerts fail.
  */
+let instrumentsByIdCacheReady = false
+export const isInstrumentsByIdCacheReady = (): boolean =>
+  instrumentsByIdCacheReady
+
+// Re-export for backwards compat with anything that imported from here.
+export { populateInstrumentsCaches } from './instrumentsCacheLayout'
+import { populateInstrumentsCaches } from './instrumentsCacheLayout'
+
+/**
+ * Auto update all data structures for instruments list
+ */
+const REFRESH_INTERVAL_MS = 1000 * 60 * 60 * 3 // 3 hours
+const FAILED_RETRY_MS = 60 * 1000 // 1 min after crash so priceChecker does not stall for 3h
 // eslint-disable-next-line
 ;(async function autoUpdateInstrumentsListCache() {
-  const items: InstrumentsList[] = await retryForever(async () => {
-    await waitForMongoConnection('autoUpdateInstrumentsListCache')
+  let nextDelayMs = REFRESH_INTERVAL_MS
+  try {
+    const items: InstrumentsList[] = await retryForever(async () => {
+      await waitForMongoConnection('autoUpdateInstrumentsListCache')
 
-    return await InstrumentsListModel.find().lean()
-  })
+      return await InstrumentsListModel.find().lean()
+    })
 
-  const cacheItemsById = items.map((item) => ({
-    key: item.id,
-    val: item,
-  }))
-  instrumentsByIdCache.mset(cacheItemsById)
+    populateInstrumentsCaches(
+      items,
+      instrumentsByIdCache,
+      instrumentsByTickerCache
+    )
+    instrumentsByIdCacheReady = true
 
-  const objByTicker = items.reduce<Record<string, InstrumentsList[]>>(
-    (acc, item) => {
-      if (acc[item.ticker]) {
-        acc[item.ticker].push(item)
-      } else {
-        acc[item.ticker] = [item]
-      }
-
-      return acc
-    },
-    {}
-  )
-
-  const cacheByTicker = Object.entries(objByTicker).map(([key, val]) => ({
-    key,
-    val,
-  }))
-  instrumentsByTickerCache.mset(cacheByTicker)
-
-  log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
-
-  setTimeout(autoUpdateInstrumentsListCache, 1000 * 60 * 60 * 3) // Update every 3 hours
+    log.info('[autoUpdateInstrumentsListCache] Instruments list cache updated')
+  } catch (e) {
+    // Previously a crash between find() and log.info would escape into
+    // unhandledRejection and leave the cache empty forever. Log and retry
+    // quickly — if the cache has never loaded, priceChecker is blocked on
+    // the gate, and waiting 3 hours means alerts are idle the whole time.
+    nextDelayMs = FAILED_RETRY_MS
+    log.error('[autoUpdateInstrumentsListCache] Cache load crashed', e)
+  } finally {
+    setTimeout(autoUpdateInstrumentsListCache, nextDelayMs)
+  }
 })()
 
 // eslint-disable-next-line max-len

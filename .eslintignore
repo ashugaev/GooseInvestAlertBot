@@ -1,2 +1,6 @@
 dist
 node_modules
+# tsconfig.json excludes *.test.ts from compilation, so the type-aware
+# ESLint parser fails on them. Tests are validated via tsc / jest instead.
+**/*.test.ts
+**/*.spec.ts

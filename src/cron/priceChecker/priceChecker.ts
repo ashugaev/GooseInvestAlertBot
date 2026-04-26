@@ -1,4 +1,10 @@
 import {
+  AlertFailureBucket,
+  classifyAlertFailure,
+  emptyBuckets,
+  topTickersInBucket,
+} from '@/cron/priceChecker/classifyAlertFailure'
+import {
   checkAlertTriggered,
   sendTriggeredAlert,
 } from '@/cron/priceChecker/priceChecker.utils'
@@ -6,9 +12,11 @@ import { log } from '@/helpers'
 import { fnTimeAsync } from '@/helpers/fnTime'
 import { getLastPrice } from '@/helpers/getLastPrice'
 import { retryUntilTrue } from '@/helpers/retryUntilTrue'
+import { createOncePerInterval } from '@/helpers/throttleLog'
 import { wait } from '@/helpers/wait'
 import {
   getInstrumentByIdFromCache,
+  isInstrumentsByIdCacheReady,
   PriceAlert,
   priceAlertCache,
 } from '@/models'
@@ -19,10 +27,21 @@ const itemsCheckTime = 500
 // Avoid duplicates
 const trigeredCache = new Set<string>()
 
+// Aggregated bucket log — once per minute, so we can see the distribution
+// (noInstrument / noPrice / invalidPrice / error) and the top dead tickers.
+const failureSummaryHeartbeat = createOncePerInterval(60_000)
+
 export const setupPriceChecker = async () => {
   await retryUntilTrue(
     () => priceAlertCache.isReady,
     logPrefix + ' setupPriceChecker'
+  )
+  // Without this gate, on cold start instrumentsByIdCache is still empty
+  // (autoUpdateInstrumentsListCache takes ~5–8 minutes), and every alert
+  // gets !instrumentData -> 100% failure-spam until the cache loads.
+  await retryUntilTrue(
+    isInstrumentsByIdCacheReady,
+    logPrefix + ' setupPriceChecker waits instruments cache'
   )
 
   // eslint-disable-next-line no-constant-condition
@@ -37,53 +56,42 @@ export const setupPriceChecker = async () => {
           return
         }
 
-        // Log data
-        const alertsFailedToCheckList = []
+        const buckets = emptyBuckets()
         const alertsTriggeredList = []
 
         for (let i = 0; i < priceAlertCache.get.length; i++) {
           const alert: PriceAlert = priceAlertCache.get[i]
-
+          if (!alert) continue
+          // Build `tag` inside try — some cached alerts have shown up without
+          // user/tickerId, and otherwise the throw would escape into the
+          // outer SUPERCRASH branch and tank the whole iteration over one
+          // bad document.
+          let tag = ''
           try {
-            // No throw there for save logs size
-            if (!alert) {
-              alertsFailedToCheckList.push(
-                alert.tickerId + ':' + alert.user.toString()
-              )
-              continue
-            }
+            tag = alert.tickerId + ':' + alert.user.toString()
             const instrumentData = await getInstrumentByIdFromCache(
               alert.tickerId,
               true,
               true
             )
-            if (!instrumentData) {
-              alertsFailedToCheckList.push(
-                alert.tickerId + ':' + alert.user.toString()
-              )
-              continue
-            }
             const lastPrice = getLastPrice(alert.tickerId, true)
-            if (!lastPrice) {
-              alertsFailedToCheckList.push(
-                alert.tickerId + ':' + alert.user.toString()
-              )
+            const failure = classifyAlertFailure({
+              hasInstrument: Boolean(instrumentData),
+              lastPrice,
+            })
+
+            if (failure) {
+              buckets[failure].push(tag)
               continue
             }
 
-            // Отчасти это какой-то пережиток, но может пригодиться для новых не проверенных апи
-            const isPriceValidValue =
-              typeof lastPrice === 'number' && lastPrice > 0
-            if (!isPriceValidValue) {
-              throw new Error(logPrefix + ' Невалидная цена инструмента')
-            }
-
-            const isAlertTriggered = checkAlertTriggered(alert, lastPrice)
+            const isAlertTriggered = checkAlertTriggered(
+              alert,
+              lastPrice as number
+            )
 
             if (isAlertTriggered) {
-              alertsTriggeredList.push(
-                alert.tickerId + ':' + alert.user.toString()
-              )
+              alertsTriggeredList.push(tag)
 
               if (trigeredCache.has(alert._id.toString())) {
                 log.error(
@@ -104,10 +112,8 @@ export const setupPriceChecker = async () => {
               sendTriggeredAlert(alert, instrumentData)
             }
           } catch (e) {
-            alertsFailedToCheckList.push(
-              alert.tickerId + ':' + alert.user.toString()
-            )
-            log.error(logPrefix, 'Ошибка обработки алертов', e)
+            buckets[AlertFailureBucket.Error].push(tag)
+            log.error(logPrefix, 'Failed to process alert', tag, e)
           }
         }
 
@@ -115,16 +121,35 @@ export const setupPriceChecker = async () => {
           log.info(logPrefix, 'Triggered alerts', alertsTriggeredList)
         }
 
-        // FIXME: Уменьшить количество, что бы поддерживать минимум мертвых алертов
-        if (alertsFailedToCheckList.length > 150) {
+        const totalFailed =
+          buckets[AlertFailureBucket.NoInstrument].length +
+          buckets[AlertFailureBucket.NoPrice].length +
+          buckets[AlertFailureBucket.InvalidPrice].length +
+          buckets[AlertFailureBucket.Error].length
+
+        if (totalFailed > 150 && failureSummaryHeartbeat()) {
           log.error(
             logPrefix,
             'Failed to check alerts',
-            alertsFailedToCheckList.length,
+            totalFailed,
             '/',
-            priceAlertCache.get.length
+            priceAlertCache.get.length,
+            {
+              noInstrument: buckets[AlertFailureBucket.NoInstrument].length,
+              noPrice: buckets[AlertFailureBucket.NoPrice].length,
+              invalidPrice: buckets[AlertFailureBucket.InvalidPrice].length,
+              error: buckets[AlertFailureBucket.Error].length,
+              topNoInstrument: topTickersInBucket(
+                buckets[AlertFailureBucket.NoInstrument]
+              ),
+              topNoPrice: topTickersInBucket(
+                buckets[AlertFailureBucket.NoPrice]
+              ),
+              topInvalidPrice: topTickersInBucket(
+                buckets[AlertFailureBucket.InvalidPrice]
+              ),
+            }
           )
-          log.info(alertsFailedToCheckList.slice(-50))
         }
 
         const timeToWait = itemsCheckTime - (Date.now() - checkStart)
