@@ -25,7 +25,7 @@ Need help? Drop into the support chat: **[@GooseInvestAlertChat](https://t.me/Go
 
 - **Price-level alerts** — get a message when a ticker crosses a price you set, up or down.
 - **Speed alerts** — get a message when a coin or stock moves unusually fast in a short window.
-- **Stocks and crypto in one place** — Tinkoff Invest for stocks; Binance, Binance Futures, Bybit, KuCoin, and LBank for crypto; fiat pairs (EUR/USD, USD/RUB, …) too.
+- **Stocks and crypto in one place** — Tinkoff Invest for stocks; Binance, Binance Futures, Bybit, KuCoin, LBank for crypto; fiat pairs (EUR/USD, USD/RUB, …) too.
 - **Bring your own bot** — connect a private Telegram bot for your group or channel.
 - **English and Russian** out of the box.
 
@@ -63,7 +63,7 @@ npm run db-migration:up
 npm run dev:watch
 ```
 
-That's it — the bot starts and connects to Telegram. Full list of settings (exchange API keys, payment providers, GPT-based signal parsing, etc.) is in **[CONFIG.md](CONFIG.md)**.
+That's it — the bot starts and connects to Telegram. Full list of settings (exchange API keys, payment providers, MongoDB tuning, etc.) is in **[CONFIG.md](CONFIG.md)**.
 
 Docker shortcut:
 

@@ -8,24 +8,21 @@
 ## Repository Structure
 ```
 src/
-  app.ts            # Entry: dotenv → Telegraf → mongoose → cron → bots
+  app.ts            # Entry: dotenv → Telegraf → mongoose → cron → bot
   config.ts         # Static feature/app flags
-  bots/             # Multi-bot setup (cryptoSignals, …)
   commands/         # Telegram commands and Telegraf scenes
   scenes/           # Shared Telegraf scene wrappers
-  cron/             # Schedulers: priceChecker, shiftsChecker, statSender, …
-  integrations/     # External services (telegram, openai, google, tronscan)
+  cron/             # Schedulers: priceChecker, shiftsChecker, …
+  integrations/     # External services (tronscan)
   marketApi/        # Market data sources (binance, bybit, tinkoff, kucoin, lbank, currencyConverter)
-  paymentApi/       # Payment providers
+  paymentApi/       # Payment providers (coinbase)
   models/           # Typegoose models (Mongo schemas)
-  modules/          # autotrader, priceUpdater, updateTickersList
+  modules/          # priceUpdater, updateTickersList
   middlewares/      # Telegraf middlewares
-  features/         # Feature toggles / experiments
   helpers/          constants/  keyboards/  menu/  types/
   tests/            # In-process health probes started from cron (not Jest)
 migrations/         # migrate-mongo migrations
 locales/            # i18n strings (telegraf-i18n)
-channels.example.json  # Template for crypto-signal channel config (copy to channels.json)
 ```
 
 ## Stack
@@ -42,7 +39,6 @@ channels.example.json  # Template for crypto-signal channel config (copy to chan
 - `npm run dev:static` — one-shot rebuild + run.
 - `npm run db-migration:up` / `:down` — `migrate-mongo` against `migrations/`.
 - `.env` is required (see `.env.sample`); secrets are not committed.
-- `channels.json` (gitignored) holds the per-channel signal config; copy `channels.example.json` and edit. The bot falls back to the example if no `channels.json` exists.
 
 ## Lint / Test
 - `npm run lint` — Prettier + ESLint (`--max-warnings 0`). `lint:fix` for auto-fixes.
@@ -60,7 +56,7 @@ channels.example.json  # Template for crypto-signal channel config (copy to chan
 ## Deployment
 - Docker image is built from `Dockerfile`; `docker-compose.yml` is for local containerised runs (`npm run docker:up`).
 - Production: DigitalOcean App Platform auto-builds and deploys from `master` directly — no GitHub Actions deploy job.
-- CI runs in GitHub Actions (`.github/workflows/`); `docker.yml` also publishes the image to `ghcr.io` for non-DO users.
+- CI runs in GitHub Actions (`.github/workflows/`).
 
 ## Git & PR
 - Branch names: short, kebab-case, descriptive (e.g. `add-volume-alerts`).

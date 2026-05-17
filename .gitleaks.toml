@@ -1,5 +1,5 @@
 # gitleaks configuration. Extends the default ruleset bundled with gitleaks
-# and adds project-specific rules for Telegram bot tokens and channel IDs.
+# and adds a Telegram-bot-token rule.
 
 [extend]
 useDefault = true
@@ -10,19 +10,12 @@ description = "Telegram bot token (\\d+:[A-Za-z0-9_-]{35})"
 regex = '''\b\d{8,12}:[A-Za-z0-9_-]{35}\b'''
 tags = ["telegram", "token"]
 
-[[rules]]
-id = "telegram-session-string"
-description = "Telegram MTProto session string"
-regex = '''\b1[A-Za-z0-9]{300,}\b'''
-tags = ["telegram", "session"]
-
 [allowlist]
 description = "Allowlisted paths and matches that are not real secrets"
 paths = [
   '''(?i)\.lock$''',
   '''(?i)package-lock\.json$''',
   '''locales/.*\.yaml$''',
-  '''channels\.example\.json$''',
   '''\.env\.sample$''',
   # Old throwaway file from 2022 (removed long ago, key was rotated).
   # See SECURITY.md for the history rewrite plan.

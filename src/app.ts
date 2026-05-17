@@ -1,5 +1,4 @@
 import 'module-alias/register'
-const TelegrafBot = require('telegraf')
 
 // Config dotenv
 import * as dotenv from 'dotenv'
@@ -12,13 +11,6 @@ import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { Context, Telegraf } from 'telegraf'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
-import { setypAnalyseChannelCommand } from '@/bots/cryptoSignals/commands/analyse/analyse'
-import { analyseScene } from '@/bots/cryptoSignals/commands/analyse/analyse.scenes'
-import { setupTradeCommand } from '@/bots/cryptoSignals/commands/trade/trade'
-import {
-  askNewTradeChat,
-  tradeScenes,
-} from '@/bots/cryptoSignals/commands/trade/trade.scenes'
 import { setupAddChat } from '@/commands/addChat/addChat'
 import { addChatScenes } from '@/commands/addChat/addChat.scenes'
 import { setupAddPremium } from '@/commands/addPremium/addPremium'
@@ -74,7 +66,6 @@ const secretToken = process.env.STOCKS_API_TOKEN
 export const legacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
 const stage = new Stage([
-  tradeScenes,
   statScenes,
   shiftScenes,
   removeScenes,
@@ -115,12 +106,9 @@ export const botInit = (bot: Telegraf<Context>) => {
   setupAddChat(bot)
   setupTest(bot)
   setupAddPremium(bot)
-  // setupVolumes(bot)
 
-  // Listen crypto transaction code
-  // TODO: Move to component
+  // Listen for crypto transaction hashes (subscription payments via TRX/USDT).
   bot.hears(
-    // e046c2bb63fa65a4a3d94228fd8fd87e1fb0c2ffa3780ef722846c532c326b0a
     new RegExp('^([A-Fa-f0-9]{64})$'),
     commandWrapper(
       {
@@ -155,46 +143,5 @@ if (botConfig.appFlags.priceAlertBots) {
 
     // Start all async tasks (cron and continuous)
     setupCheckers()
-  })
-}
-
-if (botConfig.appFlags.cryptoSignalBots) {
-  // Start signals bot client
-  // TODO: Make separated
-  ;(async () => {
-    await waitForMongoConnectionOrCrash('signals app bootstrap')
-
-    const signalsStage = new Stage([
-      analyseScene,
-      askNewTradeChat.createScene(),
-    ])
-
-    const bot = new TelegrafBot(
-      process.env.TELEGRAM_SIGNALS_BOT_TOKEN
-    ) as Telegraf<Context>
-
-    // Ignore old messages
-    bot.use(checkTime)
-
-    const botInfo = await bot.telegram.getMe()
-    bot.context.goose = botInfo
-
-    // Attach user.
-    // FIXME: attachUser is currently coupled to the alert bot; generalise it.
-    bot.use(attachUser)
-
-    bot.use(session())
-    bot.use(signalsStage.middleware())
-
-    setupTradeCommand(bot)
-    setypAnalyseChannelCommand(bot)
-
-    // Start bot
-    bot.startPolling()
-    log.info(`Bot GOOSE SIGNALS is up and running`)
-  })()
-
-  process.on('uncaughtException', function (err) {
-    log.error('[UNHANDLED]', err)
   })
 }

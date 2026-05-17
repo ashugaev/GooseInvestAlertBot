@@ -9,6 +9,3 @@ logs/
 
 # Spur worktree creates this as a symlink to a personal absolute path.
 .cursor
-
-# Per-deployment channels config (use channels.example.json as template)
-channels.json
