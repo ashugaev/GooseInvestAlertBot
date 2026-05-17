@@ -240,7 +240,7 @@ import axios from 'axios'
  *   ],
  *   "hash": "e046c2bb63fa65a4a3d94228fd8fd87e1fb0c2ffa3780ef722846c532c326b0a",
  *   "contractData": {
- *     "data": "a9059cbb0000000000000000000000416662845825e0dff4b36b876f18f0eef8ee8c47b50000000000000000000000000000000000000000000000000000000000b71b00",
+ *     "data": "a9059cbb...<truncated trc20 transfer payload>...",
  *     "owner_address": "TNXoiAJ3dct8Fjg4M9fkLFh9S2v9TXc32G",
  *     "contract_address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
  *   },

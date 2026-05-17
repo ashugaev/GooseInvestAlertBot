@@ -1,0 +1,45 @@
+# Optional SSH-based deployment. Disabled until the required secrets are
+# configured in the repository. To enable, set repository secrets:
+#
+#   DEPLOY_HOST              — server hostname or IP
+#   DEPLOY_USER              — SSH user
+#   DEPLOY_SSH_PRIVATE_KEY   — private key with access to the server
+#   DEPLOY_PATH              — absolute path on the server where the
+#                              docker-compose-remote.yml file should live
+#
+# This workflow waits for the Docker image workflow to succeed, then SSHes in
+# and runs `docker compose pull && docker compose up -d`.
+
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ['Docker image']
+    types: [completed]
+    branches: [master]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Copy docker-compose
+        run: |
+          scp -i ~/.ssh/id_ed25519 \
+            docker-compose-remote.yml \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/docker-compose.yml"
+
+      - name: Pull & restart
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ${{ secrets.DEPLOY_PATH }} && docker compose pull && docker compose up -d --remove-orphans"

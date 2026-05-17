@@ -3,7 +3,7 @@
 ## Scope & Safety
 - Keep this file lean — only what an agent can't derive from code, ESLint, or standard conventions.
 - `CLAUDE.md` and `AGENTS.md` are mirrors. Any change to one must be reflected in the other in the same commit.
-- Communicate with the user in Russian; code, comments, identifiers, log messages, and commit messages stay in English. **Required**: any new code/comment/log you add is in English. If you touch a file or block that still has Russian text in code (comments, log strings, identifiers), translate that text to English in the same change — opportunistic but mandatory whenever you're already editing nearby. User-facing strings (Telegram replies, locales/) are exempt; their translations live under `locales/`.
+- All code, comments, identifiers, log messages, and commit messages must be in English. User-facing strings (Telegram replies) live under `locales/`.
 
 ## Repository Structure
 ```
@@ -15,19 +15,21 @@ src/
   scenes/           # Shared Telegraf scene wrappers
   cron/             # Schedulers: priceChecker, shiftsChecker, statSender, …
   integrations/     # External services (telegram, openai, google, tronscan)
-  marketApi/        # Market data sources (binance, bybit, tinkoff, kucoin, lbank, yahoo, currencyConverter)
+  marketApi/        # Market data sources (binance, bybit, tinkoff, kucoin, lbank, currencyConverter)
   paymentApi/       # Payment providers
   models/           # Typegoose models (Mongo schemas)
   modules/          # autotrader, priceUpdater, updateTickersList
   middlewares/      # Telegraf middlewares
   features/         # Feature toggles / experiments
   helpers/          constants/  keyboards/  menu/  types/
+  tests/            # In-process health probes started from cron (not Jest)
 migrations/         # migrate-mongo migrations
-locales/            # i18n strings
+locales/            # i18n strings (telegraf-i18n)
+channels.example.json  # Template for crypto-signal channel config (copy to channels.json)
 ```
 
 ## Stack
-- Node 20 (managed via nvm), TypeScript 4.9, target `esnext`, output → `dist/`.
+- Node 20 (use the version pinned in `Dockerfile`), TypeScript 4.9, target `esnext`, output → `dist/`.
 - Telegram bot via Telegraf; long-polling — no inbound HTTP port.
 - MongoDB via mongoose + @typegoose/typegoose.
 - Sentry for error tracking; cron via the `cron` package.
@@ -36,16 +38,17 @@ locales/            # i18n strings
 ## Build / Run
 - `npm run build` — `rimraf ./dist && tsc --skipLibCheck`. Run after every code change before declaring done.
 - `npm start` — runs the built bot from `dist/app.js`. Requires `.env` at repo root.
-- `npm run dev:watch` — concurrent `tsc -w` + `nodemon dist/app.js`. The Spur `dev` sidecar uses this.
+- `npm run dev:watch` — concurrent `tsc -w` + `nodemon dist/app.js`.
 - `npm run dev:static` — one-shot rebuild + run.
 - `npm run db-migration:up` / `:down` — `migrate-mongo` against `migrations/`.
 - `.env` is required (see `.env.sample`); secrets are not committed.
+- `channels.json` (gitignored) holds the per-channel signal config; copy `channels.example.json` and edit. The bot falls back to the example if no `channels.json` exists.
 
 ## Lint / Test
 - `npm run lint` — Prettier + ESLint (`--max-warnings 0`). `lint:fix` for auto-fixes.
 - ESLint highlights: no semicolons (`@typescript-eslint/semi: never`), `max-len: 128`, `simple-import-sort`, `unused-imports`, `no-relative-import-paths` — always import via `@/…`, not `../../`.
-- `npm test` — Jest. The legacy probes under `src/tests/` are manual scratch — leave them alone.
-- **Required: any code you add or modify must be covered by Jest unit tests next to the source (`*.test.ts`).** Keep tests pure: no live Mongo, no live network, no transitive imports of `src/app.ts`. If the touched function has heavy collaborators (mongoose models, Telegraf, axios), extract a pure dep-injected helper into its own file and test that helper. Run `npx jest --testPathPattern='<your files>'` before declaring done.
+- `npm test` — Jest. Keep tests pure: no live Mongo, no live network, no transitive imports of `src/app.ts`. If the touched function has heavy collaborators (mongoose models, Telegraf, axios), extract a pure dep-injected helper into its own file and test that helper.
+- **Required: any code you add or modify must be covered by Jest unit tests next to the source (`*.test.ts`).** Run `npx jest --testPathPattern='<your files>'` before declaring done.
 
 ## Conventions
 - New TS files: no semicolons, single quotes, sorted imports, alias paths only.
@@ -55,18 +58,11 @@ locales/            # i18n strings
 - Don't reintroduce `../../` relative imports — the lint rule will reject them.
 
 ## Deployment
-- Deployed to DigitalOcean as the `goose` app.
 - Docker image is built from `Dockerfile`; `docker-compose.yml` is for local containerised runs (`npm run docker:up`).
-- GitLab CI lives in `.gitlab-ci.yml`. The image registry is `registry.gitlab.com/ashugaev/tradebot`.
-- Default branch is `master`; the `paid` branch is periodically merged into master (see recent merge commits).
-
-## Spur (openclaw-dev)
-- This project is registered with the Spur orchestrator on `openclaw-dev` (project key `tb`, sessionPrefix `goose`).
-- Sidecar `dev` runs `npm run dev:watch` under nvm node 20. Start it via `"$SPUR_SESSION_TOOL_DIR/spur-sidecar" --name dev` from inside a Spur session, not directly.
-- `spur.yml` is the source of truth for the orchestrator config; edits propagate to all worktrees.
+- `docker-compose-remote.yml` is for server-side deployment from a pre-built image (set `IMAGE` env var).
+- CI runs in GitHub Actions (`.github/workflows/`).
 
 ## Git & PR
-- Branch names: short, kebab-case, descriptive (e.g. `add-volume-alerts`). The repo has no enforced prefix scheme.
+- Branch names: short, kebab-case, descriptive (e.g. `add-volume-alerts`).
 - One feature per PR. Don't merge while CI is red — fix the failure even if it predates your branch.
-- Commit messages and PR descriptions in English; user-facing comms in Russian.
-- All GitLab interactions go through the official `glab` CLI (installed at `~/.local/bin/glab`, authed via `$GITLAB_TOKEN` from `~/.zshrc`). Use `glab mr view`, `glab mr merge`, `glab ci status`, `glab ci view`, `glab ci trace` rather than raw `curl` to the GitLab REST API. Drop down to `curl -H "PRIVATE-TOKEN: $GITLAB_TOKEN"` only when `glab` lacks the specific endpoint.
+- Commit messages and PR descriptions in English.

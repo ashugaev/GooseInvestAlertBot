@@ -4,7 +4,9 @@ import {
   ProcessTransactionDeps,
 } from '@/cron/subscriptionPayment/processPendingTransaction'
 
-const makeTx = (over: Partial<PaymentTransaction> = {}): PaymentTransaction => ({
+const makeTx = (
+  over: Partial<PaymentTransaction> = {}
+): PaymentTransaction => ({
   paymentId: 'hash1',
   paymentIdAddedDate: new Date('2026-04-26T10:00:00Z'),
   userId: 1,

@@ -1,4 +1,4 @@
-import { leagacyTinkoffApi } from '../../../app'
+import { legacyTinkoffApi } from '../../../app'
 import { getDatesBackFromToday } from '../../../helpers/getDatesBackFromToday'
 import { log } from '../../../helpers/log'
 import { wait } from '../../../helpers/wait'
@@ -8,6 +8,7 @@ const daysBackToCheck = 30
 const maxRetries = 3
 
 export const calculateShifts = async ({ instruments, shifts }) =>
+  // eslint-disable-next-line no-async-promise-executor
   await new Promise<void>(async (rs) => {
     let timesRetried = 0
 
@@ -28,7 +29,7 @@ export const calculateShifts = async ({ instruments, shifts }) =>
       let candles = []
 
       try {
-        const data = await leagacyTinkoffApi.candlesGet({
+        const data = await legacyTinkoffApi.candlesGet({
           from: dateFrom,
           to: dateTo,
           interval: 'day',
@@ -60,7 +61,7 @@ export const calculateShifts = async ({ instruments, shifts }) =>
 
       generateShiftsData({ shifts, instrument, candles })
 
-      // что бы не выпилить всю квоту
+      // Throttle to stay under the API quota.
       await wait(2000)
     }
 

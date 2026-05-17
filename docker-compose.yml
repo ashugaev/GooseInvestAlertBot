@@ -1,13 +1,17 @@
-# файл для локального запуска проекта в докере
+# Local container run for development. Builds the image from the Dockerfile.
+# For production-image-based runs see docker-compose-remote.yml.
 
 version: "3"
 
 services:
-  stocks_bot:
-    image: registry.gitlab.com/ashugaev/tradebot/stocks_bot:v1
+  goose-bot:
+    image: goose-invest-alert:local
     restart: always
     build:
       context: .
       dockerfile: ./Dockerfile
+    env_file:
+      - .env
     volumes:
       - "./logs:/app/logs"
+      - "./channels.json:/app/channels.json:ro"

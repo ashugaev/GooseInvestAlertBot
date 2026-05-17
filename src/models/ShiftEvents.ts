@@ -83,6 +83,7 @@ export interface ShiftEventItem {
 export async function createShiftEvents(
   items: ShiftEventItem[]
 ): Promise<null> {
+  // eslint-disable-next-line no-async-promise-executor
   return await new Promise(async (rs, rj) => {
     try {
       await ShiftEventsModel.create(items)
@@ -125,7 +126,7 @@ export async function removeShiftEvent({
   _id,
   user,
 }: Partial<ShiftEventItem>): Promise<number> {
-  // eslint-disable-next-line promise/param-names,no-async-promise-executor
+  // eslint-disable-next-line no-async-promise-executor
   return await new Promise(async (rs, rj) => {
     try {
       const params: Partial<PriceAlert> = {}

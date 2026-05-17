@@ -1,10 +1,15 @@
-# файл для локального запуска проекта в докере
+# Remote/server deployment. Pulls a pre-built image from a registry instead of
+# building locally. Set IMAGE to the fully-qualified image reference for your
+# environment (e.g. ghcr.io/your-org/goose-invest-alert:latest).
 
 version: "3"
 
 services:
-  stocks_bot:
-    image: registry.gitlab.com/ashugaev/tradebot/stocks_bot:v1
+  goose-bot:
+    image: ${IMAGE:-ghcr.io/ashugaev/goose-invest-alert:latest}
     restart: always
+    env_file:
+      - .env
     volumes:
       - "./logs:/app/logs"
+      - "./channels.json:/app/channels.json:ro"

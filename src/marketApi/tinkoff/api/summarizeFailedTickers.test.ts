@@ -22,9 +22,7 @@ describe('summarizeFailedTickers', () => {
   })
 
   it('returns null when below minCount threshold', () => {
-    expect(
-      summarizeFailedTickers(['a', 'b'], { minCount: 5 })
-    ).toBeNull()
+    expect(summarizeFailedTickers(['a', 'b'], { minCount: 5 })).toBeNull()
   })
 
   it('returns summary when at or above minCount threshold', () => {

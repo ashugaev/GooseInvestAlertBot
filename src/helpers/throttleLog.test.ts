@@ -1,7 +1,4 @@
-import {
-  createDedupByKey,
-  createOncePerInterval,
-} from '@/helpers/throttleLog'
+import { createDedupByKey, createOncePerInterval } from '@/helpers/throttleLog'
 
 describe('createOncePerInterval', () => {
   beforeEach(() => {

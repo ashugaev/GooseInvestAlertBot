@@ -2,18 +2,6 @@ import { Api, TelegramClient } from 'telegram'
 
 import { log } from '@/helpers'
 
-const {
-  SESSION_STRING,
-  TELEGRAM_API_HASH,
-  TELEGRAM_API_ID,
-  TELEGRAM_ANN_API_ID,
-  TELEGRAM_ANN_SESSION_STRING,
-  TELEGRAM_ANN_API_HASH,
-  TELEGRAM_SIGNALS_API_ID,
-  TELEGRAM_SIGNALS_API_HASH,
-  TELEGRAM_SIGNALS_SESSION_STRING,
-} = process.env
-
 export const getChatHistory = async ({
   cl,
   nameOrId,
@@ -50,8 +38,8 @@ export const getChatHistory = async ({
       break
     }
 
-    // Если дата последнего сообщения меньше указанной крайней
-    //  То фильтруем только те которые в диапазоне
+    // If the last message in the batch is older than the cutoff, keep only
+    // messages within the requested date range and stop paging.
     if (messages[messages.length - 1].date < unixTillDate) {
       allMessages.push(
         ...messages.filter((message) => {

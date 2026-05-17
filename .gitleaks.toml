@@ -1,0 +1,42 @@
+# gitleaks configuration. Extends the default ruleset bundled with gitleaks
+# and adds project-specific rules for Telegram bot tokens and channel IDs.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "telegram-bot-token"
+description = "Telegram bot token (\\d+:[A-Za-z0-9_-]{35})"
+regex = '''\b\d{8,12}:[A-Za-z0-9_-]{35}\b'''
+tags = ["telegram", "token"]
+
+[[rules]]
+id = "telegram-session-string"
+description = "Telegram MTProto session string"
+regex = '''\b1[A-Za-z0-9]{300,}\b'''
+tags = ["telegram", "session"]
+
+[allowlist]
+description = "Allowlisted paths and matches that are not real secrets"
+paths = [
+  '''(?i)\.lock$''',
+  '''(?i)package-lock\.json$''',
+  '''locales/.*\.yaml$''',
+  '''channels\.example\.json$''',
+  '''\.env\.sample$''',
+  # Old throwaway file from 2022 (removed long ago, key was rotated).
+  # See SECURITY.md for the history rewrite plan.
+  '''p2pExmapleTracshFile\.js$''',
+]
+commits = [
+  # 2022 "p2p example" commit that added a since-revoked admitad sandbox key.
+  "222ef083223bec948eca2bb5a9d43f9a734b8ad4",
+]
+regexes = [
+  # Placeholder values in example configs.
+  '''-1001234567890''',
+  # Public Telegram usernames that are intentionally referenced in docs.
+  '''@GooseInvestAlertBot''',
+  '''@GooseInvestAlertChat''',
+  '''@ashugaev''',
+]

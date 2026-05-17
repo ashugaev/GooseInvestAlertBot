@@ -22,28 +22,7 @@ export interface CurrencyApiSpecificData {
   quoteAssetData: CurrencyListApiResponseItem
 }
 
-/**
- * Popular codes for generating only popular pairs
- */
-const popularCodes = [
-  'GBP',
-  'CAD',
-  'CHF',
-  'RUB',
-  'EUR',
-  'JPY',
-  'USD',
-  'AUD',
-  'GEL',
-  'TRY',
-  'THB',
-  'HKD',
-  'AMD',
-  'RSD',
-  'IDR',
-]
 const deprecatedCodes = ['BTC', 'ETH', 'BIH', 'GGP']
-const excludedPairs = ['THBBNB']
 
 const coinTickersCache = new NodeCache({
   stdTTL: 1000, // sec
@@ -83,64 +62,3 @@ export const getBaseCurrencies = async () => {
 
   return result
 }
-
-/**
- * Playground https://app.currencyapi.com/request-playground
- */
-// export const getCurrenciesList = async (): Promise<InstrumentsList[]> => {
-//   const coinsList = await getBaseCurrencies()
-//   const dataArr: CurrencyListApiResponseItem[] = Object.values(coinsList.data)
-//   const dataForPopularCodes: CurrencyListApiResponseItem[] = popularCodes.map(
-//     (code) => coinsList.data[code]
-//   )
-//
-//   if (!dataArr) {
-//     throw new Error('No data in currencies list')
-//   }
-//
-//   const currencyPairs = dataArr.reduce<InstrumentsList[]>((acc, base) => {
-//     dataForPopularCodes.forEach((quote) => {
-//       if (base.code === quote.code) {
-//         return
-//       }
-//
-//       let ticker = base.code + quote.code
-//
-//       // acc.push({
-//       //   id: `currency_${ticker}`,
-//       //   priceScale: null,
-//       //   source: EMarketDataSources.yahoo,
-//       //   name: base.name,
-//       //   ticker: ticker,
-//       //   type: EMarketInstrumentTypes.Currency,
-//       //   currency: quote.code,
-//       //   sourceSpecificData: {
-//       //     symbol: quote.symbol,
-//       //     baseAssetData: base,
-//       //     quoteAssetData: quote,
-//       //   },
-//       // })
-//
-//       ticker = quote.code + base.code
-//
-//     //   acc.push({
-//     //     priceScale: null,
-//     //     id: `currency_${ticker}`,
-//     //     source: EMarketDataSources.yahoo,
-//     //     name: quote.name,
-//     //     ticker: ticker,
-//     //     type: EMarketInstrumentTypes.Currency,
-//     //     currency: base.code,
-//     //     sourceSpecificData: {
-//     //       symbol: base.symbol,
-//     //       baseAssetData: quote,
-//     //       quoteAssetData: base,
-//     //     },
-//     //   })
-//     // })
-//
-//     return acc
-//   }, [])
-//
-//   return currencyPairs
-// }

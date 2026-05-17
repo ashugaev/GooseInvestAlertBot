@@ -4,20 +4,14 @@ import { StringSession } from 'telegram/sessions'
 
 require('dotenv').config()
 
-const {
-  TELEGRAM_API_ID,
-  TELEGRAM_API_HASH,
-  TELEGRAM_ANN_API_HASH,
-  TELEGRAM_ANN_API_ID,
-  TELEGRAM_SIGNALS_API_ID,
-  TELEGRAM_SIGNALS_API_HASH,
-} = process.env
+const { TELEGRAM_SIGNALS_API_ID, TELEGRAM_SIGNALS_API_HASH } = process.env
 
 const stringSession = new StringSession('')
 
 /**
- * Must be called manually
- * Save this string to avoid logging in again in .evn file as TELEGRAM_SESSION_STRING
+ * Run manually with `npm run telegram:get-session-string`. Save the printed
+ * string into .env as TELEGRAM_SIGNALS_SESSION_STRING so the bot can
+ * authenticate as your Telegram user account without an interactive login.
  */
 const generateSessionString = async () => {
   console.log('Loading...')

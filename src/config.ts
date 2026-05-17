@@ -1,9 +1,7 @@
 export const botConfig = {
   appFlags: {
-    // priceAlertBots: !isDev,
     priceAlertBots: true,
     cryptoSignalBots: true,
-    trackSignals: true,
   },
   featureFlags: {},
 }

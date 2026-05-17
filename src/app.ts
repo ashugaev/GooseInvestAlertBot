@@ -1,12 +1,11 @@
 import 'module-alias/register'
-// Importing @sentry/tracing patches the global hub for tracing to work.
 const TelegrafBot = require('telegraf')
 
 // Config dotenv
 import * as dotenv from 'dotenv'
 import * as path from 'path'
 
-// Строка должна быть выше импорта файлов с переменными окружения
+// This line must precede imports of files that read environment variables.
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
@@ -33,7 +32,6 @@ import { setupTest } from '@/commands/test/test'
 import { botConfig } from '@/config'
 import { setupCheckers } from '@/cron'
 
-// import { setupEventHandlers } from '@/integrations/telegram/setupEventHandlers'
 import { setupAlert } from './commands/alert/alert'
 import { alertScenes } from './commands/alert/scenes'
 import { setupHelp } from './commands/help'
@@ -73,13 +71,7 @@ const apiURL = 'https://api-invest.tinkoff.ru/openapi'
 const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
 const secretToken = process.env.STOCKS_API_TOKEN
 
-export const leagacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
-
-// Sentry.init({
-//   dsn: process.env.SENTRY_URL,
-//   // Процент транзакций, которые будут отправлены в Sentry
-//   tracesSampleRate: 1.0,
-// })
+export const legacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
 const stage = new Stage([
   tradeScenes,
@@ -103,8 +95,6 @@ export const botInit = (bot: Telegraf<Context>) => {
   bot.use(checkTime)
   // Attach user
   bot.use(attachUser)
-  // send analytics for commands
-  // bot.use(configureAnalytics)
 
   // Setup localization
   setupI18N(bot)
@@ -168,13 +158,6 @@ if (botConfig.appFlags.priceAlertBots) {
   })
 }
 
-if (botConfig.appFlags.trackSignals) {
-  /**
-   * Track chats feed
-   */
-  // retry(async () => await setupEventHandlers(), 10000, 'chat event handlers')
-}
-
 if (botConfig.appFlags.cryptoSignalBots) {
   // Start signals bot client
   // TODO: Make separated
@@ -196,8 +179,8 @@ if (botConfig.appFlags.cryptoSignalBots) {
     const botInfo = await bot.telegram.getMe()
     bot.context.goose = botInfo
 
-    // Attach user
-    // FIXME: Сейчас он слишком специфические для алерт бота
+    // Attach user.
+    // FIXME: attachUser is currently coupled to the alert bot; generalise it.
     bot.use(attachUser)
 
     bot.use(session())

@@ -19,8 +19,7 @@ export const checkConibaseInvoice = async (ctx: Context) => {
     )
 
     if (!isTherePaidCharge && chargesForUser.length > 0) {
-      // проверить статусы счетов и ситкануть с моей базой
-
+      // Pull charge statuses from Coinbase and reconcile with our DB.
       for (const charge of chargesForUser) {
         const config = {
           method: 'get',
@@ -31,7 +30,7 @@ export const checkConibaseInvoice = async (ctx: Context) => {
 
         const hasPayments = res.data.data.payments?.length > 0
 
-        // Вообще это не значит, что платеж прошел, статус может быть и error
+        // hasPayments doesn't guarantee success — payment may have failed.
         if (hasPayments) {
           // Paid date can be based on payment status change or data from coinbase
           charge.paidDate = new Date()

@@ -80,9 +80,7 @@ describe('populateInstrumentsCaches', () => {
   it('handles empty input without throwing', () => {
     const byId = makeCache()
     const byTicker = makeCache()
-    expect(() =>
-      populateInstrumentsCaches([], byId, byTicker)
-    ).not.toThrow()
+    expect(() => populateInstrumentsCaches([], byId, byTicker)).not.toThrow()
     expect(byId.calls[0]).toEqual([])
     expect(byTicker.calls[0]).toEqual([])
   })

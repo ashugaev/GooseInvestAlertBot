@@ -1,0 +1,23 @@
+{
+  "_comment": "Copy this file to channels.json and customise. channels.json is gitignored. Keys in tradeConfigByChannel match Telegram channel usernames; keys in monitorConfigByChannelId match channel IDs (-100... format).",
+
+  "tradeConfigByChannel": {
+    "ExamplePumpChannel": {
+      "allowedUTCHours": null,
+      "mustBeRoundHour": true,
+      "debugMessagesTracker": false,
+      "buyAmount": 10
+    }
+  },
+
+  "monitorConfigByChannelId": {
+    "-1001234567890": {
+      "name": "Example Signal Channel",
+      "keyWords": ["BUY", "SELL"],
+      "manualInputPercentOverrideSignalPrice": false,
+      "ignoreSignalsWithoutTPSL": false,
+      "manualInputPercentAsFallbackForLackOfSignalTPSL": true,
+      "removeNotFinished": true
+    }
+  }
+}

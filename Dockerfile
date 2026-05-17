@@ -1,43 +1,13 @@
-FROM node:18.13.0
-
-# Args useless for now because of building inside gitlab ci outside of docker
-ARG TELEGRAM_TOKEN
-ARG STOCKS_API_TOKEN
-ARG MONGO_URL
-ARG SENTRY_URL
-ARG CHATBASE_ANALYTICS_TOKEN
-ARG BINANCE_APISECRET
-ARG BINANCE_APIKEY
-ARG CURRENCY_CONVERTER_APIKEY
-ARG BOSS_TG_ID
-ARG TEST_USER_TG_ID
-ARG NODE_ENV=production
-ARG SESSION_STRING
-ARG TELEGRAM_ANN_SESSION_STRING
-ARG TELEGRAM_ANN_API_HASH
-ARG TELEGRAM_ANN_API_ID
-ARG TELEGRAM_API_ID
-ARG TELEGRAM_API_HASH
-ARG KUCOIN_API_KEY
-ARG KUCOIN_API_SECRET
-ARG KUCOIN_API_PASSPHRASE
-ARG LBANK_API_KEY
-ARG LBANK_API_SECRET
-ARG OPENAI_API_KEY
-ARG TRONSCAN_API_KEY
-ARG TRONSCAN_WALLET_ADDRESS
+FROM node:20-bullseye-slim
 
 WORKDIR /app
 
+# Copy manifests first to maximise Docker layer cache reuse.
+COPY package.json package-lock.json ./
+RUN npm ci
+
 COPY . .
 
-RUN npm ci
 RUN npm run build
 
-# For debugging
-RUN apt update && apt install nano curl -y
-# Debug node version
-RUN npm install -g n
-
-# start programm
-CMD npm start
+CMD ["npm", "start"]

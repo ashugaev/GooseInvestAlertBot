@@ -13,18 +13,18 @@ describe('classifyAlertFailure', () => {
   })
 
   it('flags noInstrument when instrument is missing — even if price exists', () => {
-    expect(
-      classifyAlertFailure({ hasInstrument: false, lastPrice: 100 })
-    ).toBe(AlertFailureBucket.NoInstrument)
+    expect(classifyAlertFailure({ hasInstrument: false, lastPrice: 100 })).toBe(
+      AlertFailureBucket.NoInstrument
+    )
   })
 
   it('flags noPrice when price is undefined or null', () => {
     expect(
       classifyAlertFailure({ hasInstrument: true, lastPrice: undefined })
     ).toBe(AlertFailureBucket.NoPrice)
-    expect(
-      classifyAlertFailure({ hasInstrument: true, lastPrice: null })
-    ).toBe(AlertFailureBucket.NoPrice)
+    expect(classifyAlertFailure({ hasInstrument: true, lastPrice: null })).toBe(
+      AlertFailureBucket.NoPrice
+    )
   })
 
   it('flags invalidPrice when price is non-positive or non-numeric', () => {
