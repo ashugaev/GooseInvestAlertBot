@@ -62,11 +62,15 @@ Build & run locally:
 docker compose up --build
 ```
 
-Run a pre-built image from a registry (set `IMAGE=…`):
+### Deployment
 
-```bash
-IMAGE=ghcr.io/ashugaev/goose-invest-alert:latest docker compose -f docker-compose-remote.yml up
-```
+The upstream instance is deployed on **DigitalOcean App Platform**, which
+builds the image from `Dockerfile` directly from the GitHub repo on every
+push to `master` — there is no GitHub Actions deploy job. Fork users can:
+
+- point their own DigitalOcean App at their fork, or
+- run the image elsewhere — `.github/workflows/docker.yml` publishes it to
+  `ghcr.io/<owner>/goose-invest-alert` on every push to `master`.
 
 ## Configuration
 

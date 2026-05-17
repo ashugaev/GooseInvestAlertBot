@@ -59,8 +59,8 @@ channels.example.json  # Template for crypto-signal channel config (copy to chan
 
 ## Deployment
 - Docker image is built from `Dockerfile`; `docker-compose.yml` is for local containerised runs (`npm run docker:up`).
-- `docker-compose-remote.yml` is for server-side deployment from a pre-built image (set `IMAGE` env var).
-- CI runs in GitHub Actions (`.github/workflows/`).
+- Production: DigitalOcean App Platform auto-builds and deploys from `master` directly — no GitHub Actions deploy job.
+- CI runs in GitHub Actions (`.github/workflows/`); `docker.yml` also publishes the image to `ghcr.io` for non-DO users.
 
 ## Git & PR
 - Branch names: short, kebab-case, descriptive (e.g. `add-volume-alerts`).
