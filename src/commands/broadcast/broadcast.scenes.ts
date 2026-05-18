@@ -20,6 +20,22 @@ const WizardScene = require('telegraf/scenes/wizard')
 /** Resolve user language — ctx.i18n is NOT available in wizard steps 2+ */
 const lang = (ctx): string => ctx.dbuser?.language ?? 'ru'
 
+/**
+ * Telegraf 3.x lacks telegram.copyMessage(). Call the Bot API directly.
+ * https://core.telegram.org/bots/api#copymessage
+ */
+const copyMessage = (
+  ctx,
+  chatId: number,
+  fromChatId: number,
+  messageId: number
+) =>
+  ctx.telegram.callApi('copyMessage', {
+    chat_id: chatId,
+    from_chat_id: fromChatId,
+    message_id: messageId,
+  })
+
 // Step 1: Ask for the message to broadcast
 const askForMessageStep = immediateStep('broadcastAskMessage', async (ctx) => {
   await ctx.replyWithHTML(i18n.t(lang(ctx), 'broadcast_askMessage'))
@@ -91,7 +107,7 @@ const confirmStep = (() => {
       const { fromChatId, messageId, userCount } = state.broadcast
 
       try {
-        await ctx.telegram.copyMessage(ctx.from.id, fromChatId, messageId)
+        await copyMessage(ctx, ctx.from.id, fromChatId, messageId)
         await ctx.editMessageText(
           i18n.t(l, 'broadcast_testSent', { userCount }),
           { parse_mode: 'HTML', reply_markup: buildConfirmKeyboard() }
@@ -133,7 +149,7 @@ const confirmStep = (() => {
     const result = await executeBroadcast(
       uniqueIds,
       async (userId) => {
-        await ctx.telegram.copyMessage(userId, fromChatId, messageId)
+        await copyMessage(ctx, userId, fromChatId, messageId)
       },
       {
         onProgress(processed, total) {
