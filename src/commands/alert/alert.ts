@@ -40,7 +40,7 @@ export function setupAlert(bot: Telegraf<Context>) {
       return
     }
 
-    // Сценарий добавления
+    // Add scenario
     let data = text.match(/^\/(alert|add|a)$/)
 
     if (data) {
@@ -48,7 +48,7 @@ export function setupAlert(bot: Telegraf<Context>) {
       return
     }
 
-    // Добавление одной командой
+    // Single-command add
     data = text.match(
       /^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+) ([\d.\s\-+%]+)$/
     )
@@ -58,7 +58,7 @@ export function setupAlert(bot: Telegraf<Context>) {
     if (data) {
       log.info(logPrefix, 'One command alert adding')
 
-      // FIXME: Используется deprecated ф-ция, нужно поддержать для этого кейса addAlertScenario
+      // FIXME: This uses a deprecated function; addAlertScenario should support this case
       await addAlert({
         ctx,
         data: {
@@ -70,7 +70,7 @@ export function setupAlert(bot: Telegraf<Context>) {
       return
     }
 
-    // Добавление неполной командой
+    // Add via partial command
     data = text.match(/^\/(alert|add|a) ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
 
     if (data) {
@@ -81,7 +81,7 @@ export function setupAlert(bot: Telegraf<Context>) {
       return
     }
 
-    // Удаление алертов по инструменту
+    // Remove alerts for an instrument
     data = text.match(/^\/alert remove ([a-zA-Zа-яА-ЯёЁ0-9_]+)$/)
 
     if (data) {
@@ -138,6 +138,6 @@ export function setupAlert(bot: Telegraf<Context>) {
       )
     }
 
-    log.info('Удалены алерты для', symbol, user)
+    log.info('Removed alerts for', symbol, user)
   }
 }

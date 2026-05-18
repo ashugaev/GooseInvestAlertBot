@@ -17,7 +17,7 @@ interface CreateAlertInDbParams {
 }
 
 /**
- * Отправляет данные об алерте в базу и сообщает об это юзеру
+ * Saves alert data to the database and notifies the user
  */
 export const createAlertInDb = async ({
   ctx,
@@ -60,11 +60,11 @@ export const createAlertInDb = async ({
 
     const createdItemsList = await addPriceAlerts(newAlerts)
 
-    // Поидее невероятный сценарий и должен быть эксепшен
+    // Should never happen in practice and would normally be an exception
     if (!createdItemsList.length) {
       await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
 
-      // Прерываем добавление
+      // Abort the add
       return
     }
 
@@ -85,7 +85,7 @@ export const createAlertInDb = async ({
 
     callback({ createdItemsList })
   } catch (e) {
-    log.error('Ошибка добавления алерта', e)
+    log.error('Failed to add alert', e)
     await ctx.replyWithHTML(ctx.i18n.t('unrecognizedError'))
   }
 }

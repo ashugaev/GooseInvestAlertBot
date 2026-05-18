@@ -60,7 +60,7 @@ const lastSuccessAt: Record<string, number> = {}
 const staleAlerted: Record<string, boolean> = {}
 
 /**
- * Поддерживает кэш с актуальными ценами для источника
+ * Maintains the cache of current prices for a source
  */
 export const setupPriceUpdater = async ({
   getPrices,
@@ -121,13 +121,13 @@ export const setupPriceUpdater = async ({
         sourceInstrumentsList = await getInstrumentsBySourceCache(source)
 
         if (!sourceInstrumentsList.length) {
-          log.error(logPrefix, source, 'Нет инструментов в списке')
+          log.error(logPrefix, source, 'Instruments list is empty')
           await wait(CRASH_WAIT_TIME)
           continue
         }
       } catch (e) {
         onCatch?.(e)
-        log.error(logPrefix, source, 'Ошибки получения списка инструментов', e)
+        log.error(logPrefix, source, 'Failed to fetch instruments list', e)
         await wait(CRASH_WAIT_TIME)
         continue
       }
@@ -139,7 +139,7 @@ export const setupPriceUpdater = async ({
       for (let i = 0; i < arrChunks.length; i++) {
         const chunk = arrChunks[i]
 
-        // Делаем время между итерациями более предсказуемым учитывая время запроса
+        // Make the inter-iteration time more predictable by accounting for request time
         const timeToWait =
           minTimeBetweenRequests -
           (new Date().getTime() - lastIterationStartTime)

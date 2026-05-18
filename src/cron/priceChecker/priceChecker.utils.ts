@@ -23,7 +23,7 @@ export const sendTriggeredAlert = async (
 ) => {
   const { message, lowerThen, greaterThen, _id } = alert
 
-  // Что бы не вызвать повторный триггер до того, как отработает удаление алерта в базе и апдейт кэша
+  // Prevent a re-trigger before the DB delete and cache update complete
   // @ts-ignore
   priceAlertCache.removeItemFromCache(_id.toString())
 
@@ -67,9 +67,9 @@ export const sendTriggeredAlert = async (
           chat: alert.chat,
           removed: true,
         })
-        log.info('Алерт удален из-за блокировки юзером', alert)
+        log.info('Alert removed because the user blocked the bot', alert)
       } else {
-        log.error('Ошибка отправки сообщения юзеру', e)
+        log.error('Failed to send message to user', e)
       }
     })
 }

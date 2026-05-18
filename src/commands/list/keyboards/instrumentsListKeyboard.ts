@@ -11,9 +11,9 @@ import { alertsTypeToggleButtons } from './alertsTypeToggleButtons'
 import { EKeyboardModes } from './instrumentPageKeyboard'
 
 /**
- * Вернет список кнопок для каждого инструмента по массиву данных
+ * Returns a list of buttons for each instrument from the data array
  *
- * TODO: Возможно стоит объединить клавиатуры instrumentPageKeyboard и instrumentsListKeyboard
+ * TODO: Consider merging instrumentPageKeyboard and instrumentsListKeyboard
  */
 export const instrumentsListKeyboard = async ({
   uniqTickersData,
@@ -22,13 +22,13 @@ export const instrumentsListKeyboard = async ({
   user = null,
   ctx,
 }) => {
-  // Тикеры которые выведем на это странице
+  // Tickers to render on this page
   const pageTickers: PriceAlert[] = uniqTickersData.slice(
     page * listConfig.itemsPerPage,
     (Number(page) + 1) * listConfig.itemsPerPage
   )
 
-  // Генерит инлайн кнопки по тикерам
+  // Generate inline buttons per ticker
   const getTickerButtons = pageTickers.map(
     ({ name, symbol, tickerId, source }) => {
       const payload = {
@@ -52,7 +52,7 @@ export const instrumentsListKeyboard = async ({
     }
   )
 
-  // Получаю кнопки пагинации
+  // Build pagination buttons
   const paginatorButtons = paginationButtons({
     itemsLength: uniqTickersData.length,
     action: Actions.list_instrumentsPage,

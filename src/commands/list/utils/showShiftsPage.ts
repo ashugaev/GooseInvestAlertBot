@@ -28,7 +28,7 @@ export const showShiftsPage = async ({
   keyboardMode,
 }: IShowShiftsPageParams) => {
   const itemsToShow = shiftsList
-    // Сортировка по названию
+    // Sort by name
     .sort((a, b) => (a.name > b.name ? 1 : -1))
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
@@ -60,7 +60,7 @@ export const showShiftsPage = async ({
     }
 
     const item = ctx.i18n.t('alertsList_shifts_listItem', {
-      // Номер элемента с учетом страницы
+      // Item number accounting for the page
       number: getAlertNumberByPage({ i, page }),
       name,
       ticker,

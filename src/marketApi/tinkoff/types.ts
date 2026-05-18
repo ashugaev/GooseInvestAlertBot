@@ -1,4 +1,4 @@
-// TODO: Дописать данные которые приходят в тиньке
+// TODO: Finish describing the fields returned by Tinkoff
 export interface ITinkoffSpecificBaseData {
   figi: string
 }

@@ -14,11 +14,11 @@ export enum EKeyboardModes {
 }
 
 /**
- * Клавиши для страницы с алертами одного инструмента
+ * Buttons for the alerts page of a single instrument
  *
- * Используется и для шифтов
+ * Also used for shifts
  */
-// TODO: В пагинации передавать признак withoutBackButton в экшен
+// TODO: In pagination, pass withoutBackButton flag into the action
 export const instrumentPageKeyboard = (
   ctx,
   {
@@ -58,7 +58,7 @@ export const instrumentPageKeyboard = (
       }
     )
 
-    // Цифры редактирования алерта
+    // Alert edit numbers
     keys.push(editListButtons)
   } else {
     const payload = {
@@ -76,13 +76,13 @@ export const instrumentPageKeyboard = (
     ])
   }
 
-  // Получаю кнопки пагинации (стрелки)
+  // Build pagination buttons (arrows)
   const paginatorButtons = paginationButtons({
     itemsLength,
     ...paginationButtonsConfig,
   })
 
-  // Добавляем стрелки
+  // Append arrows
   keys.push(paginatorButtons)
 
   if (symbol) {

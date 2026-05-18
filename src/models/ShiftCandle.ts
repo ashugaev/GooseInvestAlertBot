@@ -1,24 +1,24 @@
 /**
- * Свечи, которые нужная для работы алгоритма измерения скорости
+ * Candles required for the velocity measurement algorithm
  */
 
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 export class ShiftCandle {
   /**
-   * Максимальная цена
+   * Highest price
    */
   @prop({ required: true })
   h: number
 
   /**
-   * Цена открытия
+   * Open price
    */
   @prop({ required: true })
   o: number
 
   /**
-   * Минимальная цена
+   * Lowest price
    */
   @prop({ required: true })
   l: number

@@ -37,7 +37,7 @@ export const alertDelete = commandWrapper(
 
       const uniqTickersData = getUniqTickersData(alerts)
 
-      // Если у инструмента еще остались алерты, то покажем их, если нет, то идем на список инструментов
+      // If the instrument still has alerts, show them; otherwise go to the instruments list
       if (instrumentItems.length) {
         await showInstrumentPage({
           page: alertPage ?? 0,

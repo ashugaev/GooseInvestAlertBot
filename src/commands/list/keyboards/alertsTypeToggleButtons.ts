@@ -5,7 +5,7 @@ import { createActionString } from '../../../helpers/createActionString'
 import { i18n } from '../../../helpers/i18n'
 import { EListTypes } from '../list.types'
 
-// Buttons потому что не цельная клава, а её часть
+// Called "buttons" because this is part of a keyboard, not a full one
 export const alertsTypeToggleButtons = ({ listType }) => {
   const isShiftsList = listType === EListTypes.shifts
   const isLevelsList = listType === EListTypes.levels
@@ -13,7 +13,7 @@ export const alertsTypeToggleButtons = ({ listType }) => {
   const shiftsList = Markup.callbackButton(
     i18n.t('ru', 'alertsList_button_shifts-list', { active: isShiftsList }),
     isShiftsList
-      ? // Экшен при этом условии уйдет в пустото, потому что не хотим редактировать сообщение
+      ? // Action is a no-op in this case because we don't want to edit the message
         'null'
       : createActionString(Actions.list_shiftsPage, {
           p: 0,

@@ -13,7 +13,7 @@ export const getTinkoffInstrumentLink = ({
     return
   }
 
-  // TODO: Убрать эту логику со временем. Для новых алертов это не нужно.
+  // TODO: Remove this logic over time. It is not needed for new alerts.
   if (type === EMarketInstrumentTypes.Crypto) {
     return
   }
@@ -21,7 +21,7 @@ export const getTinkoffInstrumentLink = ({
   if (type === EMarketInstrumentTypes.Currency) {
     typeForLink = 'currencies'
   } else {
-    // Добавляет s потому что в урле нужно множественное число
+    // Append 's' because the URL requires the plural form
     typeForLink = type.toLowerCase() + 's'
   }
 

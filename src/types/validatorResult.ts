@@ -1,17 +1,17 @@
 /**
- * Результаты выполнения валидатора для ввода юзера
+ * Result of running a validator on user input
  */
 export interface ValidatorResult {
   /**
-   * То что ввел юзер
+   * What the user entered
    */
   value: string
   /**
-   * То что в итоге будем использовать
+   * The value we will ultimately use
    */
   normalized: unknown
   /**
-   * Признак того, что значение проверно и корректно
+   * Flag indicating the value passed validation
    */
   isValid: boolean
 }

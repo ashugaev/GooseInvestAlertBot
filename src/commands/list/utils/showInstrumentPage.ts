@@ -50,8 +50,8 @@ export const showInstrumentPage = async ({
     })
   }
 
-  // Получаем сортированный список инструментов для страницы
-  // FIXME: Вынести
+  // Build a sorted list of instruments for the page
+  // FIXME: Extract
   const itemsToShow: PriceAlert[] = instrumentItems
     .sort(
       (a, b) => (a.lowerThen || a.greaterThen) - (b.lowerThen || b.greaterThen)
@@ -63,7 +63,7 @@ export const showInstrumentPage = async ({
       const price = lowerThen ?? greaterThen
 
       return ctx.i18n.t('alertList_item', {
-        // Номер элемента с учетом страницы
+        // Item number accounting for the page
         number: getAlertNumberByPage({ i, page }),
         price,
         message,
@@ -87,7 +87,7 @@ export const showInstrumentPage = async ({
   try {
     lastPrice = await getLastPrice(tickerId)
   } catch (e) {
-    log.error('ошибка получения цены', e)
+    log.error('Failed to fetch price', e)
   }
 
   const message = ctx.i18n.t('alertList_page', {

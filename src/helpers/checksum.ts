@@ -1,5 +1,5 @@
 /**
- * Герерирует уникальный хэш для строки
+ * Generates a unique hash for the given string
  */
 export function checksum(s) {
   let chk = 0x12345678

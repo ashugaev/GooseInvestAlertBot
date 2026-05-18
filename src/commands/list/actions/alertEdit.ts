@@ -10,7 +10,7 @@ import { ListActionsDataKeys } from '../list.types'
 const logPrefix = '[ALERT EDIT]'
 
 /**
- * Экшен перехода на страницу списка инструментов
+ * Action to navigate to the instruments list page
  */
 export const alertEdit = commandWrapper(
   { availableForAdmins: true },
@@ -18,7 +18,7 @@ export const alertEdit = commandWrapper(
     try {
       const {
         [ListActionsDataKeys.selectedAlertId]: selectedAlertIdShort,
-        // Индекс алерта на текущей странице
+        // Index of the alert on the current page
         // i,
         // p: page,
         // tp: tickersPage
@@ -33,7 +33,7 @@ export const alertEdit = commandWrapper(
       )
 
       if (!alert) {
-        throw new Error(logPrefix + 'Алерт не найдет')
+        throw new Error(logPrefix + 'Alert not found')
       }
 
       await showAlertEditPage({

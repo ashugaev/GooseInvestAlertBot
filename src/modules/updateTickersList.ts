@@ -69,7 +69,7 @@ export const updateTickersList =
     } catch (e) {
       log.error(
         logPrefix,
-        'Ошибка при обновлении списка доступных инструментов в базе для',
+        'Failed to update the available-instruments list in DB for',
         source,
         e
       )
@@ -79,9 +79,9 @@ export const updateTickersList =
 
     log.info(
       logPrefix,
-      'Список доступных инструментов в базе для',
+      'Available-instruments list in DB updated for',
       source,
-      'был обновлен',
+      'count:',
       list.length
     )
   }

@@ -1,6 +1,6 @@
 export const SHIFT_CONFIG = {
   /**
-   * Количество элементов, которое будет прислано в оповещении для каждой категории
+   * Number of items sent in the notification for each category
    */
   itemsPerCategory: 20,
 }

@@ -9,9 +9,9 @@ import { validateAlertPrice } from '../validators'
 const WizardScene = require('telegraf/scenes/wizard')
 
 /**
- * Запрашивает у юзера цену
+ * Asks the user for a price
  *
- * В состоянии нужны параметры
+ * Required state parameters:
  * - instrumentId
  */
 const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {

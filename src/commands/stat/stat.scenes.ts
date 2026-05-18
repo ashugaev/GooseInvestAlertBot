@@ -9,10 +9,10 @@ import { createShift } from '../../models/Shifts'
 const WizardScene = require('telegraf/scenes/wizard')
 const Composer = require('telegraf/composer')
 
-// TODO: Спрашивать время когда присылать объявление вконце
+// TODO: Ask at the end for the time when to send the announcement
 
 /**
- * Сцена сработает только на первое сообщение, которое является текстом и не командой
+ * The scene fires only on the first message that is text and not a command
  */
 
 const startShiftAddScene = sceneWrapper('shift_add_start-scene', (ctx) => {
@@ -23,7 +23,7 @@ const startShiftAddScene = sceneWrapper('shift_add_start-scene', (ctx) => {
 
 const shiftAddChoosePercentScent = new Composer()
 
-// Не нечинается с /
+// Does not start with /
 shiftAddChoosePercentScent.hears(
   /^(?!\/).+$/,
   sceneWrapper('shift_add_choose-percent', async (ctx) => {
@@ -39,13 +39,13 @@ shiftAddChoosePercentScent.hears(
       return ctx.wizard.next()
     } else {
       ctx.replyWithHTML(i18n.t('ru', 'shift_add_setPercentError'))
-      // Повторить текущий степ
+      // Repeat the current step
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
   })
 )
 
-// Если сообщение не то, что ожидаем - покидаем сцену
+// If the message is not what we expect, leave the scene
 shiftAddChoosePercentScent.on('message', (ctx, next) => {
   next()
   return ctx.scene.leave()
@@ -53,7 +53,7 @@ shiftAddChoosePercentScent.on('message', (ctx, next) => {
 
 const shiftAddSetDays = new Composer()
 
-// Не нечинается с /
+// Does not start with /
 shiftAddSetDays.hears(
   /^(?!\/).+$/,
   sceneWrapper('shift_add_set-time', async (ctx) => {
@@ -69,13 +69,13 @@ shiftAddSetDays.hears(
       return ctx.wizard.next()
     } else {
       ctx.replyWithHTML(i18n.t('ru', 'shift_add_setTimeError'))
-      // Повторить текущий степ
+      // Repeat the current step
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
   })
 )
 
-// Если сообщение не то, что ожидаем - покидаем сцену
+// If the message is not what we expect, leave the scene
 shiftAddSetDays.on('message', (ctx, next) => {
   next()
   return ctx.scene.leave()
@@ -83,7 +83,7 @@ shiftAddSetDays.on('message', (ctx, next) => {
 
 const shiftAddSetHourScene = new Composer()
 
-// Не нечинается с '/'
+// Does not start with '/'
 shiftAddSetHourScene.hears(
   /^(?!\/).+$/,
   sceneWrapper('shift_add_setHour', async (ctx) => {
@@ -97,8 +97,8 @@ shiftAddSetHourScene.hears(
       try {
         await createShift({
           percent,
-          // Пока хардкожу московское время, переводя его в utc
-          // TODO: Вынести временную зону в константу
+          // For now, hardcode Moscow time and convert to UTC
+          // TODO: Move timezone into a constant
           time: hoursToUtc(hour, -3),
           timeZone: 3,
           days: daysInt,
@@ -126,7 +126,7 @@ shiftAddSetHourScene.hears(
   })
 )
 
-// Если сообщение не то, что ожидаем - покидаем сцену
+// If the message is not what we expect, leave the scene
 shiftAddSetHourScene.on('message', (ctx, next) => {
   next()
   return ctx.scene.leave()

@@ -2,17 +2,17 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 /**
- * Данные о подписке на бота
+ * Bot subscription data
  *
- * TODO: Создавать на этаме показа сообщения о подписке
- *  Отмечать кол-во показов сообщения и триггер показапы
+ * TODO: Create this record when the subscription message is shown
+ *  Track the number of impressions and the impression trigger
  */
 export class PremiumPaymentRequest {
   @prop({ required: true, unique: false })
   userId: number
 
   /**
-   * Когда был выставлен счет
+   * When the invoice was issued
    */
   @prop({ required: true })
   issueDate: Date
@@ -24,7 +24,7 @@ export class PremiumPaymentRequest {
   subscriptionType: string
 
   /**
-   * Время когда была оплачена подписка
+   * Time when the subscription was paid
    */
   @prop({ required: false })
   paidDate: Date
@@ -51,7 +51,7 @@ export class PremiumPaymentRequest {
   chatId: number
 
   /**
-   * Юзер прислал хеш транзакции
+   * The user sent the transaction hash
    */
   @prop({ required: false })
   paymentIdAddedDate?: Date

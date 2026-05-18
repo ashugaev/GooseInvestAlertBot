@@ -1,5 +1,5 @@
 /**
- * Типы списков (алертов), поддерживаемые в list
+ * Types of lists (alerts) supported by the list command
  */
 import { PriceAlert } from '@/models'
 
@@ -9,50 +9,50 @@ export enum EListTypes {
 }
 
 /**
- * Интерфейс состояния команды list
+ * State interface for the list command
  */
 export interface ListCommandState {
   /**
-   * Ценовые уровни
+   * Price levels
    */
   price: {
     /**
-     * Страница с тикерами
+     * Tickers page
      */
     tickersPage?: number
     /**
-     * Страница с алертами для тикера
+     * Alerts page for the ticker
      */
     tickerAlertsPage?: number
     /**
-     * Id кликнутого тикера алерты которого открыли
+     * Id of the clicked ticker whose alerts are open
      */
     selectedTickerId?: string
     /**
-     * Id алерта, которые открыли (реадктируем)
+     * Id of the alert currently open (being edited)
      */
     selectedAlertId?: string
   }
   /**
-   * Скорости цены
+   * Price velocity
    */
   shifts: {
     /**
-     * Страница отслеживаний скорости
+     * Page of velocity trackers
      */
     page?: number
   }
   /**
-   * Закешированные или нормализованные данные
+   * Cached or normalized data
    */
   data: {
     /**
-     * Закешированные список алертов
+     * Cached list of alerts
      */
     alertsList: PriceAlert[]
     /**
-     * Сортированные по имены уникальные тикеры для пагинации
-     * TODO: Там не нужны данные о ценовом уровне. Их нужно выкинуть.
+     * Unique tickers sorted by name, used for pagination
+     * TODO: Price-level data is not needed here. Drop it.
      */
     uniqTickersData: PriceAlert[]
   }

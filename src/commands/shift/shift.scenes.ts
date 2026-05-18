@@ -73,7 +73,7 @@ const savePercent = waitMessageStep(
 
     const intPercent = parseFloat(percent)
 
-    // Невалидное значение
+    // Invalid value
     if (!intPercent || percent > SHIFT_MAX_PERCENT) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_error_maxPercent', {
@@ -116,26 +116,26 @@ export const shiftSceneUpatePercent = new WizardScene(
 
 /**
  * Handle: -
- * Ask: Биржа
+ * Ask: Exchange
  * */
 const startShiftAddScene = immediateStep(
   'shift_add_start-scene',
   async (ctx: Context) => {
-    // Добавлено уже у юзера
+    // Already added by the user
     const userShiftsCount = await getTimeShiftsCount({
       user: ctx.from.id,
       chat: ctx.adminChatActive?.id,
       botId: ctx.goose.id,
     })
 
-    // Лимиты для этого юзера
+    // Limits for this user
     const shiftsLimitForUser = ctx.limits.shifts
 
-    // Закинем в состояние для следующих шагов
+    // Stash into state for the next steps
     set(ctx, 'wizard.state.shift.limit', shiftsLimitForUser)
     set(ctx, 'wizard.state.shift.userShiftsCount', userShiftsCount)
 
-    // Проверка на выход за лимиты
+    // Limit-overflow check
     if (userShiftsCount >= shiftsLimitForUser) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_overlimit', {
@@ -152,7 +152,7 @@ const startShiftAddScene = immediateStep(
       return ctx.scene.leave()
     }
 
-    // Спрашиваем биржу
+    // Ask for the exchange
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_askSource'), {
       reply_markup: {
         ...chooseSourceKeyboard(SHIFT_ACTIONS.chooseSource),
@@ -165,17 +165,17 @@ const startShiftAddScene = immediateStep(
 )
 
 /**
- * Handle: Результат выбора биржи
- * Ask: Список тикеров
+ * Handle: Result of the exchange selection
+ * Ask: Tickers list
  */
 const shiftAddHandleChooseSource = waitButtonClickStep(
   SHIFT_ACTIONS.chooseSource,
   'shift_add_choose-source',
   async (ctx, actionsPayload, state) => {
-    // Сохраним биржу в стейт
+    // Save the exchange in state
     set(state, 'shift.source', actionsPayload.source)
 
-    // Спросим таймфрейм
+    // Ask for the timeframe
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTimeframe'), {
       reply_markup: getTimeframesKeyboard(
         SHIFT_TIMEFRAMES_BY_SOURCE_CONFIG[actionsPayload.source]
@@ -187,8 +187,8 @@ const shiftAddHandleChooseSource = waitButtonClickStep(
 )
 
 /**
- * Handle: Результат выбора таймфрейма
- * Ask: Список тикров
+ * Handle: Result of the timeframe selection
+ * Ask: Tickers list
  */
 const shiftHandleChooseTimeframes = waitButtonClickStep(
   SHIFT_ACTIONS.chooseTimeframe,
@@ -196,10 +196,10 @@ const shiftHandleChooseTimeframes = waitButtonClickStep(
   async (ctx, actionPayload, state) => {
     const { timeframe } = actionPayload
 
-    // Сохраним таймфрейм
+    // Save the timeframe
     set(state, 'shift.timeframe', timeframe)
 
-    // Спросим тикеры
+    // Ask for the tickers
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_chooseTickers'))
 
     return ctx.wizard.next()
@@ -207,8 +207,8 @@ const shiftHandleChooseTimeframes = waitButtonClickStep(
 )
 
 /**
- * Handle: Список тикеров
- * Ask: Процент
+ * Handle: Tickers list
+ * Ask: Percent
  */
 const shiftAddChooseTickers = waitMessageStep(
   'shift_add_choose-tickers',
@@ -227,7 +227,7 @@ const shiftAddChooseTickers = waitMessageStep(
       source,
     })
 
-    // Если нет таких тикеров в базе по бирже
+    // No such tickers in DB for the chosen exchange
     if (!tickersInfo.length) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_noTickers', {
@@ -238,7 +238,7 @@ const shiftAddChooseTickers = waitMessageStep(
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
 
-    // Если юзер выходит за лимиты
+    // User exceeds their limits
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     if (userShiftsCount + tickersInfo.length > shiftsLimitForUser) {
       await ctx.replyWithHTML(
@@ -256,7 +256,7 @@ const shiftAddChooseTickers = waitMessageStep(
       return ctx.wizard.selectStep(ctx.wizard.cursor)
     }
 
-    // Если нашли только часть тикеров на бирже
+    // Only some of the tickers were found on the exchange
     if (tickersInfo.length < tickersArr.length) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_wrongTicker', {
@@ -274,7 +274,7 @@ const shiftAddChooseTickers = waitMessageStep(
     set(ctx, 'wizard.state.shift.tickersInfo', tickersInfo)
     set(ctx, 'wizard.state.shift.timeframes', SHIFT_TIMEFRAMES_ARRAY)
 
-    // Спросим процент изменения для отслеживания
+    // Ask for the change percent to track
     await ctx.replyWithHTML(i18n.t('ru', 'shift_add_choosePercent'))
 
     return ctx.wizard.next()
@@ -292,7 +292,7 @@ const shiftAddChoosePercent = waitMessageStep(
 
     const intPercent = parseFloat(percent)
 
-    // Невалидное значение
+    // Invalid value
     if (!intPercent || percent > SHIFT_MAX_PERCENT) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_error_maxPercent', {
@@ -313,7 +313,7 @@ const shiftAddChoosePercent = waitMessageStep(
       return acc
     }, {})
 
-    // Дефолтные доп настройки для шифта, которые ставятся после создания
+    // Default additional shift settings applied after creation
     const additionalShiftConfig: IAdditionalShiftConfig = {
       muted: true,
       growAlerts: true,
@@ -342,7 +342,7 @@ const shiftAddChoosePercent = waitMessageStep(
       dbShifts.map((el) => el._id)
     )
 
-    // Успешное добавление
+    // Successful add
     await ctx.replyWithHTML(
       i18n.t('ru', 'shift_add_success', {
         time: timeframes.find((el) => el.timeframe === timeframe).name_ru_plur,
@@ -362,11 +362,11 @@ const shiftAddChoosePercent = waitMessageStep(
 )
 
 /**
- * Доп настройка шифта после его создания
+ * Additional shift configuration after creation
  *
- * WARN: Тут не выхожу из сцены, что бы она работала в истории сообщений.
- * Потенциально это может случить местом для утечки памяти.
- * Но хз сколько должно висеть сцен, что бы это произошло.
+ * WARN: We do not leave the scene here so it keeps working in message history.
+ * Potentially this could leak memory.
+ * Not sure how many scenes have to hang around before that happens.
  */
 const shiftAddAdditionalConfiguration = waitButtonClickStep(
   SHIFT_ACTIONS.additionalConfiguration,
@@ -398,7 +398,7 @@ const shiftAddAdditionalConfiguration = waitButtonClickStep(
       }
     )
 
-    // Отправить в базу апдейт конфига
+    // Send the config update to DB
     await TimeShiftModel.updateMany(
       {
         _id: {

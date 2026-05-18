@@ -21,7 +21,7 @@ export class PriceAlert {
   _id?: string
 
   /**
-   * Id по по которому ищем данные о цене (отвязываемся от названия тикера)
+   * Id used to look up price data (decoupled from the ticker name)
    */
   @prop({ required: true })
   tickerId: string
@@ -50,16 +50,16 @@ export class PriceAlert {
   @prop({ required: false })
   currency?: string
 
-  // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
+  // Effectively required, but there is a pool of alerts created before this field was added
   @prop()
   type: EMarketInstrumentTypes
 
-  // Вообще обязательное поле, но есть пулл алертов, которые были созданы до его появления
+  // Effectively required, but there is a pool of alerts created before this field was added
   @prop()
   source: EMarketDataSources
 
   /**
-   * Цена на момент создания алерта
+   * Price at the moment of alert creation
    */
   @prop()
   initialPrice: number
@@ -72,13 +72,13 @@ export class PriceAlert {
   botId: number
 
   /**
-   * Сработал ли алерт
+   * Whether the alert has been triggered
    */
   @prop({ required: true, default: false })
   triggered?: boolean
 
   /**
-   * Алерт удален
+   * Alert is removed
    */
   @prop({ required: true, default: false })
   removed?: boolean
@@ -226,7 +226,7 @@ export const addPriceAlerts = async (
 }
 
 /**
- * Служебная ф-ция для внутренних оераций
+ * Internal helper for housekeeping operations
  */
 export async function getAllAlerts(): Promise<PriceAlert[]> {
   try {
@@ -268,7 +268,7 @@ export async function removePriceAlert({
       _id && (searchParams._id = _id)
 
       if (!Object.keys(searchParams).length) {
-        reject('Не указанны параметры')
+        reject('No parameters provided')
         return
       }
 
@@ -289,7 +289,7 @@ export async function removePriceAlert({
   })
 }
 
-// Вернет массив сработавших алертов
+// Returns the array of triggered alerts
 export async function updateAlert({
   _id,
   data,

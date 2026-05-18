@@ -8,6 +8,6 @@ export const moneyObjToValue = (moneyObj: MoneyObj): number | null => {
     return null
   }
 
-  // TODO: Проверить правильность. Возможно когд units больше 0 то все ломается
+  // TODO: Validate. Possibly breaks when units is greater than 0
   return moneyObj.units + moneyObj.nano / 1000000000
 }

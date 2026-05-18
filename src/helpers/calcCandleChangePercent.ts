@@ -1,11 +1,11 @@
 /**
- * Процент роста
+ * Growth percentage
  */
 export const calcGrowPercent = (maxPrice, openPrice) =>
   (maxPrice - openPrice) / (openPrice / 100)
 
 /**
- * Процент падения
+ * Fall percentage
  */
 export const calcFallPercent = (minPrice, openPrice) =>
   (openPrice - minPrice) / (openPrice / 100)

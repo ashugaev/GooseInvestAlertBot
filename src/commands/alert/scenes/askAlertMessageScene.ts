@@ -6,7 +6,7 @@ import { sceneWrapper } from '../../../helpers/sceneWrapper'
 import { ALERT_SCENES } from '../alert.constants'
 
 /**
- * Запрашивает у юзера информационное сообщение для алерта
+ * Asks the user for an informational message for the alert
  */
 const requestStep = sceneWrapper('ask-alert-message-request', async (ctx) => {
   ctx.replyWithHTML(i18n.t('ru', 'alertCreatedAddMessage'))
@@ -15,9 +15,9 @@ const requestStep = sceneWrapper('ask-alert-message-request', async (ctx) => {
 })
 
 /**
- * Апдейтит сообщение в алерте.
+ * Updates the message on the alert.
  *
- * TODO: Вообще конечно убрать бы выполнение апдейта и оставить тут только сбор данных.
+ * TODO: Ideally remove the update execution and keep only data collection here.
  */
 const validateAndSaveStep = waitMessageStep(
   'ask-alert-message-validate-and-save',
@@ -27,11 +27,11 @@ const validateAndSaveStep = waitMessageStep(
     const { createdItemsList } = payload
 
     if (createdItemsList.length !== 1) {
-      throw new Error('Нельзя прикрепить сообщение к нескольким алертам')
+      throw new Error('Cannot attach a message to multiple alerts')
     }
 
     if (!message.length) {
-      throw new Error('Пустое сообщение')
+      throw new Error('Empty message')
     }
 
     callback({ message })

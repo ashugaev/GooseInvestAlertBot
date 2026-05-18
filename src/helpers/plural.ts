@@ -1,6 +1,6 @@
 const plural = require('plural-ru')
 
-// Ечсли число с плавающей запятой вернет то что после точки
+// For a floating-point number returns the part after the decimal point
 const lastVal = (val) => {
   const splitted = val.toString().split('.')
 

@@ -12,7 +12,7 @@ import { ListActionsDataKeys } from '../list.types'
 import { EKeyboardModes } from './instrumentPageKeyboard'
 
 /**
- * Клавиатура редактирования шифта
+ * Shift edit keyboard
  */
 export const shiftEditKeyboard = ({ page, shiftData }) => {
   let keys = []
@@ -24,7 +24,7 @@ export const shiftEditKeyboard = ({ page, shiftData }) => {
     // @ts-expect-error
     [ListActionsDataKeys.selectedAlertId]: shortenerCreateShort(shiftData._id),
     p: page,
-    // FIXME: Выходит за лимиты экшена
+    // FIXME: Exceeds action size limit
     // d: shiftData?._id,
   }
 

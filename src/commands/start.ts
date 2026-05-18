@@ -12,7 +12,7 @@ export function setupStart(bot) {
         .webPreview(false)
         .markup((m) =>
           m.keyboard([
-            // TODO: Доделать кнопки снизу
+            // TODO: Finish the bottom buttons
             //     m.callbackButton(ctx.i18n.t('alert_button'))
             //     m.callbackButton(ctx.i18n.t('help_button'))
           ])

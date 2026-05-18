@@ -5,7 +5,7 @@ import { getTimeShifts } from '../../../models'
 import { showShiftsPage } from '../utils/showShiftsPage'
 
 /**
- * Страница с отслеживаниями скорости цены
+ * Page listing price-velocity trackers
  */
 export const shiftsPage = commandWrapper(
   { availableForAdmins: true },

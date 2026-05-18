@@ -5,7 +5,7 @@ export const SHIFT_SCENES = {
   updatePercent: 'ggt',
 }
 
-// Рандомные симолы в экшене, что бы не выходить за лимит длины
+// Random symbols in the action to stay within the length limit
 export const SHIFT_ACTIONS = {
   chooseTimeframe: '4k',
   chooseSource: '88',

@@ -16,7 +16,7 @@ export enum EMarketDataSources {
 }
 
 /**
- * Данные, которые пересекаются у элементов в списке при получении базовых данных
+ * Common fields shared by list items when fetching basic data
  */
 export interface IBaseInstrumentData {
   ticker: string

@@ -22,7 +22,7 @@ export const alertEditKeyboard = ({ tickerId, alertId }) => {
     })
   )
 
-  // FIXME: Брать из стора
+  // FIXME: Read from the store
   const page = 0
   const tickersPage = 0
 

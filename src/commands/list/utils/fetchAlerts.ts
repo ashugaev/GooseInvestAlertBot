@@ -16,7 +16,7 @@ interface FetchAlertsResult {
 }
 
 /**
- *  Получение активных алертов юзера и запись их в контекст
+ * Fetch the user's active alerts and store them in the context
  */
 export const fetchAlerts = async ({
   ctx,
@@ -54,14 +54,14 @@ export const fetchAlerts = async ({
     }
   }
 
-  // Получаем уникальные тикеры из всех алертов
-  // Название уже не совсем корректное, потому что группируем по id а не по тикеру
+  // Get the unique tickers from all alerts
+  // The name is no longer fully accurate because we group by id, not by ticker
   const uniqTickersData: PriceAlert[] = Object.values(
     alerts.reduce((acc, el) => {
       const { tickerId } = el
 
       if (!tickerId) {
-        log.error('Не могу получить tickerId у', el)
+        log.error('Cannot read tickerId from', el)
         return acc
       }
 
@@ -71,9 +71,9 @@ export const fetchAlerts = async ({
     }, {}) as PriceAlert[]
   ).sort((a: PriceAlert, b: PriceAlert) => (a.name > b.name ? 1 : -1))
 
-  // TODO: Избавиться от хранения в контексте, что бы все работало после передеплоя
+  // TODO: Remove context storage so that everything still works after a redeploy
   if (!noContextUpdate) {
-    // Подкидываем состояния в констекст, что бы не делать перезапрос по нажатию на кнопки
+    // Stash state in context to avoid re-querying on button clicks
     set(ctx, 'session.listCommand.data', {
       alertsList: alerts,
       uniqTickersData,

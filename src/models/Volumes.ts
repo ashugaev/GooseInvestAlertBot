@@ -95,17 +95,17 @@ export const volumesModelCache = new VolumesCache({
   logPref: logPrefix,
   customFind: async () => {
     return VolumesModel.aggregate([
-      // Сортируем по тикеру, таймфрейму и времени создания свечи по убыванию
+      // Sort by ticker, timeframe and candle creation time (descending)
       { $sort: { tickerId: 1, timeframe: 1, candleCreatedTime: -1 } },
       {
         $group: {
-          _id: { tickerId: '$tickerId', timeframe: '$timeframe' }, // Группируем по тикеру и таймфрейму
-          documents: { $push: '$$ROOT' }, // Собираем все документы в массив
+          _id: { tickerId: '$tickerId', timeframe: '$timeframe' }, // Group by ticker and timeframe
+          documents: { $push: '$$ROOT' }, // Collect all documents into an array
         },
       },
       {
         $project: {
-          documents: { $slice: ['$documents', 30] }, // Берем первые N документов каждой группы
+          documents: { $slice: ['$documents', 30] }, // Take the first N documents per group
         },
       },
     ])

@@ -2,7 +2,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 /**
- * Данные о подписке на бота
+ * Bot subscription data
  */
 export class Premium {
   @prop({ required: true, unique: false })
@@ -24,7 +24,7 @@ export class Premium {
   reason: 'manual' | 'trial' | 'pay'
 
   /**
-   * Откуда пришел юзер, какие-то теги или еще что-то
+   * Where the user came from — tags or similar attribution
    */
   @prop({ required: false })
   marketingSource: string

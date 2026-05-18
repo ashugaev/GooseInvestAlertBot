@@ -15,6 +15,6 @@ export const waitMessageStep = (
     await callback(context, text, state)
   }
 
-  // НЕ начинается с /
+  // Does NOT start with /
   return step.hears(/^(?!\/).+$/, sceneWrapper(intent, callbackWrapper))
 }

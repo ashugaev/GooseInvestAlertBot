@@ -14,7 +14,7 @@ interface StartCronJobParams {
   callback: (...args: unknown[]) => void | Promise<void>
   callbackArgs?: unknown[]
   /**
-   * Перед тем как делать задачу для крона выполнит callback
+   * Runs the callback once before scheduling the cron job
    */
   executeBeforeInit?: boolean
   isReadyToStart?: () => boolean

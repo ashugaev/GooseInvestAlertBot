@@ -1,7 +1,7 @@
 /**
- * Нужен только для addAlert, который используется в добавлении алерта одной командой. Со временем удалится.
+ * Only used by addAlert, which handles the single-command alert add. Will be removed eventually.
  *
- * @deprecated Использовать askAlertMessageScene. Нужен до момента рефакторинга полной команды.
+ * @deprecated Use askAlertMessageScene. Needed until the full command is refactored.
  */
 
 import { Scenes } from '../../../constants'
@@ -23,7 +23,7 @@ const startAddMessageScene = sceneWrapper(
 
 export const addMessageStep = new Composer()
 
-// Не начинается с /
+// Does not start with /
 addMessageStep.hears(
   /^(?!\/).+$/,
   sceneWrapper('add-set-comment', async (ctx) => {

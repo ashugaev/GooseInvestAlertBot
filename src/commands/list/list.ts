@@ -35,7 +35,7 @@ export function setupList(bot: Telegraf<Context>) {
 
       const [, tickerName] = data
 
-      // Дефолтные значения констекста для команды
+      // Default command context values
       ctx.session.listCommand = {
         price: {
           tickersPage: 0,
@@ -52,17 +52,17 @@ export function setupList(bot: Telegraf<Context>) {
         },
       }
 
-      // Вернет все алерты юзера и запишет в контекст
+      // Fetch all user alerts and store them in the context
       const { alertsList, uniqTickersData } = await fetchAlerts({
         ctx,
         ticker: tickerName,
       })
 
-      // Если есть алерты
+      // If there are any alerts
       if (uniqTickersData.length) {
-        // Если алерты одного инструмента то показываем сразу его
+        // If alerts belong to a single instrument, show it directly
         if (uniqTickersData.length === 1) {
-          // Если алерт один, то показываем его
+          // Show the only alert
           return await showInstrumentPage({
             page: 0,
             ctx,
@@ -74,7 +74,7 @@ export function setupList(bot: Telegraf<Context>) {
         }
 
         if (uniqTickersData.length > 1) {
-          // TODO: Создать ShowTickersList для этого reply
+          // TODO: Create ShowTickersList for this reply
           return ctx.replyWithHTML(
             ctx.i18n.t('alertList_titles', { empty: !uniqTickersData.length }),
             Extra.HTML(true).markup(
@@ -101,24 +101,24 @@ export function setupList(bot: Telegraf<Context>) {
         ...shiftsParams,
       })
 
-      // В любом случае показываем эту страницу, даже есои она пустая
+      // Always show this page, even if it is empty
       return await showShiftsPage({ ctx, page: 0, edit: false, shiftsList })
     })
   )
 
-  // Управление состоянием страницы одного инструмента
+  // Single-instrument page state management
   bot.action(triggerActionRegexp(Actions.list_tickerPage), alertsForInstrument)
-  // Страница редактирования шифта
+  // Shift edit page
   bot.action(triggerActionRegexp(Actions.list_shiftEditPage), shiftEditPage)
-  // Удалить шифт
+  // Delete shift
   bot.action(triggerActionRegexp(Actions.list_shiftDeleteOne), shiftDelete)
   bot.action(triggerActionRegexp(Actions.list_editAlert), alertEdit)
   bot.action(triggerActionRegexp(Actions.list_deleteAlert), alertDelete)
-  // Пагинация по списку тикеров (верхнеуровневая)
+  // Top-level pagination over the tickers list
   bot.action(
     triggerActionRegexp(Actions.list_instrumentsPage),
     instrumentsListPagination
   )
-  // Режим просмотра шифтов
+  // Shifts view mode
   bot.action(triggerActionRegexp(Actions.list_shiftsPage), shiftsPage)
 }

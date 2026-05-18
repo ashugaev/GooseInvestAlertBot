@@ -51,7 +51,7 @@ export const setupPriceChecker = async () => {
         const checkStart = Date.now()
 
         if (!priceAlertCache.get.length) {
-          log.error(logPrefix, 'Нет алертов для проверки')
+          log.error(logPrefix, 'No alerts to check')
           await wait(1000)
           return
         }
@@ -96,7 +96,7 @@ export const setupPriceChecker = async () => {
               if (trigeredCache.has(alert._id.toString())) {
                 log.error(
                   logPrefix,
-                  'Попытка повторного алерта',
+                  'Duplicate alert trigger attempt',
                   alert._id.toString()
                 )
 
@@ -156,9 +156,9 @@ export const setupPriceChecker = async () => {
         if (timeToWait > 0) {
           await wait(timeToWait)
         }
-      }, logPrefix + ' Проверка срабатывания алертов')
+      }, logPrefix + ' Alert trigger check')
     } catch (e) {
-      log.error(logPrefix + 'SUPERCRASH Падает мониториг цен', e)
+      log.error(logPrefix + 'SUPERCRASH Price monitor crashed', e)
       await wait(1000)
     }
   }

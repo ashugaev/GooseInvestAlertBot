@@ -15,15 +15,15 @@ import { SHIFT_ACTIONS, SHIFT_TIMEFRAMES } from './shift.constants'
 import { getShiftConfigKeyboard } from './shift.keyboards'
 
 /**
- * Редактирование пришедшего алерта
+ * Edit the received alert
  */
 export const shiftAlertSettings = async (ctx) => {
   try {
     const {
-      // Данные достаточные для первичного вызова
+      // Data sufficient for the initial call
       d: _id,
       gr: isGrow,
-      // Данные которые добавятся при самовызове
+      // Data that is added on self-invocation
       m: muted,
       g: growAlerts,
       f: fallAlerts,
@@ -31,7 +31,7 @@ export const shiftAlertSettings = async (ctx) => {
 
     const { id: user } = ctx.from
 
-    // FIXME: Три похода в базу за раз это отстой :(
+    // FIXME: Three DB queries in one go is poor :(
 
     const shiftData = (
       await getTimeShifts({
@@ -78,8 +78,8 @@ export const shiftAlertSettings = async (ctx) => {
         time: timeframesObj[shiftData.timeframe].name_ru_plur,
         ticker: shiftData.name === shiftData.ticker ? null : shiftData.ticker,
         source: getSourceMark(tickerInfo),
-        // Если брать последнюю цену, то сообщение сигнала будет не корректным, а цену срабатывания я не храню
-        // Можно хранить цену в стейте экшена/в базе/и в локальном кэше
+        // Using the last price would make the signal message incorrect, and the trigger price is not stored
+        // The price could be kept in action state, in DB, or in a local cache
         price: null,
         priceSymbol: getSymbolByTicker(tickerInfo.currency),
       }),
@@ -91,8 +91,8 @@ export const shiftAlertSettings = async (ctx) => {
       }
     )
 
-    // TODO: Можно не делать апдейт, если данные не изменились
-    // Апдейт параметров
+    // TODO: Skip the update if nothing changed
+    // Update parameters
     await TimeShiftModel.updateOne(
       { _id },
       {

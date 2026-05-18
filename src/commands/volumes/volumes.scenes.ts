@@ -18,7 +18,7 @@ const WizardScene = require('telegraf/scenes/wizard')
 const { set } = require('lodash')
 
 /**
- * FIXME: Поставить лими на кол-во алертов за единицу времени
+ * FIXME: Add a rate limit on the number of alerts per time unit
  */
 export const volumeScenes = new WizardScene(
   VOLUME_SCENES.add,
@@ -33,7 +33,7 @@ export const volumeScenes = new WizardScene(
     // TODO: Test this
     const limit = ctx.limits.volumes
 
-    // Проверка на выход за лимиты
+    // Limit-overflow check
     if (currentAlertsCount >= limit) {
       await ctx.replyWithHTML(
         i18n.t('ru', 'shift_add_overlimit', {
@@ -57,7 +57,7 @@ export const volumeScenes = new WizardScene(
       (key) => VOLUME_SOURCES_CONFIG[key].enabled
     ) as EMarketDataSources[]
 
-    // Спрашиваем биржу
+    // Ask for the exchange
     await ctx.replyWithHTML(i18n.t('ru', 'volume_add_askSource'), {
       reply_markup: {
         ...chooseSourceKeyboard(VOLUME_ACTIONS.chooseSource, availableSourses),
@@ -70,21 +70,21 @@ export const volumeScenes = new WizardScene(
   /**
    * Choose source
    *
-   * Handle: Результат выбора биржи
-   * Ask: Таймфрейм
+   * Handle: Result of the exchange selection
+   * Ask: Timeframe
    */
   waitButtonClickStep(
     VOLUME_ACTIONS.chooseSource,
     'volume_add_choose-source',
     async (ctx, actionsPayload, state) => {
-      // Сохраним биржу в стейт
+      // Save the exchange in state
       set(state, 'shift.source', actionsPayload.source)
 
-      // Спросим таймфрейм
+      // Ask for the timeframe
       await ctx.replyWithHTML(i18n.t('ru', 'volume_add_chooseTimeframe'), {
         reply_markup: getTimeframesKeyboard(
           // FIXME: Remove hardcoded 5 minutes
-          SHIFT_TIMEFRAMES_ARRAY.filter((el) => el.lifetime >= 1000 * 60 * 5) // >= 5 минут
+          SHIFT_TIMEFRAMES_ARRAY.filter((el) => el.lifetime >= 1000 * 60 * 5) // >= 5 minutes
         ),
       })
 
@@ -96,10 +96,10 @@ export const volumeScenes = new WizardScene(
    * Ask: Candles Count
    */
   waitMessageStep('volume_add_choose-timeframe', async (ctx, state) => {
-    // Сохраним таймфрейм в стейт
+    // Save the timeframe in state
     set(state, 'shift.timeframe', ctx.message.text)
 
-    // Спросим кол-во свечей
+    // Ask for the number of candles
     await ctx.replyWithHTML(i18n.t('ru', 'volume_candles_number'))
 
     return ctx.wizard.next()
@@ -109,10 +109,10 @@ export const volumeScenes = new WizardScene(
    * Ask: Formula
    */
   waitMessageStep('volume_add_ask-candles-count', async (ctx, state) => {
-    // Сохраним кол-во свечей в стейт
+    // Save the candle count in state
     set(state, 'shift.candlesCount', ctx.message.text)
 
-    // Спросим формулу
+    // Ask for the formula
     await ctx.replyWithHTML(i18n.t('ru', 'volume_formula'))
 
     return ctx.wizard.next()
@@ -122,10 +122,10 @@ export const volumeScenes = new WizardScene(
    * Ask: Tickers
    */
   waitMessageStep('volume_add_ask-formula', async (ctx, state) => {
-    // Сохраним формулу в стейт
+    // Save the formula in state
     set(state, 'shift.formula', ctx.message.text)
 
-    // Спросим тикеры
+    // Ask for the tickers
     await ctx.replyWithHTML(i18n.t('ru', 'volume_add_chooseTickers'))
 
     return ctx.wizard.next()
@@ -135,10 +135,10 @@ export const volumeScenes = new WizardScene(
    * Ask: -
    */
   waitMessageStep('volume_add_ask-tickers', async (ctx, state) => {
-    // Сохраним тикеры в стейт
+    // Save the tickers in state
     set(state, 'shift.tickers', ctx.message.text)
 
-    // Спросим кол-во свечей
+    // Ask for the number of candles
     await ctx.replyWithHTML(i18n.t('ru', 'volume_add_success'))
 
     return ctx.wizard.next()

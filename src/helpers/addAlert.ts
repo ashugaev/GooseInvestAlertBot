@@ -36,7 +36,7 @@ export const addAlert = async ({
 
   try {
     if (!symbol) {
-      throw new Error('Не пришел символ при установке алерта')
+      throw new Error('Missing symbol when setting an alert')
     }
 
     const result = (await getInstrumentDataWithPrice({ symbol }))[0]
@@ -50,10 +50,10 @@ export const addAlert = async ({
     instrumentData = result.instrumentData
     lastPrice = result.price
 
-    // Перепишем на случай если юзер писал пару с валютой
+    // Overwrite in case the user typed the pair with a currency suffix
     symbol = instrumentData.ticker
   } catch (e) {
-    log.error('ошибка создания алерта', e)
+    log.error('Failed to create alert', e)
 
     await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
 
@@ -92,14 +92,14 @@ export const addAlert = async ({
         ? (params.greaterThen = price)
         : (params.lowerThen = price)
 
-      // Если крипта - добавим валюту в пару
+      // For crypto, append the currency to the pair
       // if (instrumentData.type == EMarketInstrumentTypes.Crypto) {
       //   params.symbol = params.symbol + instrumentData.sourceSpecificData.currency.toUpperCase();
       // }
 
       const createdItem = await addPriceAlerts([params])
 
-      // Для добавления коммента
+      // For attaching a comment afterwards
       _id = createdItem[0]._id
 
       priceAlerts.push(price)
@@ -113,7 +113,7 @@ export const addAlert = async ({
 
   if (!priceAlerts.length) {
     await ctx.replyWithHTML(i18n.t('ru', 'alertAddError'))
-    throw new Error('Не добавлено ни одного оповещения')
+    throw new Error('No alerts were added')
   }
 
   const { name } = instrumentData
@@ -138,9 +138,9 @@ export const addAlert = async ({
     disable_web_page_preview: true,
   })
 
-  // Если только одна цена
+  // If only one price
   if (prices.length === 1 && !startedFromScene) {
-    // @ts-expect-errors TODO: Разобраться
+    // @ts-expect-errors TODO: Investigate
     await ctx.scene.enter(Scenes.alertMessage, { _id })
   }
 

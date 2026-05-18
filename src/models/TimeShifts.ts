@@ -1,5 +1,5 @@
 /**
- * Отслеживание скорости изменения цены
+ * Tracking the rate of price change
  */
 
 import { getModelForClass, prop } from '@typegoose/typegoose'
@@ -9,7 +9,7 @@ export class TimeShift {
   _id: string
 
   /**
-   * Id по которому ищу данные тикера (отвязываемся от названия тикера)
+   * Id used to look up ticker data (decoupled from the ticker name)
    */
   @prop({ required: true })
   tickerId: string
@@ -39,33 +39,33 @@ export class TimeShift {
   muted: boolean
 
   /**
-   * Отслеживать рост
+   * Track upward movement
    */
   @prop({ required: true })
   growAlerts: boolean
 
   /**
-   * Отслеживать падения
+   * Track downward movement
    */
   @prop({ required: true })
   fallAlerts: boolean
 
   /**
-   * Время начала свечи за которую был отправлен алерт на падение
-   * Нужно для того, что бы слать алерт раз за свечу
+   * Start time of the candle for which a fall alert was sent
+   * Used to send at most one alert per candle
    */
   @prop({ required: false })
   lastMessageCandleGrowTime: number
 
   /**
-   * Время начала свечи за которую был отправлен алерт на рост
-   * Нужно для того, что бы слать алерт раз за свечу
+   * Start time of the candle for which a growth alert was sent
+   * Used to send at most one alert per candle
    */
   @prop({ required: false })
   lastMessageCandleFallTime: number
 
   /**
-   * Полное название инструмента
+   * Full instrument name
    */
   @prop({ required: true })
   name: string

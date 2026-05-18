@@ -75,7 +75,7 @@ export async function createOrUpdateChat(
   let nonBotAdmins: number[] = []
 
   if (ctx.dbuser) {
-    // Правит баг с тем, что иногда бот не видит список админов
+    // Works around a bug where the bot occasionally cannot see the admin list
     nonBotAdmins.push(ctx.dbuser.id)
   }
 

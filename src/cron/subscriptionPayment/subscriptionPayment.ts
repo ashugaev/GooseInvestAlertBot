@@ -74,7 +74,7 @@ export const subscriptionPaymentCheckerAdd = async ({
 
   ctx.replyWithHTML('🔄 Транзакция найдена. Жду пока она подтвердится')
 
-  // Добавим и будем ждать смены статуса
+  // Save it and wait for the status to change
   paymentData.paymentId = transactionId
   paymentData.paymentIdAddedDate = new Date()
   await paymentData.save()

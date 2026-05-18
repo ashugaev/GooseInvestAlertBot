@@ -23,7 +23,7 @@ export const showAlertEditPage = async ({
 }: ShowAlertEditPage) => {
   const instrumentInfo = await getInstrumentByIdFromCache(alert.tickerId)
 
-  // Проставяем id алерта для которого открыли редактирование
+  // Store the id of the alert opened for editing
   set(ctx, 'session.listCommand.price.selectedAlertId', alert._id)
 
   const message = i18n.t('ru', 'alertsList_editOne', {

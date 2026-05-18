@@ -1,7 +1,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose' // eslint-disable-line unused-imports/no-unused-imports
 
 /**
- * Статистика
+ * Statistics
  */
 export class Shift {
   @prop({ required: true })

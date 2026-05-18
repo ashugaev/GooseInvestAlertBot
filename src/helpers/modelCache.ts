@@ -87,7 +87,7 @@ export class ModelCache<Item> {
         this.items = items as unknown as Item[]
         this.needToBeUpdated = false
       } catch (e) {
-        // Вернем свечи которые не добавились
+        // Return candles that failed to upload back to the queue
         this.uploadQueue.push(...queue)
         log.error(this.logPref, 'Failed to upload items', e)
       }

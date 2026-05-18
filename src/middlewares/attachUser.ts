@@ -10,12 +10,12 @@ import { findOrCreateUser } from '../models'
 
 const logPrefix = '[attachUser]'
 
-// Обновляет лимиты в контексте
+// Refreshes limits on the context
 export async function updateLimits(ctx: Context) {
   ctx.limits = ctx.dbuser.limits
 
-  // Значит я ставил юзеру руками повышенную квоту. Считаем его премиумом
-  // FIXME: Сделать миграцию этих юзеров на премиум и удалить это условие
+  // Means I manually granted the user an elevated quota. Treat them as premium.
+  // FIXME: Migrate these users to premium and remove this branch
   const userHadExtendedLimits =
     ctx.dbuser.limits?.priceLevels > Limits.priceLevels
 
@@ -42,8 +42,8 @@ export async function updateLimits(ctx: Context) {
   if (premium || userHadExtendedLimits) {
     ctx.premium = true
 
-    // Бесконечные лимиты
-    // Дальше нужно будет убрать хардкод и смотреть на boolean флаг premium
+    // Unlimited quota
+    // Eventually replace these hardcoded values with the premium boolean flag
     ctx.limits.priceLevels = 9999
     ctx.limits.shifts = 9999
     ctx.limits.volumes = 9999
@@ -53,8 +53,8 @@ export async function updateLimits(ctx: Context) {
 }
 
 /**
- * Проверки удаления бота из чата
- * Проверка изменения прав бота
+ * Detect bot removal from a chat
+ * Detect changes in the bot's permissions
  */
 export async function attachUser(ctx: Context, next) {
   try {
@@ -105,7 +105,7 @@ export async function attachUser(ctx: Context, next) {
     const wasKicked =
       // Bot was kicked from chat
       (ctx.updateSubTypes?.includes('left_chat_member') &&
-        // FIXME: ctx.goose.id - специфическая логика
+        // FIXME: ctx.goose.id is specific to this bot
         ctx.update.message?.left_chat_member.id === ctx.goose.id) ||
       // Bot was kicked from channel
       // @ts-ignore
@@ -123,7 +123,7 @@ export async function attachUser(ctx: Context, next) {
     } else if (isChannel) {
       //
     } else {
-      log.error(logPrefix, 'Неизвестный тип чата', chat)
+      log.error(logPrefix, 'Unknown chat type', chat)
       return
     }
   } catch (e) {

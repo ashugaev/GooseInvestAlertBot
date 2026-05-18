@@ -4,3 +4,6 @@ node_modules
 # ESLint parser fails on them. Tests are validated via tsc / jest instead.
 **/*.test.ts
 **/*.spec.ts
+# Migrations live outside the TypeScript project; migrate-mongo runs them
+# directly with Node, so ESLint with type-aware rules cannot parse them.
+migrations/

@@ -9,20 +9,20 @@ import {
 
 interface IPaginationPayload extends CreateActionStringPayload {
   /**
-   * Текущая страница
+   * Current page
    */
   p: number
 }
 
 interface IPaginationButtonsParams {
   /**
-   * Идентификатор экшена пагинации
+   * Pagination action identifier
    */
   itemsPerPage?: number
   action: Actions
   itemsLength: number
   /**
-   * То что подсунем в экшен
+   * Payload merged into the action
    */
   payload: IPaginationPayload
 }

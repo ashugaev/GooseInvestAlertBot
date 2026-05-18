@@ -70,7 +70,7 @@ export const getTinkoffPrices = async (
       } else if (item?.type === EMarketInstrumentTypes.Bond) {
         priceNormalized = (priceNormalized / 100) * normalizedNominal
       } else if (item?.type === EMarketInstrumentTypes.Etf) {
-        // NOTE: Есть расхождения с сайтом на тикерах с лотом 100
+        // NOTE: Discrepancies vs the site for tickers with lot size 100
         // no changes
       } else if (item?.type === EMarketInstrumentTypes.Future) {
         const futureMargin = await getFutureMarginByTickerId(tickerId)
@@ -86,8 +86,8 @@ export const getTinkoffPrices = async (
           continue
         }
 
-        // В данном кейса priceNormalized это цена в пунктах
-        // В формуле соответственно переводим пункты в деньги
+        // In this case priceNormalized is the price in points
+        // The formula converts points into money
         priceNormalized =
           (priceNormalized / minPriceIncrementNumber) *
           minPriceIncrementAmountNumber

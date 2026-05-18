@@ -6,17 +6,17 @@ import {
 } from '../../models'
 
 /**
- * Копирует все алерты в отдельную коллекцию
+ * Copies all alerts into a separate collection
  */
 export const copyAlerts = async () => {
   try {
     let alerts = await getAllAlerts()
 
-    // фильтруем невалидные застрявшие в базе алерты
+    // Filter out invalid alerts stuck in the DB
     alerts = alerts.filter((el) => el.tickerId)
 
     if (!alerts.length) {
-      log.info('Нет алертов для резервной копии')
+      log.info('No alerts to back up')
       return
     }
 
@@ -24,8 +24,8 @@ export const copyAlerts = async () => {
 
     await putItemsToCopyPriceAlerts(alerts)
 
-    log.info('Алерты были сохранены в резервную коллекцию', alerts.length, 'шт')
+    log.info('Alerts saved to the backup collection,', alerts.length, 'items')
   } catch (e) {
-    log.error('Ошибка сохранения копии алертов', e)
+    log.error('Failed to save alerts backup', e)
   }
 }

@@ -74,7 +74,7 @@ module.exports = {
       files: ['jest.config.js'],
       parserOptions: {
         project: './tsconfig.eslint.json',
-        disableTypeChecked: true, // отключаем проверку типов для этого файла
+        disableTypeChecked: true, // Disable type checking for this file
       },
     },
   ],

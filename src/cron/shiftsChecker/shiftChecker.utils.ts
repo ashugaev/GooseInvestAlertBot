@@ -27,7 +27,7 @@ interface GetUpdatedCandleParams {
 }
 
 /**
- * Вернет обновленную свечу
+ * Returns an updated candle
  */
 export const updateCandle = ({
   shift,
@@ -37,18 +37,18 @@ export const updateCandle = ({
 }: GetUpdatedCandleParams): ShiftCandle => {
   let updatedCandle = candle
 
-  // Время создания последней актуальной свечи
+  // Creation time of the latest actual candle
   const actualCandleCreatedTime = getCandleCreatedTime(timeframeData)
-  // Время создания последней сохраненной свечи
+  // Creation time of the latest stored candle
   const localCandleCreatedTime = candle?.createdAt
 
   /**
-   * Если случилось расхождение actualCandleCreatedTime и localCandleCreatedTime
-   * Это значит, что появилась новая свеча и текущая деактуализировалась
-   * Либо свечи не существовало ранее
+   * If actualCandleCreatedTime diverges from localCandleCreatedTime
+   * it means a new candle has appeared and the current one is stale,
+   * or no candle existed before.
    */
   if (actualCandleCreatedTime !== localCandleCreatedTime) {
-    // создать новую свечу
+    // create a new candle
     updatedCandle = {
       tickerId: shift.tickerId,
       timeframe: shift.timeframe,
@@ -60,8 +60,8 @@ export const updateCandle = ({
     }
   } else {
     if (price > candle.h) {
-      // Побили самую высокую цену
-      // апдейт верха старой и запись
+      // New high broken
+      // Update the high of the existing candle and persist
       updatedCandle = {
         ...candle,
         h: price,
@@ -70,8 +70,8 @@ export const updateCandle = ({
     }
 
     if (price < candle.l) {
-      // Побили самую низкую цену
-      // апдейт низа старой и запись
+      // New low broken
+      // Update the low of the existing candle and persist
       updatedCandle = {
         ...candle,
         l: price,
@@ -92,7 +92,7 @@ const triggeredShiftsCache: Record<
 > = {}
 
 /**
- * Проверит стриггерился ли алерт и отправит сообщение юзеру если да
+ * Checks whether the alert triggered, and if so sends a message to the user
  */
 export const checkTriggeredShiftsAndSendMessage = async ({
   candle,
@@ -104,12 +104,12 @@ export const checkTriggeredShiftsAndSendMessage = async ({
 
   const { ticker, muted, _id } = shift
 
-  // Если случился движение вниз на указанный процент
+  // Downward move by the configured percent
   if (Math.abs(fallPercent) >= shift.percent && shift.fallAlerts) {
     await sendMessage(false)
   }
 
-  // Если движение вверх на указанный процент
+  // Upward move by the configured percent
   if (growPercent >= shift.percent && shift.growAlerts) {
     await sendMessage(true)
   }
@@ -129,12 +129,12 @@ export const checkTriggeredShiftsAndSendMessage = async ({
     const fallMessageAlreadyWasSent =
       lastMessageCandleGrowTime === actualCandleCreatedTime
 
-    // Если уже отравили алерт на рост
+    // Growth alert already sent
     if (growMessageAlreadyWasSent && isGrow) {
       return
     }
 
-    // Если уже отправили алерт на падение
+    // Fall alert already sent
     if (fallMessageAlreadyWasSent && !isGrow) {
       return
     }
@@ -183,7 +183,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
           ? { lastMessageCandleGrowTime: actualCandleCreatedTime }
           : { lastMessageCandleFallTime: actualCandleCreatedTime }
 
-        // Апдейт признака о том, что сообщение отправлено
+        // Update the flag indicating the message was sent
         await TimeShiftModel.updateOne(
           { _id: shift._id },
           {
@@ -200,7 +200,7 @@ export const checkTriggeredShiftsAndSendMessage = async ({
           (e.code === 403 &&
             (e.description === 'Forbidden: bot was blocked by the user' ||
               e.description === 'Forbidden: user is deactivated')) ||
-          // Бота кикнули
+          // Bot was kicked
           (e.code === 400 && e.description === 'Bad Request: chat not found')
         ) {
           await TimeShiftModel.remove({ _id: shift._id })

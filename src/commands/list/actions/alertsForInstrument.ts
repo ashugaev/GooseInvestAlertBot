@@ -9,9 +9,9 @@ import { ListActionsDataKeys } from '../list.types'
 import { showInstrumentPage } from '../utils/showInstrumentPage'
 
 /**
- * Экшен перехода на страницу списка инструментов
+ * Action to navigate to the instruments list page
  *
- * Страницы для ценового уровня
+ * Pages for a price level
  */
 export const alertsForInstrument = commandWrapper(
   { availableForAdmins: true },

@@ -7,17 +7,17 @@ export interface UserInputData {
 
 export interface AddAlertPayload {
   /**
-   * Список ценовых уровней для алертов
+   * List of price levels for alerts
    */
   prices?: number[]
   /**
-   * Тикер
+   * Ticker
    */
   ticker?: string
   /**
-   * Инфо о тикере. Может быть несколько шт.
+   * Info about the ticker. May contain multiple entries.
    *
-   * Если тикер существует не в одном экземпляре, то предложим выбрать один из них
+   * If the ticker has multiple instances, we will offer to pick one of them
    */
   instrumentsList?: InstrumentsList[]
   /**
@@ -25,23 +25,23 @@ export interface AddAlertPayload {
    */
   message?: string
   /**
-   * Признак того, что создали алерт (отправили в базу)
+   * Flag indicating that the alert has been created (saved to DB)
    */
   alertCreated?: boolean
   /**
-   * Признак того, что сообщение добавлено к алерту (отправлено в базу)
+   * Flag indicating that the message has been attached to the alert (saved to DB)
    */
   messageAttached?: boolean
   /**
-   * Текущая цена по монете
+   * Current price of the coin
    */
   currentPrice?: number
   /**
-   * Объект созданного алерта из DB
+   * Created alert object from DB
    */
   createdItemsList?: PriceAlert[]
   /**
-   * Признак того, что алерт создан как копия
+   * Flag indicating the alert was created as a copy
    */
   copy?: boolean
 }

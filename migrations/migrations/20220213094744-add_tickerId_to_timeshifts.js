@@ -6,9 +6,9 @@ module.exports = {
 
         const instrumentsList = await db.collection('instrumentslists').find().toArray();
 
-        // Если тикеров столько то вероятнее всего коллекция заполнена корректно
+        // If the ticker count is this high, the collection is most likely populated correctly
         if (instrumentsList.length < 5000 || !shifts.length) {
-            throw new Error(`${logPrefix} Ошибка получения данных`)
+            throw new Error(`${logPrefix} Failed to load data`)
         }
 
         const bulkConfig = [];
@@ -23,7 +23,7 @@ module.exports = {
             const tickerId = instrumentsList.find(item => item.ticker === ticker)?.id;
 
             if (ticker && tickerId) {
-                console.log(logPrefix, 'Добавление id', tickerId, 'для', ticker, name);
+                console.log(logPrefix, 'Adding id', tickerId, 'for', ticker, name);
 
                 bulkConfig.push({
                     updateMany: {
@@ -40,11 +40,11 @@ module.exports = {
                     }
                 })
             } else {
-                console.error(logPrefix, 'Ошибка миграции для', ticker, tickerId);
+                console.error(logPrefix, 'Migration error for', ticker, tickerId);
             }
         });
 
-        console.log(logPrefix, 'Собрано элементов в конфиге для миграции', bulkConfig);
+        console.log(logPrefix, 'Collected items in migration config', bulkConfig);
 
         if (bulkConfig.length) {
             await db.collection('timeshifts').bulkWrite(bulkConfig)

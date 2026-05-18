@@ -1,7 +1,7 @@
 import { sceneWrapper } from '../../helpers/sceneWrapper'
 
 /**
- * Шаг сцена который отработает сразу же без ожидания действия
+ * Scene step that runs immediately, without waiting for user action
  */
 export const immediateStep = (
   intent: string,

@@ -17,7 +17,7 @@ export enum EMarketInstrumentTypes {
   Crypto = 'Crypto',
   Currency = 'Currency',
   Etf = 'Etf',
-  Bond = 'Bond', // Опционы
+  Bond = 'Bond', // Options
   Future = 'Future',
 }
 
@@ -32,24 +32,24 @@ const instrumentsBySourceCache = new NodeCache({
 })
 
 /**
- * Нормализованный элемент бумаги/монеты
+ * Normalized stock/coin element
  *
- * TODO: Переименовать в Instrument
- *  тут блокер в том, что раньше не работало проставление кастомного названия коллекции
- *  если этого не сделать то коллекция пересоздастся
+ * TODO: Rename to Instrument.
+ *  Blocker: setting a custom collection name used not to work.
+ *  Without that change the collection would be recreated.
  */
 export class InstrumentsList {
   /**
-   * id содержит разные поля в зависимости от source
-   * для крипты это id биржи
-   * для бумаг это figi
+   * id holds different values depending on source
+   * for crypto it is the exchange id
+   * for stocks it is the figi
    */
   @prop({ required: true, unique: true })
   id: string
 
   /**
-   * Тикер не обязательный, потому что это иногда крашит бота
-   * Может появиться монета без тикера
+   * Ticker is optional because it occasionally crashes the bot
+   * A coin without a ticker may appear
    */
   @prop({ required: false, unique: false })
   ticker: string
@@ -76,8 +76,8 @@ export class InstrumentsList {
     | LbankInstrument
 
   /**
-   * Разрядность цены (циферок после точки)
-   * TODO: Убрать 'null' со временем
+   * Price scale (digits after the decimal point)
+   * TODO: Drop the 'null' option over time
    */
   @prop({ required: true, default: null })
   priceScale: number | null
@@ -152,7 +152,7 @@ export async function getInstrumentInfoByTicker({
 }): Promise<InstrumentsList[]> {
   if (!ticker?.length) {
     throw new Error(
-      '[getInstrumentInfoByTicker] Не указан необходимый параметр ticker'
+      '[getInstrumentInfoByTicker] Required parameter ticker is missing'
     )
   }
 

@@ -2,7 +2,7 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
 
 /**
- * Вспомогательная таблица для рассчета стоимости фьчерсов в тиньке
+ * Helper table used to compute futures value in Tinkoff
  */
 export class TinkoffFuturesMargin {
   _id: string

@@ -1,5 +1,5 @@
 /**
- * Добавит сообщение к алерту по _id
+ * Adds a message to the alert identified by _id
  */
 import { i18n } from '../../../helpers/i18n'
 import { updateAlert } from '../../../models'

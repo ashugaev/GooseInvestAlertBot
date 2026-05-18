@@ -11,17 +11,17 @@ import { createAlertInDb } from '../utils/createAlertInDb'
 const logPrefix = '[ADD ALERT SCENARIO]'
 
 /**
- * Ф-ция добавления алерта
- * Если на входе недостаточно данных она их запрашивает у юзера
+ * Add alert function.
+ * If input data is insufficient, it requests it from the user.
  *
- * TODO: Можно сделать утилиту которая будет вызывать ифаки последовательно
- *  Под капотом это может быть генератор
+ * TODO: Could build a utility that runs ifs sequentially.
+ *  Under the hood it could be a generator.
  *
- * TODO: Оторвать валидация от получения данных, тогда на вход сможем подавать просто данные
- *  без их запроса отдельным шагом
+ * TODO: Decouple validation from data fetching, then we can feed in
+ *  plain data without requesting it as a separate step.
  */
 export function addAlertScenario(ctx, payload: AddAlertPayload) {
-  // Состояние в замыкании, которое сохранится между вызовами nextStep
+  // State held in closure, preserved across nextStep calls
   let state: AddAlertPayload = payload
 
   ;(function nextStep(payloadUpdate) {
@@ -89,7 +89,7 @@ export function addAlertScenario(ctx, payload: AddAlertPayload) {
       return
     }
 
-    // Предложим выбрать монету, если по этому тикеру их несколько
+    // Offer to pick a coin when several match the ticker
     if (instrumentsList?.length > 1) {
       ctx.scene.enter(COMMON_SCENES.tickerDuplicates, {
         payload: { instrumentsList },
@@ -100,7 +100,7 @@ export function addAlertScenario(ctx, payload: AddAlertPayload) {
     }
 
     /**
-     * Спросим цену, если её нет
+     * Ask for the price if it is not provided
      */
     if (!prices && instrumentsList.length === 1 && ticker) {
       ctx.scene.enter(ALERT_SCENES.askPrice, {
@@ -111,7 +111,7 @@ export function addAlertScenario(ctx, payload: AddAlertPayload) {
       return
     }
 
-    // Как только собрали основные данные
+    // Once the main data is collected
     if (
       prices?.length &&
       instrumentsList?.length === 1 &&
@@ -134,7 +134,7 @@ export function addAlertScenario(ctx, payload: AddAlertPayload) {
       return
     }
 
-    // Если нет сообщения от юзера
+    // If the user has not provided a message
     if (!message && createdItemsList?.length === 1) {
       ctx.scene.enter(ALERT_SCENES.askMessage, {
         payload: { createdItemsList },
@@ -144,7 +144,7 @@ export function addAlertScenario(ctx, payload: AddAlertPayload) {
       return
     }
 
-    // Если сообщение есть, но не отправлено в базу
+    // If a message exists but has not been saved to DB
     if (!messageAttached && message) {
       const _id = createdItemsList[0]._id
 

@@ -22,14 +22,14 @@ export function setupStat(bot: Telegraf<Context>) {
         try {
           const shiftsForUser = await getShiftsForUser(user)
 
-          // TODO: Вероятно стата будет только одна, по этому убрал из константы и захардкодил 1
+          // TODO: There is likely only one stat, so I removed the constant and hardcoded 1
           if (shiftsForUser.length >= 1) {
-            // Пока доступен один шифт
+            // Only one shift is allowed for now
             // ctx.replyWithHTML(ctx.i18n.t('shift_overlimit', { limit: Limits.stats }))
 
             const { days, percent, time, timeZone, _id } = shiftsForUser[0]
 
-            // Показать шифты, которые у юзара добавлены
+            // Show the shifts the user has added
             ctx.replyWithHTML(
               ctx.i18n.t('shift_show', {
                 percent,

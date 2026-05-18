@@ -5,9 +5,9 @@ module.exports = {
         const shiftCandles = await db.collection('shiftcandles').find().toArray();
         const instrumentsList = await db.collection('instrumentslists').find().toArray();
 
-        // Если тикеров столько то вероятнее всего коллекция заполнена корректно
+        // If the ticker count is this high, the collection is most likely populated correctly
         if (instrumentsList.length < 5000 || !shiftCandles.length) {
-            throw new Error(`${logPrefix} Ошибка получения данных`)
+            throw new Error(`${logPrefix} Failed to load data`)
         }
 
         const bulkConfig = [];
@@ -16,7 +16,7 @@ module.exports = {
             let itemsWithMatchedTicker = instrumentsList.filter(item => item.ticker === ticker);
 
             if (!itemsWithMatchedTicker.length) {
-                console.error(logPrefix, 'Ошибка миграции для', ticker);
+                console.error(logPrefix, 'Migration error for', ticker);
                 return;
             }
 
@@ -34,7 +34,7 @@ module.exports = {
                 return 0; // a and b are equal in terms of sorting order
             })[0]
 
-            console.log(logPrefix, 'Добавление id', prioritisedItem.id, 'для', ticker);
+            console.log(logPrefix, 'Adding id', prioritisedItem.id, 'for', ticker);
 
             bulkConfig.push({
                 updateMany: {
@@ -50,7 +50,7 @@ module.exports = {
             })
         });
 
-        console.log(logPrefix, 'Собрано элементов в конфиге для миграции', bulkConfig);
+        console.log(logPrefix, 'Collected items in migration config', bulkConfig);
 
         if (bulkConfig.length) {
             await db.collection('shiftcandles').bulkWrite(bulkConfig)

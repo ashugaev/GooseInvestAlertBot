@@ -23,10 +23,10 @@ const getFirstDayOfMonth = () => {
 }
 
 /**
- * Время создания последней актуальной свечи
+ * Creation time of the latest actual candle
  *
- * Округляет текущее время до lifetime
- * В результате получаем время старта свечи
+ * Rounds the current time down to the lifetime.
+ * The result is the candle's start time.
  */
 export const getCandleCreatedTime = ({ timeframe, lifetime }): number => {
   const currentTime = new Date().getTime()

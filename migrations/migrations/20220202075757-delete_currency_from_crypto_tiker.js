@@ -14,7 +14,7 @@ module.exports = {
             const [withCurrency, withoutCurrency, currency] = symbol.match(/^(.+)(USD|RUB|EUR)/) || [];
 
             if (currency && withoutCurrency) {
-                console.log(logPrefix, 'Изменяю тикер для', withCurrency, 'на', withoutCurrency);
+                console.log(logPrefix, 'Updating ticker for', withCurrency, 'to', withoutCurrency);
 
                 bulkConfig.push({
                     updateMany: {
@@ -30,11 +30,11 @@ module.exports = {
                     }
                 })
             } else {
-                console.error(logPrefix, 'Ошибка миграции для', symbol);
+                console.error(logPrefix, 'Migration error for', symbol);
             }
         });
 
-        console.log(logPrefix, 'Собрано элементов в конфиге для миграции', bulkConfig);
+        console.log(logPrefix, 'Collected items in migration config', bulkConfig);
 
         if (bulkConfig.length) {
             await db.collection('pricealerts').bulkWrite(bulkConfig)

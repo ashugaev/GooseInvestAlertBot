@@ -36,11 +36,11 @@ export const binanceGetAllInstrumentsFutures = async () => {
 
     return normalizedInstrumentsArray
   } catch (e) {
-    log.error('Ошибка получения списка инструментов binance:', e)
+    log.error('Failed to load Binance instruments list:', e)
 
     await wait(30000)
 
-    // Ретрай
+    // Retry
     return binanceGetAllInstrumentsFutures()
   }
 }

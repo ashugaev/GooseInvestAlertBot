@@ -12,8 +12,8 @@ interface GetInstrumentDataWithPrice {
 
 export interface IGetInstrumentDataWithPrice {
   /**
-   * Только для случая, когда мы получаем тикер из ввода юзер, во всех остальных кейсах юзать id
-   * Только для этого кейса в массиве может быть больше одного элемента
+   * Only when the ticker comes from user input; in all other cases use id.
+   * Only in this case the array may contain more than one element.
    */
   symbol?: string
   id?: string
@@ -25,7 +25,7 @@ export async function getInstrumentDataWithPrice({
 }: IGetInstrumentDataWithPrice): Promise<GetInstrumentDataWithPrice[]> {
   try {
     if (!id && !symbol) {
-      log.error(logPrefix, 'Ошибка входных данных')
+      log.error(logPrefix, 'Invalid input')
       return []
     }
 
@@ -47,7 +47,7 @@ export async function getInstrumentDataWithPrice({
     }
 
     if (!instrumentsList?.length) {
-      log.error(logPrefix, 'Ошибка получения данных для', symbol || id)
+      log.error(logPrefix, 'Failed to load data for', symbol || id)
 
       return []
     }
@@ -78,7 +78,7 @@ export async function getInstrumentDataWithPrice({
 
     return dataWithPrice
   } catch (e) {
-    log.error(logPrefix, 'Ошибка получения данных', e)
+    log.error(logPrefix, 'Failed to load data', e)
 
     return []
   }

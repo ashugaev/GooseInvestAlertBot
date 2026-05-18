@@ -32,7 +32,7 @@ export const getBinancePrices = async (
       )?.id
 
       if (tickerId) {
-        // @ts-expect-error Вообще типы корректные
+        // @ts-expect-error Types are actually fine here
         acc.push([ticker, price, tickerId])
       } else {
         tickersWithNoPrice.push(ticker)
@@ -74,7 +74,7 @@ export const getBinancePricesFutures = async (
       )?.id
 
       if (tickerId) {
-        // @ts-expect-error Вообще типы корректные
+        // @ts-expect-error Types are actually fine here
         acc.push([ticker, price, tickerId])
       } else {
         tickersWithNoPrice.push(ticker)

@@ -61,8 +61,8 @@ const chooseAlertsType = immediateStep(
 )
 
 /**
- * Handle: Результат выбора типа алертов
- * Final: Результат удаления
+ * Handle: Result of the alerts-type selection
+ * Final: Removal result
  */
 const removeAlerts = waitButtonClickStep(
   REMOVE_ACTIONS.chooseSource,

@@ -10,11 +10,11 @@ const logPrefix = '[LAST PRICE CACHE]'
 export const lastPriceCache = new NodeCache()
 
 /**
- * Вернет цену по id
+ * Returns the price for the given id
  */
 export const getLastPrice = (id: string, noTrowIfNotFound?: boolean) => {
   if (!id) {
-    throw new Error('Необходимо предоставить id для получения последней цены')
+    throw new Error('An id is required to read the last price')
   }
 
   const lastPrice = lastPriceCache.get(id)

@@ -5,7 +5,7 @@ import { EMarketInstrumentTypes, InstrumentsList } from '../../../models'
 import { EMarketDataSources } from '../../types'
 
 /**
- * Замены для зашкварных тикеров валют
+ * Replacements for messy currency tickers
  */
 const tickerReplacements = {
   USD000UTSTOM: 'USDRUB',
@@ -26,7 +26,7 @@ const normalizeTinkoffItem = (item): InstrumentsList => {
     priceScale: null,
   }
 
-  // Замена тикера по шаблону
+  // Apply ticker replacement template
   result.ticker = tickerReplacements[ticker] ?? ticker
 
   return result
@@ -79,11 +79,11 @@ export const tinkoffGetAllInstruments = async () => {
 
     return normalizedInstrumentsArray
   } catch (e) {
-    log.error('Ошибка получения списка иструментов:', e)
+    log.error('Failed to load instruments list:', e)
 
     await wait(30000)
 
-    // Ретрай
+    // Retry
     // eslint-disable-next-line
     return await tinkoffGetAllInstruments()
   }

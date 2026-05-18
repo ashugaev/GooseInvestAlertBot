@@ -86,9 +86,9 @@ const tinkCandleToMy = (candle: Candle): Volumes => ({
 })
 
 /**
- * 1 Примет апдейт самой мальенькой свечи
- * 2 Если это апдейт, то пошлет адейт только этой свечи и она обновится в кэше
- * 3 Если это создание новой то пошлет увеличение объемов по всем свечам и создание этой свечи
+ * 1. Accepts an update for the smallest candle
+ * 2. If this is an update, only that candle is sent and refreshed in the cache
+ * 3. If this is a new candle, sends a volume bump for all candles plus the new candle creation
  */
 const generatedCandles = (data: Volumes): Volumes[] => {
   try {
@@ -125,8 +125,8 @@ const generatedCandles = (data: Volumes): Volumes[] => {
         const needIncrement =
           calculatedCandleCreateTime <= data.candleCreatedTime
 
-        // FIXME: Это не правильная логика
-        //  Нужно добавлять объемы к последней свече но минимальной которую я отслеживаю (1M)
+        // FIXME: This logic is wrong
+        //  We should add volumes to the last candle of the smallest tracked timeframe (1M)
         const volumesValue = needIncrement
           ? (prevValue?.amount || 0) + data.amount
           : data.amount
@@ -246,13 +246,13 @@ const startWebsocket = async (instruments) => {
 export const tinkoffVolumesUpdater = async (): Promise<
   Record<string, number>
 > => {
-  // Большой цикл содержит больше вычисление и является оптимизацией
+  // The big loop contains heavier computation and serves as an optimization
   while (true) {
     try {
       const { socketInstruments, manualCheckInstruments } =
         await getPrioritizedVolumeInstruments()
 
-      // Бот запускается на холодную, поэтому нужно подождать пока все инструменты будут загружены
+      // Cold start: wait until all instruments are loaded
       if (!socketInstruments.length) {
         wait(1000)
         continue
@@ -266,7 +266,7 @@ export const tinkoffVolumesUpdater = async (): Promise<
 
       // const candlesToRequest = 100 // TODO: Find biggest available value
       // FIXME: Revert to 100 (?) after debug
-      //  может стоит оставить меньше потому что нагрузка на базу будет неадекватной
+      //  maybe keep it low to avoid hammering the database
       const candlesToRequest = 20 // TODO: Find biggest available value
       const candleTime = SHIFT_TIMEFRAMES[TIMEFRAME].lifetime
       const allCandlesTime = candlesToRequest * candleTime
@@ -291,14 +291,14 @@ export const tinkoffVolumesUpdater = async (): Promise<
           })
 
           // IF market is closed - skip and wait
-          // TODO: Сделать так бот спал, если у всех не было новых свечей
+          // TODO: Have the bot sleep when no instrument has new candles
           if (!res.candles.length) {
             // FIXME: Revert after debug
             // await wait(1000 * 60 * 5) // 5 min
             continue
           }
 
-          // FIXME: Тут ошибка, я не должен генерить по каждой свече все остальные. Только по последней
+          // FIXME: Bug here — should not regenerate from every candle, only from the latest one
           // res.candles.forEach((candle) => {
           //   // @ts-expect-error FIXME it's broken
           //   const candles = generatedCandles(candle)

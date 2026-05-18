@@ -45,7 +45,7 @@ export const UserModel = getModelForClass(User, {
 })
 
 // Get or create user
-// FIXME: Делать одной операцией создание нового юзера через upsert
+// FIXME: Create new users via a single upsert operation
 export async function findOrCreateUser(id: string | number, botId) {
   let user = await UserModel.findOne({ id }).lean()
   if (!user) {
@@ -92,7 +92,7 @@ export const toUserMode = async (ctx: Context) => {
   ctx.dbuser = await UserModel.findOne({ id: ctx.from.id }).lean()
 }
 
-// ручная выдача
+// Manual grant
 export const grantPremium = async (
   id: number | string,
   days: number,

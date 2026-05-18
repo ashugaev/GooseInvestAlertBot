@@ -1,5 +1,5 @@
-// Получаем уникальные тикеры из всех алертов
-// Название уже не совсем корректное, потому что группируем по id а не по тикеру
+// Get the unique tickers from all alerts
+// The name is no longer fully accurate because we group by id, not by ticker
 import { log } from '@/helpers'
 import { PriceAlert } from '@/models'
 
@@ -9,7 +9,7 @@ export const getUniqTickersData = (alerts: PriceAlert[]): PriceAlert[] => {
       const { tickerId } = el
 
       if (!tickerId) {
-        log.error('Не могу получить tickerId у', el)
+        log.error('Cannot read tickerId from', el)
         return acc
       }
 

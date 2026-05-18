@@ -9,12 +9,12 @@ import { immediateStep } from './wrappers/immediateStep'
 const WizardScene = require('telegraf/scenes/wizard')
 
 /**
- * Это сценарий обработки дубликатов тикеров
- * Встраивается в вдругие сценарии
+ * Scenario for handling ticker duplicates.
+ * Embedded into other scenarios.
  */
 
 /**
- * Просим выбрать тикер
+ * Ask the user to pick a ticker
  */
 const requestStep = immediateStep(
   'check-ticker-duplicates-send-message',
@@ -22,7 +22,7 @@ const requestStep = immediateStep(
     const { instrumentsList } = state.payload
 
     if (!instrumentsList.length) {
-      throw new Error('Недостаточно входных данных для tickerDuplicatesScene')
+      throw new Error('Not enough input data for tickerDuplicatesScene')
     }
 
     const keyboard = m.inlineKeyboard(
@@ -58,13 +58,13 @@ const validateAndSaveStep = waitButtonClickStep(
     const { id } = actionPayload
 
     if (!id) {
-      throw new Error('[CheckTickerDuplicates] Нет id выборе тикера')
+      throw new Error('[CheckTickerDuplicates] Missing id in ticker selection')
     }
 
     const chosenInstrument = instrumentsList.find((el) => el.id === id)
 
     if (!chosenInstrument) {
-      throw new Error('[CheckTickerDuplicates] Не сработал выбор инструмента')
+      throw new Error('[CheckTickerDuplicates] Instrument selection failed')
     }
 
     callback({ instrumentsList: [chosenInstrument] })

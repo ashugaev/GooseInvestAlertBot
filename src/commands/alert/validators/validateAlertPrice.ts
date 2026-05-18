@@ -12,7 +12,7 @@ export interface ValidateAlertPriceParams {
 }
 
 /**
- * Валидирует список цен введенный юзером
+ * Validates the list of prices entered by the user
  */
 export const validateAlertPrice = async ({
   message,

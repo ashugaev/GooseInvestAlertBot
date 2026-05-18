@@ -12,7 +12,7 @@ export const createActionString = (
 
   if (result.length > 64) {
     throw new Error(
-      `[createActionString] Вышел за лимит экшена. Максимальная длина строки 64 символа ${result}`
+      `[createActionString] Exceeded action size limit. Max 64 characters: ${result}`
     )
   }
 

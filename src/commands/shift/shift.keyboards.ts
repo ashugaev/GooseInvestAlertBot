@@ -65,7 +65,7 @@ export const getShiftConfigKeyboard = (
     ...payload,
   }
 
-  // Выпиливаю старые/длинные названия
+  // Strip legacy/long field names
   delete payloadCopy.growAlerts
   delete payloadCopy.fallAlerts
   delete payloadCopy.muted
@@ -99,7 +99,7 @@ export const getShiftConfigKeyboard = (
     ],
   ]
 
-  // Иногда нет Id из-за лимитов экшена. Это нешится при переходе на стов в базе или шортификатор
+  // Sometimes there is no Id due to action size limits. Solved by moving state to DB or using a shortener
   if (payload.d) {
     buttons.push(
       [

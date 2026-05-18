@@ -40,7 +40,7 @@ export function getPricesFromString({
 
     let resultNumberVal
 
-    // Ищем паттерн, которому соответствует запись цены
+    // Match the input against a known price-notation pattern
     if (plusMatch) {
       resultNumberVal = lastPrice + parseFloat(plusMatch[1])
     } else if (minusMatch) {

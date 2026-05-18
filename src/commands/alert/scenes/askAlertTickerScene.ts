@@ -6,7 +6,7 @@ import { ALERT_SCENES } from '../alert.constants'
 const WizardScene = require('telegraf/scenes/wizard')
 
 /**
- * Запрашивает у юзера тикер
+ * Asks the user for a ticker
  */
 const requestStep = immediateStep('ask-alert-ticker-request', async (ctx) => {
   ctx.replyWithHTML(i18n.t('ru', 'alert_add_chooseInstrument'))

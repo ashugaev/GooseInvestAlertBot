@@ -30,7 +30,7 @@ const getCandleKey = (tickerId: string, timeframe: string) => {
 }
 
 /**
- * Модуль управления кэшом свечей
+ * Candles cache management module
  */
 class ShiftCandlesUpdater {
   constructor() {
@@ -118,7 +118,7 @@ class ShiftCandlesUpdater {
 }
 
 /**
- * Модуль управления кэшом шифтов
+ * Shifts cache management module
  */
 class ShiftsUpdater {
   constructor() {
@@ -177,7 +177,7 @@ class ShiftsUpdater {
 export const candlesCache = new ShiftCandlesUpdater()
 export const shiftsCache = new ShiftsUpdater()
 
-// TODO: Мониторить кол-во сообщений в минуту или всего через promotheus
+// TODO: Track messages-per-minute or totals via Prometheus
 export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
   if (isReadyToStart) {
     await retryUntilTrue(isReadyToStart, 'setupShiftsChecker')
@@ -216,8 +216,8 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
 
         const checkStart = new Date().getTime()
 
-        // !!! ВАЖНО ПРОЙТИСЬ ИМЕНО ПО ВСЕМ ШИФТАМ, А НЕ ПО УНИКАЛЬНЫМ ТИКЕРАМ
-        // TODO: Перейти с созданию и поддержания всех таймфреймов для всех бирж
+        // !!! IMPORTANT: iterate every shift, not unique tickers
+        // TODO: Move to creating and maintaining all timeframes for all exchanges
         for (let i = 0; i < shiftsCache.get.length; i++) {
           try {
             const shift = shiftsCache.get[i]
@@ -292,7 +292,7 @@ export const setupShiftsChecker = async (isReadyToStart?: () => boolean) => {
           await wait(minTime - checkTime)
         }
       } catch (e) {
-        log.error(logPrefix, ' SUPER_CRASH, Падает мониторинг скорости', e)
+        log.error(logPrefix, ' SUPER_CRASH, velocity monitor is crashing', e)
       }
     }, logPrefix + ' ShiftsChecker iteration')
     await wait(1) // looks like it helps not to block other tasks in stasck, but not sure

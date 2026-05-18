@@ -15,17 +15,17 @@ import { shiftEditKeyboard } from '../keyboards/shiftEditKeyboard'
 import { ListActionsDataKeys } from '../list.types'
 
 /**
- * Страница редактирования шифта
+ * Shift edit page
  */
 export const shiftEditPage = commandWrapper(
   { availableForAdmins: true },
   async (ctx) => {
     try {
       const {
-        // Данные достаточные для первичного вызова
+        // Data sufficient for the initial call
         [ListActionsDataKeys.selectedAlertId]: _idShort,
         p: page,
-        // Данные, которые приходят уже после повторных вызовов
+        // Data that arrives on subsequent calls
         m: muted,
         g: growAlerts,
         f: fallAlerts,
@@ -48,12 +48,12 @@ export const shiftEditPage = commandWrapper(
       )
 
       if (!shiftData) {
-        throw new Error('Не могу получить шифт по id')
+        throw new Error('Cannot find shift by id')
       }
 
       let shiftDataCopy = shiftData
 
-      // Меняем параметры
+      // Apply parameter changes
       typeof muted === 'number' &&
         (shiftDataCopy = { ...shiftDataCopy, muted: Boolean(muted) })
       typeof growAlerts === 'number' &&
@@ -61,9 +61,9 @@ export const shiftEditPage = commandWrapper(
       typeof fallAlerts === 'number' &&
         (shiftDataCopy = { ...shiftDataCopy, fallAlerts: Boolean(fallAlerts) })
 
-      // Если изменились параметры шифта
+      // If shift parameters changed
       if (shiftData !== shiftDataCopy) {
-        // Апдейт параметров
+        // Update parameters
         await TimeShiftModel.updateOne(
           { _id },
           {
