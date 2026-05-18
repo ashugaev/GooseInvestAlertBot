@@ -1,4 +1,4 @@
-export const roundTime = (time, roundTo) => {
+const roundTime = (time, roundTo) => {
   return Math.floor(time / roundTo) * roundTo
 }
 

@@ -3,7 +3,7 @@ import { BinanceSourceSpecificData } from '@/marketApi/binance/api/getAllInstrum
 import { EMarketDataSources } from '../marketApi/types'
 import { EMarketInstrumentTypes, InstrumentsList } from '../models'
 
-export const getTinkoffInstrumentLink = ({
+const getTinkoffInstrumentLink = ({
   type,
   ticker,
 }: Partial<InstrumentsList>) => {

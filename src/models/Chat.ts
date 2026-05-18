@@ -201,11 +201,11 @@ export async function createOrUpdateChat(
   }
 }
 
-export const deactivateChat = async (chat: tt.Chat) => {
+const deactivateChat = async (chat: tt.Chat) => {
   await ChatModel.updateOne({ id: chat.id }, { isActive: false })
 }
 
-export const updateChatTitle = async (chat: tt.Chat) => {
+const updateChatTitle = async (chat: tt.Chat) => {
   await ChatModel.updateOne({ id: chat.id }, { title: chat.title })
 }
 

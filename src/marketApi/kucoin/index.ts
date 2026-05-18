@@ -5,7 +5,7 @@ const { NODE_ENV, KUCOIN_API_KEY, KUCOIN_API_PASSPHRASE, KUCOIN_API_SECRET } =
 
 require('dotenv').config()
 
-export const isDev = NODE_ENV === 'development'
+const isDev = NODE_ENV === 'development'
 
 /** Init Configure */
 KucoinAPI.init({

@@ -346,7 +346,7 @@ export const alertByTickerIdFromCache = async (
   return alerts
 }
 
-export const alertByIdFromCache = async (
+const alertByIdFromCache = async (
   _id: string
 ): Promise<PriceAlert | undefined> => {
   let alert = await priceAlertCache.byId(_id)

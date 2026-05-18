@@ -53,13 +53,13 @@ export const createShift = async ({
   await ShiftModel.create({ user, time, percent, days, timeZone })
 }
 
-export const getAllShifts = async () => {
+const getAllShifts = async () => {
   const shifts = await ShiftModel.find()
 
   return shifts
 }
 
-export const getShiftsCountForUser = async (user: number) => {
+const getShiftsCountForUser = async (user: number) => {
   const params: Partial<ShiftItem> = { user }
   const shiftsCount = await ShiftModel.find(params).count()
 

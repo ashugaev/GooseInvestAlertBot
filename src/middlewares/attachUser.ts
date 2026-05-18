@@ -11,7 +11,7 @@ import { findOrCreateUser } from '../models'
 const logPrefix = '[attachUser]'
 
 // Refreshes limits on the context
-export async function updateLimits(ctx: Context) {
+async function updateLimits(ctx: Context) {
   ctx.limits = ctx.dbuser.limits
 
   // Means I manually granted the user an elevated quota. Treat them as premium.

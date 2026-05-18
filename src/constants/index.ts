@@ -1,6 +1,5 @@
 export enum Scenes {
   alertMessage = 'alertAddMessageScene',
-  alertAdd = 'alertAddScene',
   shiftAdd = 'shiftAddScene',
 }
 
@@ -13,6 +12,4 @@ export enum Actions {
   list_shiftsPage = 'lShp',
   list_shiftEditPage = 'shEp',
   list_shiftDeleteOne = 'ddf',
-  //
-  analyse_scene_choose_channel = 'asc_cc',
 }

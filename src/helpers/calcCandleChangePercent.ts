@@ -7,5 +7,5 @@ export const calcGrowPercent = (maxPrice, openPrice) =>
 /**
  * Fall percentage
  */
-export const calcFallPercent = (minPrice, openPrice) =>
+const calcFallPercent = (minPrice, openPrice) =>
   (openPrice - minPrice) / (openPrice / 100)

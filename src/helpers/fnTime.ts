@@ -3,7 +3,7 @@
  */
 import { log } from './log'
 
-export const fnTime = (fn: () => any, logText: string) => {
+const fnTime = (fn: () => any, logText: string) => {
   const startTime = new Date().getTime()
 
   const res = fn()

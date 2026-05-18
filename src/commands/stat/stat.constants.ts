@@ -1,4 +1,4 @@
-export const SHIFT_CONFIG = {
+const SHIFT_CONFIG = {
   /**
    * Number of items sent in the notification for each category
    */

@@ -1,5 +1,4 @@
 export * from './calcCandleChangePercent'
-export * from './checksum'
 export * from './createActionString'
 export * from './dropOutInvalidPrices'
 export * from './getCandleCreatedTime'

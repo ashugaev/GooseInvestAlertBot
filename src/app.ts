@@ -7,7 +7,6 @@ import * as path from 'path'
 // This line must precede imports of files that read environment variables.
 dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
-import OpenAPI from '@tinkoff/invest-openapi-js-sdk'
 import { Context, Telegraf } from 'telegraf'
 import { TinkoffInvestApi } from 'tinkoff-invest-api'
 
@@ -48,9 +47,6 @@ import { commonScenes } from './scenes'
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
 
-import '@/marketApi/tinkoff/api/getVolumes'
-
-import { volumeScenes } from '@/commands/volumes/volumes.scenes'
 import { subscriptionPaymentCheckerAdd } from '@/cron/subscriptionPayment/subscriptionPayment'
 import { waitForMongoConnectionOrCrash } from '@/db/mongoose'
 import { commandWrapper } from '@/helpers/commandWrapper'
@@ -58,12 +54,6 @@ import { commandWrapper } from '@/helpers/commandWrapper'
 export const tinkoffApi = new TinkoffInvestApi({
   token: process.env.STOCKS_API_TOKEN,
 })
-
-const apiURL = 'https://api-invest.tinkoff.ru/openapi'
-const socketURL = 'wss://api-invest.tinkoff.ru/openapi/md/v1/md-openapi/ws'
-const secretToken = process.env.STOCKS_API_TOKEN
-
-export const legacyTinkoffApi = new OpenAPI({ apiURL, secretToken, socketURL })
 
 const stage = new Stage([
   statScenes,
@@ -73,7 +63,6 @@ const stage = new Stage([
   addChatScenes,
   shiftSceneUpatePercent,
   premiumScenes,
-  volumeScenes,
   ...commonScenes,
   ...alertScenes,
 ])

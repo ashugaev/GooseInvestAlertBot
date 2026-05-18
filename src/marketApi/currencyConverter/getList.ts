@@ -30,7 +30,7 @@ const coinTickersCache = new NodeCache({
 
 const COINS_TICKERS_CACHE_KEY = 'KEY'
 
-export const getBaseCurrencies = async () => {
+const getBaseCurrencies = async () => {
   let result = null
 
   try {
