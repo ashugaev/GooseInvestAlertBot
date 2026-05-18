@@ -21,7 +21,6 @@ projects:
       - .env
       - spur.yml
       - .codex
-      - .cursor
     workspaceAccess:
       items:
         - label: Cursor
@@ -44,6 +43,10 @@ projects:
         type: github
         intervalMs: 60000
         runOnStart: false
+      gl:
+        type: gitlab
+        intervalMs: 60000
+        runOnStart: false
     triggers:
       gh-changes-requested:
         source: gh
@@ -58,5 +61,20 @@ projects:
       gh-comment:
         source: gh
         event: github:comment
+        send:
+          interrupt: false
+      gl-changes-requested:
+        source: gl
+        event: gitlab:changes_requested
+        send:
+          interrupt: false
+      gl-ci-failed:
+        source: gl
+        event: gitlab:ci_failed
+        send:
+          interrupt: false
+      gl-comment:
+        source: gl
+        event: gitlab:comment
         send:
           interrupt: false

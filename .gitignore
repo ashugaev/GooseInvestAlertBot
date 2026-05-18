@@ -6,6 +6,3 @@ dist
 .vscode
 logs/
 .history
-
-# Spur worktree creates this as a symlink to a personal absolute path.
-.cursor
