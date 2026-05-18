@@ -15,6 +15,8 @@ import { addChatScenes } from '@/commands/addChat/addChat.scenes'
 import { setupAddPremium } from '@/commands/addPremium/addPremium'
 import { premiumScenes } from '@/commands/addPremium/addPremium.scenes'
 import { setupAdmin } from '@/commands/admin/admin'
+import { setupBroadcast } from '@/commands/broadcast/broadcast'
+import { broadcastScenes } from '@/commands/broadcast/broadcast.scenes'
 import { setupMyToken } from '@/commands/mytoken/mytoken'
 import { myTokenScenes } from '@/commands/mytoken/mytoken.scenes'
 import { setupRemove } from '@/commands/remove/remove'
@@ -63,6 +65,7 @@ const stage = new Stage([
   addChatScenes,
   shiftSceneUpatePercent,
   premiumScenes,
+  broadcastScenes,
   ...commonScenes,
   ...alertScenes,
 ])
@@ -95,6 +98,7 @@ export const botInit = (bot: Telegraf<Context>) => {
   setupAddChat(bot)
   setupTest(bot)
   setupAddPremium(bot)
+  setupBroadcast(bot)
 
   // Listen for crypto transaction hashes (subscription payments via TRX/USDT).
   bot.hears(

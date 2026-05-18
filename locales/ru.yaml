@@ -625,3 +625,26 @@ addChat_enterChatId: |
 
 addChat_success: |
   🙌 Добавлен новый ${channel ? 'канал' : 'чат'} <b>${title}</b>
+
+# Broadcast
+broadcast_askMessage: |
+  📢 Отправь сообщение, которое хочешь разослать всем пользователям
+
+broadcast_confirm: |
+  📢 Рассылка будет отправлена <b>${userCount}</b> пользователям.
+
+  Подтвердить отправку?
+
+broadcast_cancelled: |
+  ❌ Рассылка отменена
+
+broadcast_started: |
+  🚀 Рассылка запущена, это может занять некоторое время...
+
+broadcast_testSent: |
+  ✅ Тестовое сообщение отправлено тебе. Всего пользователей: <b>${userCount}</b>.
+
+  Подтвердить рассылку?
+
+broadcast_testFailed: |
+  ❌ Тестовая отправка не удалась: <code>${error}</code>

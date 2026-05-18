@@ -636,3 +636,26 @@ addChat_enterChatId: |
 
 addChat_success: |
   🙌 Added new ${channel ? 'channel' : 'chat'} <b>${title}</b>
+
+# Broadcast
+broadcast_askMessage: |
+  📢 Send the message you want to broadcast to all users
+
+broadcast_confirm: |
+  📢 Broadcast will be sent to <b>${userCount}</b> users.
+
+  Confirm sending?
+
+broadcast_cancelled: |
+  ❌ Broadcast cancelled
+
+broadcast_started: |
+  🚀 Broadcast started, this may take a while...
+
+broadcast_testSent: |
+  ✅ Test message sent to you. Total users: <b>${userCount}</b>.
+
+  Confirm broadcast?
+
+broadcast_testFailed: |
+  ❌ Test send failed: <code>${error}</code>
