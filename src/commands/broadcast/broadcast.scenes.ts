@@ -35,13 +35,14 @@ const captureMessageStep = (() => {
       return
     }
 
-    // Count unique users for the current bot
+    // Count users for the current bot
     const userCount = await UserModel.countDocuments({ botId: ctx.goose.id })
 
     state.broadcast = {
       fromChatId: msg.chat.id,
       messageId: msg.message_id,
       userCount,
+      running: false,
     }
 
     await ctx.replyWithHTML(ctx.i18n.t('broadcast_confirm', { userCount }), {
@@ -62,6 +63,12 @@ const confirmStep = (() => {
     const { state } = ctx.wizard
     const actionPayload = JSON.parse(ctx.match[1])
     const mode: string = actionPayload.m
+
+    // Guard: prevent double-click on "Send to all"
+    if (state.broadcast?.running) {
+      await ctx.answerCbQuery('Broadcast is already running')
+      return
+    }
 
     await ctx.answerCbQuery()
 
@@ -98,6 +105,8 @@ const confirmStep = (() => {
     }
 
     // --- Send to all ---
+    state.broadcast.running = true
+
     await ctx.editMessageText(ctx.i18n.t('broadcast_started'), {
       parse_mode: 'HTML',
     })
@@ -112,9 +121,26 @@ const confirmStep = (() => {
 
     const { fromChatId, messageId } = state.broadcast
 
-    const result = await executeBroadcast(uniqueIds, async (userId) => {
-      await ctx.telegram.copyMessage(userId, fromChatId, messageId)
-    })
+    // Report progress ~4 times during the broadcast, minimum every 100 users
+    const progressInterval = Math.max(100, Math.floor(uniqueIds.length / 4))
+
+    const result = await executeBroadcast(
+      uniqueIds,
+      async (userId) => {
+        await ctx.telegram.copyMessage(userId, fromChatId, messageId)
+      },
+      {
+        onProgress(processed, total) {
+          if (processed % progressInterval === 0) {
+            const pct = ((processed / total) * 100).toFixed(0)
+            ctx.telegram
+              .sendMessage(ctx.from.id, `${pct}% (${processed}/${total})...`)
+              // eslint-disable-next-line @typescript-eslint/no-empty-function
+              .catch(() => {})
+          }
+        },
+      }
+    )
 
     log.info(
       `Broadcast done: ${result.delivered}/${result.total} delivered, ` +

@@ -8,19 +8,28 @@ export interface BroadcastResult {
   errors: Array<{ userId: number; error: string }>
 }
 
+export interface BroadcastOptions {
+  /** Pause between sends to respect Telegram rate limits (default 50 ms) */
+  delayMs?: number
+  /**
+   * Called after each send attempt with (processed, total).
+   * Errors thrown inside onProgress are silently ignored so they
+   * never abort the broadcast.
+   */
+  onProgress?: (processed: number, total: number) => void | Promise<void>
+}
+
 /**
  * Sends a message to a list of users via the provided send function.
  * Each call is wrapped in try/catch so a single failure never aborts the run.
- *
- * @param userIds  – unique Telegram user IDs to deliver to
- * @param sendFn   – async callback that sends one message (injected for testability)
- * @param delayMs  – pause between sends to respect Telegram rate limits (default 50 ms)
  */
 export async function executeBroadcast(
   userIds: number[],
   sendFn: (userId: number) => Promise<void>,
-  delayMs = 50
+  options: BroadcastOptions = {}
 ): Promise<BroadcastResult> {
+  const { delayMs = 50, onProgress } = options
+
   const result: BroadcastResult = {
     delivered: 0,
     failed: 0,
@@ -40,6 +49,14 @@ export async function executeBroadcast(
         userId,
         error: err?.message ?? String(err),
       })
+    }
+
+    if (onProgress) {
+      try {
+        await onProgress(i + 1, userIds.length)
+      } catch {
+        // Progress notifications must never abort the broadcast
+      }
     }
 
     // Rate-limit pause between sends (skip after the last one)

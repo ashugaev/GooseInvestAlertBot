@@ -10,7 +10,7 @@ describe('executeBroadcast', () => {
     const sendFn = jest.fn().mockResolvedValue(undefined)
     const userIds = [100, 200, 300]
 
-    const result = await executeBroadcast(userIds, sendFn, 0)
+    const result = await executeBroadcast(userIds, sendFn, { delayMs: 0 })
 
     expect(result).toEqual({
       delivered: 3,
@@ -27,7 +27,7 @@ describe('executeBroadcast', () => {
   it('handles empty user list', async () => {
     const sendFn = jest.fn()
 
-    const result = await executeBroadcast([], sendFn, 0)
+    const result = await executeBroadcast([], sendFn, { delayMs: 0 })
 
     expect(result).toEqual({
       delivered: 0,
@@ -47,7 +47,7 @@ describe('executeBroadcast', () => {
       )
       .mockResolvedValueOnce(undefined)
 
-    const result = await executeBroadcast([1, 2, 3], sendFn, 0)
+    const result = await executeBroadcast([1, 2, 3], sendFn, { delayMs: 0 })
 
     expect(result.delivered).toBe(2)
     expect(result.failed).toBe(1)
@@ -61,7 +61,7 @@ describe('executeBroadcast', () => {
   it('handles all failures', async () => {
     const sendFn = jest.fn().mockRejectedValue(new Error('network error'))
 
-    const result = await executeBroadcast([10, 20], sendFn, 0)
+    const result = await executeBroadcast([10, 20], sendFn, { delayMs: 0 })
 
     expect(result.delivered).toBe(0)
     expect(result.failed).toBe(2)
@@ -71,7 +71,7 @@ describe('executeBroadcast', () => {
   it('handles non-Error throws', async () => {
     const sendFn = jest.fn().mockRejectedValue('string error')
 
-    const result = await executeBroadcast([1], sendFn, 0)
+    const result = await executeBroadcast([1], sendFn, { delayMs: 0 })
 
     expect(result.errors[0].error).toBe('string error')
   })
@@ -80,11 +80,58 @@ describe('executeBroadcast', () => {
     const sendFn = jest.fn().mockResolvedValue(undefined)
     const start = Date.now()
 
-    await executeBroadcast([1, 2, 3], sendFn, 30)
+    await executeBroadcast([1, 2, 3], sendFn, { delayMs: 30 })
 
     const elapsed = Date.now() - start
     // 2 pauses of 30ms each (no pause after last send)
     expect(elapsed).toBeGreaterThanOrEqual(50)
+  })
+
+  it('calls onProgress after each send attempt', async () => {
+    const sendFn = jest.fn().mockResolvedValue(undefined)
+    const onProgress = jest.fn()
+
+    await executeBroadcast([10, 20, 30], sendFn, {
+      delayMs: 0,
+      onProgress,
+    })
+
+    expect(onProgress).toHaveBeenCalledTimes(3)
+    expect(onProgress).toHaveBeenNthCalledWith(1, 1, 3)
+    expect(onProgress).toHaveBeenNthCalledWith(2, 2, 3)
+    expect(onProgress).toHaveBeenNthCalledWith(3, 3, 3)
+  })
+
+  it('calls onProgress even when sends fail', async () => {
+    const sendFn = jest.fn().mockRejectedValue(new Error('fail'))
+    const onProgress = jest.fn()
+
+    await executeBroadcast([1, 2], sendFn, { delayMs: 0, onProgress })
+
+    expect(onProgress).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not abort broadcast when onProgress throws', async () => {
+    const sendFn = jest.fn().mockResolvedValue(undefined)
+    const onProgress = jest.fn().mockRejectedValue(new Error('progress boom'))
+
+    const result = await executeBroadcast([1, 2, 3], sendFn, {
+      delayMs: 0,
+      onProgress,
+    })
+
+    expect(result.delivered).toBe(3)
+    expect(result.failed).toBe(0)
+  })
+
+  it('uses default 50ms delay when no options provided', async () => {
+    const sendFn = jest.fn().mockResolvedValue(undefined)
+    const start = Date.now()
+
+    await executeBroadcast([1, 2], sendFn)
+
+    const elapsed = Date.now() - start
+    expect(elapsed).toBeGreaterThanOrEqual(40)
   })
 })
 
