@@ -21,7 +21,12 @@ export const sendTriggeredAlert = async (
   alert: PriceAlert,
   instrumentData: InstrumentsList
 ) => {
-  const { message, lowerThen, greaterThen, _id } = alert
+  const {
+    message: _message,
+    lowerThen: _lowerThen,
+    greaterThen: _greaterThen,
+    _id,
+  } = alert
 
   // Prevent a re-trigger before the DB delete and cache update complete
   // @ts-ignore

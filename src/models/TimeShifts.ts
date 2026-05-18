@@ -133,9 +133,3 @@ export const getTimeShiftsCount = async ({
 
   return shiftsCount
 }
-
-const getUniqTimeShiftTickers = async () => {
-  const data = await TimeShiftModel.find({}, { ticker: 1 }).lean()
-
-  return data
-}

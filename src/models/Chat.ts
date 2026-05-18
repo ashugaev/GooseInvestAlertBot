@@ -201,14 +201,6 @@ export async function createOrUpdateChat(
   }
 }
 
-const deactivateChat = async (chat: tt.Chat) => {
-  await ChatModel.updateOne({ id: chat.id }, { isActive: false })
-}
-
-const updateChatTitle = async (chat: tt.Chat) => {
-  await ChatModel.updateOne({ id: chat.id }, { title: chat.title })
-}
-
 export const getUserChats = async (
   userId: number | string
 ): Promise<Chat[]> => {

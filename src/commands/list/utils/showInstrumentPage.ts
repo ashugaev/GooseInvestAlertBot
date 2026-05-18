@@ -17,6 +17,7 @@ import { ListActionsDataKeys } from '../list.types'
 interface IShowInstrumentPageParams {
   keyboardMode?: EKeyboardModes
   page: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ctx: any
   instrumentItems: PriceAlert[]
   /**
@@ -59,18 +60,30 @@ export const showInstrumentPage = async ({
     .slice(page * listConfig.itemsPerPage, (page + 1) * listConfig.itemsPerPage)
 
   const itemsList = itemsToShow
-    .map(({ symbol, message, lowerThen, greaterThen, currency, name }, i) => {
-      const price = lowerThen ?? greaterThen
+    .map(
+      (
+        {
+          symbol: _symbol,
+          message,
+          lowerThen,
+          greaterThen,
+          currency,
+          name: _name,
+        },
+        i
+      ) => {
+        const price = lowerThen ?? greaterThen
 
-      return ctx.i18n.t('alertList_item', {
-        // Item number accounting for the page
-        number: getAlertNumberByPage({ i, page }),
-        price,
-        message,
-        currency: getSymbolByTicker(currency),
-        growth: Boolean(greaterThen),
-      })
-    })
+        return ctx.i18n.t('alertList_item', {
+          // Item number accounting for the page
+          number: getAlertNumberByPage({ i, page }),
+          price,
+          message,
+          currency: getSymbolByTicker(currency),
+          growth: Boolean(greaterThen),
+        })
+      }
+    )
     .join('\n')
 
   const {

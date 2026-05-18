@@ -371,7 +371,7 @@ const shiftAddChoosePercent = waitMessageStep(
 const shiftAddAdditionalConfiguration = waitButtonClickStep(
   SHIFT_ACTIONS.additionalConfiguration,
   'shift_add_additional-configuration',
-  async (ctx, actionPayload, state) => {
+  async (ctx, actionPayload, _state) => {
     const { f, g, m } = actionPayload
 
     const config = {

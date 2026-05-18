@@ -345,15 +345,3 @@ export const alertByTickerIdFromCache = async (
 
   return alerts
 }
-
-const alertByIdFromCache = async (
-  _id: string
-): Promise<PriceAlert | undefined> => {
-  let alert = await priceAlertCache.byId(_id)
-
-  if (!alert) {
-    alert = (await PriceAlertModel.find({ _id }).lean())[0]
-  }
-
-  return alert
-}

@@ -8,8 +8,10 @@ import { log } from './log'
 
 export function sceneWrapper(
   intent: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: (ctx: any) => Promise<void>,
   leaveOnFail?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Middleware<any> {
   return async (ctx) => {
     try {

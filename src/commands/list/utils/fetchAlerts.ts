@@ -5,6 +5,7 @@ import { PriceAlert, PriceAlertModel } from '../../../models'
 
 interface IFetchAlertsParams {
   tickerId?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ctx: any
   noContextUpdate?: boolean
   ticker?: string

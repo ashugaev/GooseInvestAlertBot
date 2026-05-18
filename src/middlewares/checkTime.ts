@@ -2,6 +2,7 @@ import { Context } from 'telegraf'
 
 import { log } from '../helpers/log'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function checkTime(ctx: Context, next: () => any) {
   if (ctx.updateType === 'message') {
     if (new Date().getTime() / 1000 - ctx.message.date < 5 * 60) {

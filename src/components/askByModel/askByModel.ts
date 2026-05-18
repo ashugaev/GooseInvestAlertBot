@@ -84,6 +84,7 @@ export class AskByModel<T> {
   config: AskByModelConfig<T>
   sceneKey = null
   bot: Telegraf<Context>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   wizard: any
   /**
    * This filter shows this we want to update entity, not create a new one

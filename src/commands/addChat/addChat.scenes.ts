@@ -22,7 +22,7 @@ const askChat = immediateStep('send token', async (ctx) => {
  */
 const handleChatId = waitMessageStep(
   'chat_id_handle',
-  async (ctx, message, state) => {
+  async (ctx, _message, _state) => {
     const username = ctx.message.text
 
     // await TrackChatModel.insertMany({

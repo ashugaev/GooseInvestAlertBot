@@ -5,6 +5,7 @@ import { sceneWrapper } from '../../helpers/sceneWrapper'
  */
 export const immediateStep = (
   intent: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: (ctx, state: Record<string, any>) => Promise<void>
 ) => {
   const callbackWrapper = async (context) => {

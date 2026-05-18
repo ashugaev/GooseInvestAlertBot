@@ -1,7 +1,7 @@
 import { clearOldCandles } from '@/cron/clearOldCandles/clearOldCandles'
 import { setupPriceChecker } from '@/cron/priceChecker/priceChecker'
 import { paymentStatusChecker } from '@/cron/subscriptionPayment/paymentStatusChecker'
-import { log, retry } from '@/helpers'
+import { retry } from '@/helpers'
 import { binanceGetAllInstrumentsFutures } from '@/marketApi/binance/api/getAllInstrumentsFutures'
 import { bybitGetPrices } from '@/marketApi/bybit/getPrices'
 import { getInstrumentsKucoin } from '@/marketApi/kucoin/getInstruments'
@@ -45,37 +45,6 @@ export enum InitializationItem {
 
 // Array with all processed steps
 export const appInitStatuses: InitializationItem[] = []
-
-const isInstrumentsListUpdated = () => {
-  return [
-    InitializationItem.TINKOFF_TICKERS,
-    InitializationItem.BINANCE_TICKERS,
-    InitializationItem.BINANCE_FUTURES_TICKERS,
-    InitializationItem.BYBIT_TICKERS,
-    InitializationItem.KUCOIN_TICKERS,
-    InitializationItem.LBANK_TICKERS,
-  ].every((step) => appInitStatuses.includes(step))
-}
-const isAllPricesUpdated = () => {
-  return [
-    InitializationItem.TINKOFF_PRICES,
-    InitializationItem.BINANCE_PRICES,
-    InitializationItem.BINANCE_FUTURES_PRICES,
-    InitializationItem.BYBIT_PRICES,
-    InitializationItem.KUCOIN_PRICES,
-    InitializationItem.LBANK_PRICES,
-  ].every((step) => appInitStatuses.includes(step))
-}
-
-const appInitTime = new Date().getTime()
-
-const isReadyToRunByTimeout = () => {
-  const isTimeOut = new Date().getTime() - appInitTime > 1000 * 60 * 10 // 10 min
-  if (isTimeOut) {
-    log.error('Start process by timeout')
-  }
-  return isTimeOut
-}
 
 export const setupCheckers = () => {
   startCronJob({

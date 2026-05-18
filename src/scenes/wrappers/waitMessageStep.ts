@@ -4,6 +4,7 @@ import { sceneWrapper } from '../../helpers/sceneWrapper'
 
 export const waitMessageStep = (
   intent: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback: (ctx, text: string, state: Record<string, any>) => Promise<void>
 ) => {
   const step = new Composer()

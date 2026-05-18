@@ -8,7 +8,9 @@ export const waitButtonClickStep = (
   intent: string,
   callback: (
     ctx,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     actionPayload: Record<string, any>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     state: Record<string, any>
   ) => Promise<void>
 ) => {

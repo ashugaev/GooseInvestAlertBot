@@ -9,7 +9,7 @@ import { commandWrapper } from '@/helpers/commandWrapper'
 export function setupTest(bot: Telegraf<Context>) {
   const callback = commandWrapper(
     { availableForAdmins: true, bossOnly: true },
-    async (ctx) => {
+    async (_ctx) => {
       try {
         // const res = await newMarkenOrderFuturesBinance({
         //   symbol: 'ATOMUSDT',

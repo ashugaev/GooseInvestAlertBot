@@ -16,7 +16,7 @@ export const instrumentsListPagination = commandWrapper(
 
       const { id: user } = ctx.from
 
-      const alertsList = ctx.session?.listCommand?.data?.alertsList
+      const _alertsList = ctx.session?.listCommand?.data?.alertsList
       const uniqTickersData = ctx.session?.listCommand?.data?.uniqTickersData
 
       await ctx.editMessageText(

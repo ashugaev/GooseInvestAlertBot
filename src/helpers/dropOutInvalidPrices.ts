@@ -9,7 +9,7 @@ const logPrefix = '[INVALID PRICES CHECKER]'
  */
 export const dropOutInvalidPrices = (prices: TickerPrices) => {
   const result = prices.filter(
-    ([ticker, price]) => typeof price === 'number' && price > 0
+    ([_ticker, price]) => typeof price === 'number' && price > 0
   )
 
   if (result.length !== prices.length) {

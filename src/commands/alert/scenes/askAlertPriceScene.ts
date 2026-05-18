@@ -21,7 +21,7 @@ const requestStep = immediateStep('ask-alert-price-request', async (ctx) => {
   const instrumentData = instrumentsList[0]
   const instrumentId = instrumentData.id
 
-  const { currency, source } = instrumentData
+  const { currency, source: _source } = instrumentData
 
   const price = await getLastPrice(instrumentId)
 

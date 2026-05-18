@@ -11,10 +11,13 @@ import { set } from 'lodash'
 import { createActionString } from '@/helpers'
 import { plur } from '@/helpers/plural'
 
-const premiumAddScene = immediateStep('premiumAddScene', async (ctx, state) => {
-  await ctx.reply('Введи id пользователя')
-  return ctx.wizard.next()
-})
+const premiumAddScene = immediateStep(
+  'premiumAddScene',
+  async (ctx, _state) => {
+    await ctx.reply('Введи id пользователя')
+    return ctx.wizard.next()
+  }
+)
 
 const premiumLengthScene = waitMessageStep(
   'premiumLengthScene',

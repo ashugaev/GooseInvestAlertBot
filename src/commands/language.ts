@@ -22,11 +22,13 @@ export function setupLanguage(bot: Telegraf<Context>) {
   bot.action(
     localesFiles().map((file) => file.split('.')[0]),
     async (ctx) => {
-      let user = ctx.dbuser
-      user.language = ctx.callbackQuery.data
-      user = await (user as any).save()
+      let _user = ctx.dbuser
+      _user.language = ctx.callbackQuery.data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      _user = await (_user as any).save()
       const message = ctx.callbackQuery.message
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const anyI18N = ctx.i18n as any
       anyI18N.locale(ctx.callbackQuery.data)
 

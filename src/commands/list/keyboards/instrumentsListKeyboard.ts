@@ -19,8 +19,8 @@ export const instrumentsListKeyboard = async ({
   uniqTickersData,
   page,
   listType = EListTypes.levels,
-  user = null,
-  ctx,
+  user: _user = null,
+  ctx: _ctx,
 }) => {
   // Tickers to render on this page
   const pageTickers: PriceAlert[] = uniqTickersData.slice(

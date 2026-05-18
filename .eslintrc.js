@@ -59,7 +59,13 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/strict-boolean-expressions': 0,
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      },
+    ],
     '@typescript-eslint/no-misused-promises': 0,
     '@typescript-eslint/no-floating-promises': 0,
   },

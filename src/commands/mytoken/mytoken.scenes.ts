@@ -38,8 +38,8 @@ const sendToken = immediateStep('send token', async (ctx) => {
  */
 const deploy = waitMessageStep(
   'shift_add_choose-source',
-  async (ctx, message, state) => {
-    const { id: user } = ctx.from
+  async (ctx, message, _state) => {
+    const { id: _user } = ctx.from
 
     ctx.replyWithHTML(i18n.t('ru', 'mytoken_deploystart'))
 

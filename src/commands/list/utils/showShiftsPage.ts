@@ -15,6 +15,7 @@ import { getAlertNumberByPage } from './showInstrumentPage'
 interface IShowShiftsPageParams {
   keyboardMode?: EKeyboardModes
   page: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ctx: any
   shiftsList: TimeShift[]
   edit?: boolean

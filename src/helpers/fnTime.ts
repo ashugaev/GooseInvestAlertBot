@@ -3,20 +3,7 @@
  */
 import { log } from './log'
 
-const fnTime = (fn: () => any, logText: string) => {
-  const startTime = new Date().getTime()
-
-  const res = fn()
-
-  log.info(
-    logText,
-    '. Time: ',
-    ((new Date().getTime() - startTime) / 1000).toString() + 's'
-  )
-
-  return res
-}
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const fnTimeAsync = async (fn: () => Promise<any>, logText: string) => {
   const startTime = new Date().getTime()
 
