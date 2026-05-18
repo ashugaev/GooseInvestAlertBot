@@ -9,6 +9,7 @@ import {
   executeBroadcast,
   formatBroadcastReport,
 } from '@/commands/broadcast/broadcast.utils'
+import { i18n } from '@/helpers/i18n'
 import { log } from '@/helpers/log'
 import { sceneWrapper } from '@/helpers/sceneWrapper'
 import { triggerActionRegexp } from '@/helpers/triggerActionRegexp'
@@ -16,9 +17,12 @@ import { UserModel } from '@/models'
 import { immediateStep } from '@/scenes'
 const WizardScene = require('telegraf/scenes/wizard')
 
+/** Resolve user language — ctx.i18n is NOT available in wizard steps 2+ */
+const lang = (ctx): string => ctx.dbuser?.language ?? 'ru'
+
 // Step 1: Ask for the message to broadcast
 const askForMessageStep = immediateStep('broadcastAskMessage', async (ctx) => {
-  await ctx.replyWithHTML(ctx.i18n.t('broadcast_askMessage'))
+  await ctx.replyWithHTML(i18n.t(lang(ctx), 'broadcast_askMessage'))
   return ctx.wizard.next()
 })
 
@@ -31,7 +35,7 @@ const captureMessageStep = (() => {
     const msg = ctx.message
 
     if (!msg) {
-      await ctx.replyWithHTML(ctx.i18n.t('broadcast_askMessage'))
+      await ctx.replyWithHTML(i18n.t(lang(ctx), 'broadcast_askMessage'))
       return
     }
 
@@ -45,9 +49,10 @@ const captureMessageStep = (() => {
       running: false,
     }
 
-    await ctx.replyWithHTML(ctx.i18n.t('broadcast_confirm', { userCount }), {
-      reply_markup: buildConfirmKeyboard(),
-    })
+    await ctx.replyWithHTML(
+      i18n.t(lang(ctx), 'broadcast_confirm', { userCount }),
+      { reply_markup: buildConfirmKeyboard() }
+    )
 
     return ctx.wizard.next()
   })
@@ -63,6 +68,7 @@ const confirmStep = (() => {
     const { state } = ctx.wizard
     const actionPayload = JSON.parse(ctx.match[1])
     const mode: string = actionPayload.m
+    const l = lang(ctx)
 
     // Guard: prevent double-click on "Send to all"
     if (state.broadcast?.running) {
@@ -74,7 +80,7 @@ const confirmStep = (() => {
 
     // --- Cancel ---
     if (mode === 'no') {
-      await ctx.editMessageText(ctx.i18n.t('broadcast_cancelled'), {
+      await ctx.editMessageText(i18n.t(l, 'broadcast_cancelled'), {
         parse_mode: 'HTML',
       })
       return ctx.scene.leave()
@@ -87,13 +93,13 @@ const confirmStep = (() => {
       try {
         await ctx.telegram.copyMessage(ctx.from.id, fromChatId, messageId)
         await ctx.editMessageText(
-          ctx.i18n.t('broadcast_testSent', { userCount }),
+          i18n.t(l, 'broadcast_testSent', { userCount }),
           { parse_mode: 'HTML', reply_markup: buildConfirmKeyboard() }
         )
       } catch (err) {
         log.error('Broadcast test-send failed:', err)
         await ctx.editMessageText(
-          ctx.i18n.t('broadcast_testFailed', {
+          i18n.t(l, 'broadcast_testFailed', {
             error: err?.message ?? String(err),
           }),
           { parse_mode: 'HTML', reply_markup: buildConfirmKeyboard() }
@@ -107,7 +113,7 @@ const confirmStep = (() => {
     // --- Send to all ---
     state.broadcast.running = true
 
-    await ctx.editMessageText(ctx.i18n.t('broadcast_started'), {
+    await ctx.editMessageText(i18n.t(l, 'broadcast_started'), {
       parse_mode: 'HTML',
     })
 
