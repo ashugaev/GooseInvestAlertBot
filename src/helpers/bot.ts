@@ -1,12 +1,8 @@
 import { Context, Telegraf } from 'telegraf'
-import { Api } from 'telegram'
 
 import { botInit } from '@/app'
-import { BotModel } from '@/models/Bot'
-import User = Api.User
-
 import { log } from '@/helpers/log'
-import ChannelMessages = Api.messages.ChannelMessages
+import { BotModel } from '@/models/Bot'
 const TelegrafBot = require('telegraf')
 
 // TODO: Log problems with multibot
