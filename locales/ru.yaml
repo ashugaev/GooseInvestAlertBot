@@ -640,3 +640,11 @@ broadcast_cancelled: |
 
 broadcast_started: |
   🚀 Рассылка запущена, это может занять некоторое время...
+
+broadcast_testSent: |
+  ✅ Тестовое сообщение отправлено тебе. Всего пользователей: <b>${userCount}</b>.
+
+  Подтвердить рассылку?
+
+broadcast_testFailed: |
+  ❌ Тестовая отправка не удалась: <code>${error}</code>

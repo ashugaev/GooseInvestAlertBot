@@ -1,5 +1,6 @@
 import {
   BroadcastResult,
+  buildConfirmKeyboard,
   executeBroadcast,
   formatBroadcastReport,
 } from '@/commands/broadcast/broadcast.utils'
@@ -54,7 +55,6 @@ describe('executeBroadcast', () => {
     expect(result.errors).toEqual([
       { userId: 2, error: 'Forbidden: bot was blocked by the user' },
     ])
-    // All three users were attempted
     expect(sendFn).toHaveBeenCalledTimes(3)
   })
 
@@ -155,5 +155,39 @@ describe('formatBroadcastReport', () => {
     const report = formatBroadcastReport(result)
 
     expect(report).toContain('0.0%')
+  })
+
+  it('escapes HTML in error messages', () => {
+    const result: BroadcastResult = {
+      delivered: 0,
+      failed: 1,
+      total: 1,
+      errors: [{ userId: 1, error: '<script>alert("xss")</script>' }],
+    }
+
+    const report = formatBroadcastReport(result)
+
+    expect(report).not.toContain('<script>')
+    expect(report).toContain('&lt;script&gt;')
+  })
+})
+
+describe('buildConfirmKeyboard', () => {
+  it('returns three rows of inline buttons', () => {
+    const keyboard = buildConfirmKeyboard()
+
+    expect(keyboard.inline_keyboard).toHaveLength(3)
+    expect(keyboard.inline_keyboard[0][0].text).toBe('Send to all')
+    expect(keyboard.inline_keyboard[1][0].text).toBe('Test (only me)')
+    expect(keyboard.inline_keyboard[2][0].text).toBe('Cancel')
+  })
+
+  it('embeds valid action payloads', () => {
+    const keyboard = buildConfirmKeyboard()
+    const rows = keyboard.inline_keyboard
+
+    expect(rows[0][0].callback_data).toContain('"m":"all"')
+    expect(rows[1][0].callback_data).toContain('"m":"test"')
+    expect(rows[2][0].callback_data).toContain('"m":"no"')
   })
 })

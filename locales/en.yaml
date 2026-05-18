@@ -651,3 +651,11 @@ broadcast_cancelled: |
 
 broadcast_started: |
   🚀 Broadcast started, this may take a while...
+
+broadcast_testSent: |
+  ✅ Test message sent to you. Total users: <b>${userCount}</b>.
+
+  Confirm broadcast?
+
+broadcast_testFailed: |
+  ❌ Test send failed: <code>${error}</code>

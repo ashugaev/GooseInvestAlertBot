@@ -5,15 +5,15 @@ import {
   BROADCAST_SCENES,
 } from '@/commands/broadcast/broadcast.constants'
 import {
+  buildConfirmKeyboard,
   executeBroadcast,
   formatBroadcastReport,
 } from '@/commands/broadcast/broadcast.utils'
-import { createActionString } from '@/helpers'
 import { log } from '@/helpers/log'
 import { sceneWrapper } from '@/helpers/sceneWrapper'
+import { triggerActionRegexp } from '@/helpers/triggerActionRegexp'
 import { UserModel } from '@/models'
 import { immediateStep } from '@/scenes'
-import { waitButtonClickStep } from '@/scenes/wrappers'
 const WizardScene = require('telegraf/scenes/wizard')
 
 // Step 1: Ask for the message to broadcast
@@ -35,64 +35,84 @@ const captureMessageStep = (() => {
       return
     }
 
+    // Count unique users for the current bot
+    const userCount = await UserModel.countDocuments({ botId: ctx.goose.id })
+
     state.broadcast = {
       fromChatId: msg.chat.id,
       messageId: msg.message_id,
+      userCount,
     }
 
-    // Count users for the current bot
-    const userCount = await UserModel.countDocuments({ botId: ctx.goose.id })
-
     await ctx.replyWithHTML(ctx.i18n.t('broadcast_confirm', { userCount }), {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: 'Send',
-              callback_data: createActionString(BROADCAST_ACTIONS.confirm, {
-                ok: 1,
-              }),
-            },
-            {
-              text: 'Cancel',
-              callback_data: createActionString(BROADCAST_ACTIONS.confirm, {
-                ok: 0,
-              }),
-            },
-          ],
-        ],
-      },
+      reply_markup: buildConfirmKeyboard(),
     })
 
     return ctx.wizard.next()
   })
 
-  // Listen for any message type (text, photo, video, sticker, etc.)
   return step.on('message', handler)
 })()
 
-// Step 3: Handle confirmation button click
-const confirmStep = waitButtonClickStep(
-  BROADCAST_ACTIONS.confirm,
-  'broadcastConfirm',
-  async (ctx, actionPayload, state) => {
-    if (!actionPayload.ok) {
-      await ctx.replyWithHTML(ctx.i18n.t('broadcast_cancelled'))
+// Step 3: Handle confirm / test / cancel button clicks
+const confirmStep = (() => {
+  const step = new Composer()
+
+  const handler = sceneWrapper('broadcastConfirm', async (ctx) => {
+    const { state } = ctx.wizard
+    const actionPayload = JSON.parse(ctx.match[1])
+    const mode: string = actionPayload.m
+
+    await ctx.answerCbQuery()
+
+    // --- Cancel ---
+    if (mode === 'no') {
+      await ctx.editMessageText(ctx.i18n.t('broadcast_cancelled'), {
+        parse_mode: 'HTML',
+      })
       return ctx.scene.leave()
     }
 
-    const { fromChatId, messageId } = state.broadcast
+    // --- Test (send only to boss) ---
+    if (mode === 'test') {
+      const { fromChatId, messageId, userCount } = state.broadcast
 
-    await ctx.replyWithHTML(ctx.i18n.t('broadcast_started'))
+      try {
+        await ctx.telegram.copyMessage(ctx.from.id, fromChatId, messageId)
+        await ctx.editMessageText(
+          ctx.i18n.t('broadcast_testSent', { userCount }),
+          { parse_mode: 'HTML', reply_markup: buildConfirmKeyboard() }
+        )
+      } catch (err) {
+        log.error('Broadcast test-send failed:', err)
+        await ctx.editMessageText(
+          ctx.i18n.t('broadcast_testFailed', {
+            error: err?.message ?? String(err),
+          }),
+          { parse_mode: 'HTML', reply_markup: buildConfirmKeyboard() }
+        )
+      }
+
+      // Stay on same step — boss can test again, confirm, or cancel
+      return
+    }
+
+    // --- Send to all ---
+    await ctx.editMessageText(ctx.i18n.t('broadcast_started'), {
+      parse_mode: 'HTML',
+    })
 
     const users = await UserModel.find(
       { botId: ctx.goose.id },
       { id: 1 }
     ).lean()
 
-    const userIds: number[] = users.map((u) => u.id)
+    // Deduplicate — User.id is not unique in DB
+    const uniqueIds = [...new Set(users.map((u) => u.id))]
 
-    const result = await executeBroadcast(userIds, async (userId) => {
+    const { fromChatId, messageId } = state.broadcast
+
+    const result = await executeBroadcast(uniqueIds, async (userId) => {
       await ctx.telegram.copyMessage(userId, fromChatId, messageId)
     })
 
@@ -101,13 +121,19 @@ const confirmStep = waitButtonClickStep(
         `${result.failed} failed`
     )
 
-    await ctx.replyWithHTML(formatBroadcastReport(result), {
-      disable_web_page_preview: true,
-    })
+    try {
+      await ctx.replyWithHTML(formatBroadcastReport(result), {
+        disable_web_page_preview: true,
+      })
+    } catch (reportErr) {
+      log.error('Failed to send broadcast report:', reportErr)
+    }
 
     return ctx.scene.leave()
-  }
-)
+  })
+
+  return step.action(triggerActionRegexp(BROADCAST_ACTIONS.confirm), handler)
+})()
 
 export const broadcastScenes = new WizardScene(
   BROADCAST_SCENES.main,

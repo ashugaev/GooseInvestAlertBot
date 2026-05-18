@@ -1,3 +1,6 @@
+import { BROADCAST_ACTIONS } from '@/commands/broadcast/broadcast.constants'
+import { createActionString } from '@/helpers'
+
 export interface BroadcastResult {
   delivered: number
   failed: number
@@ -67,7 +70,7 @@ export function formatBroadcastReport(result: BroadcastResult): string {
     const maxShown = 20 // avoid huge messages
     lines.push('', '<b>Failed users:</b>')
     for (const e of result.errors.slice(0, maxShown)) {
-      lines.push(`<code>${e.userId}</code> — ${e.error}`)
+      lines.push(`<code>${e.userId}</code> — ${escapeHtml(e.error)}`)
     }
     if (result.errors.length > maxShown) {
       lines.push(`... and ${result.errors.length - maxShown} more`)
@@ -75,4 +78,40 @@ export function formatBroadcastReport(result: BroadcastResult): string {
   }
 
   return lines.join('\n')
+}
+
+export function buildConfirmKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: 'Send to all',
+          callback_data: createActionString(BROADCAST_ACTIONS.confirm, {
+            m: 'all',
+          }),
+        },
+      ],
+      [
+        {
+          text: 'Test (only me)',
+          callback_data: createActionString(BROADCAST_ACTIONS.confirm, {
+            m: 'test',
+          }),
+        },
+      ],
+      [
+        {
+          text: 'Cancel',
+          callback_data: createActionString(BROADCAST_ACTIONS.confirm, {
+            m: 'no',
+          }),
+        },
+      ],
+    ],
+  }
+}
+
+/** Escape HTML special chars in error strings to avoid breaking Telegram's parser */
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
