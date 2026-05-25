@@ -72,8 +72,7 @@ const stage = new Stage([
 ])
 
 export const botInit = (bot: Telegraf<Context>) => {
-  // Bot-wide kill switch. Must be the very first middleware so it short-circuits
-  // every update before session/scene state is touched.
+  // Kill switch: must run before session/stage so it can short-circuit every update.
   bot.use(shutdownMode)
 
   bot.use(session())

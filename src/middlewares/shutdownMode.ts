@@ -1,34 +1,25 @@
 import { Context } from 'telegraf'
 
-import { getShutdownMessage, isShutdownEnabled } from '@/helpers/shutdownMode'
+/* eslint-disable max-len */
+export const SHUTDOWN_MESSAGE = `привет. я сделал гуся пять лет назад — тогда нигде не было удобных алертов по ценам. начал для себя, потом подтянулись люди.
 
-import { log } from '../helpers/log'
+решил, что пора закрывать. тянул так уже пару лет — жалко было пользователей. но дальше держать в анабиозе невыгодно никому: проект продолжает забирать деньги и фокус, а интереса и ресурса растить его у меня уже нет.
 
-const logPrefix = '[shutdownMode]'
+это был мой первый проект с живой аудиторией. до сих пор отношусь к нему тепло — поэтому хочется закрыть честно, а не молча выключить однажды.
 
-/**
- * When `SHUTDOWN_MODE` is on, intercept every update before any handler,
- * acknowledge it (callback queries need `answerCbQuery` so the spinner stops),
- * and reply once with the shutdown announcement. No `next()` — handlers,
- * scenes and `setupCheckers` callbacks behind this middleware never run.
- */
+если кому-то интересно взять бота себе и развивать — готов передать управление. не бесплатно. пишите @ashugaev.
+
+что дальше:
+— алерты и команды я уже выключил, сейчас бот только показывает это сообщение
+— через неделю остановлю совсем
+— код открыт: https://github.com/ashugaev/GooseInvestAlertBot — поднимайте у себя, ai-агенты справятся с настройкой
+— если у вас активный премиум — напишите, верну деньги
+
+спасибо что были с гусём 🖖`
+/* eslint-enable max-len */
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function shutdownMode(ctx: Context, next: () => any) {
-  if (!isShutdownEnabled(process.env)) {
-    return next()
-  }
-
-  const message = getShutdownMessage(process.env)
-
-  try {
-    if (ctx.updateType === 'callback_query') {
-      await ctx.answerCbQuery().catch(() => undefined)
-    }
-
-    if (ctx.chat) {
-      await ctx.reply(message, { disable_web_page_preview: true })
-    }
-  } catch (e) {
-    log.error(logPrefix, e)
-  }
+  if (process.env.SHUTDOWN_MODE !== 'true') return next()
+  await ctx.reply(SHUTDOWN_MESSAGE)
 }

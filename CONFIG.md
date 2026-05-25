@@ -47,15 +47,9 @@ simply disable that data source.
 
 ## Optional: shutdown announcement
 
-Bot-wide kill switch. When the bot is in shutdown mode every incoming update
-is intercepted before any handler and answered with a single announcement;
-commands, scenes and button callbacks are skipped. Flip `SHUTDOWN_MODE` off
-to restore normal operation.
-
 | Variable | Description |
 |----------|-------------|
-| `SHUTDOWN_MODE` | Set to `1` / `true` / `yes` / `on` to enable. Anything else (including unset) keeps the bot running normally. |
-| `SHUTDOWN_MESSAGE` | Optional text to reply with. When empty, the bundled default in `src/helpers/shutdownMode.ts` is used. |
+| `SHUTDOWN_MODE` | Set to `true` to silence every handler and reply with the farewell in `src/middlewares/shutdownMode.ts`. Unset to restore the bot. |
 
 ## Optional: MongoDB tuning
 
