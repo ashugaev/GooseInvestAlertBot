@@ -49,7 +49,7 @@ simply disable that data source.
 
 | Variable | Description |
 |----------|-------------|
-| `SHUTDOWN_MODE` | Set to `true` to silence every inbound handler (replies with the farewell in `src/middlewares/shutdownMode.ts`) **and** stop every cron-driven outbound notification (price and shift alerts). Unset to restore the bot. |
+| `SHUTDOWN_MODE` | Set to `true` to wind the bot down without taking the process offline. The inbound middleware (`src/middlewares/shutdownMode.ts`) replies with the farewell, `setupCheckers()` is skipped so no cron / price / shift / alert / payment loops start, and the outbound notification paths short-circuit as a safety net. Unset to restore the bot. |
 
 ## Optional: MongoDB tuning
 
