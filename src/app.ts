@@ -45,6 +45,7 @@ import { setupI18N } from './helpers/i18n'
 import { log } from './helpers/log'
 import { attachUser } from './middlewares/attachUser'
 import { checkTime } from './middlewares/checkTime'
+import { shutdownMode } from './middlewares/shutdownMode'
 import { commonScenes } from './scenes'
 const Stage = require('telegraf/stage')
 const session = require('telegraf/session')
@@ -71,6 +72,9 @@ const stage = new Stage([
 ])
 
 export const botInit = (bot: Telegraf<Context>) => {
+  // Kill switch: must run before session/stage so it can short-circuit every update.
+  bot.use(shutdownMode)
+
   bot.use(session())
   bot.use(stage.middleware())
 

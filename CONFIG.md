@@ -45,6 +45,12 @@ simply disable that data source.
 | `TRONSCAN_API_KEY` | [Tronscan](https://docs.tronscan.org/getting-started) API key. |
 | `TRONSCAN_WALLET_ADDRESS` | TRX wallet address; the bot polls it for incoming USDT-TRC20 payments and matches them to pending invoices. |
 
+## Optional: shutdown announcement
+
+| Variable | Description |
+|----------|-------------|
+| `SHUTDOWN_MODE` | Set to `true` to silence every handler and reply with the farewell in `src/middlewares/shutdownMode.ts`. Unset to restore the bot. |
+
 ## Optional: MongoDB tuning
 
 These knobs control connection retry / health-check behaviour. The built-in
