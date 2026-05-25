@@ -49,7 +49,7 @@ simply disable that data source.
 
 | Variable | Description |
 |----------|-------------|
-| `SHUTDOWN_MODE` | Set to `true` to silence every handler and reply with the farewell in `src/middlewares/shutdownMode.ts`. Unset to restore the bot. |
+| `SHUTDOWN_MODE` | Set to `true` to silence every inbound handler (replies with the farewell in `src/middlewares/shutdownMode.ts`) **and** stop every cron-driven outbound notification (price and shift alerts). Unset to restore the bot. |
 
 ## Optional: MongoDB tuning
 

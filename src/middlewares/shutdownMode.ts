@@ -1,5 +1,7 @@
 import { Context } from 'telegraf'
 
+import { isShutdownMode } from '@/helpers/isShutdownMode'
+
 /* eslint-disable max-len */
 export const SHUTDOWN_MESSAGE = `привет. я сделал гуся пять лет назад — тогда нигде не было удобных алертов по ценам. начал для себя, потом подтянулись люди.
 
@@ -20,6 +22,6 @@ export const SHUTDOWN_MESSAGE = `привет. я сделал гуся пять
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function shutdownMode(ctx: Context, next: () => any) {
-  if (process.env.SHUTDOWN_MODE !== 'true') return next()
+  if (!isShutdownMode()) return next()
   await ctx.reply(SHUTDOWN_MESSAGE)
 }
