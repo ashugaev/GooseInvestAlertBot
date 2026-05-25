@@ -42,6 +42,7 @@ import { setupStart } from './commands/start'
 import { setupStat, statScenes } from './commands/stat'
 import { bots } from './helpers/bot'
 import { setupI18N } from './helpers/i18n'
+import { isShutdownMode } from './helpers/isShutdownMode'
 import { log } from './helpers/log'
 import { attachUser } from './middlewares/attachUser'
 import { checkTime } from './middlewares/checkTime'
@@ -136,6 +137,15 @@ if (botConfig.appFlags.priceAlertBots) {
     await waitForMongoConnectionOrCrash('app bootstrap')
     for (const bot of bots) {
       botInit(bot)
+    }
+
+    // Kill switch: when SHUTDOWN_MODE is on, only the inbound middleware
+    // (which replies with the farewell) needs to run. Skipping setupCheckers
+    // prevents the continuous price/shift loops from pegging CPU and
+    // starving the polling loop, so the farewell actually reaches users.
+    if (isShutdownMode()) {
+      log.info('SHUTDOWN_MODE is on; skipping cron jobs and monitoring loops.')
+      return
     }
 
     // Start all async tasks (cron and continuous)
