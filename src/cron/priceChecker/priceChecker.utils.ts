@@ -2,6 +2,7 @@ import { triggeredAlertKeyboad } from '@/commands/alert/keyboards/triggeredAlert
 import { alertMessage } from '@/commands/alert/messages/alert'
 import { log } from '@/helpers'
 import { getBot } from '@/helpers/bot'
+import { isShutdownMode } from '@/helpers/isShutdownMode'
 import {
   InstrumentsList,
   PriceAlert,
@@ -21,6 +22,11 @@ export const sendTriggeredAlert = async (
   alert: PriceAlert,
   instrumentData: InstrumentsList
 ) => {
+  // Kill switch: stop pushing alerts as soon as SHUTDOWN_MODE is on.
+  // Skip before touching the cache / DB so the alert survives the freeze
+  // and would re-trigger if the bot is ever brought back.
+  if (isShutdownMode()) return
+
   const {
     message: _message,
     lowerThen: _lowerThen,

@@ -4,6 +4,7 @@ import { getBot } from '@/helpers/bot'
 import { getLastPrice } from '@/helpers/getLastPrice'
 import { getSourceMark } from '@/helpers/getSourceMark'
 import { getSymbolByTicker } from '@/helpers/getSymbolByTicker'
+import { isShutdownMode } from '@/helpers/isShutdownMode'
 import { ChatModel } from '@/models/Chat'
 
 import { calcGrowPercent, getCandleCreatedTime } from '../../helpers'
@@ -99,6 +100,11 @@ export const checkTriggeredShiftsAndSendMessage = async ({
   shift,
   timeframeData,
 }) => {
+  // Kill switch: do not push any shift alerts while SHUTDOWN_MODE is on.
+  // Returning before the percent math keeps the triggeredShiftsCache untouched
+  // so nothing leaks out when the flag is later removed.
+  if (isShutdownMode()) return
+
   const growPercent = calcGrowPercent(candle.h, candle.o)
   const fallPercent = calcGrowPercent(candle.l, candle.o)
 
